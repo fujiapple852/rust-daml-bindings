@@ -12,7 +12,7 @@ pub struct NestedTypes {
 }
 
 #[DamlTemplate(
-    package_id = r"045a30fb3e25804277456215a9bd7b8d93406e62a87ac1c07f6aeb7c9e1ca066",
+    package_id = r"6ff89900a3badb67b538c6be4e4ca3adba7653d8f28b6af4aeac02bfad517fdb",
     module_name = "DA.Nested"
 )]
 pub struct NestedTemplate {
