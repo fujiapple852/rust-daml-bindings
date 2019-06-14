@@ -1,0 +1,4 @@
+dist
+*.hi
+*.hie
+.package-database

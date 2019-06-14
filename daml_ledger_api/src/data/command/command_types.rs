@@ -1,0 +1,22 @@
+use crate::data::command::create::DamlCreateCommand;
+use crate::data::command::exercise::DamlExerciseCommand;
+use crate::data::command::DamlCreateAndExerciseCommand;
+use crate::grpc_protobuf_autogen::commands::Command;
+
+/// A DAML ledger command.
+#[derive(Debug, Eq, PartialEq)]
+pub enum DamlCommand {
+    Create(DamlCreateCommand),
+    Exercise(DamlExerciseCommand),
+    CreateAndExercise(DamlCreateAndExerciseCommand),
+}
+
+impl From<DamlCommand> for Command {
+    fn from(daml_command: DamlCommand) -> Self {
+        match daml_command {
+            DamlCommand::Create(c) => c.into(),
+            DamlCommand::Exercise(c) => c.into(),
+            DamlCommand::CreateAndExercise(c) => c.into(),
+        }
+    }
+}

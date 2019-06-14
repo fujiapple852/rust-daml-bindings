@@ -1,0 +1,17 @@
+edition = "2018"
+version = "Two"
+max_width = 120
+use_small_heuristics = "Off"
+wrap_comments = true
+comment_width = 120
+format_strings = true
+match_block_trailing_comma = true
+normalize_comments = true
+reorder_impl_items = true
+format_doc_comments = true
+unstable_features = true
+condense_wildcard_suffixes = true
+newline_style = "Native"
+match_arm_blocks = false
+overflow_delimited_expr = true
+normalize_doc_attributes = true

@@ -1,0 +1,9 @@
+pub mod daml_active_contract_service_tests;
+pub mod daml_command_completion_service_tests;
+pub mod daml_command_service_tests;
+pub mod daml_command_submission_service_tests;
+pub mod daml_ledger_configuration_service_tests;
+pub mod daml_ledger_identity_service_tests;
+pub mod daml_package_service_tests;
+pub mod daml_time_service_tests;
+pub mod daml_transaction_service_tests;

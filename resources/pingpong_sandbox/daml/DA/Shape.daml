@@ -1,0 +1,44 @@
+daml 1.2
+module DA.Shape where
+
+data RGBA = RGBAVariant
+    with
+        r: Int
+        g: Int
+        b: Int
+        alpha: Int
+    deriving (Eq, Show)
+
+data Color = 
+    Red | 
+    Green | 
+    Blue |
+    Custom [Int] |
+    Other RGBA
+    deriving (Eq, Show)
+
+data Circle = CircleVariant
+    with
+        radius: Decimal
+        color: Color
+    deriving (Eq, Show)
+
+template CircleTemplate
+    with
+        owner : Party
+        circle: Circle
+    where
+        signatory owner
+
+        controller owner can
+            ReplaceCircle : ()
+                with 
+                    new_circle : Circle
+                do
+                    create CircleTemplate with owner; circle = new_circle
+                    return ()
+                    
+name = scenario do
+  alice <- getParty "Alice"
+  submit alice do 
+    create CircleTemplate with owner = alice; circle = CircleVariant 12.0000000001 (Other (RGBAVariant 255 100 64 99))

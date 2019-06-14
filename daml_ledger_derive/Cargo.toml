@@ -1,0 +1,22 @@
+[package]
+name = "daml_ledger_derive"
+version = "0.1.0"
+authors = ["FujiApple <fujiapple852@gmail.com>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "0.15", features = ["full"] }
+quote = "0.6"
+proc-macro2 = "0.4"
+itertools = "0.8"
+
+[dev-dependencies]
+daml = { path = "../daml" }
+daml_ledger_api = { path = "../daml_ledger_api" }
+daml_ledger_macro = { path = "../daml_ledger_macro" }
+chrono = "0.4"
+time = "0.1"
+lazy_static = "1.3"

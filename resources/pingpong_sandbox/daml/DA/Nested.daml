@@ -1,0 +1,31 @@
+daml 1.2
+module DA.Nested where
+
+import DA.TextMap as M
+
+data MyNestedData = MyNestedData 
+    with 
+        my_bool: Bool
+    deriving (Eq, Show)
+
+template NestedTemplate
+    with
+        owner : Party
+        opt_of_list: Optional [Text]
+        list_of_opt_of_map_of_data: [Optional (TextMap MyNestedData)]
+    where
+        signatory owner
+
+        controller owner can
+            DoSomethingComplex : ()
+                with 
+                    new_opt_of_list: Optional [Text]
+                    new_list_of_opt_of_map_of_data: [Optional (TextMap MyNestedData)]
+                do   
+                    create NestedTemplate with owner; opt_of_list = new_opt_of_list; list_of_opt_of_map_of_data = new_list_of_opt_of_map_of_data
+                    return ()
+                    
+name = scenario do
+  alice <- getParty "Alice"
+  submit alice do 
+    create NestedTemplate with owner = alice; opt_of_list = Some (["hello"]); list_of_opt_of_map_of_data = [Some (M.fromList [("key", MyNestedData True)])]

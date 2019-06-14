@@ -1,0 +1,21 @@
+[package]
+name = "daml_lf"
+description = "API for working with DAML-LF data"
+version = "0.1.0"
+authors = ["FujiApple <fujiapple852@gmail.com>"]
+readme = "README.md"
+keywords = ["daml", "api", "damllf"]
+edition = "2018"
+build = "build.rs"
+
+[dependencies]
+bytes = "0.4"
+prost = "0.5"
+prost-derive = "0.5"
+zip = "0.5"
+yaml-rust = "0.4"
+trim-margin = "0.1.0"
+
+# TODO move to prost-build 0.5.1 or later when available which conrtains a critical bug fix needed here
+[build-dependencies]
+prost-build = { git = "https://github.com/danburkert/prost", rev = "ff851fd1abcdd760e287c507f2f8dd2f58203958" }

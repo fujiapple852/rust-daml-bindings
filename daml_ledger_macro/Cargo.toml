@@ -1,0 +1,14 @@
+[package]
+name = "daml_ledger_macro"
+description = "Helper macros for working with the DAML Ledger API"
+version = "0.1.0"
+authors = ["FujiApple <fujiapple852@gmail.com>"]
+readme = "README.md"
+keywords = ["daml", "macro", "api", "ledger"]
+edition = "2018"
+
+[dependencies]
+daml_ledger_api = { path = "../daml_ledger_api" }
+chrono = "0.4"
+time = "0.1"
+bigdecimal = "0.1"

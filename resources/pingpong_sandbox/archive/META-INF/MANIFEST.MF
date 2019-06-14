@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Created-By: Digital Asset packager (DAML-GHC)
+Location: PingPongExample/PingPongExample.dalf
+Format: daml-lf
+Encryption: non-encrypted

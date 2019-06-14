@@ -1,0 +1,11 @@
+[workspace]
+members = [
+  "daml",
+  "daml_ledger_api",
+  "daml_ledger_ffi",
+  "daml_ledger_macro",
+  "daml_ledger_codegen",
+  "daml_ledger_derive",
+  "daml_lf",
+  "ping_pong_sample_app",
+]

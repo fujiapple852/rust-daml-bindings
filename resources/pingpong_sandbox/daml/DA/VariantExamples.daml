@@ -1,0 +1,36 @@
+daml 1.2
+module DA.VariantExamples where
+
+import DA.TextMap
+
+data RecordArgument = RecordArgument 
+    with 
+        field_aaa: Int
+        field_bbb: [Text]
+    deriving (Eq, Show)
+
+data AllVariantTypes =
+         NoArgument |
+         TupleStructPrimitive Text |
+         TupleStructListOfPrimitive [Int] |
+         TupleStructListOfRecord [RecordArgument] |
+         TupleStructMapOfPrimitive (TextMap Party) |
+         TupleStructMapOfRecord (TextMap RecordArgument) |
+         TupleStructOptionalOfPrimitive (Optional Bool) |
+         TupleStructOptionalOfRecord (Optional RecordArgument) |
+         TupleStructComplexType (Optional ([Int])) | 
+         TupleStructRecord RecordArgument |
+         Record with field_aaa: Int; field_bbb: [Text]
+    deriving (Eq, Show)
+
+template VariantTemplate
+    with
+        owner : Party
+        variants: [AllVariantTypes]
+    where
+        signatory owner
+                    
+name = scenario do
+  alice <- getParty "Alice"
+  submit alice do 
+    create VariantTemplate with owner = alice; variants = [TupleStructRecord (RecordArgument 2 [""])]

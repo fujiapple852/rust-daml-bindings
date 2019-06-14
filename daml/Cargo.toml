@@ -1,0 +1,11 @@
+[package]
+name = "daml"
+description = "A smart contract language for building distributed applications on a safe, privacy-aware runtime"
+version = "0.1.0"
+authors = ["FujiApple <fujiapple852@gmail.com>"]
+keywords = ["daml", "api", "ledger"]
+edition = "2018"
+
+[dependencies]
+daml_ledger_api = { path = "../daml_ledger_api" }
+daml_ledger_derive = { path = "../daml_ledger_derive" }
