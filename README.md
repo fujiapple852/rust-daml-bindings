@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/bb/fujiapple852/rust-daml-bindings.svg?style=svg&circle-token=5c7eace581559ba93ec1f87b563c541622572ab4)](https://circleci.com/bb/fujiapple852/rust-daml-bindings)
+
 # DAML API Rust Bindings 
 A Rust implementation for the Digital Asset DAML GRPC ledger [API](https://docs.daml.com/app-dev/ledger-api-introduction/index.html).
 
