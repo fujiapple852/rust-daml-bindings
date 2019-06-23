@@ -70,3 +70,8 @@ impl ScalarsAndLists {
     ) {
     }
 }
+
+#[DamlTemplate(module_name = "DA.Dummy", package_id = "test")]
+pub struct ReverseOrderTemplateAttributes {
+    pub prim: DamlParty,
+}

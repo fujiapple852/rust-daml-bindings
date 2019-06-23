@@ -1,7 +1,8 @@
-use proc_macro2::{Ident, Span};
+use proc_macro2::Ident;
+use std::collections::HashMap;
 use syn::parse::Result;
 use syn::parse::{Parse, ParseStream};
-use syn::{Error, LitStr, Token};
+use syn::{LitStr, Token};
 
 #[derive(Debug)]
 pub struct DamlTemplateInfo {
@@ -11,37 +12,35 @@ pub struct DamlTemplateInfo {
 
 impl Parse for DamlTemplateInfo {
     fn parse(input: ParseStream) -> Result<Self> {
-        // parse 'package_id'
-        match input.parse::<Ident>() {
-            Ok(ref label) if label == "package_id" => Ok(()),
-            Ok(ref label) => Err(Error::new(Span::call_site(), format!("expected 'package_id', found: '{}'", label))),
-            Err(e) => Err(e),
-        }?;
+        let all_properties: HashMap<String, String> = input
+            .parse_terminated::<TemplateProperty, Token![,]>(TemplateProperty::parse)?
+            .into_iter()
+            .map(|prop| (prop.key, prop.value))
+            .collect();
+        match (all_properties.get("package_id"), all_properties.get("module_name")) {
+            (Some(package_id), Some(module_name)) => Ok(Self {
+                package_id: package_id.to_owned(),
+                module_name: module_name.to_owned(),
+            }),
+            _ => panic!(format!("expected 'package_id' and 'module_name', found {:?}", all_properties.keys())),
+        }
+    }
+}
 
-        // parse '='
+#[derive(Debug)]
+struct TemplateProperty {
+    key: String,
+    value: String,
+}
+
+impl Parse for TemplateProperty {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let key = input.parse::<Ident>()?.to_string();
         input.parse::<Token![=]>()?;
-
-        // parse a string literal (the 'package_id')
-        let package_id: LitStr = input.parse()?;
-
-        // parse ','
-        input.parse::<Token![,]>()?;
-
-        // parse 'module_name'
-        match input.parse::<Ident>() {
-            Ok(ref label) if label == "module_name" => Ok(()),
-            Ok(ref label) => Err(Error::new(Span::call_site(), format!("expected 'module_name', found: '{}'", label))),
-            Err(e) => Err(e),
-        }?;
-
-        // parse '='
-        input.parse::<Token![=]>()?;
-
-        // parse a string literal (the 'module_name')
-        let module_name: LitStr = input.parse()?;
+        let value: LitStr = input.parse()?;
         Ok(Self {
-            package_id: package_id.value(),
-            module_name: module_name.value(),
+            key,
+            value: value.value(),
         })
     }
 }
