@@ -10,7 +10,6 @@ pub struct DamlExercisedEvent {
     event_id: String,
     contract_id: String,
     template_id: DamlIdentifier,
-    contract_creating_event_id: String,
     choice: String,
     choice_argument: DamlValue,
     acting_parties: Vec<String>,
@@ -26,7 +25,6 @@ impl DamlExercisedEvent {
         event_id: impl Into<String>,
         contract_id: impl Into<String>,
         template_id: impl Into<DamlIdentifier>,
-        contract_creating_event_id: impl Into<String>,
         choice: impl Into<String>,
         choice_argument: impl Into<DamlValue>,
         acting_parties: impl Into<Vec<String>>,
@@ -39,7 +37,6 @@ impl DamlExercisedEvent {
             event_id: event_id.into(),
             contract_id: contract_id.into(),
             template_id: template_id.into(),
-            contract_creating_event_id: contract_creating_event_id.into(),
             choice: choice.into(),
             choice_argument: choice_argument.into(),
             acting_parties: acting_parties.into(),
@@ -60,10 +57,6 @@ impl DamlExercisedEvent {
 
     pub fn template_id(&self) -> &DamlIdentifier {
         &self.template_id
-    }
-
-    pub fn contract_creating_event_id(&self) -> &str {
-        &self.contract_creating_event_id
     }
 
     pub fn choice(&self) -> &str {
@@ -105,7 +98,6 @@ impl TryFrom<ExercisedEvent> for DamlExercisedEvent {
             event.take_event_id(),
             event.take_contract_id(),
             event.take_template_id(),
-            event.take_contract_creating_event_id(),
             event.take_choice(),
             value,
             event.take_acting_parties(),

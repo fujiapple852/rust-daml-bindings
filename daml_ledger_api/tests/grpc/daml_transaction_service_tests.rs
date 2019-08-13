@@ -70,7 +70,6 @@ fn test_get_transaction_trees() -> TestResult {
     assert_eq!(HashSet::<&String>::from_iter(&parties), HashSet::from_iter(ping_exercised_event.witness_parties()));
     assert_eq!(&["#1:1".to_owned()], ping_exercised_event.child_event_ids());
     assert_eq!("RespondPong", ping_exercised_event.choice());
-    assert_eq!("#0:0", ping_exercised_event.contract_creating_event_id());
     assert_eq!("#1:0", ping_exercised_event.event_id());
     assert_eq!("Pong", pong_created_event.template_id().entity_name());
     assert_eq!("#1:1", pong_created_event.contract_id());

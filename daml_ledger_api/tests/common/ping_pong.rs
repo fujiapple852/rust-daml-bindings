@@ -20,7 +20,7 @@ pub type TestResult = ::std::result::Result<(), Box<dyn Error>>;
 
 pub const PINGPONG_MODULE_NAME: &str = "DA.PingPong";
 pub const PING_ENTITY_NAME: &str = "Ping";
-pub const PINGPONG_PACKAGE_ID: &str = r"6ff89900a3badb67b538c6be4e4ca3adba7653d8f28b6af4aeac02bfad517fdb";
+pub const PINGPONG_PACKAGE_ID: &str = r"510e5612a7970a6d7615bc940e8ee6b4da3eb12f257e59268e729683e9929e8b";
 pub const ALICE_PARTY: &str = "Alice";
 pub const BOB_PARTY: &str = "Bob";
 pub const COMMAND_ID_PREFIX: &str = "cmd";

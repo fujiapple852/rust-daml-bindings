@@ -2,19 +2,19 @@ build:
 	daml build
 
 inspect:
-	daml damlc inspect-dar dist/*
+	daml damlc inspect-dar .daml/dist/*
 
 run-wallclock:
-	daml sandbox --port 8080 -w dist/* &
+	daml sandbox --port 8080 -w .daml/dist/* &
 
 run-static:
-	daml sandbox --port 8081 dist/* &
+	daml sandbox --port 8081 .daml/dist/* &
 
 run-wallclock-db:
-	daml sandbox --port 8080 --ledgerid sandbox-wallclock -w --jdbcurl "jdbc:postgresql://localhost:54320/wallclock_sandbox?user=postgres" dist/* &
+	daml sandbox --port 8080 --ledgerid sandbox-wallclock -w --jdbcurl "jdbc:postgresql://localhost:54320/wallclock_sandbox?user=postgres" .daml/dist/* &
 
 run-static-db:
-	daml sandbox --port 8081 --ledgerid sandbox-static --jdbcurl "jdbc:postgresql://localhost:54320/static_sandbox?user=postgres" dist/* &
+	daml sandbox --port 8081 --ledgerid sandbox-static --jdbcurl "jdbc:postgresql://localhost:54320/static_sandbox?user=postgres" .daml/dist/* &
 
 run-navigator-wallclock:
 	daml navigator server localhost 8080
