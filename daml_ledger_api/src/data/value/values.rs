@@ -8,7 +8,7 @@ use protobuf::well_known_types::Empty;
 use protobuf::RepeatedField;
 
 use crate::data::value::record::DamlRecord;
-use crate::data::value::variant::DamlVariant;
+use crate::data::value::variant::{DamlEnum, DamlVariant};
 use crate::data::{DamlError, DamlResult};
 use crate::grpc_protobuf_autogen::value::Optional;
 use crate::grpc_protobuf_autogen::value::Value;
@@ -23,6 +23,7 @@ use std::convert::{TryFrom, TryInto};
 pub enum DamlValue {
     Record(DamlRecord),
     Variant(DamlVariant),
+    Enum(DamlEnum),
     ContractId(String),
     List(Vec<DamlValue>),
     Int64(i64),
@@ -44,6 +45,10 @@ impl DamlValue {
 
     pub fn new_variant(variant: impl Into<DamlVariant>) -> Self {
         DamlValue::Variant(variant.into())
+    }
+
+    pub fn new_enum(enum_variant: impl Into<DamlEnum>) -> Self {
+        DamlValue::Enum(enum_variant.into())
     }
 
     pub fn new_contract_id(contract_id: impl Into<String>) -> Self {
@@ -221,6 +226,13 @@ impl DamlValue {
         }
     }
 
+    pub fn try_enum(&self) -> DamlResult<&DamlEnum> {
+        match self {
+            DamlValue::Enum(e) => Ok(e),
+            _ => Err(self.make_unexpected_type_error("Enum")),
+        }
+    }
+
     pub fn try_optional(&self) -> DamlResult<Option<&Self>> {
         match self {
             DamlValue::Optional(opt) => Ok(opt.as_ref().map(AsRef::as_ref)),
@@ -275,6 +287,7 @@ impl DamlValue {
         match self {
             DamlValue::Record(_) => "Record",
             DamlValue::Variant(_) => "Variant",
+            DamlValue::Enum(_) => "Enum",
             DamlValue::ContractId(_) => "ContractId",
             DamlValue::List(_) => "List",
             DamlValue::Int64(_) => "Int64",
@@ -420,6 +433,7 @@ impl TryFrom<Value> for DamlValue {
                     Ok(match sum {
                         Value_oneof_Sum::record(v) => DamlValue::Record(v.try_into()?),
                         Value_oneof_Sum::variant(v) => DamlValue::Variant(v.try_into()?),
+                        Value_oneof_Sum::field_enum(e) => DamlValue::Enum(e.into()),
                         Value_oneof_Sum::contract_id(v) => DamlValue::ContractId(v),
                         Value_oneof_Sum::list(mut v) => DamlValue::List(
                             (v.take_elements() as RepeatedField<Value>)
@@ -461,6 +475,7 @@ impl From<DamlValue> for Value {
         match daml_value {
             DamlValue::Record(v) => value.set_record(v.into()),
             DamlValue::Variant(v) => value.set_variant(v.into()),
+            DamlValue::Enum(e) => value.set_field_enum(e.into()),
             DamlValue::ContractId(v) => value.set_contract_id(v),
             DamlValue::List(v) => {
                 let mut list = List::new();

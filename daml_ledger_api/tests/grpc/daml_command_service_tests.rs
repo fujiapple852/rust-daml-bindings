@@ -159,5 +159,5 @@ fn make_commands() -> DamlCommands {
     let commands_factory = create_test_command_factory(&workflow_id, &application_id, ALICE_PARTY);
     let ping_template_id = create_test_pp_id(PING_ENTITY_NAME);
     let create_command = DamlCommand::Create(DamlCreateCommand::new(ping_template_id, ping_record));
-    commands_factory.make_command_with_id(create_command, command_id.as_ref())
+    commands_factory.make_command_with_id(create_command, command_id)
 }

@@ -1,27 +1,27 @@
 use crate::data::identifier::DamlIdentifier;
 use crate::data::value::DamlValue;
 use crate::grpc_protobuf_autogen::commands::Command;
-use crate::grpc_protobuf_autogen::commands::ExerciseCommand;
+use crate::grpc_protobuf_autogen::commands::ExerciseByKeyCommand;
 
-/// Exercise a choice on an existing contract.
+/// Exercise a choice on an existing contract specified by its key.
 #[derive(Debug, Eq, PartialEq)]
-pub struct DamlExerciseCommand {
+pub struct DamlExerciseByKeyCommand {
     template_id: DamlIdentifier,
-    contract_id: String,
+    contract_key: DamlValue,
     choice: String,
     choice_argument: DamlValue,
 }
 
-impl DamlExerciseCommand {
+impl DamlExerciseByKeyCommand {
     pub fn new(
         template_id: impl Into<DamlIdentifier>,
-        contract_id: impl Into<String>,
+        contract_key: impl Into<DamlValue>,
         choice: impl Into<String>,
         choice_argument: impl Into<DamlValue>,
     ) -> Self {
         Self {
             template_id: template_id.into(),
-            contract_id: contract_id.into(),
+            contract_key: contract_key.into(),
             choice: choice.into(),
             choice_argument: choice_argument.into(),
         }
@@ -32,11 +32,9 @@ impl DamlExerciseCommand {
         &self.template_id
     }
 
-    /// The name of the choice the client wants to exercise.
-    ///
-    /// Must match the regexp ``[A-Za-z0-9#:\-_/ ]+``
-    pub fn contract_id(&self) -> &str {
-        &self.contract_id
+    /// The key of the contract the client wants to exercise upon.
+    pub fn contract_key(&self) -> &DamlValue {
+        &self.contract_key
     }
 
     /// The name of the choice the client wants to exercise.
@@ -52,15 +50,15 @@ impl DamlExerciseCommand {
     }
 }
 
-impl From<DamlExerciseCommand> for Command {
-    fn from(daml_exercise_command: DamlExerciseCommand) -> Self {
-        let mut exercise_command = ExerciseCommand::new();
-        exercise_command.set_template_id(daml_exercise_command.template_id.into());
-        exercise_command.set_choice_argument(daml_exercise_command.choice_argument.into());
-        exercise_command.set_contract_id(daml_exercise_command.contract_id);
-        exercise_command.set_choice(daml_exercise_command.choice);
+impl From<DamlExerciseByKeyCommand> for Command {
+    fn from(daml_exercise_command: DamlExerciseByKeyCommand) -> Self {
+        let mut exercise_by_key_command = ExerciseByKeyCommand::new();
+        exercise_by_key_command.set_template_id(daml_exercise_command.template_id.into());
+        exercise_by_key_command.set_choice_argument(daml_exercise_command.choice_argument.into());
+        exercise_by_key_command.set_contract_key(daml_exercise_command.contract_key.into());
+        exercise_by_key_command.set_choice(daml_exercise_command.choice);
         let mut command = Self::new();
-        command.set_exercise(exercise_command);
+        command.set_exerciseByKey(exercise_by_key_command);
         command
     }
 }

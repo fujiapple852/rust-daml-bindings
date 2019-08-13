@@ -10,6 +10,7 @@ import "com/digitalasset/ledger/api/v1/trace_context.proto";
 
 option java_outer_classname = "PackageServiceOuterClass";
 option java_package = "com.digitalasset.ledger.api.v1";
+option csharp_namespace = "Com.DigitalAsset.Ledger.Api.V1";
 
 // Allows clients to query the DAML-LF packages that are supported by the server.
 service PackageService {
@@ -28,6 +29,7 @@ service PackageService {
 message ListPackagesRequest {
 
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string ledger_id = 1;
 
@@ -40,6 +42,7 @@ message ListPackagesRequest {
 message ListPackagesResponse {
 
   // The IDs of all DAML-LF packages supported by the server.
+  // Each element must be a valid PackageIdString (as described in ``value.proto``).
   // Required
   repeated string package_ids = 1;
 }
@@ -47,10 +50,12 @@ message ListPackagesResponse {
 message GetPackageRequest {
 
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string ledger_id = 1;
 
   // The ID of the requested package.
+  // Must be a valid PackageIdString (as described in ``value.proto``).
   // Required
   string package_id = 2;
 
@@ -71,6 +76,7 @@ message GetPackageResponse {
   bytes archive_payload = 2;
 
   // The hash of the archive payload, can also used as a ``package_id``.
+  // Must be a valid PackageIdString (as described in ``value.proto``).
   // Required
   string hash = 3;
 }
@@ -78,10 +84,12 @@ message GetPackageResponse {
 message GetPackageStatusRequest {
 
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string ledger_id = 1;
 
   // The ID of the requested package.
+  // Must be a valid PackageIdString (as described in ``value.proto``).
   // Required
   string package_id = 2;
 

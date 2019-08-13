@@ -18,6 +18,8 @@ use crate::service::DamlResetService;
 #[cfg(feature = "testing")]
 use crate::service::DamlTimeService;
 use crate::service::DamlTransactionService;
+#[cfg(feature = "admin")]
+use crate::service::{DamlPackageManagementService, DamlPartyManagementService};
 use log::info;
 
 #[cfg(feature = "testing")]
@@ -36,6 +38,10 @@ pub struct DamlLedgerClient {
     command_service: DamlCommandService,
     transaction_service: DamlTransactionService,
     active_contract_service: DamlActiveContractsService,
+    #[cfg(feature = "admin")]
+    package_management_service: DamlPackageManagementService,
+    #[cfg(feature = "admin")]
+    party_management_service: DamlPartyManagementService,
     #[cfg(feature = "testing")]
     reset_service: DamlResetService,
     #[cfg(feature = "testing")]
@@ -92,6 +98,16 @@ impl DamlLedgerClient {
         &self.active_contract_service
     }
 
+    #[cfg(feature = "admin")]
+    pub fn package_management_service(&self) -> &DamlPackageManagementService {
+        &self.package_management_service
+    }
+
+    #[cfg(feature = "admin")]
+    pub fn party_management_service(&self) -> &DamlPartyManagementService {
+        &self.party_management_service
+    }
+
     #[cfg(feature = "testing")]
     pub fn time_service(&self) -> &DamlTimeService {
         &self.time_service
@@ -134,6 +150,10 @@ impl DamlLedgerClient {
             command_service: DamlCommandService::new(channel.clone(), ledger_identity.clone()),
             command_completion_service: DamlCommandCompletionService::new(channel.clone(), ledger_identity.clone()),
             active_contract_service: DamlActiveContractsService::new(channel.clone(), ledger_identity.clone()),
+            #[cfg(feature = "admin")]
+            package_management_service: DamlPackageManagementService::new(channel.clone()),
+            #[cfg(feature = "admin")]
+            party_management_service: DamlPartyManagementService::new(channel.clone()),
             #[cfg(feature = "testing")]
             reset_service: DamlResetService::new(channel.clone(), ledger_identity.clone()),
             #[cfg(feature = "testing")]

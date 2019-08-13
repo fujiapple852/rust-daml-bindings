@@ -6,51 +6,52 @@ syntax = "proto3";
 package com.digitalasset.ledger.api.v1;
 
 import "com/digitalasset/ledger/api/v1/value.proto";
+import "google/protobuf/wrappers.proto";
 
 
 option java_outer_classname = "EventOuterClass";
 option java_package = "com.digitalasset.ledger.api.v1";
+option csharp_namespace = "Com.DigitalAsset.Ledger.Api.V1";
 
-// An event on the ledger can either be the creation or the archiving of
-// a contract, or the exercise of a choice on a contract.
-//
-// The ``GetTransactionTrees`` response will only contain create and
-// exercise events. Archive events correspond to consuming exercise
-// events.
+// An event in the flat transaction stream can either be the creation
+// or the archiving of a contract.
 //
 // In the transaction service the events are restricted to the events
 // visible for the parties specified in the transaction filter. Each
 // event message type below contains a ``witness_parties`` field which
 // indicates the subset of the requested parties that can see the event
-// in question.
-//
-// However, note that transaction _trees_ might contain events with
-// _no_ witness parties, which were included simply because they were
-// children of events which have witnesses. On the other hand, on
-// the flat transaction stream you'll only receive events that have
-// witnesses.
+// in question. In the flat transaction stream you'll only receive events
+// that have witnesses.
 message Event {
   oneof event {
     CreatedEvent created = 1;
-    ExercisedEvent exercised = 2;
     ArchivedEvent archived = 3;
  }
+  // see https://github.com/digital-asset/daml/issues/960
+  reserved 2;
+  reserved "exercised";
 }
 
 // Records that a contract has been created, and choices may now be exercised on it.
 message CreatedEvent {
 
   // The ID of this particular event.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string event_id = 1;
 
   // The ID of the created contract.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string contract_id = 2;
 
   // The template of the created contract.
   // Required
   Identifier template_id = 3;
+
+  // The key of the created contract, if defined.
+  // Optional
+  Value contract_key = 7;
 
   // The arguments that have been used to create the contract.
   // Required
@@ -63,16 +64,34 @@ message CreatedEvent {
   // the contract.
   // Required
   repeated string witness_parties = 5;
+
+  // The signatories for this contract as specified by the template.
+  // Required
+  repeated string signatories = 8;
+
+  // The observers for this contract as specified explicitly by the template or implicitly as choice controllers.
+  // Required
+  repeated string observers = 9;
+
+  // The agreement text of the contract.
+  // We use StringValue to properly reflect optionality on the wire for backwards compatibility.
+  // This is necessary since the empty string is an acceptable (and in fact the default) agreement
+  // text, but also the default string in protobuf.
+  // This means a newer client works with an older sandbox seamlessly.
+  // Optional
+  google.protobuf.StringValue agreement_text = 6;
 }
 
 // Records that a contract has been archived, and choices may no longer be exercised on it.
 message ArchivedEvent {
 
   // The ID of this particular event.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string event_id = 1;
 
   // The ID of the archived contract.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string contract_id = 2;
 
@@ -85,6 +104,8 @@ message ArchivedEvent {
   // question and the parties specified in the `TransactionFilter`. The
   // stakeholders are the union of the signatories and the observers of
   // the contract.
+  // Each one of its elements must be a valid PartyIdString (as descibed
+  // in ``value.proto``).
   // Required
   repeated string witness_parties = 4;
 }
@@ -93,10 +114,12 @@ message ArchivedEvent {
 message ExercisedEvent {
 
   // The ID of this particular event.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string event_id = 1;
 
   // The ID of the target contract.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string contract_id = 2;
 
@@ -105,10 +128,12 @@ message ExercisedEvent {
   Identifier template_id = 3;
 
   // The ID of the event in which the target contract has been created.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string contract_creating_event_id = 4;
 
   // The choice that's been exercised on the target contract.
+  // Must be a valid NameString (as described in ``value.proto``).
   // Required
   string choice = 5;
 
@@ -117,6 +142,7 @@ message ExercisedEvent {
   Value choice_argument = 6;
 
   // The parties that made the choice.
+  // Each element must be a valid PartyIdString (as described in ``value.proto``).
   // Required
   repeated string acting_parties = 7;
 
@@ -139,11 +165,21 @@ message ExercisedEvent {
   // `choice ... controller` syntax, and said controllers are not
   // explicitly marked as observers.
   //
+  // Each element must be a valid PartyIdString (as described in ``value.proto``).
+  //
   // Required
   repeated string witness_parties = 10;
 
   // References to further events in the same transaction that appeared as a result of this ``ExercisedEvent``.
   // It contains only the immediate children of this event, not all members of the subtree rooted at this node.
+  //
+  // Each element must be a valid PartyIdString (as described in ``value.proto``).
+  //
   // Optional
   repeated string child_event_ids = 11;
+
+  // The result of exercising the choice
+  // Required
+  Value exercise_result = 12;
+
 }

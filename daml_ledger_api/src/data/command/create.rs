@@ -3,13 +3,14 @@ use crate::data::value::DamlRecord;
 use crate::grpc_protobuf_autogen::commands::Command;
 use crate::grpc_protobuf_autogen::commands::CreateCommand;
 
-/// A command to create a contract on a DAML ledger.
+/// Create a new contract instance based on a template.
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlCreateCommand {
     template_id: DamlIdentifier,
     create_arguments: DamlRecord,
 }
 
+/// Create a new contract instance based on a template.
 impl DamlCreateCommand {
     pub fn new(template_id: impl Into<DamlIdentifier>, create_arguments: impl Into<DamlRecord>) -> Self {
         Self {
@@ -18,10 +19,12 @@ impl DamlCreateCommand {
         }
     }
 
+    /// The template of contract the client wants to create.
     pub fn template_id(&self) -> &DamlIdentifier {
         &self.template_id
     }
 
+    /// The arguments required for creating a contract from this template.
     pub fn create_arguments(&self) -> &DamlRecord {
         &self.create_arguments
     }

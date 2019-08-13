@@ -13,6 +13,7 @@ import "com/digitalasset/ledger/api/v1/trace_context.proto";
 
 option java_outer_classname = "TransactionServiceOuterClass";
 option java_package = "com.digitalasset.ledger.api.v1";
+option csharp_namespace = "Com.DigitalAsset.Ledger.Api.V1";
 
 // Allows clients to read transactions from the ledger.
 service TransactionService {
@@ -50,6 +51,7 @@ service TransactionService {
 message GetTransactionsRequest {
 
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string ledger_id = 1;
 
@@ -89,15 +91,18 @@ message GetTransactionTreesResponse {
 
 message GetTransactionByEventIdRequest {
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string ledger_id = 1;
 
   // The ID of a particular event.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string event_id = 2;
 
   // The parties whose events the client expects to see.
   // Events that are not visible for the parties in this collection will not be present in the response.
+  // Each element must be a valid PartyIdString (as described in ``value.proto``).
   // Required
   repeated string requesting_parties = 3;
 
@@ -109,15 +114,18 @@ message GetTransactionByEventIdRequest {
 
 message GetTransactionByIdRequest {
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
+  // Must be a valid LedgerString (as describe in ``value.proto``).
   // Required
   string ledger_id = 1;
 
   // The ID of a particular transaction.
+  // Must be a valid LedgerString (as describe in ``value.proto``).
   // Required
   string transaction_id = 2;
 
   // The parties whose events the client expects to see.
   // Events that are not visible for the parties in this collection will not be present in the response.
+  // Each element be a valid PartyIdString (as describe in ``value.proto``).
   // Required
   repeated string requesting_parties = 3;
 
@@ -137,6 +145,7 @@ message GetFlatTransactionResponse {
 
 message GetLedgerEndRequest {
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
+  // Must be a valid LedgerString (as describe in ``value.proto``).
   // Required
   string ledger_id = 1;
 

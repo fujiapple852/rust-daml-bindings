@@ -13,6 +13,7 @@ import "google/protobuf/empty.proto";
 
 option java_outer_classname = "CommandServiceOuterClass";
 option java_package = "com.digitalasset.ledger.api.v1";
+option csharp_namespace = "Com.DigitalAsset.Ledger.Api.V1";
 
 // Command Service is able to correlate submitted commands with completion data, identify timeouts, and return contextual
 // information with each tracking result. This supports the implementation of stateless clients.
@@ -55,6 +56,7 @@ message SubmitAndWaitRequest {
 
 message SubmitAndWaitForTransactionIdResponse {
   // The id of the transaction that resulted from the submitted command.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string transaction_id = 1;
 }

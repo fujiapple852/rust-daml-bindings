@@ -89,7 +89,7 @@
 ///
 /// All `type` specifiers return references, even for simple copy types, and so must be dereferenced as needed.
 ///
-/// There is currently no support for [`DamlValue::Map`].
+/// There is currently no support for [`DamlValue::Map`] or [`DamlValue::Enum`].
 ///
 /// # Examples
 ///
@@ -141,6 +141,7 @@
 /// [`DamlValue::Bool`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Bool
 /// [`DamlValue::Date`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Date
 /// [`DamlValue::Map`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Map
+/// [`DamlValue::Enum`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Enum
 /// [`ListIndexOutOfRange`]: ../../doc/daml_ledger_api/data/enum.Error.html#variant.ListIndexOutOfRange
 /// [`OptionalIsNone`]: ../../doc/daml_ledger_api/data/enum.Error.html#variant.OptionalIsNone
 /// [`UnknownField`]: ../../doc/daml_ledger_api/data/enum.Error.html#variant.UnknownField

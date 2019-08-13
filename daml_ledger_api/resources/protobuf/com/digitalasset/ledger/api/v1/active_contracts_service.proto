@@ -12,6 +12,7 @@ import "com/digitalasset/ledger/api/v1/trace_context.proto";
 
 option java_outer_classname = "ActiveContractsServiceOuterClass";
 option java_package = "com.digitalasset.ledger.api.v1";
+option csharp_namespace = "Com.DigitalAsset.Ledger.Api.V1";
 
 // Allows clients to initialize themselves according to a fairly recent state of the ledger without reading through all transactions that were committed since the ledger's creation.
 service ActiveContractsService {
@@ -25,6 +26,7 @@ service ActiveContractsService {
 message GetActiveContractsRequest {
 
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string ledger_id = 1;
 
@@ -53,10 +55,12 @@ message GetActiveContractsResponse {
   string offset = 1;
 
   // The workflow that created the contracts.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Optional
   string workflow_id = 2;
 
   // The list of contracts that were introduced by the workflow with ``workflow_id`` at the offset.
+  // Must be a valid LedgerString (as described in ``value.proto``).
   // Optional
   repeated CreatedEvent active_contracts = 3;
 

@@ -4,15 +4,14 @@ description = "DAML Ledger API"
 version = "0.1.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
 readme = "README.md"
-keywords = ["daml", "macro", "api", "ledger"]
+keywords = ["daml", "api", "ledger"]
 edition = "2018"
 build = "build.rs"
 
 [features]
-default = [ "testing" ]
-# Enable this feature to include support for ledger reset and ledger time functionality.  This should not be used for
-# production builds.
+default = []
 testing = []
+admin = []
 
 [dependencies]
 futures = "0.1"
@@ -24,6 +23,7 @@ time = "0.1"
 bigdecimal = "0.1"
 log = "0.4"
 lazy_static = "1.3"
+bytes = "0.4"
 
 [build-dependencies]
 protoc-grpcio = "1.0"

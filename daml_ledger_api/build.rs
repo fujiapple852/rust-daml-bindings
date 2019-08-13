@@ -7,11 +7,16 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-const ALL_PROTO_SRC_PATHS: &[&str] =
-    &["com/digitalasset/ledger/api/v1", "com/digitalasset/ledger/api/v1/testing", "google/protobuf", "google/rpc"];
+const ALL_PROTO_SRC_PATHS: &[&str] = &[
+    "com/digitalasset/ledger/api/v1",
+    "com/digitalasset/ledger/api/v1/testing",
+    "com/digitalasset/ledger/api/v1/admin",
+    "google/protobuf",
+    "google/rpc",
+];
 const PROTO_ROOT_PATH: &str = "resources/protobuf";
 const OUTPUT_PATH: &str = "src/grpc_protobuf_autogen";
-const MODULE_HEADER: &str = "#![allow(clippy::all, clippy::pedantic)]\n#![allow(renamed_and_removed_lints)]\n";
+const MODULE_HEADER: &[&str] = &["clippy::all", "clippy::pedantic", "renamed_and_removed_lints", "bare_trait_objects"];
 
 fn main() -> Result<(), Box<dyn error::Error>> {
     fs::create_dir_all(OUTPUT_PATH)?;
@@ -29,7 +34,8 @@ fn generate_module_src() -> Result<(), Box<dyn error::Error>> {
         .map(|p| Ok(p.file_stem().ok_or("no filename")?.to_str().ok_or("invalid filename")?.to_owned()))
         .collect::<Result<Vec<String>, String>>()?;
     let mut file = File::create(Path::new(&format!("{}/mod.rs", OUTPUT_PATH)))?;
-    file.write(MODULE_HEADER.as_bytes())?;
+    let rendered_headers: String = MODULE_HEADER.iter().map(|item| format!("#![allow({})]\n", item)).collect();
+    file.write(rendered_headers.as_bytes())?;
     for name in names {
         file.write(format!("pub mod {};\n", name).as_bytes())?;
     }

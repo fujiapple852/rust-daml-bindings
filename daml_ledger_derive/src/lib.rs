@@ -166,7 +166,7 @@
 //! #    pub receiver: DamlParty,
 //! #    pub count: DamlInt64,
 //! # }
-//! # let created_event = DamlCreatedEvent::new("", "", DamlIdentifier::new("", "", ""), DamlRecord::new(vec![], None::<DamlIdentifier>), vec![]);
+//! # let created_event = DamlCreatedEvent::new("", "", DamlIdentifier::new("", "", ""), None, DamlRecord::new(vec![], None::<DamlIdentifier>), vec![], vec![], vec![], "");
 //! let ping_contract: PingContract = created_event.try_into()?;
 //! # Ok::<(), DamlError>(())
 //! ```
@@ -183,7 +183,7 @@
 //! #    pub receiver: DamlParty,
 //! #    pub count: DamlInt64,
 //! # }
-//! # let created_event = DamlCreatedEvent::new("", "", DamlIdentifier::new("", "", ""), DamlRecord::new(vec![], None::<DamlIdentifier>), vec![]);
+//! # let created_event = DamlCreatedEvent::new("", "", DamlIdentifier::new("", "", ""), None, DamlRecord::new(vec![], None::<DamlIdentifier>), vec![], vec![], vec![], "");
 //! # let ping_contract: PingContract = created_event.try_into()?;
 //! assert_eq!("Alice", ping_contract.data().sender);
 //! assert_eq!("Bob", ping_contract.data().receiver);
@@ -210,7 +210,7 @@
 //! #     #[ResetCount]
 //! #     fn reset_count(&self, new_count: DamlInt64) {}
 //! # }
-//! # let created_event = DamlCreatedEvent::new("", "", DamlIdentifier::new("", "", ""), DamlRecord::new(vec![], None::<DamlIdentifier>), vec![]);
+//! # let created_event = DamlCreatedEvent::new("", "", DamlIdentifier::new("", "", ""), None, DamlRecord::new(vec![], None::<DamlIdentifier>), vec![], vec![], vec![], "");
 //! # let ping_contract: PingContract = created_event.try_into()?;
 //! let exercise_command = ping_contract.reset_count(5);
 //! # Ok::<(), DamlError>(())

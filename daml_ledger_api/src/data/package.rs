@@ -1,6 +1,9 @@
+use crate::grpc_protobuf_autogen::package_management_service::PackageDetails;
 use crate::grpc_protobuf_autogen::package_service::GetPackageResponse;
 use crate::grpc_protobuf_autogen::package_service::HashFunction;
 use crate::grpc_protobuf_autogen::package_service::PackageStatus;
+use crate::util;
+use chrono::{DateTime, Utc};
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlPackage {
@@ -66,5 +69,61 @@ impl From<HashFunction> for DamlHashFunction {
         match hash_function {
             HashFunction::SHA256 => DamlHashFunction::SHA256,
         }
+    }
+}
+
+/// Detailed information about a DAML `dar` package.
+#[derive(Debug, Eq, PartialEq)]
+pub struct DamlPackageDetails {
+    package_id: String,
+    package_size: u64,
+    known_since: DateTime<Utc>,
+    source_description: String,
+}
+
+impl DamlPackageDetails {
+    pub fn new(
+        package_id: impl Into<String>,
+        package_size: impl Into<u64>,
+        known_since: impl Into<DateTime<Utc>>,
+        source_description: impl Into<String>,
+    ) -> Self {
+        Self {
+            package_id: package_id.into(),
+            package_size: package_size.into(),
+            known_since: known_since.into(),
+            source_description: source_description.into(),
+        }
+    }
+
+    /// The identity of the DAML-LF package.
+    pub fn package_id(&self) -> &str {
+        &self.package_id
+    }
+
+    /// Size of the package in bytes.
+    pub fn package_size(&self) -> u64 {
+        self.package_size
+    }
+
+    /// Indicates since when the package is known to the backing participant.
+    pub fn known_since(&self) -> &DateTime<Utc> {
+        &self.known_since
+    }
+
+    /// Description provided by the backing participant describing where it got the package from.
+    pub fn source_description(&self) -> &str {
+        &self.source_description
+    }
+}
+
+impl From<PackageDetails> for DamlPackageDetails {
+    fn from(mut details: PackageDetails) -> Self {
+        Self::new(
+            details.take_package_id(),
+            details.get_package_size(),
+            util::make_datetime(&details.take_known_since()),
+            details.take_source_description(),
+        )
     }
 }

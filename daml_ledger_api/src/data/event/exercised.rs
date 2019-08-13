@@ -17,6 +17,7 @@ pub struct DamlExercisedEvent {
     consuming: bool,
     witness_parties: Vec<String>,
     child_event_ids: Vec<String>,
+    exercise_result: DamlValue,
 }
 
 impl DamlExercisedEvent {
@@ -32,6 +33,7 @@ impl DamlExercisedEvent {
         consuming: bool,
         witness_parties: impl Into<Vec<String>>,
         child_event_ids: impl Into<Vec<String>>,
+        exercise_result: impl Into<DamlValue>,
     ) -> Self {
         Self {
             event_id: event_id.into(),
@@ -44,6 +46,7 @@ impl DamlExercisedEvent {
             consuming,
             witness_parties: witness_parties.into(),
             child_event_ids: child_event_ids.into(),
+            exercise_result: exercise_result.into(),
         }
     }
 
@@ -86,6 +89,10 @@ impl DamlExercisedEvent {
     pub fn child_event_ids(&self) -> &[String] {
         &self.child_event_ids
     }
+
+    pub fn exercise_result(&self) -> &DamlValue {
+        &self.exercise_result
+    }
 }
 
 impl TryFrom<ExercisedEvent> for DamlExercisedEvent {
@@ -93,6 +100,7 @@ impl TryFrom<ExercisedEvent> for DamlExercisedEvent {
 
     fn try_from(mut event: ExercisedEvent) -> Result<Self, Self::Error> {
         let value: DamlValue = event.take_choice_argument().try_into()?;
+        let exercise_result: DamlValue = event.take_exercise_result().try_into()?;
         Ok(Self::new(
             event.take_event_id(),
             event.take_contract_id(),
@@ -104,6 +112,7 @@ impl TryFrom<ExercisedEvent> for DamlExercisedEvent {
             event.get_consuming(),
             event.take_witness_parties(),
             event.take_child_event_ids(),
+            exercise_result,
         ))
     }
 }

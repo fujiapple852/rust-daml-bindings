@@ -10,7 +10,10 @@ pub mod offset;
 /// Ledger package information.
 pub mod package;
 
-/// DAML values, records & variants.
+/// The details of a DAML party.
+pub mod party;
+
+/// DAML values, records, enums & variants.
 pub mod value {
     mod record;
     mod record_build;
@@ -21,7 +24,7 @@ pub mod value {
     pub use self::record_build::DamlRecordBuilder;
     pub use self::record_field::DamlRecordField;
     pub use self::values::DamlValue;
-    pub use self::variant::DamlVariant;
+    pub use self::variant::{DamlEnum, DamlVariant};
 }
 
 /// Created, Archived & Exercised events.
@@ -43,10 +46,12 @@ pub mod command {
     mod create;
     mod create_and_exercise;
     mod exercise;
+    mod exercise_by_key;
     pub use self::command_types::DamlCommand;
     pub use self::create::DamlCreateCommand;
     pub use self::create_and_exercise::DamlCreateAndExerciseCommand;
     pub use self::exercise::DamlExerciseCommand;
+    pub use self::exercise_by_key::DamlExerciseByKeyCommand;
 }
 
 mod commands;

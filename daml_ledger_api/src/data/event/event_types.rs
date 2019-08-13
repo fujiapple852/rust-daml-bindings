@@ -13,7 +13,6 @@ use std::convert::{TryFrom, TryInto};
 pub enum DamlEvent {
     Created(Box<DamlCreatedEvent>),
     Archived(Box<DamlArchivedEvent>),
-    Exercised(Box<DamlExercisedEvent>),
 }
 
 impl DamlEvent {
@@ -31,19 +30,11 @@ impl DamlEvent {
         }
     }
 
-    pub fn try_exercised(self) -> DamlResult<DamlExercisedEvent> {
-        match self {
-            DamlEvent::Exercised(e) => Ok(*e),
-            _ => Err(self.make_unexpected_type_error("Exercised")),
-        }
-    }
-
     /// The name of this [`DamlEvent`] variant type.
     pub fn variant_name(&self) -> &str {
         match self {
             DamlEvent::Created(_) => "Created",
             DamlEvent::Archived(_) => "Archived",
-            DamlEvent::Exercised(_) => "Exercised",
         }
     }
 
@@ -62,7 +53,6 @@ impl TryFrom<Event> for DamlEvent {
                     Ok(match sum {
                         Event_oneof_event::created(e) => DamlEvent::Created(Box::new(e.try_into()?)),
                         Event_oneof_event::archived(e) => DamlEvent::Archived(Box::new(e.into())),
-                        Event_oneof_event::exercised(e) => DamlEvent::Exercised(Box::new(e.try_into()?)),
                     })
                 };
                 convert(e)

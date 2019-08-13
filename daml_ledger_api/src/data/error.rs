@@ -24,7 +24,7 @@ impl DamlError {
 impl fmt::Display for DamlError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            DamlError::GRPC(e) => write!(fmt, "{}", (e as &error::Error).description()),
+            DamlError::GRPC(e) => write!(fmt, "{}", (e as &dyn error::Error).description()),
             DamlError::ResetTimeout => write!(fmt, "timed out resetting ledger"),
             DamlError::UnexpectedType(expected, actual) =>
                 write!(fmt, "unexpected type, expected {} but found {}", expected, actual),
