@@ -10,6 +10,7 @@ use daml_ledger_api::data::DamlIdentifier;
 use daml_ledger_api::data::DamlResult;
 use daml_ledger_api::DamlCommandFactory;
 use daml_ledger_api::DamlLedgerClient;
+use daml_lf::DamlLfArchivePayload;
 use std::error::Error;
 use std::ops::Add;
 use std::sync::Mutex;
@@ -20,7 +21,6 @@ pub type TestResult = ::std::result::Result<(), Box<dyn Error>>;
 
 pub const PINGPONG_MODULE_NAME: &str = "DA.PingPong";
 pub const PING_ENTITY_NAME: &str = "Ping";
-pub const PINGPONG_PACKAGE_ID: &str = r"510e5612a7970a6d7615bc940e8ee6b4da3eb12f257e59268e729683e9929e8b";
 pub const ALICE_PARTY: &str = "Alice";
 pub const BOB_PARTY: &str = "Bob";
 pub const COMMAND_ID_PREFIX: &str = "cmd";
@@ -61,8 +61,8 @@ pub fn create_test_command_factory(workflow_id: &str, application_id: &str, send
     DamlCommandFactory::new(workflow_id, application_id, sending_party, ledger_effective_time, maximum_record_time)
 }
 
-pub fn create_test_pp_id(entity_name: &str) -> DamlIdentifier {
-    DamlIdentifier::new(PINGPONG_PACKAGE_ID, PINGPONG_MODULE_NAME, entity_name)
+pub fn create_test_pp_id(pingpong_package_id: &str, entity_name: &str) -> DamlIdentifier {
+    DamlIdentifier::new(pingpong_package_id, PINGPONG_MODULE_NAME, entity_name)
 }
 
 pub fn create_test_uuid(prefix: &str) -> String {
@@ -71,6 +71,7 @@ pub fn create_test_uuid(prefix: &str) -> String {
 
 pub fn test_create_ping_contract(
     ledger_client: &DamlLedgerClient,
+    package_id: &str,
     application_id: &str,
     workflow_id: &str,
     create_command_id: &str,
@@ -78,7 +79,7 @@ pub fn test_create_ping_contract(
 ) -> TestResult {
     let ping_record = create_test_ping_record(ALICE_PARTY, BOB_PARTY, count);
     let commands_factory = create_test_command_factory(workflow_id, application_id, ALICE_PARTY);
-    let template_id = create_test_pp_id(PING_ENTITY_NAME);
+    let template_id = create_test_pp_id(&package_id, PING_ENTITY_NAME);
     let create_command = DamlCommand::Create(DamlCreateCommand::new(template_id, ping_record));
     let create_commands = commands_factory.make_command_with_id(create_command, create_command_id);
     ledger_client.command_service().submit_and_wait_sync(create_commands)?;
@@ -87,11 +88,12 @@ pub fn test_create_ping_contract(
 
 pub fn test_exercise_pong_choice(
     ledger_client: &DamlLedgerClient,
+    package_id: &str,
     application_id: &str,
     workflow_id: &str,
     exercise_command_id: &str,
 ) -> TestResult {
-    let template_id = create_test_pp_id(PING_ENTITY_NAME);
+    let template_id = create_test_pp_id(package_id, PING_ENTITY_NAME);
     let bob_commands_factory = create_test_command_factory(workflow_id, application_id, BOB_PARTY);
     let exercise_command = DamlCommand::Exercise(DamlExerciseCommand::new(
         template_id,
@@ -106,13 +108,14 @@ pub fn test_exercise_pong_choice(
 
 pub fn test_create_ping_and_exercise_reset_ping(
     ledger_client: &DamlLedgerClient,
+    package_id: &str,
     application_id: &str,
     workflow_id: &str,
     command_id: &str,
 ) -> TestResult {
     let ping_record = create_test_ping_record(ALICE_PARTY, BOB_PARTY, 0);
     let commands_factory = create_test_command_factory(workflow_id, application_id, ALICE_PARTY);
-    let template_id = create_test_pp_id(PING_ENTITY_NAME);
+    let template_id = create_test_pp_id(package_id, PING_ENTITY_NAME);
 
     let create_and_exercise_command = DamlCommand::CreateAndExercise(DamlCreateAndExerciseCommand::new(
         template_id,
@@ -124,4 +127,26 @@ pub fn test_create_ping_and_exercise_reset_ping(
     let commands = commands_factory.make_command_with_id(create_and_exercise_command, command_id);
     ledger_client.command_service().submit_and_wait_sync(commands)?;
     Ok(())
+}
+
+pub fn get_ping_pong_package_id(
+    ledger_client: &DamlLedgerClient,
+) -> std::result::Result<String, Box<dyn std::error::Error>> {
+    fn get_package_payload<'a>(
+        ledger_client: &DamlLedgerClient,
+        package_id: &'a str,
+    ) -> std::result::Result<(&'a str, DamlLfArchivePayload), Box<dyn std::error::Error>> {
+        let package = ledger_client.package_service().get_package_sync(package_id)?;
+        let archive = DamlLfArchivePayload::from_bytes(package.payload())?;
+        Ok((package_id, archive))
+    }
+    let all_packages = ledger_client.package_service().list_packages_sync()?;
+    let all_archives: Vec<(&str, DamlLfArchivePayload)> = all_packages
+        .iter()
+        .map(|package_id| (get_package_payload(ledger_client, package_id)))
+        .collect::<std::result::Result<Vec<(&str, DamlLfArchivePayload)>, _>>()?;
+    all_archives
+        .iter()
+        .find(|(_, archive)| archive.contains_module(PINGPONG_MODULE_NAME))
+        .map_or(Err("package could not be found".into()), |(package_id, _)| Ok(package_id.to_string()))
 }

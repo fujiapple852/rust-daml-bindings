@@ -3,19 +3,24 @@ use crate::DamlLfArchivePayload;
 use crate::DamlLfResult;
 use bytes::IntoBuf;
 use prost::Message;
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
+/// The default name for an unnamed archive.
+pub const DEFAULT_ARCHIVE_NAME: &str = "Unnamed";
+
 /// A `DAML LF` archive (aka a `dalf` file).
 ///
-/// A `DamlLfArchive` contains a `payload` (aka "package"), a `hash` (aka "package id") of that `payload` for a
-/// given `hash_function`.
-#[derive(Debug)]
+/// A `DamlLfArchive` contains a `name`, a `payload` (aka "package"), a `hash` (aka "package id") of that `payload` for
+/// a given `hash_function`.
+#[derive(Debug, Clone)]
 pub struct DamlLfArchive {
-    payload: DamlLfArchivePayload,
-    hash_function: DamlLfHashFunction,
-    hash: String,
+    pub name: String,
+    pub payload: DamlLfArchivePayload,
+    pub hash_function: DamlLfHashFunction,
+    pub hash: String,
 }
 
 impl DamlLfArchive {
@@ -24,18 +29,20 @@ impl DamlLfArchive {
     /// Note that this method does not validate that the supplied `hash` is valid for the supplied `payload` and
     /// `hash_function` and thus could create an invalid archive.
     pub fn new(
+        name: impl Into<String>,
         payload: impl Into<DamlLfArchivePayload>,
         hash_function: impl Into<DamlLfHashFunction>,
         hash: impl Into<String>,
     ) -> Self {
         Self {
+            name: name.into(),
             payload: payload.into(),
             hash_function: hash_function.into(),
             hash: hash.into(),
         }
     }
 
-    /// Deserialize an archive from the protobuf binary representation.
+    /// Deserialize an archive from the protobuf binary representation with a default name.
     ///
     /// Deserialize the supplied protobuf `bytes` into a `DamlLfArchive`.  The embedded `payload` (bytes) will also
     /// be deserialized into a [`DamlLfArchivePayload`].
@@ -66,9 +73,44 @@ impl DamlLfArchive {
     /// [`UnsupportedVersion`]: crate::DamlLfError::UnsupportedVersion
     /// [`DamlLfArchivePayload`]: DamlLfArchivePayload
     pub fn from_bytes(bytes: impl IntoBuf) -> DamlLfResult<Self> {
+        Self::from_bytes_named(DEFAULT_ARCHIVE_NAME, bytes)
+    }
+
+    /// Deserialize a named archive from the protobuf binary representation.
+    ///
+    /// Deserialize the supplied protobuf `bytes` into a `DamlLfArchive`.  The embedded `payload` (bytes) will also
+    /// be deserialized into a [`DamlLfArchivePayload`].
+    ///
+    /// # Errors
+    ///
+    /// If the provided bytes cannot be deserialized into an archive (or the embedded `payload` cannot be deserialized
+    /// into a [`DamlLfArchivePayload`]) then [`DamlLfParseError`] will be returned.
+    ///
+    /// If the embedded `payload` is not of a known version then [`UnknownVersion`] will be returned.
+    ///
+    /// Archives of `DAML LF` `v0` are not supported and will result in a [`UnsupportedVersion`] being returned.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use daml_lf::{DamlLfArchive, DamlLfHashFunction};
+    /// # use daml_lf::DamlLfResult;
+    /// # fn main() -> DamlLfResult<()> {
+    /// let buffer = Vec::<u8>::new();
+    /// let archive = DamlLfArchive::from_bytes_named("foo", buffer)?;
+    /// assert_eq!(&DamlLfHashFunction::SHA256, archive.hash_function());
+    /// assert_eq!("foo", archive.name());
+    /// # Ok(())
+    /// # }
+    /// ```
+    /// [`DamlLfParseError`]: crate::DamlLfError::DamlLfParseError
+    /// [`UnknownVersion`]: crate::DamlLfError::UnknownVersion
+    /// [`UnsupportedVersion`]: crate::DamlLfError::UnsupportedVersion
+    /// [`DamlLfArchivePayload`]: DamlLfArchivePayload
+    pub fn from_bytes_named(name: impl Into<String>, bytes: impl IntoBuf) -> DamlLfResult<Self> {
         let archive: daml_lf::Archive = daml_lf::Archive::decode(bytes)?;
         let payload = DamlLfArchivePayload::from_bytes(archive.payload)?;
-        Ok(Self::new(payload, DamlLfHashFunction::SHA256, archive.hash))
+        Ok(Self::new(name, payload, DamlLfHashFunction::SHA256, archive.hash))
     }
 
     /// Read and parse an archive from a `dalf` file.
@@ -92,6 +134,7 @@ impl DamlLfArchive {
     /// # fn main() -> DamlLfResult<()> {
     /// let archive = DamlLfArchive::from_file("Example.dalf")?;
     /// assert_eq!(&DamlLfHashFunction::SHA256, archive.hash_function());
+    /// assert_eq!("Example", archive.name());
     /// # Ok(())
     /// # }
     /// ```
@@ -102,9 +145,15 @@ impl DamlLfArchive {
     /// [`DamlLfArchivePayload`]: DamlLfArchivePayload
     pub fn from_file(dalf_path: impl AsRef<Path>) -> DamlLfResult<Self> {
         let mut buffer = Vec::new();
-        let mut dalf_file = File::open(dalf_path)?;
+        let mut dalf_file = File::open(dalf_path.as_ref())?;
         dalf_file.read_to_end(&mut buffer)?;
-        Ok(Self::from_bytes(buffer)?)
+        let archive_name_stem = dalf_path.as_ref().file_stem().and_then(OsStr::to_str).unwrap_or(DEFAULT_ARCHIVE_NAME);
+        Ok(Self::from_bytes_named(archive_name_stem, buffer)?)
+    }
+
+    /// The name of this archive.
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     /// The payload (aka "package") contained within this archive.
@@ -118,13 +167,13 @@ impl DamlLfArchive {
     }
 
     /// The hash of this archive (aka "package id").
-    pub fn hash(&self) -> &String {
+    pub fn hash(&self) -> &str {
         &self.hash
     }
 }
 
 /// The hash function used to compute
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DamlLfHashFunction {
     SHA256,
 }

@@ -5,8 +5,8 @@ use std::time::Duration;
 /// DAML ledger configuration information.
 #[derive(Debug, Eq, PartialEq, Default)]
 pub struct DamlLedgerConfiguration {
-    min_ttl: Duration,
-    max_ttl: Duration,
+    pub min_ttl: Duration,
+    pub max_ttl: Duration,
 }
 
 impl DamlLedgerConfiguration {

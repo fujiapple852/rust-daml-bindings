@@ -13,7 +13,7 @@
 //! [`daml_package_service`]: ../daml_ledger_api/service/struct.DamlPackageService.html
 
 #![warn(clippy::all, clippy::pedantic)]
-#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::module_name_repetitions, clippy::use_self)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 
@@ -22,7 +22,7 @@ mod dar;
 mod error;
 mod manifest;
 mod payload;
-mod protobuf_autogen;
+pub mod protobuf_autogen;
 
 // reexport all types (flatten module name space)
 pub use archive::*;

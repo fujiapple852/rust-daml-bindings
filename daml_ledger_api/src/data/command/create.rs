@@ -6,8 +6,8 @@ use crate::grpc_protobuf_autogen::commands::CreateCommand;
 /// Create a new contract instance based on a template.
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlCreateCommand {
-    template_id: DamlIdentifier,
-    create_arguments: DamlRecord,
+    pub template_id: DamlIdentifier,
+    pub create_arguments: DamlRecord,
 }
 
 /// Create a new contract instance based on a template.

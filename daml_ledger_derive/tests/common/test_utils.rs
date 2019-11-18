@@ -1,13 +1,12 @@
 #![warn(clippy::all, clippy::pedantic)]
 
-use daml_ledger_api::chrono::{DateTime, Utc};
-use daml_ledger_api::data::command::DamlCommand;
-use daml_ledger_api::data::{DamlResult, DamlTransaction};
-use daml_ledger_api::{DamlCommandFactory, DamlLedgerClient};
+use daml::prelude::DamlExerciseCommand;
+use daml_ledger_api::data::command::DamlCreateCommand;
+use daml_ledger_api::data::DamlResult;
+use daml_ledger_api::DamlLedgerClient;
+use daml_lf::DamlLfArchivePayload;
 use std::error::Error;
-use std::ops::Add;
 use std::sync::Mutex;
-use time::Duration;
 
 pub type TestResult = ::std::result::Result<(), Box<dyn Error>>;
 
@@ -19,19 +18,46 @@ lazy_static! {
 }
 
 pub fn new_static_sandbox() -> DamlResult<DamlLedgerClient> {
-    let client = DamlLedgerClient::connect(SANDBOX_HOST, SANDBOX_PORT)?;
-    client.reset_and_wait()
+    DamlLedgerClient::connect(SANDBOX_HOST, SANDBOX_PORT)?.reset_and_wait()
 }
 
-pub fn test_submit_command(
+pub fn update_exercise_command_package_id_for_testing(
     ledger_client: &DamlLedgerClient,
-    party: &str,
-    command: DamlCommand,
-) -> DamlResult<DamlTransaction> {
-    let ledger_effective_time: DateTime<Utc> =
-        "1970-01-01T00:00:00Z".parse::<DateTime<Utc>>().expect("invalid datetime");
-    let maximum_record_time = ledger_effective_time.add(Duration::seconds(30));
-    let cf = DamlCommandFactory::new("wf-0", "MyApp", party, ledger_effective_time, maximum_record_time);
-    let commands = cf.make_command(command);
-    ledger_client.command_service().submit_and_wait_for_transaction_sync(commands)
+    mut exercise_command: DamlExerciseCommand,
+) -> std::result::Result<DamlExerciseCommand, Box<dyn Error>> {
+    exercise_command.template_id.package_id =
+        get_package_id_from_ledger(ledger_client, exercise_command.template_id().module_name())?;
+    Ok(exercise_command)
+}
+
+pub fn update_create_command_package_id_for_testing(
+    ledger_client: &DamlLedgerClient,
+    mut create_command: DamlCreateCommand,
+) -> std::result::Result<DamlCreateCommand, Box<dyn Error>> {
+    create_command.template_id.package_id =
+        get_package_id_from_ledger(ledger_client, create_command.template_id().module_name())?;
+    Ok(create_command)
+}
+
+fn get_package_id_from_ledger(
+    ledger_client: &DamlLedgerClient,
+    module_name: &str,
+) -> std::result::Result<String, Box<dyn std::error::Error>> {
+    fn get_package_payload<'a>(
+        ledger_client: &DamlLedgerClient,
+        package_id: &'a str,
+    ) -> std::result::Result<(&'a str, DamlLfArchivePayload), Box<dyn std::error::Error>> {
+        let package = ledger_client.package_service().get_package_sync(package_id)?;
+        let archive = DamlLfArchivePayload::from_bytes(package.payload())?;
+        Ok((package_id, archive))
+    }
+    let all_packages = ledger_client.package_service().list_packages_sync()?;
+    let all_archives: Vec<(&str, DamlLfArchivePayload)> = all_packages
+        .iter()
+        .map(|package_id| (get_package_payload(ledger_client, package_id)))
+        .collect::<std::result::Result<Vec<(&str, DamlLfArchivePayload)>, _>>()?;
+    all_archives
+        .iter()
+        .find(|(_, archive)| archive.contains_module(module_name))
+        .map_or(Err("package could not be found".into()), |(package_id, _)| Ok(package_id.to_string()))
 }

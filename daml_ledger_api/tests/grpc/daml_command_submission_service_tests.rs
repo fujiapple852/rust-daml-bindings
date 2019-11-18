@@ -17,12 +17,14 @@ use futures::stream::Stream;
 fn test_command_submission_and_completion() -> TestResult {
     let _lock = STATIC_SANDBOX_LOCK.lock()?;
     let ledger_client = new_static_sandbox()?;
+    let package_id = get_ping_pong_package_id(&ledger_client)?;
+
     let command_id = create_test_uuid(COMMAND_ID_PREFIX);
     let application_id = create_test_uuid(APPLICATION_ID_PREFIX);
     let workflow_id = create_test_uuid(WORKFLOW_ID_PREFIX);
     let ping_record = create_test_ping_record(ALICE_PARTY, BOB_PARTY, 0);
     let commands_factory = create_test_command_factory(&workflow_id, &application_id, ALICE_PARTY);
-    let ping_template_id = create_test_pp_id(PING_ENTITY_NAME);
+    let ping_template_id = create_test_pp_id(&package_id, PING_ENTITY_NAME);
     let create_command = DamlCommand::Create(DamlCreateCommand::new(ping_template_id, ping_record));
     let commands = commands_factory.make_command_with_id(create_command, command_id);
     let command_id = ledger_client.command_submission_service().submit_request_sync(commands)?;

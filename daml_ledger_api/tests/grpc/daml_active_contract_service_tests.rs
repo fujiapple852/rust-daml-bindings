@@ -11,11 +11,26 @@ use futures::stream::Stream;
 fn test_get_active_contracts() -> TestResult {
     let _lock = STATIC_SANDBOX_LOCK.lock()?;
     let ledger_client = new_static_sandbox()?;
+    let package_id = get_ping_pong_package_id(&ledger_client)?;
+
     let application_id = create_test_uuid(APPLICATION_ID_PREFIX);
     let workflow_id = create_test_uuid(WORKFLOW_ID_PREFIX);
-
-    test_create_ping_contract(&ledger_client, &application_id, &workflow_id, &create_test_uuid(COMMAND_ID_PREFIX), 0)?;
-    test_create_ping_contract(&ledger_client, &application_id, &workflow_id, &create_test_uuid(COMMAND_ID_PREFIX), 7)?;
+    test_create_ping_contract(
+        &ledger_client,
+        &package_id,
+        &application_id,
+        &workflow_id,
+        &create_test_uuid(COMMAND_ID_PREFIX),
+        0,
+    )?;
+    test_create_ping_contract(
+        &ledger_client,
+        &package_id,
+        &application_id,
+        &workflow_id,
+        &create_test_uuid(COMMAND_ID_PREFIX),
+        7,
+    )?;
 
     let active_contracts_future = ledger_client.active_contract_service().get_active_contracts(
         DamlTransactionFilter::for_parties(&[ALICE_PARTY, BOB_PARTY][..]),

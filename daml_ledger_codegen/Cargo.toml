@@ -5,5 +5,11 @@ authors = ["FujiApple <fujiapple852@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-daml_ledger_derive = { path = "../daml_ledger_derive" }
-daml_ledger_api = { path = "../daml_ledger_api" }
+daml_lf = { path = "../daml_lf" }
+syn = { version = "1.0", features = ["full"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+itertools = "0.8"
+heck = "0.3"
+regex = "1.2"
+clap = "2.33"

@@ -1,0 +1,25 @@
+daml 1.2
+
+module DA.Rental where
+
+template RentalProposal
+  with
+    landlord : Party
+    tenant : Party
+    terms : Text
+  where
+    signatory landlord
+    controller tenant can
+      Accept : ContractId RentalAgreement
+        with
+          foo : Text
+          bar : Int
+        do create RentalAgreement with landlord; tenant; terms
+          
+template RentalAgreement
+  with
+    landlord : Party
+    tenant : Party
+    terms : Text
+  where
+    signatory landlord, tenant

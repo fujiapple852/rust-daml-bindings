@@ -3,3 +3,5 @@ Cargo.lock
 logs
 *.log
 target
+*.DS_Store
+local_dars/

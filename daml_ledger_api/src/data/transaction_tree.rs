@@ -11,14 +11,14 @@ use std::convert::{TryFrom, TryInto};
 /// A DAML ledger transaction tree.
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlTransactionTree {
-    transaction_id: String,
-    command_id: String,
-    workflow_id: String,
-    effective_at: DateTime<Utc>,
-    offset: String,
-    events_by_id: HashMap<String, DamlTreeEvent>,
-    root_event_ids: Vec<String>,
-    trace_context: DamlTraceContext,
+    pub transaction_id: String,
+    pub command_id: String,
+    pub workflow_id: String,
+    pub effective_at: DateTime<Utc>,
+    pub offset: String,
+    pub events_by_id: HashMap<String, DamlTreeEvent>,
+    pub root_event_ids: Vec<String>,
+    pub trace_context: DamlTraceContext,
 }
 
 impl DamlTransactionTree {
@@ -63,6 +63,10 @@ impl DamlTransactionTree {
 
     pub fn events_by_id(&self) -> &HashMap<String, DamlTreeEvent> {
         &self.events_by_id
+    }
+
+    pub fn take_events_by_id(self) -> HashMap<String, DamlTreeEvent> {
+        self.events_by_id
     }
 
     pub fn root_event_ids(&self) -> &[String] {

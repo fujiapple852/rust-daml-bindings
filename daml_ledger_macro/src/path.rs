@@ -68,7 +68,7 @@
 /// | `u`    | unit        | `&()`                     | [`DamlValue::Unit`]       |
 /// | `p`    | party       | `&str`                    | [`DamlValue::Party`]      |
 /// | `i`    | int64       | `&i64`                    | [`DamlValue::Int64`]      |
-/// | `f`    | decimal     | `&BigInteger`             | [`DamlValue::Decimal`]    |
+/// | `f`    | numeric     | `&BigInteger`             | [`DamlValue::Numeric`]    |
 /// | `t`    | text        | `&str`                    | [`DamlValue::Text`]       |
 /// | `s`    | timestamp   | `&DateTime<Utc>`          | [`DamlValue::Timestamp`]  |
 /// | `b`    | boolean     | `&bool`                   | [`DamlValue::Bool`]       |
@@ -135,7 +135,7 @@
 /// [`DamlValue::ContractId`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.ContractId
 /// [`DamlValue::Unit`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Unit
 /// [`DamlValue::Party`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Party
-/// [`DamlValue::Decimal`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Decimal
+/// [`DamlValue::Numeric`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Numeric
 /// [`DamlValue::Text`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Text
 /// [`DamlValue::Timestamp`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Timestamp
 /// [`DamlValue::Bool`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Bool
@@ -276,7 +276,7 @@ macro_rules! daml_path {
         $value.try_int64_ref()
     };
     ( @priv f $value:ident ) => {
-        $value.try_decimal()
+        $value.try_numeric()
     };
     ( @priv t $value:ident ) => {
         $value.try_text()
@@ -414,7 +414,7 @@ mod test {
     }
 
     #[test]
-    pub fn test_top_decimal() -> TestResult {
+    pub fn test_top_numeric() -> TestResult {
         let value: DamlValue = get_test_value();
         assert_eq!(&BigDecimal::from(1.23), value.extract(daml_path![height#f])?);
         Ok(())

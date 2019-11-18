@@ -1,0 +1,15 @@
+[package]
+name = "ping_pong"
+version = "0.1.0"
+authors = ["FujiApple <fujiapple852@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+daml_ledger_api = { path = "../../daml_ledger_api", features = ["testing"] }
+daml_ledger_macro = { path = "../../daml_ledger_macro" }
+daml_lf = { path = "../../daml_lf" }
+futures = "0.1"
+chrono = "0.4"
+time = "0.1"
+log = "0.4"
+log4rs = { version = "0.8"}

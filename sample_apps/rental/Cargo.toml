@@ -1,0 +1,13 @@
+[package]
+name = "rental"
+version = "0.1.0"
+authors = ["FujiApple <fujiapple852@gmail.com>"]
+edition = "2018"
+build = "build.rs"
+
+[dependencies]
+daml = { path = "../../daml" }
+daml_ledger_api = { path = "../../daml_ledger_api", features = [ "testing" ] }
+
+[build-dependencies]
+daml_ledger_codegen = { path = "../../daml_ledger_codegen" }

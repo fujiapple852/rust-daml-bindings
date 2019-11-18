@@ -12,13 +12,13 @@ use std::convert::{TryFrom, TryInto};
 /// A DAML ledger transaction.
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlTransaction {
-    transaction_id: String,
-    command_id: String,
-    workflow_id: String,
-    effective_at: DateTime<Utc>,
-    events: Vec<DamlEvent>,
-    offset: String,
-    trace_context: DamlTraceContext,
+    pub transaction_id: String,
+    pub command_id: String,
+    pub workflow_id: String,
+    pub effective_at: DateTime<Utc>,
+    pub events: Vec<DamlEvent>,
+    pub offset: String,
+    pub trace_context: DamlTraceContext,
 }
 
 impl DamlTransaction {

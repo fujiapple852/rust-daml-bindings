@@ -180,7 +180,7 @@ macro_rules! daml_value {
     };
 
     //
-    // Covers DamlValue::Bool, DamlValue::Text, DamlValue::Int64 & DamlValue::Decimal cases
+    // Covers DamlValue::Bool, DamlValue::Text, DamlValue::Int64 & DamlValue::Numeric cases
     //
     ($prim:expr) => {
         DamlValue::from($prim)
@@ -285,9 +285,9 @@ mod test {
     }
 
     #[test]
-    pub fn test_decimal_value() -> TestResult {
+    pub fn test_numeric_value() -> TestResult {
         let value: DamlValue = daml_value![1.23];
-        assert_eq!(&BigDecimal::from(1.23), value.try_decimal()?);
+        assert_eq!(&BigDecimal::from(1.23), value.try_numeric()?);
         Ok(())
     }
 

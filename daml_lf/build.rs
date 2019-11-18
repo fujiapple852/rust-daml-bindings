@@ -6,7 +6,7 @@ use std::{env, error, fs};
 const PROTOBUF_DAML_FILE: &str = "resources/protobuf/com/digitalasset/daml_lf/daml_lf.proto";
 const PROTOBUF_PATH: &str = "resources/protobuf/com/digitalasset/daml_lf/";
 const OUTPUT_PATH: &str = "src/protobuf_autogen";
-const MODULE_HEADER: &str = "#![allow(clippy::all, clippy::pedantic)]\n";
+const MODULE_HEADER: &str = "#![allow(clippy::all, clippy::pedantic, intra_doc_link_resolution_failure)]\n";
 
 fn main() -> Result<(), Box<dyn error::Error>> {
     prost_build::compile_protos(&[PROTOBUF_DAML_FILE], &[PROTOBUF_PATH])?;

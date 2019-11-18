@@ -27,7 +27,7 @@ pub enum DamlValue {
     ContractId(String),
     List(Vec<DamlValue>),
     Int64(i64),
-    Decimal(BigDecimal),
+    Numeric(BigDecimal),
     Text(String),
     Timestamp(DateTime<Utc>),
     Party(String),
@@ -63,8 +63,8 @@ impl DamlValue {
         DamlValue::Int64(value.into())
     }
 
-    pub fn new_decimal(decimal: impl Into<BigDecimal>) -> Self {
-        DamlValue::Decimal(decimal.into())
+    pub fn new_numeric(numeric: impl Into<BigDecimal>) -> Self {
+        DamlValue::Numeric(numeric.into())
     }
 
     pub fn new_text(text: impl Into<String>) -> Self {
@@ -92,7 +92,7 @@ impl DamlValue {
     }
 
     pub fn new_optional(optional: Option<Self>) -> Self {
-        DamlValue::Optional(optional.and_then(|val| Some(Box::new(val))))
+        DamlValue::Optional(optional.map(Box::new))
     }
 
     pub fn new_map(map: impl Into<HashMap<String, Self>>) -> Self {
@@ -141,18 +141,18 @@ impl DamlValue {
         }
     }
 
-    pub fn try_decimal(&self) -> DamlResult<&BigDecimal> {
+    pub fn try_numeric(&self) -> DamlResult<&BigDecimal> {
         match self {
-            DamlValue::Decimal(d) => Ok(d),
-            _ => Err(self.make_unexpected_type_error("Decimal")),
+            DamlValue::Numeric(d) => Ok(d),
+            _ => Err(self.make_unexpected_type_error("Numeric")),
         }
     }
 
     // BigDecimal does not implement the Copy trait
-    pub fn try_decimal_clone(&self) -> DamlResult<BigDecimal> {
+    pub fn try_numeric_clone(&self) -> DamlResult<BigDecimal> {
         match self {
-            DamlValue::Decimal(d) => Ok(d.clone()),
-            _ => Err(self.make_unexpected_type_error("Decimal")),
+            DamlValue::Numeric(d) => Ok(d.clone()),
+            _ => Err(self.make_unexpected_type_error("Numeric")),
         }
     }
 
@@ -261,6 +261,13 @@ impl DamlValue {
         }
     }
 
+    pub fn try_take_enum(self) -> DamlResult<DamlEnum> {
+        match self {
+            DamlValue::Enum(e) => Ok(e),
+            _ => Err(self.make_unexpected_type_error("Enum")),
+        }
+    }
+
     pub fn try_take_list(self) -> DamlResult<Vec<Self>> {
         match self {
             DamlValue::List(l) => Ok(l),
@@ -291,7 +298,7 @@ impl DamlValue {
             DamlValue::ContractId(_) => "ContractId",
             DamlValue::List(_) => "List",
             DamlValue::Int64(_) => "Int64",
-            DamlValue::Decimal(_) => "Decimal",
+            DamlValue::Numeric(_) => "Numeric",
             DamlValue::Text(_) => "Text",
             DamlValue::Timestamp(_) => "Timestamp",
             DamlValue::Party(_) => "Party",
@@ -414,12 +421,12 @@ impl From<i64> for DamlValue {
 }
 impl From<f32> for DamlValue {
     fn from(d: f32) -> Self {
-        Self::new_decimal(d)
+        Self::new_numeric(d)
     }
 }
 impl From<f64> for DamlValue {
     fn from(d: f64) -> Self {
-        Self::new_decimal(d)
+        Self::new_numeric(d)
     }
 }
 
@@ -442,7 +449,7 @@ impl TryFrom<Value> for DamlValue {
                                 .collect::<DamlResult<Vec<_>>>()?,
                         ),
                         Value_oneof_Sum::int64(v) => DamlValue::Int64(v),
-                        Value_oneof_Sum::decimal(v) => DamlValue::Decimal(BigDecimal::from_str(&v)?),
+                        Value_oneof_Sum::numeric(v) => DamlValue::Numeric(BigDecimal::from_str(&v)?),
                         Value_oneof_Sum::text(v) => DamlValue::Text(v),
                         Value_oneof_Sum::timestamp(v) => DamlValue::Timestamp(util::datetime_from_micros(v)?),
                         Value_oneof_Sum::party(v) => DamlValue::Party(v),
@@ -484,8 +491,8 @@ impl From<DamlValue> for Value {
             },
             DamlValue::Int64(v) => value.set_int64(v),
 
-            // TODO: review the soundness of the decimal formatting here and consider using the `rust-decimal` crate
-            DamlValue::Decimal(v) => value.set_decimal(format!("{:.10}", v)),
+            // TODO: review the soundness of the numeric formatting here and consider using the `rust-decimal` crate
+            DamlValue::Numeric(v) => value.set_numeric(format!("{:.37}", v)),
             DamlValue::Text(v) => value.set_text(v),
             DamlValue::Timestamp(v) => value.set_timestamp(v.timestamp()),
             DamlValue::Party(v) => value.set_party(v),

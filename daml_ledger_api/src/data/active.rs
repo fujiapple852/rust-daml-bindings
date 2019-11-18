@@ -9,10 +9,10 @@ use std::convert::{TryFrom, TryInto};
 /// A set of active contracts on a DAML ledger.
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlActiveContracts {
-    offset: String,
-    workflow_id: String,
-    active_contracts: Vec<DamlCreatedEvent>,
-    trace_context: Option<DamlTraceContext>,
+    pub offset: String,
+    pub workflow_id: String,
+    pub active_contracts: Vec<DamlCreatedEvent>,
+    pub trace_context: Option<DamlTraceContext>,
 }
 
 impl DamlActiveContracts {

@@ -6,10 +6,10 @@ use crate::grpc_protobuf_autogen::commands::ExerciseByKeyCommand;
 /// Exercise a choice on an existing contract specified by its key.
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlExerciseByKeyCommand {
-    template_id: DamlIdentifier,
-    contract_key: DamlValue,
-    choice: String,
-    choice_argument: DamlValue,
+    pub template_id: DamlIdentifier,
+    pub contract_key: DamlValue,
+    pub choice: String,
+    pub choice_argument: DamlValue,
 }
 
 impl DamlExerciseByKeyCommand {

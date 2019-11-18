@@ -1,0 +1,7 @@
+sdk-version: 0.13.29
+name: rental
+source: daml/DA/Rental.daml
+version: 0.0.1
+dependencies:
+  - daml-prim
+  - daml-stdlib

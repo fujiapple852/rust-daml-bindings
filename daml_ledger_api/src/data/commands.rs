@@ -7,13 +7,13 @@ use chrono::Utc;
 /// A list of DAML commands.
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlCommands {
-    workflow_id: String,
-    application_id: String,
-    command_id: String,
-    party: String,
-    ledger_effective_time: DateTime<Utc>,
-    maximum_record_time: DateTime<Utc>,
-    commands: Vec<DamlCommand>,
+    pub workflow_id: String,
+    pub application_id: String,
+    pub command_id: String,
+    pub party: String,
+    pub ledger_effective_time: DateTime<Utc>,
+    pub maximum_record_time: DateTime<Utc>,
+    pub commands: Vec<DamlCommand>,
 }
 
 impl DamlCommands {

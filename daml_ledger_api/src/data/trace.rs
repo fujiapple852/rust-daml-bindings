@@ -4,11 +4,11 @@ use protobuf::well_known_types::UInt64Value;
 /// Ledger tracing information.
 #[derive(Debug, Eq, PartialEq, Default)]
 pub struct DamlTraceContext {
-    trace_id_high: u64,
-    trace_id: u64,
-    span_id: u64,
-    parent_span_id: u64,
-    sampled: bool,
+    pub trace_id_high: u64,
+    pub trace_id: u64,
+    pub span_id: u64,
+    pub parent_span_id: u64,
+    pub sampled: bool,
 }
 
 impl DamlTraceContext {

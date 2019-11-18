@@ -1,13 +1,16 @@
 #![allow(unused_imports, unused)]
 pub use daml_ledger_api::data::command::{DamlCommand, DamlCreateCommand, DamlExerciseCommand};
 pub use daml_ledger_api::data::event::DamlCreatedEvent;
-pub use daml_ledger_api::data::value::{DamlRecord, DamlRecordField, DamlValue, DamlVariant};
+pub use daml_ledger_api::data::value::{DamlEnum, DamlRecord, DamlRecordField, DamlValue, DamlVariant};
 pub use daml_ledger_api::data::DamlError;
 pub use daml_ledger_api::data::DamlIdentifier;
 pub use daml_ledger_api::data::DamlResult;
+pub use daml_ledger_api::{CommandExecutor, Executor};
 pub use daml_ledger_derive::DamlChoices;
 pub use daml_ledger_derive::DamlData;
+pub use daml_ledger_derive::DamlEnum;
 pub use daml_ledger_derive::DamlTemplate;
+pub use daml_ledger_derive::DamlVariant;
 
 /// Type alias for a DAML `ContractId`.
 pub type DamlContractId = String;
@@ -15,8 +18,8 @@ pub type DamlContractId = String;
 /// Type alias for a DAML `Int`.
 pub type DamlInt64 = i64;
 
-/// Type alias for a DAML `Decimal`.
-pub type DamlDecimal = daml_ledger_api::bigdecimal::BigDecimal;
+/// Type alias for a DAML `Numeric`.
+pub type DamlNumeric = daml_ledger_api::bigdecimal::BigDecimal;
 
 /// Type alias for a DAML `Text`.
 pub type DamlText = String;

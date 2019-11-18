@@ -6,10 +6,10 @@ use prost::Message;
 /// A `DAML LF` archive payload (aka "package").
 ///
 /// A `DAML LF` archive payload contains a `package` and a `minor` version.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DamlLfArchivePayload {
-    minor: String,
-    package: DamlLfPackage,
+    pub minor: String,
+    pub package: DamlLfPackage,
 }
 
 impl DamlLfArchivePayload {
@@ -130,7 +130,7 @@ impl DamlLfArchivePayload {
 }
 
 /// The supported `DAML LF` package formats.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum DamlLfPackage {
     V1(daml_lf_1::Package),
 }

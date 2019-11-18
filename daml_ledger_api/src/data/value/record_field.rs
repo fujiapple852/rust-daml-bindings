@@ -6,8 +6,8 @@ use std::convert::{TryFrom, TryInto};
 /// A representation of a single field on a DAML record.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlRecordField {
-    label: Option<String>,
-    value: DamlValue,
+    pub label: Option<String>,
+    pub value: DamlValue,
 }
 
 impl DamlRecordField {

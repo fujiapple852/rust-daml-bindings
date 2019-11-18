@@ -7,5 +7,6 @@ members = [
   "daml_ledger_codegen",
   "daml_ledger_derive",
   "daml_lf",
-  "ping_pong_sample_app",
+  "sample_apps/ping_pong",
+  "sample_apps/rental"
 ]

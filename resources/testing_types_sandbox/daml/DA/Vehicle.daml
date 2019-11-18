@@ -1,0 +1,31 @@
+daml 1.2
+
+module DA.Vehicle where
+
+data SimpleColor = Red | Green | Blue
+  deriving (Eq, Show)
+    
+template Car
+  with
+    owner : Party
+    driver : Party
+    make : Text 
+    color : SimpleColor
+  where
+    signatory owner
+  
+    controller owner can
+      Repaint : ContractId Car
+        with new_color : SimpleColor
+        do
+          create this with color = new_color
+          
+test = scenario do
+  owner <- getParty "Alice"
+  driver <- getParty "Bob"
+  cid <- submit owner do
+    create Car with owner; driver; make = "Ford"; color = Red
+  submit owner do
+    exercise cid Repaint with new_color = Blue
+    
+  

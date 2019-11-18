@@ -1,7 +1,0 @@
-daml 1.2
-module LibraryModules where
-
-import DA.Shape()
-import DA.PingPong()
-import DA.VariantExamples()
-import DA.Nested()

@@ -7,9 +7,9 @@ use chrono::{DateTime, Utc};
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlPackage {
-    payload: Vec<u8>,
-    hash: String,
-    hash_function: DamlHashFunction,
+    pub payload: Vec<u8>,
+    pub hash: String,
+    pub hash_function: DamlHashFunction,
 }
 
 impl DamlPackage {
@@ -75,10 +75,10 @@ impl From<HashFunction> for DamlHashFunction {
 /// Detailed information about a DAML `dar` package.
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlPackageDetails {
-    package_id: String,
-    package_size: u64,
-    known_since: DateTime<Utc>,
-    source_description: String,
+    pub package_id: String,
+    pub package_size: u64,
+    pub known_since: DateTime<Utc>,
+    pub source_description: String,
 }
 
 impl DamlPackageDetails {

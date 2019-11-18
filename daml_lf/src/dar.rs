@@ -1,6 +1,7 @@
 use crate::archive::DamlLfArchive;
 use crate::error::{DamlLfError, DamlLfResult};
 use crate::manifest::DarManifest;
+use crate::DEFAULT_ARCHIVE_NAME;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Read;
@@ -15,11 +16,11 @@ const DALF_PRIM_FILE_SUFFIX: &str = "-prim";
 ///
 /// A `DarFile` contains a `main` [`DamlLfArchive`] and collection of `dependencies` [`DamlLfArchive`] combined with
 /// a [`DarManifest`].
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DarFile {
-    manifest: DarManifest,
-    main: DamlLfArchive,
-    dependencies: Vec<DamlLfArchive>,
+    pub manifest: DarManifest,
+    pub main: DamlLfArchive,
+    pub dependencies: Vec<DamlLfArchive>,
 }
 
 impl DarFile {
@@ -154,7 +155,9 @@ impl DarFile {
         let mut file = zip_archive.by_name(location)?;
         let mut buf = Vec::with_capacity(file.size() as usize);
         file.read_to_end(&mut buf)?;
-        DamlLfArchive::from_bytes(buf)
+        let archive_name_buffer = PathBuf::from(location);
+        let archive_name_stem = archive_name_buffer.file_stem().and_then(OsStr::to_str).unwrap_or(DEFAULT_ARCHIVE_NAME);
+        DamlLfArchive::from_bytes_named(archive_name_stem, buf)
     }
 
     fn parse_dar_manifest_from_file(zip_archive: &mut ZipArchive<File>) -> DamlLfResult<DarManifest> {

@@ -8,14 +8,16 @@ edition = "2018"
 proc-macro = true
 
 [dependencies]
-syn = { version = "0.15", features = ["full"] }
-quote = "0.6"
-proc-macro2 = "0.4"
-itertools = "0.8"
+daml_ledger_codegen = { path = "../daml_ledger_codegen" }
+daml_lf = { path = "../daml_lf" }
+syn = { version = "1.0", features = ["full"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+darling = "0.10.0"
 
 [dev-dependencies]
 daml = { path = "../daml" }
-daml_ledger_api = { path = "../daml_ledger_api" }
+daml_ledger_api = { path = "../daml_ledger_api", features = ["testing"] }
 daml_ledger_macro = { path = "../daml_ledger_macro" }
 chrono = "0.4"
 time = "0.1"

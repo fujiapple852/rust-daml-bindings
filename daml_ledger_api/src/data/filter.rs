@@ -6,7 +6,7 @@ use std::collections::hash_map::HashMap;
 
 #[derive(Debug, Eq, PartialEq, Default)]
 pub struct DamlFilters {
-    template_ids: Vec<DamlIdentifier>,
+    pub template_ids: Vec<DamlIdentifier>,
 }
 
 impl DamlFilters {

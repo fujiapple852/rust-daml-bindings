@@ -3,9 +3,9 @@ use crate::grpc_protobuf_autogen::party_management_service::PartyDetails;
 /// The details of a DAML party.
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlPartyDetails {
-    party: String,
-    display_name: String,
-    is_local: bool,
+    pub party: String,
+    pub display_name: String,
+    pub is_local: bool,
 }
 
 impl DamlPartyDetails {

@@ -1,6 +1,18 @@
-//! Custom attributes for automatically converting between DAML and Rust types.
+//! Procedural macros for generating Rust types and conversions from DAML types and Archives.
 //!
-//! # Mapping DAML Structures to Rust
+//! # Overview
+//!
+//! Two mechanisms are provided for representing DAML types in Rust:
+//! * Custom attributes which can be applied to Rust structures which generate DAML type converters.
+//! * A procedural macro code generator which takes a DAML `dar` file as input and generates Rust types annotated with
+//! the custom attributes.
+//!
+//! # Custom Attributes
+//!
+//! This section explains how to use the provided custom attributes to annotate Rust types to generate the DAML ledger
+//! API data conversion code required to be able to use them with a DAML ledger.
+//!
+//! ### Mapping DAML Structures to Rust
 //!
 //! DAML structures are modelled using various Rust language constructs in conjunction with custom attributes
 //! procedural macros as shown in the following table:
@@ -10,9 +22,10 @@
 //! | [DAML Template]         | `struct`       | [`DamlTemplate`] |
 //! | [DAML Template Choices] | `impl` block   | [`DamlChoices`]  |
 //! | [DAML Data (Record)]    | `struct`       | [`DamlData`]     |
-//! | [DAML Data (Variant)]   | `enum`         | [`DamlData`]     |
+//! | [DAML Data (Variant)]   | `enum`         | [`DamlVariant`]  |
+//! | [DAML Enum]             | `enum`         | [`DamlEnum`]     |
 //!
-//! # Mapping DAML Data Types to Rust
+//! ### Mapping DAML Data Types to Rust
 //!
 //! The following table lists the mappings between
 //! [DAML build-in primitive types](https://docs.daml.com/daml/reference/data-types.html#built-in-types) and Rust type
@@ -21,7 +34,7 @@
 //! | DAML Type         | Rust Type Alias     | Concrete Rust Type       | Notes                                      |
 //! |-------------------|---------------------|--------------------------|--------------------------------------------|
 //! | `Int`             | [`DamlInt64`]       | `i64`                    |                                            |
-//! | `Decimal`         | [`DamlDecimal`]     | `bigdecimal::BigDecimal` | **Note: BigDecimal crate to be replaced**  |
+//! | `Numeric`         | [`DamlNumeric`]     | `bigdecimal::BigDecimal` | **Note: BigDecimal crate to be replaced**  |
 //! | `Text`            | [`DamlText`]        | `String`                 |                                            |
 //! | `Bool`            | [`DamlBool`]        | `bool`                   |                                            |
 //! | `Party`           | [`DamlParty`]       | `String`                 |                                            |
@@ -37,7 +50,7 @@
 //! Note that the concrete Rust types are shown here as a convenience only, in all cases the Rust type alias _must_ be
 //! used when representing DAML constructs so that the DAML types can be determined.
 //!
-//! # Parameterized Types
+//! ### Parameterized Types
 //!
 //! The parameterized types (`List<T>`, `TextMap<T>` and `Optional<T>`) may be freely nested to an arbitrary depth and
 //! may be used in all context a type is expected such as templates & data fields as well as choice parameters.
@@ -49,18 +62,48 @@
 //! # pub struct MyData {}
 //! let int: DamlInt64;
 //! let party: DamlParty;
-//! let opt_decimal: DamlOptional<DamlDecimal>;
+//! let opt_numeric: DamlOptional<DamlNumeric>;
 //! let list_of_int: DamlList<DamlInt64>;
 //! let list_of_opt_int: DamlList<DamlOptional<DamlInt64>>;
 //! let list_of_opt_map_party: DamlList<DamlOptional<DamlTextMap<DamlParty>>>;
 //! let opt_list_data: DamlOptional<DamlList<MyData>>;
 //! ```
-//! # Prelude
+//!
+//! ### Recursive Data Types
+//!
+//! DAML Data (both Records and Variants) may be recursive.  For example:
+//!
+//! ```daml
+//! data Foo = Foo
+//!   with
+//!     bar : Optional Text
+//!     foo : Foo
+//! ```
+//!
+//! Both [`DamlData`] and [`DamlVariant`] types may therefore be defined recursively.  However modelling such
+//! structures in Rust requires that any recurisvely defined items be held via an indirection, typically
+//! via a heap allocation smart pointer such as `Box<T>`, to ensure a non-infinite size for the `struct` or `enum`
+//! (see [here](https://doc.rust-lang.org/error-index.html#E0072) for details).
+//!
+//! The above example can therefore be represented as follows:
+//!
+//! ```no_run
+//! # use daml::prelude::*;
+//! #[DamlData]
+//! pub struct Foo {
+//!     bar: DamlOptional<DamlText>,
+//!     foo: Box<Foo>,
+//! }
+//! ```
+//!
+//! Note that `Box<T>` is the only form of indirection currently supported and it may be used anywhere `T` is used.
+//!
+//! ### Prelude
 //!
 //! All of the above Rust type aliases are defined in the [`prelude`](../daml/prelude/index.html) module of
 //! the [`daml`](../daml/index.html) crate and can included by using `daml::prelude::*`.
 //!
-//! # Modules
+//! ### Modules
 //!
 //! Rust `struct` and `enum` types annotated with the custom attributes provided by this crate are
 //! _not_ required to be nested in Rust `modules` that mirror the DAML `module` heirarchy.  All of the standard Rust
@@ -82,7 +125,7 @@
 //! }
 //! ```
 //!
-//! # Examples
+//! ### Example
 //!
 //! Given the following DAML template declared in the `DA.PingPong` module of a given package:
 //!
@@ -149,7 +192,7 @@
 //! #    pub count: DamlInt64,
 //! # }
 //! # let ping = Ping::new("Alice", "Bob", 0);
-//! let create_ping_command = ping.create();
+//! let create_ping_command = ping.create_command();
 //! ```
 //!
 //! The generated [`DamlCreateCommand`] can then be submitted to the DAML ledger via the [`DamlCommandService`] or
@@ -173,7 +216,7 @@
 //!
 //! Note that the [`DamlCreatedEvent`] returned by the DAML ledger is converted into a `PingContract` rather than a
 //! plain `Ping`.  The `PingContract` type is a `struct` and provides methods `data() -> Ping` and
-//! `id() -> &str` to access the `Ping` data and contract id respectively:
+//! `id() -> &PingContractId` to access the `Ping` data and contract id respectively:
 //!
 //! ```no_run
 //! # use daml::prelude::*;
@@ -188,7 +231,7 @@
 //! assert_eq!("Alice", ping_contract.data().sender);
 //! assert_eq!("Bob", ping_contract.data().receiver);
 //! assert_eq!(0, ping_contract.data().count);
-//! assert_eq!("#0:0", ping_contract.id());
+//! assert_eq!("#0:0", ping_contract.id().contract_id);
 //! # Ok::<(), DamlError>(())
 //! ```
 //! > **_NOTE:_**  The contract id may be refactored to use a separate type in future.
@@ -212,29 +255,108 @@
 //! # }
 //! # let created_event = DamlCreatedEvent::new("", "", DamlIdentifier::new("", "", ""), None, DamlRecord::new(vec![], None::<DamlIdentifier>), vec![], vec![], vec![], "");
 //! # let ping_contract: PingContract = created_event.try_into()?;
-//! let exercise_command = ping_contract.reset_count(5);
+//! let exercise_command = ping_contract.id().reset_count_command(5);
 //! # Ok::<(), DamlError>(())
 //! ```
 //!
 //! The generated [`DamlExerciseCommand`] can then be submitted to the DAML ledger via the [`DamlCommandService`] or
 //! [`DamlCommandSubmissionService`] as usual.
 //!
-//! Note that an arbitrary name may be given to the method used to represent the DAML choice.  However choice parameters
-//! _must_ match between the DAML and Rust representations.
+//! Note that the name of the choice method _must_ match the name of the DAML choice (in snake_case) with a `_command`
+//! suffix and the choice parameters _must_ match between the DAML and Rust representations.
 //!
 //! See the documentation for [`DamlTemplate`], [`DamlChoices`] & [`DamlData`] for full details and examples.
 //!
-//! # Errors
+//! ### Errors
 //!
 //! Returns the underlying [`DamlError`] (runtime-only) if the `try_into()` conversion from a [`DamlValue`] to an
 //! annotated type fails.
 //!
-//! # Panics
+//! ### Panics
 //!
 //! Panics (compile-time only) if errors are detected in the annotated `struct`, `enum` or `impl` blocks.
 //!
+//! # Code Generator
+//!
+//! Thsi section describes how to use use the procedural macro to generating Rust types from DAML `dar` ("DAML Archive")
+//! files.
+//!
+//! ### DAML & Rust Modules
+//!
+//! ### Example
+//!
+//! Given the following DAML code in module `MyOrg.MyModule` of `MyDamlApplication` compiled to
+//! `resources/MyDamlApplication.dar`:
+//!
+//! ```daml
+//! template Ping
+//!   with
+//!     sender: Party
+//!     receiver: Party
+//!     count: Int
+//!   where
+//!     signatory sender
+//!     observer receiver
+//!
+//!     controller receiver can
+//!       ResetCount : ()
+//!         with
+//!           new_count: Int
+//!         do
+//!           create Pong with sender; receiver; count = new_count
+//!           return ()
+//! ```
+//!
+//! The Rust types and methods required to represent this template can be generated by using `daml_codegen` as
+//! follows:
+//!
+//! ```ignore
+//! use daml_ledger_codegen::daml_codegen;
+//! daml_codegen!(dar_file = r"resources/MyDamlApplication.dar");
+//! ```
+//!
+//! This produces the following Rust code:
+//!
+//! ```no_run
+//! pub mod my_daml_application {
+//!     pub mod my_org {
+//!         pub mod my_module {
+//!             use daml::prelude::*;
+//!             #[DamlTemplate(package_id = r"...", module_name = "MyOrg.MyModule")]
+//!             pub struct Ping {
+//!                 pub sender: DamlParty,
+//!                 pub receiver: DamlParty,
+//!                 pub count: DamlInt64,
+//!             }
+//!
+//!             #[DamlChoices]
+//!             impl Ping {
+//!                 #[ResetCount]
+//!                 fn reset_count(&self, new_count: DamlInt64) {}
+//!             }
+//!         }
+//!     }
+//! }
+//! ```
+//! See the above for details generated custom attributes such as [`DamlTemplate`] and
+//! [`DamlChoices`].
+//!
+//! ### Panics
+//!
+//! Panics (compile-time only) if errors are detected during code generation.
+//!
+//! TODO Notes:
+//! - escaping rules
+//! - module scoping (abs vs rel paths)
+//! - all mandatory and optional attrs (verbose, filters)
+//! - mention support for variant, enum, etc
+//! - limitations / not handled (recursive types, function params, vars)
+//! - usage from build.rs
+//!
+//! [`DamlTemplate`]: ../daml_ledger_derive/attr.DamlTemplate.html
+//! [`DamlChoices`]: ../daml_ledger_derive/attr.DamlChoices.html
 //! [`DamlInt64`]: ../daml/prelude/type.DamlInt64.html
-//! [`DamlDecimal`]: ../daml/prelude/type.DamlDecimal.html
+//! [`DamlNumeric`]: ../daml/prelude/type.DamlNumeric.html
 //! [`DamlText`]: ../daml/prelude/type.DamlText.html
 //! [`DamlBool`]: ../daml/prelude/type.DamlBool.html
 //! [`DamlParty`]: ../daml/prelude/type.DamlParty.html
@@ -257,57 +379,20 @@
 //! [DAML Data (Record)]: https://docs.daml.com/daml/reference/data-types.html
 //! [DAML Data (Variant)]: https://docs.daml.com/daml/reference/data-types.html#sum-types
 //! [DAML Variant]: https://docs.daml.com/daml/reference/data-types.html#sum-types
+//! [DAML Enum]: https://docs.daml.com/daml/reference/data-types.html#sum-types
 //! [DAML primitive type alias]: ../daml_ledger_derive/index.html#mapping-daml-data-types-to-rust
 #![warn(clippy::all, clippy::pedantic)]
-#![allow(clippy::module_name_repetitions)]
-#![allow(clippy::needless_pass_by_value)]
+#![allow(clippy::module_name_repetitions, clippy::default_trait_access, clippy::needless_pass_by_value)]
 #![allow(non_snake_case)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
-#![recursion_limit = "128"]
 
 extern crate proc_macro;
-use crate::attribute::generate_choices;
-use crate::attribute::generate_data;
-use crate::attribute::generate_template;
-use crate::daml_element::DamlTemplateInfo;
-use syn::{parse_macro_input, DeriveInput, ItemImpl};
-
-mod quote {
-    mod quote_choices;
-    mod quote_common;
-    mod quote_contract_struct;
-    mod quote_main_struct;
-    mod quote_template;
-    mod quote_variant_enum;
-    pub use self::quote_choices::*;
-    pub use self::quote_common::*;
-    pub use self::quote_contract_struct::*;
-    pub use self::quote_main_struct::*;
-    pub use self::quote_template::*;
-    pub use self::quote_variant_enum::*;
-}
-mod attribute {
-    mod choices;
-    mod data;
-    mod template;
-    pub use self::choices::*;
-    pub use self::data::*;
-    pub use self::template::*;
-}
-
-mod daml_element {
-    mod daml_choice;
-    mod daml_field;
-    mod daml_type;
-    mod daml_variant;
-    mod template_info;
-    pub use self::daml_choice::*;
-    pub use self::daml_field::*;
-    pub use self::daml_type::*;
-    pub use self::daml_variant::*;
-    pub use self::template_info::*;
-}
+use daml_ledger_codegen::generator::attribute_code_generator::*;
+use daml_ledger_codegen::generator::{generate_tokens, RenderMethod};
+use daml_lf::DarFile;
+use darling::FromMeta;
+use syn::{parse_macro_input, AttributeArgs, DeriveInput, ItemImpl};
 
 /// Custom attribute for modelling DAML templates.
 ///
@@ -369,9 +454,10 @@ mod daml_element {
 /// [DAML primitive type alias]: ../daml_ledger_derive/index.html#mapping-daml-data-types-to-rust
 #[proc_macro_attribute]
 pub fn DamlTemplate(attr: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let template_info = parse_macro_input!(attr as DamlTemplateInfo);
+    let template_info: DamlTemplateInfo = DamlTemplateInfo::from_list(&parse_macro_input!(attr as AttributeArgs))
+        .unwrap_or_else(|e| panic!(e.to_string()));
     let input: DeriveInput = parse_macro_input!(input as DeriveInput);
-    generate_template(input, &template_info)
+    generate_template(input, template_info.package_id, template_info.module_name)
 }
 
 /// Custom attribute for modelling DAML choices.
@@ -388,7 +474,7 @@ pub fn DamlTemplate(attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 ///     fn my_choice(&self) {}
 ///
 ///     #[MyChoiceWithParams]
-///     fn my_choice_with_param(&self, my_first, param: DamlInt64, my_second_param: DamlParty) {}
+///     fn my_choice_with_params(&self, my_first, param: DamlInt64, my_second_param: DamlParty) {}
 /// }
 /// ```
 ///
@@ -398,7 +484,7 @@ pub fn DamlTemplate(attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 /// - Each choice must take `&self` as the first parameter and returns `()`
 /// - Each choice method may take any number of additional parameters
 /// - The name of the DAML choice (i.e. `MyChoice`) must match the DAML template choice name
-/// - The name of the DAML method (i.e. `my_choice`) can be an arbitrary legal Rust identifier
+/// - The name of the DAML method (i.e. `my_choice`) must match the DAML template choice name in `snake_case`
 /// - Any method body provided is ignored
 /// - No distinction is made between consuming & non-consuming choices
 /// - All paramters must be either a [DAML primitive type alias] or a user defined [`DamlData`]
@@ -453,13 +539,12 @@ pub fn DamlChoices(_attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 
 /// Custom attribute for modelling DAML data structures.
 ///
-/// A [DAML Data](https://docs.daml.com/daml/reference/data-types.html#records-and-record-types) representing `Record`
-/// and `Sum` types (variants) can be modelled in Rust as `struct` and `enum` respectively with the `DamlData` custom
-/// attribute.
+/// A [DAML Data](https://docs.daml.com/daml/reference/data-types.html#records-and-record-types) representing a `Record`
+/// and can be modelled in Rust as `struct` with the `DamlData` custom attribute.
 ///
 /// # Record Format
 ///
-/// Given the following DAML data record definition:
+/// Given the following DAML `data` definition:
 ///
 /// ```daml
 /// data RGBA = RGBA
@@ -490,9 +575,21 @@ pub fn DamlChoices(_attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 /// Note that the supplied `struct` is fully replaced by this custom attribute and only the `struct` name, field names
 /// and types are read, all other information such as visibility modifiers or other attributes are discarded.
 ///
-/// # Variant Format
+/// [DAML primitive type alias]: ../daml_ledger_derive/index.html#mapping-daml-data-types-to-rust
+#[proc_macro_attribute]
+pub fn DamlData(_attr: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input: DeriveInput = parse_macro_input!(input as DeriveInput);
+    generate_data_struct(input)
+}
+
+/// Custom attribute for modelling DAML variants.
 ///
-/// Given the following DAML `Sum` definition:
+/// A [DAML Variant](https://docs.daml.com/daml/reference/data-types.html#sum-types) representing a `Sum` types
+/// (variant) can be modelled in Rust as `enum` with the `DamlVariant` custom attribute.
+///
+/// # Format
+///
+/// Given the following DAML `data` definition:
 ///
 /// ```daml
 /// data Color =
@@ -504,7 +601,7 @@ pub fn DamlChoices(_attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 ///     deriving (Eq, Show)
 /// ```
 ///
-/// This can be represented as a Rust `enum` with the `DamlData` custom attribute as follows:
+/// This can be represented as a Rust `enum` with the `DamlVariant` custom attribute as follows:
 ///
 /// ```no_run
 /// use daml::prelude::*;
@@ -517,7 +614,7 @@ pub fn DamlChoices(_attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 ///     pub alpha: DamlInt64,
 /// }
 ///
-/// #[DamlData]
+/// #[DamlVariant]
 /// pub enum Color {
 ///     Red,
 ///     Green,
@@ -538,7 +635,87 @@ pub fn DamlChoices(_attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 ///
 /// [DAML primitive type alias]: ../daml_ledger_derive/index.html#mapping-daml-data-types-to-rust
 #[proc_macro_attribute]
-pub fn DamlData(_attr: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn DamlVariant(_attr: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input: DeriveInput = parse_macro_input!(input as DeriveInput);
-    generate_data(input)
+    generate_data_variant(input)
+}
+
+/// Custom attribute for modelling DAML enums.
+///
+/// A [DAML Enum](https://docs.daml.com/daml/reference/data-types.html#sum-types) is a special case of a DAML variant
+/// where all constructors are parameterless. This can be modelled in Rust as `enum` with the `DamlEnum` custom
+/// attribute.
+///
+/// # Format
+///
+/// Given the following DAML `data` definition:
+///
+/// ```daml
+/// data DayOfWeek
+///   = Monday
+///   | Tuesday
+///   | Wednesday
+///   | Thursday
+///   | Friday
+///   | Saturday
+///   | Sunday
+/// ```
+///
+/// This can be represented as a Rust `enum` with the `DamlEnum` custom attribute as follows:
+///
+/// ```no_run
+/// use daml::prelude::*;
+///
+/// #[DamlEnum]
+/// pub enum Color {
+///     Red,
+///     Monday,
+///     Tuesday,
+///     Wednesday,
+///     Thursday,
+///     Friday,
+///     Saturday,
+///     Sunday,
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn DamlEnum(_attr: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input: DeriveInput = parse_macro_input!(input as DeriveInput);
+    generate_data_enum(input)
+}
+
+/// TODO
+#[proc_macro]
+pub fn daml_codegen(attr: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let args = parse_macro_input!(attr as AttributeArgs);
+    let params: CodeGeneratorParameters =
+        CodeGeneratorParameters::from_list(&args).unwrap_or_else(|e| panic!(e.to_string()));
+    let archive = DarFile::from_file(&params.dar_file)
+        .unwrap_or_else(|_| panic!("failed to load Dar file from {}", &params.dar_file));
+    let filters: Vec<_> = params.module_filter_regex.iter().map(String::as_str).collect();
+    let render_method = match &params.mode {
+        Some(name) if name.to_ascii_lowercase() == "intermediate" => RenderMethod::Intermediate,
+        Some(name) if name.to_ascii_lowercase() == "full" => RenderMethod::Full,
+        Some(name) => panic!(format!("unknown mode: {}, expected Intermediate or Full", name)),
+        _ => RenderMethod::Full,
+    };
+    let expanded = generate_tokens(&archive, filters.as_slice(), &render_method);
+    proc_macro::TokenStream::from(expanded)
+}
+
+#[doc(hidden)]
+#[derive(Debug, FromMeta)]
+struct CodeGeneratorParameters {
+    pub dar_file: String,
+    #[darling(multiple)]
+    pub module_filter_regex: Vec<String>,
+    #[darling(default)]
+    pub mode: Option<String>,
+}
+
+#[doc(hidden)]
+#[derive(Debug, FromMeta)]
+struct DamlTemplateInfo {
+    pub package_id: String,
+    pub module_name: String,
 }

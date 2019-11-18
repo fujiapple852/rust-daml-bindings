@@ -4,17 +4,18 @@
 //!
 //! The following crates are provided for working with DAML in Rust:
 //!
-//! | crate                 | description                                                  | status      |
-//! |-----------------------|--------------------------------------------------------------|-------------|
-//! | [daml_ledger_api]     | Basic DAML Ledger API binding in Rust                        | alpha       |
-//! | [daml_ledger_codegen] | Code generator for DAML modules                              | not started |
-//! | [daml_ledger_derive]  | Custom attributes for converting between DAML and Rust types | alpha       |
-//! | [daml_ledger_ffi]     | FFI wrapper for C-style integration                          | not started |
-//! | [daml_ledger_macro]   | Macros to create and extract DAML value                      | alpha       |
-//! | [daml_lf]             | Read and interpret Dar and Dalf files & bytes                | alpha       |
+//! | crate                        | description                                                  | status      |
+//! |------------------------------|--------------------------------------------------------------|-------------|
+//! | [daml_ledger_api]            | Basic DAML Ledger API binding in Rust                        | alpha       |
+//! | [daml_ledger_codegen]        | Rust codegen for DAML archives                               | alpha       |
+//! | [daml_ledger_derive]         | Custom attributes for converting between DAML and Rust types | alpha       |
+//! | [daml_ledger_ffi]            | FFI wrapper for C-style integration                          | not started |
+//! | [daml_ledger_macro]          | Macros to create and extract DAML value                      | alpha       |
+//! | [daml_lf]                    | Read and interpret Dar and Dalf files & bytes                | alpha       |
 //!
 //! [daml_ledger_api]: ../daml_ledger_api/index.html
 //! [daml_ledger_codegen]: ../daml_ledger_codegen/index.html
+//! [daml_ledger_codegen_derive]: ../daml_ledger_codegen_derive/index.html
 //! [daml_ledger_derive]: ../daml_ledger_derive/index.html
 //! [daml_ledger_ffi]: ../daml_ledger_ffi/index.html
 //! [daml_ledger_macro]: ../daml_ledger_macro/index.html

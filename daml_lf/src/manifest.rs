@@ -49,7 +49,7 @@ pub enum DarEncryptionType {
 /// be empty.
 ///
 /// [`Unknown`]: DarManifestVersion::Unknown
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DarManifest {
     version: DarManifestVersion,
     created_by: String,
@@ -141,16 +141,16 @@ impl DarManifest {
 
         let created_by = doc[CREATED_BY_KEY].as_str().map_or_else(|| "", |s| s);
 
-        let dalf_main = match doc[DALF_MAIN_KEY].as_str() {
-            Some(s) => Ok(s.trim()),
-            _ => Err(DamlLfError::new_dar_parse_error(format!("key {} not found", DALF_MAIN_KEY))),
-        }?;
+        let dalf_main = doc[DALF_MAIN_KEY]
+            .as_str()
+            .map(strip_string)
+            .ok_or_else(|| DamlLfError::new_dar_parse_error(format!("key {} not found", DALF_MAIN_KEY)))?;
 
         let dalf_dependencies = match doc[DALFS_KEY].as_str() {
             Some(s) => Ok(s
                 .split(',')
                 .filter_map(|dalf: &str| {
-                    let stripped_dalf = dalf.chars().filter(|&c| !char::is_whitespace(c)).collect();
+                    let stripped_dalf = strip_string(dalf);
                     if stripped_dalf == dalf_main {
                         None
                     } else {
@@ -211,6 +211,10 @@ impl DarManifest {
     }
 }
 
+fn strip_string(s: impl AsRef<str>) -> String {
+    s.as_ref().chars().filter(|&c| !char::is_whitespace(c)).collect()
+}
+
 #[cfg(test)]
 mod test {
     use crate::error::{DamlLfError, DamlLfResult};
@@ -234,6 +238,41 @@ mod test {
         assert_eq!("Digital Asset packager (DAML-GHC)", manifest.created_by());
         assert_eq!("com.digitalasset.daml.lf.archive:DarReaderTest:0.1.dalf", manifest.dalf_main());
         assert_eq!(&vec!["daml-prim.dalf"], manifest.dalf_dependencies());
+        assert_eq!(DarManifestFormat::DamlLf, manifest.format());
+        assert_eq!(DarEncryptionType::NotEncrypted, manifest.encryption());
+        Ok(())
+    }
+
+    #[test]
+    pub fn test_split_all_dalf() -> DamlLfResult<()> {
+        let manifest_str = "
+            |Manifest-Version: 1.0
+            |Created-By: Digital Asset packager (DAML-GHC)
+            |Sdk-Version: 0.13.16
+            |Main-Dalf: test-0.0.1-7390c3f7a0f5c4aed2cf8da2dc757885ac20ab8f2eb616a1ed
+            | b7cf57f8161d3a/test.dalf
+            |Dalfs: test-0.0.1-7390c3f7a0f5c4aed2cf8da2dc757885ac20ab8f2eb616a1edb7cf
+            | 57f8161d3a/test.dalf, test-0.0.1-7390c3f7a0f5c4aed2cf8da2dc757885ac20ab
+            | 8f2eb616a1edb7cf57f8161d3a/daml-prim.dalf, test-0.0.1-7390c3f7a0f5c4aed
+            | 2cf8da2dc757885ac20ab8f2eb616a1edb7cf57f8161d3a/daml-stdlib.dalf
+            |Format: daml-lf
+            |Encryption: non-encrypted"
+            .trim_margin()
+            .expect("invalid test string");
+        let manifest = DarManifest::parse(&manifest_str[..])?;
+        assert_eq!(DarManifestVersion::V1, manifest.version());
+        assert_eq!("Digital Asset packager (DAML-GHC)", manifest.created_by());
+        assert_eq!(
+            "test-0.0.1-7390c3f7a0f5c4aed2cf8da2dc757885ac20ab8f2eb616a1edb7cf57f8161d3a/test.dalf",
+            manifest.dalf_main()
+        );
+        assert_eq!(
+            &vec![
+                "test-0.0.1-7390c3f7a0f5c4aed2cf8da2dc757885ac20ab8f2eb616a1edb7cf57f8161d3a/daml-prim.dalf",
+                "test-0.0.1-7390c3f7a0f5c4aed2cf8da2dc757885ac20ab8f2eb616a1edb7cf57f8161d3a/daml-stdlib.dalf"
+            ],
+            manifest.dalf_dependencies()
+        );
         assert_eq!(DarManifestFormat::DamlLf, manifest.format());
         assert_eq!(DarEncryptionType::NotEncrypted, manifest.encryption());
         Ok(())

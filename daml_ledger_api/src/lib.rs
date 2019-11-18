@@ -5,7 +5,7 @@
 //! transactions or submitting commands.
 
 #![warn(clippy::all, clippy::pedantic)]
-#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::module_name_repetitions, clippy::use_self)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 
@@ -20,6 +20,9 @@ pub use ledger_client::DamlLedgerClient;
 
 mod command_factory;
 pub use command_factory::DamlCommandFactory;
+
+mod executor;
+pub use executor::{CommandExecutor, DamlLedgerTimeMode, DamlSimpleExecutor, DamlSimpleExecutorBuilder, Executor};
 
 mod grpc_protobuf_autogen;
 mod util;

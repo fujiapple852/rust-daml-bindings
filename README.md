@@ -13,8 +13,8 @@ The status of the feature set:
 - [X] Macros to create and extract DAML values
 - [X] Support for DAML LF
 - [X] Custom Attributes (for automatic Rust<>DAML conversions)
+- [X] Code Generator (from DAML LF)
 - [ ] Executor API
-- [ ] Code Generator (from DAML LF)
 - [ ] Client Authentication
 - [ ] FFI Wrapper (C interface)
 
@@ -24,26 +24,28 @@ over [gRPC Core](https://github.com/grpc/grpc) and so brings with it several bui
 below.  This library will be migrated to use [tower-grpc](https://github.com/tower-rs/tower-grpc) which is a pure Rust 
 implementation built on top of [PROST!](https://github.com/danburkert/prost) which does not have these dependencies.
 
-- Rust (stable) >= 1.35.0
+- Rust (stable) >= 1.38.0
 - Protoc >= 3.1.0
 - CMake >= 3.8.0
 - binutils >= 2.22
 - Go >=1.7
-- DA SDK (>=0.12.15)
+- DA SDK (>=0.13.27)
 
 ## Crates
 The project provides the following crates:
 
-| crate                | description                                 | status      |
-|----------------------|---------------------------------------------|-------------|
-| daml                 | DAML prelude & common entry point           | alpha       |
-| daml_ledger_api      | Basic DAML Ledger API binding in Rust       | alpha       |
-| daml_ledger_codegen  | Rust codegen for DAML modules               | not started |
-| daml_ledger_derive   | Custom attributes for Rust<>DAML conversion | alpha       |
-| daml_ledger_ffi      | FFI wrapper for C-style integration         | not started |
-| daml_ledger_macro    | Macros to create and extract DAML value     | alpha       |
-| daml_lf              | Read Dar and Dalf files & bytes             | alpha       | 
-| ping_pong_sample_app | Standalone sample application               | alpha       |
+| crate                      | description                                 | status      |
+|----------------------------|---------------------------------------------|-------------|
+| daml                       | DAML prelude & common entry point           | alpha       |
+| daml_ledger_api            | Basic DAML Ledger API binding in Rust       | alpha       |
+| daml_ledger_codegen        | Rust codegen for DAML archives              | alpha       |
+| daml_ledger_codegen_derive | Custom attribute for Rust DAML codegen      | alpha       |
+| daml_ledger_derive         | Custom attributes for Rust<>DAML conversion | alpha       |
+| daml_ledger_ffi            | FFI wrapper for C-style integration         | not started |
+| daml_ledger_macro          | Macros to create and extract DAML value     | alpha       |
+| daml_lf                    | Read Dar and Dalf files & bytes             | alpha       | 
+| ping_pong                  | Standalone application using the ledger api | alpha       |
+| rental                     | Standalone app using the codegen            | not started |
 
 ## Build
 Standard Cargo debug/release build steps:
@@ -74,7 +76,7 @@ in `Wallclock` time mode (on port `8080`).  The tests assume that the standard `
 convenience that module is bundled with this library and both needed sandboxes can be started up as follows:
 
 ```
-$ cd rust-api-bindings/resources/pingpong_sandbox
+$ cd rust-api-bindings/resources/testing_types_sandbox
 $ make run
 ```
 
@@ -83,7 +85,7 @@ To run all tests (unit, integration & doc tests):
 
 ```
 $ cd rust-api-bindings
-$ cargo test --all
+$ cargo test --workspace
 ```
 
 ## Run the Sample Application
@@ -109,8 +111,8 @@ throughout the source where needed.  Clippy can be run with:
 
 ```
 $ cd rust-api-bindings
-$ cargo clippy
-$ cargo clippy --tests
+$ cargo clippy --workspace
+$ cargo clippy --workspace --tests
 ```
 
 ## Format
@@ -135,7 +137,7 @@ $ cargo +nightly doc --all --no-deps --open
 
 ```
 $ cd rust-api-bindings
-$ cargo test --doc --all
+$ cargo test --doc --workspace
 ```
 
 The generated docs can be accessed from `target/doc/daml_ledger_api/index.html`

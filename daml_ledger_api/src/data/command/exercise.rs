@@ -6,10 +6,10 @@ use crate::grpc_protobuf_autogen::commands::ExerciseCommand;
 /// Exercise a choice on an existing contract.
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlExerciseCommand {
-    template_id: DamlIdentifier,
-    contract_id: String,
-    choice: String,
-    choice_argument: DamlValue,
+    pub template_id: DamlIdentifier,
+    pub contract_id: String,
+    pub choice: String,
+    pub choice_argument: DamlValue,
 }
 
 impl DamlExerciseCommand {

@@ -4,10 +4,10 @@ use crate::grpc_protobuf_autogen::event::ArchivedEvent;
 /// An event which represents archiving a contract on a DAML ledger.
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlArchivedEvent {
-    event_id: String,
-    contract_id: String,
-    template_id: DamlIdentifier,
-    witness_parties: Vec<String>,
+    pub event_id: String,
+    pub contract_id: String,
+    pub template_id: DamlIdentifier,
+    pub witness_parties: Vec<String>,
 }
 
 impl DamlArchivedEvent {
