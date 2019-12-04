@@ -1,24 +1,30 @@
 use crate::error::{DamlLfError, DamlLfResult};
-use crate::protobuf_autogen::{daml_lf, daml_lf_1};
+use crate::protobuf_autogen::daml_lf_1;
+use crate::protobuf_autogen::daml_lf_1::module::Name;
+use crate::protobuf_autogen::daml_lf_1_7::archive_payload::Sum;
+use crate::protobuf_autogen::daml_lf_1_7::ArchivePayload;
+use crate::{LanguageV1MinorVersion, LanguageVersion};
 use bytes::IntoBuf;
+use itertools::Itertools;
 use prost::Message;
+use std::convert::TryFrom;
 
 /// A `DAML LF` archive payload (aka "package").
 ///
-/// A `DAML LF` archive payload contains a `package` and a `minor` version.
+/// A `DAML LF` archive payload contains a `package` and a `language_version`.
 #[derive(Debug, Clone)]
 pub struct DamlLfArchivePayload {
-    pub minor: String,
+    pub language_version: LanguageVersion,
     pub package: DamlLfPackage,
 }
 
 impl DamlLfArchivePayload {
-    /// Create a `DamlLfArchivePayload` from an existing [`DamlLfPackage`] and `minor` version.
+    /// Create a `DamlLfArchivePayload` from an existing [`DamlLfPackage`] and `language_version`.
     ///
     /// [`DamlLfPackage`]: enum.DamlLfPackage.html
-    pub fn new(minor: String, package: DamlLfPackage) -> Self {
+    pub fn new(language_version: LanguageVersion, package: DamlLfPackage) -> Self {
         Self {
-            minor,
+            language_version,
             package,
         }
     }
@@ -59,13 +65,15 @@ impl DamlLfArchivePayload {
     /// [`DamlLfParseError`]: DamlLfError::DamlLfParseError
     /// [`UnknownVersion`]: DamlLfError::UnknownVersion
     pub fn from_bytes(payload_buffer: impl IntoBuf) -> DamlLfResult<Self> {
-        let payload: daml_lf::ArchivePayload = daml_lf::ArchivePayload::decode(payload_buffer)?;
-        let package = match payload.sum {
-            Some(daml_lf::archive_payload::Sum::DamlLf0(_)) => Err(DamlLfError::UnsupportedVersion),
-            Some(daml_lf::archive_payload::Sum::DamlLf1(p)) => Ok(DamlLfPackage::V1(p)),
+        let payload: ArchivePayload = ArchivePayload::decode(payload_buffer)?;
+        match payload.sum {
+            Some(Sum::DamlLf0(_)) => Err(DamlLfError::UnsupportedVersion),
+            Some(Sum::DamlLf1(p)) => Ok(Self::new(
+                LanguageVersion::new_v1(LanguageV1MinorVersion::try_from(payload.minor.as_str())?),
+                DamlLfPackage::V1(p),
+            )),
             _ => Err(DamlLfError::UnknownVersion),
-        }?;
-        Ok(Self::new(payload.minor, package))
+        }
     }
 
     /// Returns true if the `package` within this `DamlLfArchivePayload` contains `module`, flase otherwise.
@@ -85,7 +93,7 @@ impl DamlLfArchivePayload {
     pub fn contains_module(&self, module: &str) -> bool {
         match &self.package {
             DamlLfPackage::V1(package) => package.modules.iter().any(|m| match &m.name {
-                Some(dn) => dn.segments.join(".") == module,
+                Some(name) => self.decode_dotted_name(name) == module,
                 _ => false,
             }),
         }
@@ -111,21 +119,39 @@ impl DamlLfArchivePayload {
                 .modules
                 .iter()
                 .filter_map(|m| match &m.name {
-                    Some(dn) => Some(dn.segments.join(".")),
+                    Some(dn) => Some(self.decode_dotted_name(dn)),
                     _ => None,
                 })
                 .collect(),
         }
     }
 
-    /// The minor version of this `payload`.
-    pub fn minor(&self) -> &str {
-        &self.minor
+    /// The language_version version of this `payload`.
+    pub fn language_version(&self) -> &LanguageVersion {
+        &self.language_version
     }
 
     /// The package embedded in this `payload`.
     pub fn package(&self) -> &DamlLfPackage {
         &self.package
+    }
+
+    fn decode_dotted_name(&self, name: &Name) -> String {
+        match &self.package {
+            DamlLfPackage::V1(package) => match name {
+                Name::NameInternedDname(i) => package
+                    .interned_dotted_names
+                    .get(*i as usize)
+                    .map(|dn| {
+                        dn.segments_interned_str
+                            .iter()
+                            .map(|&i| package.interned_strings.get(i as usize).expect("Package.interned_strings"))
+                            .join(".")
+                    })
+                    .expect("Package.interned_dotted_names"),
+                Name::NameDname(dn) => dn.segments.join("."),
+            },
+        }
     }
 }
 

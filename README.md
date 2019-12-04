@@ -29,7 +29,7 @@ implementation built on top of [PROST!](https://github.com/danburkert/prost) whi
 - CMake >= 3.8.0
 - binutils >= 2.22
 - Go >=1.7
-- DA SDK (>=0.13.27)
+- DA SDK (>=0.13.37)
 
 ## Crates
 The project provides the following crates:

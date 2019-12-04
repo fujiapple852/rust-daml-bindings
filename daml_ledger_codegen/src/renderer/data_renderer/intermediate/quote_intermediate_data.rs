@@ -8,7 +8,7 @@ use quote::quote;
 
 pub fn quote_daml_template(template: &DamlTemplate) -> TokenStream {
     let package_id = template.package_id;
-    let module_name = to_module_path(template.module_path);
+    let module_name = to_module_path(template.module_path.as_slice());
     let name_tokens = quote_escaped_ident(template.name);
     let supported_fields: Vec<_> = template.fields.iter().filter(|&field| is_supported_type(&field.ty)).collect();
     let all_fields_tokens = quote_fields(supported_fields.as_slice());

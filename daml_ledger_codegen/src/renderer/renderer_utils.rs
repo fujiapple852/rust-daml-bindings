@@ -17,7 +17,7 @@ pub fn quote_escaped_ident(value: impl AsRef<str>) -> TokenStream {
 }
 
 /// Convert module path to a String.
-pub fn to_module_path(path: &[String]) -> String {
+pub fn to_module_path(path: &[&str]) -> String {
     path.iter().join(".")
 }
 
@@ -29,7 +29,8 @@ pub fn to_rust_identifier(value: impl AsRef<str>) -> String {
 /// Determine if this type supported by the code generator.
 pub fn is_supported_type(ty: &DamlType) -> bool {
     match ty {
-        DamlType::Arrow | DamlType::Var | DamlType::Update | DamlType::Scenario => false,
+        DamlType::Arrow | DamlType::Var | DamlType::Update | DamlType::Scenario | DamlType::Any | DamlType::TypeRep =>
+            false,
         DamlType::List(inner) | DamlType::TextMap(inner) | DamlType::Optional(inner) => is_supported_type(&inner),
         _ => true,
     }

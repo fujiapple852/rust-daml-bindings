@@ -16,7 +16,13 @@ impl<'a> From<&'a AttrRecord> for DamlRecord<'a> {
 impl<'a> From<&'a AttrTemplate> for DamlTemplate<'a> {
     fn from(attr_template: &'a AttrTemplate) -> Self {
         let fields: Vec<DamlField> = attr_template.fields.iter().map(DamlField::from).collect();
-        DamlTemplate::new(&attr_template.name, &attr_template.package_id, &attr_template.module_path, fields, vec![])
+        DamlTemplate::new(
+            &attr_template.name,
+            &attr_template.package_id,
+            to_vec_str(&attr_template.module_path),
+            fields,
+            vec![],
+        )
     }
 }
 
@@ -39,7 +45,7 @@ impl<'a> From<&'a AttrVariant> for DamlVariant<'a> {
 
 impl<'a> From<&'a AttrEnum> for DamlEnum<'a> {
     fn from(attr_enum: &'a AttrEnum) -> Self {
-        DamlEnum::new(&attr_enum.name, &attr_enum.fields)
+        DamlEnum::new(&attr_enum.name, to_vec_str(&attr_enum.fields))
     }
 }
 
@@ -66,9 +72,9 @@ impl<'a> From<&'a AttrType> for DamlType<'a> {
             AttrType::Optional(nested) => DamlType::Optional(Box::new(DamlType::from(nested.as_ref()))),
             AttrType::Data(data_name, path) =>
                 if path.is_empty() {
-                    DamlType::DataRef(DamlDataRef::Local(DamlLocalDataRef::new(data_name, "", &path)))
+                    DamlType::DataRef(DamlDataRef::Local(DamlLocalDataRef::new(data_name, "", to_vec_str(path))))
                 } else {
-                    DamlType::DataRef(DamlDataRef::Absolute(DamlAbsoluteDataRef::new(data_name, "", &path)))
+                    DamlType::DataRef(DamlDataRef::Absolute(DamlAbsoluteDataRef::new(data_name, "", to_vec_str(path))))
                 },
             AttrType::Box(boxed_data) => {
                 let inner_type = DamlType::from(boxed_data.as_ref());
@@ -79,4 +85,8 @@ impl<'a> From<&'a AttrType> for DamlType<'a> {
             },
         }
     }
+}
+
+fn to_vec_str(input: &[String]) -> Vec<&str> {
+    input.iter().map(AsRef::as_ref).collect::<Vec<_>>()
 }

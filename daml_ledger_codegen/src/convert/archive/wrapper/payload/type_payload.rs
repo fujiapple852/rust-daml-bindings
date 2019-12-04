@@ -22,6 +22,8 @@ pub enum DamlTypePayload<'a> {
     DataRef(DamlDataRefPayload<'a>),
     Var,
     Arrow,
+    Any,
+    TypeRep,
 }
 
 impl<'a> From<&'a Type> for DamlTypePayload<'a> {
@@ -53,6 +55,8 @@ impl<'a> From<&'a Type> for DamlTypePayload<'a> {
                 14 => DamlTypePayload::Optional(Box::new(DamlTypePayload::from(prim.args.first().expect("Prim.args")))),
                 15 => DamlTypePayload::Arrow,
                 16 => DamlTypePayload::TextMap(Box::new(DamlTypePayload::from(prim.args.first().expect("Prim.args")))),
+                18 => DamlTypePayload::Any,
+                19 => DamlTypePayload::TypeRep,
                 _ => panic!(format!("unsupported primitive type {:?}", prim)),
             },
             Sum::Con(Con {
@@ -68,12 +72,16 @@ impl<'a> From<&'a Type> for DamlTypePayload<'a> {
 #[derive(Debug, PartialEq)]
 pub struct DamlDataRefPayload<'a> {
     pub package_ref: DamlPackageRef<'a>,
-    pub module_path: &'a [String],
-    pub data_name: &'a str,
+    pub module_path: InternableDottedName<'a>,
+    pub data_name: InternableDottedName<'a>,
 }
 
 impl<'a> DamlDataRefPayload<'a> {
-    pub fn new(package_ref: DamlPackageRef<'a>, module_path: &'a [String], data_name: &'a str) -> Self {
+    pub fn new(
+        package_ref: DamlPackageRef<'a>,
+        module_path: InternableDottedName<'a>,
+        data_name: InternableDottedName<'a>,
+    ) -> Self {
         Self {
             package_ref,
             module_path,
@@ -92,7 +100,11 @@ impl<'a> From<&'a TypeConName> for DamlDataRefPayload<'a> {
                         module_name: Some(module_name),
                     }),
                 name: Some(data_name),
-            } => Self::new(package_ref.into(), module_name.segments.as_slice(), leaf_name(&data_name)),
+            } => Self::new(
+                package_ref.into(),
+                InternableDottedName::from(module_name),
+                InternableDottedName::from(data_name),
+            ),
             _ => panic!("TypeConName"),
         }
     }
@@ -102,15 +114,25 @@ impl<'a> From<&'a TypeConName> for DamlDataRefPayload<'a> {
 pub enum DamlPackageRef<'a> {
     This,
     PackageId(&'a str),
-    InternedId(u64),
+    InternedId(i32),
+}
+
+impl<'a> DamlPackageRef<'a> {
+    pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> Option<&'a str> {
+        match self {
+            DamlPackageRef::This => Some(resolver.package_id()),
+            &DamlPackageRef::PackageId(s) => Some(s),
+            &DamlPackageRef::InternedId(i) => resolver.interned_strings().get(i as usize).map(AsRef::as_ref),
+        }
+    }
 }
 
 impl<'a> From<&'a PackageRef> for DamlPackageRef<'a> {
     fn from(package_ref: &'a PackageRef) -> Self {
         match package_ref.sum.as_ref().expect("PackageRef.sum") {
             package_ref::Sum::Self_(_) => DamlPackageRef::This,
-            package_ref::Sum::PackageId(s) => DamlPackageRef::PackageId(s.as_str()),
-            &package_ref::Sum::InternedId(i) => DamlPackageRef::InternedId(i),
+            package_ref::Sum::PackageIdStr(s) => DamlPackageRef::PackageId(s.as_str()),
+            &package_ref::Sum::PackageIdInternedStr(i) => DamlPackageRef::InternedId(i),
         }
     }
 }

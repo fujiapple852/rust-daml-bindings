@@ -4,18 +4,18 @@ pub mod archive {
             mod archive_payload;
             mod data_payload;
             mod field_payload;
+            mod interned;
             mod module_payload;
             mod package_payload;
             mod type_payload;
-            mod util;
 
             pub use archive_payload::*;
             pub use data_payload::*;
             pub use field_payload::*;
+            pub use interned::*;
             pub use module_payload::*;
             pub use package_payload::*;
             pub use type_payload::*;
-            pub use util::*;
         }
 
         mod archive_wrapper;
@@ -37,6 +37,7 @@ pub mod archive {
         // TODO, leaky abstractions
         pub use payload::DamlArchivePayload;
         pub use payload::DamlTypePayload;
+        pub use payload::PackageInternedResolver;
     }
 
     pub mod archive_converter;

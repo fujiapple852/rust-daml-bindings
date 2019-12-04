@@ -27,7 +27,7 @@ pub fn quote_daml_template(daml_template: &DamlTemplate) -> TokenStream {
 }
 
 /// Generate the `pub fn package_id(...) -> DamlIdentifier` method.
-pub fn quote_package_id_method(struct_name: &str, package_id: &str, path: &[String]) -> TokenStream {
+pub fn quote_package_id_method(struct_name: &str, package_id: &str, path: &[&str]) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let package_id = package_id;
     let module_name = to_module_path(path);

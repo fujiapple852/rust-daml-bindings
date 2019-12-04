@@ -1,11 +1,6 @@
 use daml::prelude::*;
 use daml_ledger_api::{DamlLedgerClient, DamlSimpleExecutorBuilder};
 
-// pub mod autogen {
-//    pub mod rental_0_0_1;
-//}
-// use autogen::rental_0_0_1::da::rental::*;
-
 include!("autogen/rental_0_0_1.rs");
 use rental_0_0_1::da::rental::*;
 
@@ -21,3 +16,20 @@ fn main() -> DamlResult<()> {
     dbg!(&agreement_contract_id);
     Ok(())
 }
+
+// use daml_ledger_codegen::generator::{daml_codegen, ModuleOutputMode, RenderMethod};
+//
+// pub mod autogen {
+//    pub mod daml_prim;
+//    pub mod daml_stdlib_0_13_36;
+//    pub mod testing_types_1_0_0;
+//}
+//// const DAR_PATH: &str = "resources/testing_types_sandbox/archive/TestingTypes-1.0.0-sdk_0_13_36-lf_1_7.dar";
+// const DAR_PATH: &str = "resources/testing_types_sandbox/archive/TestingTypes-1.0.0-sdk_0_13_36-lf_1_6.dar";
+//
+// const OUTPUT_PATH: &str = "sample_apps/rental/src/autogen";
+//
+// fn main() {
+//    daml_codegen(DAR_PATH, OUTPUT_PATH, &[], RenderMethod::Full, ModuleOutputMode::Separate)
+//        .expect("failed to generate code for DAML archive");
+//}

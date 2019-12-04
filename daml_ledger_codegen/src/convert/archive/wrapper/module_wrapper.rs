@@ -21,16 +21,8 @@ impl<'a> DamlModuleWrapper<'a> {
         }
     }
 
-    pub fn child_modules(self) -> impl Iterator<Item = DamlModuleWrapper<'a>> {
-        self.payload.children.values().map(move |module| self.wrap_child_module(module))
-    }
-
     pub fn data_types(self) -> impl Iterator<Item = DamlDataWrapper<'a>> {
-        self.payload.data_types.values().map(move |dt| self.wrap_data_type(dt))
-    }
-
-    fn wrap_child_module(self, child_module: &'a DamlModulePayload) -> DamlModuleWrapper<'a> {
-        DamlModuleWrapper::wrap(self.parent_archive, self.parent_package, child_module)
+        self.payload.data_types.iter().map(move |dt| self.wrap_data_type(dt))
     }
 
     fn wrap_data_type(self, data: &'a DamlDataPayload) -> DamlDataWrapper<'a> {

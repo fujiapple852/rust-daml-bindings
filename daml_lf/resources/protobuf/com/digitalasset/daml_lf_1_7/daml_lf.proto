@@ -1,14 +1,14 @@
-// Copyright (c) 2019 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2019 The DAML Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
-package daml_lf;
+package daml_lf_1_7;
 
-option java_package = "com.digitalasset.daml_lf";
-option csharp_namespace = "Com.DigitalAsset.Daml_lf.DamlLf";
+option java_package = "com.digitalasset.daml_lf_1_7";
+option csharp_namespace = "Com.DigitalAsset.Daml_Lf_1_7.DamlLf";
 
-import "da/daml_lf_0.proto";
-import "da/daml_lf_1.proto";
+import "com/digitalasset/daml_lf_1_7/daml_lf_0.proto";
+import "com/digitalasset/daml_lf_1_7/daml_lf_1.proto";
 
 message ArchivePayload {
   // this is number 3 for historical reasons -- we had

@@ -21,7 +21,7 @@ impl<'a> DamlDataWrapper<'a> {
     ) -> Self {
         match data {
             DamlDataPayload::Record(record) =>
-                if let Some(template) = parent_module.template(record.name) {
+                if let Some(template) = parent_module.template(&record.name) {
                     DamlDataWrapper::Template(DamlTemplateWrapper::new(
                         parent_archive,
                         parent_package,
@@ -45,13 +45,8 @@ impl<'a> DamlDataWrapper<'a> {
                 data,
                 variant,
             )),
-            DamlDataPayload::Enum(data_enum) => DamlDataWrapper::Enum(DamlEnumWrapper::new(
-                parent_archive,
-                parent_package,
-                parent_module,
-                //                data,
-                data_enum,
-            )),
+            DamlDataPayload::Enum(data_enum) =>
+                DamlDataWrapper::Enum(DamlEnumWrapper::new(parent_archive, parent_package, parent_module, data_enum)),
         }
     }
 }
@@ -89,10 +84,10 @@ impl<'a> DamlTemplateWrapper<'a> {
     }
 
     pub fn choices(self) -> impl Iterator<Item = DamlChoiceWrapper<'a>> {
-        self.payload.choices.iter().map(move |choice| self.choice(choice))
+        self.payload.choices.iter().map(move |choice| self.wrap_choice(choice))
     }
 
-    fn choice(self, choice: &'a DamlChoicePayload) -> DamlChoiceWrapper<'a> {
+    fn wrap_choice(self, choice: &'a DamlChoicePayload) -> DamlChoiceWrapper<'a> {
         DamlChoiceWrapper {
             parent_archive: self.parent_archive,
             parent_package: self.parent_package,

@@ -24,7 +24,7 @@ impl<'a> DamlData<'a> {
 pub struct DamlTemplate<'a> {
     pub name: &'a str,
     pub package_id: &'a str,
-    pub module_path: &'a [String],
+    pub module_path: Vec<&'a str>,
     pub fields: Vec<DamlField<'a>>,
     pub choices: Vec<DamlChoice<'a>>,
 }
@@ -33,7 +33,7 @@ impl<'a> DamlTemplate<'a> {
     pub fn new(
         name: &'a str,
         package_id: &'a str,
-        module_path: &'a [String],
+        module_path: Vec<&'a str>,
         fields: Vec<DamlField<'a>>,
         choices: Vec<DamlChoice<'a>>,
     ) -> Self {
@@ -97,11 +97,11 @@ impl<'a> DamlVariant<'a> {
 #[derive(Debug)]
 pub struct DamlEnum<'a> {
     pub name: &'a str,
-    pub constructors: &'a [String],
+    pub constructors: Vec<&'a str>,
 }
 
 impl<'a> DamlEnum<'a> {
-    pub fn new(name: &'a str, constructors: &'a [String]) -> Self {
+    pub fn new(name: &'a str, constructors: Vec<&'a str>) -> Self {
         Self {
             name,
             constructors,

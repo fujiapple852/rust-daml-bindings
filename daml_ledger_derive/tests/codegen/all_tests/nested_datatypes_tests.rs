@@ -1,4 +1,7 @@
-use crate::common::test_utils::{new_static_sandbox, TestResult, SANDBOX_LOCK};
+use crate::common::test_utils::{
+    new_static_sandbox, update_create_command_package_id_for_testing, update_exercise_command_package_id_for_testing,
+    TestResult, SANDBOX_LOCK,
+};
 use daml::prelude::DamlTextMap;
 use daml_ledger_api::data::command::DamlCommand;
 use daml_ledger_api::data::event::DamlEvent;
@@ -8,7 +11,7 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 
 daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1.0.0-sdk_0.13.34.dar",
+    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1.0.0-sdk_0_13_38-lf_1_7.dar",
     module_filter_regex = "DA.Nested"
 );
 
@@ -28,6 +31,8 @@ pub fn test() -> TestResult {
 
     // submit create command and extract result
     let create_command = nested_template.create_command();
+    let create_command = update_create_command_package_id_for_testing(&client, create_command)?;
+
     let command_result = alice_executor.execute_for_transaction_sync(DamlCommand::Create(create_command))?;
     let event: DamlEvent = command_result.take_events().swap_remove(0);
     let nested_contract: NestedTemplateContract = match event {
@@ -42,10 +47,9 @@ pub fn test() -> TestResult {
     my_map_param.insert("new_test_key_true".to_owned(), MyNestedData::new(true));
     my_map_param.insert("new_test_key_false".to_owned(), MyNestedData::new(false));
     let list_of_opt_of_map_of_data_param = vec![Some(my_map_param), None, None];
-
-    // submit exercise command and extract results
     let exercise_command =
         nested_contract.id().do_something_complex_command(opt_of_list_param, list_of_opt_of_map_of_data_param);
+    let exercise_command = update_exercise_command_package_id_for_testing(&client, exercise_command)?;
     let exercise_result = alice_executor.execute_for_transaction_sync(DamlCommand::Exercise(exercise_command))?;
     let created_event: DamlEvent = exercise_result.take_events().swap_remove(1);
     let new_contract: NestedTemplateContract = created_event.try_created()?.try_into()?;

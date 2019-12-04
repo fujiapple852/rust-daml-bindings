@@ -1,4 +1,4 @@
-use crate::protobuf_autogen::daml_lf;
+use crate::protobuf_autogen::daml_lf_1_7::Archive;
 use crate::DamlLfArchivePayload;
 use crate::DamlLfResult;
 use bytes::IntoBuf;
@@ -108,7 +108,7 @@ impl DamlLfArchive {
     /// [`UnsupportedVersion`]: crate::DamlLfError::UnsupportedVersion
     /// [`DamlLfArchivePayload`]: DamlLfArchivePayload
     pub fn from_bytes_named(name: impl Into<String>, bytes: impl IntoBuf) -> DamlLfResult<Self> {
-        let archive: daml_lf::Archive = daml_lf::Archive::decode(bytes)?;
+        let archive: Archive = Archive::decode(bytes)?;
         let payload = DamlLfArchivePayload::from_bytes(archive.payload)?;
         Ok(Self::new(name, payload, DamlLfHashFunction::SHA256, archive.hash))
     }

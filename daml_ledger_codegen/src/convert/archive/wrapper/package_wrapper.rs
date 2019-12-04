@@ -15,7 +15,10 @@ impl<'a> DamlPackageWrapper<'a> {
         }
     }
 
-    pub fn root_module(self) -> DamlModuleWrapper<'a> {
-        DamlModuleWrapper::wrap(self.parent_archive, self.payload, &self.payload.root_module)
+    pub fn modules(self) -> impl Iterator<Item = DamlModuleWrapper<'a>> {
+        self.payload
+            .modules
+            .values()
+            .map(move |module| DamlModuleWrapper::wrap(self.parent_archive, self.payload, module))
     }
 }

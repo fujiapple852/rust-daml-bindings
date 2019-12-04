@@ -87,20 +87,22 @@ impl<'a> DamlDataRefWrapper<'a> {
     }
 
     pub fn get_data(self) -> DamlDataWrapper<'a> {
-        let target_package_id = self
-            .parent_package
-            .lookup_package_id_by_ref(&self.payload.package_ref)
-            .expect("lookup_package_id_by_ref failed");
+        let source_resolver = self.parent_package;
+        let target_package_id =
+            self.payload.package_ref.resolve(source_resolver).expect("lookup_package_id_by_ref failed");
         let target_package = self
             .parent_archive
             .package_by_id(target_package_id)
             .unwrap_or_else(|| panic!("package_by_id lookup failed for {}", target_package_id));
         let target_module = target_package
-            .module_by_name(&self.payload.module_path)
-            .unwrap_or_else(|| panic!("module_by_name lookup failed for {}", &self.payload.module_path.join(".")));
+            .module_by_name(&self.payload.module_path.resolve(source_resolver).join("."))
+            .unwrap_or_else(|| panic!("module_by_name lookup failed for {}", &self.payload.module_path.to_string()));
+        let source_data_type_name = self.payload.data_name.resolve(source_resolver);
         let target_data_type = target_module
-            .data_type(&self.payload.data_name)
-            .unwrap_or_else(|| panic!("data_type lookup failed for {}", &self.payload.data_name));
+            .data_types
+            .iter()
+            .find(|dt| dt.name().resolve(target_package) == source_data_type_name)
+            .unwrap_or_else(|| panic!("data_type lookup failed for {}", &self.payload.data_name.to_string()));
         DamlDataWrapper::wrap(self.parent_archive, target_package, target_module, target_data_type)
     }
 }

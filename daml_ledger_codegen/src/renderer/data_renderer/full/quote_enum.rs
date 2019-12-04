@@ -8,9 +8,9 @@ use crate::renderer::quote_escaped_ident;
 
 /// Generate the `enum` and the `From` and `TryFrom` impls.
 pub fn quote_daml_enum(daml_enum: &DamlEnum) -> TokenStream {
-    let enum_tokens = quote_enum(&daml_enum.name, &daml_enum.constructors);
-    let from_trait_impl_tokens = quote_from_trait_impl(&daml_enum.name, &daml_enum.constructors);
-    let try_from_trait_impl_tokens = quote_try_from_trait_impl(&daml_enum.name, &daml_enum.constructors);
+    let enum_tokens = quote_enum(&daml_enum.name, daml_enum.constructors.as_slice());
+    let from_trait_impl_tokens = quote_from_trait_impl(&daml_enum.name, daml_enum.constructors.as_slice());
+    let try_from_trait_impl_tokens = quote_try_from_trait_impl(&daml_enum.name, daml_enum.constructors.as_slice());
     quote!(
         #enum_tokens
         #from_trait_impl_tokens
@@ -19,7 +19,7 @@ pub fn quote_daml_enum(daml_enum: &DamlEnum) -> TokenStream {
 }
 
 /// Generate `enum Foo {...}` enum.
-fn quote_enum(enum_name: &str, variants: &[String]) -> TokenStream {
+fn quote_enum(enum_name: &str, variants: &[&str]) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(enum_name);
     let body_tokens = quote_enum_body(&variants);
     quote!(
@@ -31,7 +31,7 @@ fn quote_enum(enum_name: &str, variants: &[String]) -> TokenStream {
 }
 
 /// Generate the enum body.
-fn quote_enum_body(enum_variants: &[String]) -> TokenStream {
+fn quote_enum_body(enum_variants: &[&str]) -> TokenStream {
     let all: Vec<_> = enum_variants
         .iter()
         .map(|s| {
@@ -43,7 +43,7 @@ fn quote_enum_body(enum_variants: &[String]) -> TokenStream {
 }
 
 /// Generate the `From<Foo> for DamlValue` method.
-fn quote_from_trait_impl(enum_name: &str, enum_variants: &[String]) -> TokenStream {
+fn quote_from_trait_impl(enum_name: &str, enum_variants: &[&str]) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(enum_name);
     let all_match_arms: Vec<_> =
         enum_variants.iter().map(|enum_variant| quote_from_trait_match_arm(enum_name, enum_variant)).collect();
@@ -59,7 +59,7 @@ fn quote_from_trait_impl(enum_name: &str, enum_variants: &[String]) -> TokenStre
 }
 
 /// Generate the `TryFrom<DamlValue> for Foo` method.
-fn quote_try_from_trait_impl(enum_name: &str, args: &[String]) -> TokenStream {
+fn quote_try_from_trait_impl(enum_name: &str, args: &[&str]) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(enum_name);
     let all_match_arms: Vec<_> =
         args.iter().map(|enum_variant| quote_try_from_trait_match_arm(enum_name, enum_variant)).collect();

@@ -19,6 +19,8 @@ pub enum DamlType<'a> {
     BoxedDataRef(DamlDataRef<'a>),
     Var,
     Arrow,
+    Any,
+    TypeRep,
 }
 
 impl<'a> DamlType<'a> {
@@ -52,11 +54,11 @@ pub enum DamlDataRef<'a> {
 pub struct DamlLocalDataRef<'a> {
     pub data_name: &'a str,
     pub package_name: &'a str,
-    pub module_path: &'a [String],
+    pub module_path: Vec<&'a str>,
 }
 
 impl<'a> DamlLocalDataRef<'a> {
-    pub fn new(data_name: &'a str, package_name: &'a str, module_path: &'a [String]) -> Self {
+    pub fn new(data_name: &'a str, package_name: &'a str, module_path: Vec<&'a str>) -> Self {
         Self {
             data_name,
             package_name,
@@ -69,18 +71,18 @@ impl<'a> DamlLocalDataRef<'a> {
 pub struct DamlNonLocalDataRef<'a> {
     pub data_name: &'a str,
     pub source_package_name: &'a str,
-    pub source_module_path: &'a [String],
+    pub source_module_path: Vec<&'a str>,
     pub target_package_name: &'a str,
-    pub target_module_path: &'a [String],
+    pub target_module_path: Vec<&'a str>,
 }
 
 impl<'a> DamlNonLocalDataRef<'a> {
     pub fn new(
         data_name: &'a str,
         source_package_name: &'a str,
-        source_module_path: &'a [String],
+        source_module_path: Vec<&'a str>,
         target_package_name: &'a str,
-        target_module_path: &'a [String],
+        target_module_path: Vec<&'a str>,
     ) -> Self {
         Self {
             data_name,
@@ -96,11 +98,11 @@ impl<'a> DamlNonLocalDataRef<'a> {
 pub struct DamlAbsoluteDataRef<'a> {
     pub data_name: &'a str,
     pub package_name: &'a str,
-    pub module_path: &'a [String],
+    pub module_path: Vec<&'a str>,
 }
 
 impl<'a> DamlAbsoluteDataRef<'a> {
-    pub fn new(data_name: &'a str, package_name: &'a str, module_path: &'a [String]) -> Self {
+    pub fn new(data_name: &'a str, package_name: &'a str, module_path: Vec<&'a str>) -> Self {
         Self {
             data_name,
             package_name,

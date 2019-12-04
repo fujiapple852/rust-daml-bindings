@@ -47,10 +47,10 @@ pub fn quote_data_ref(data_ref: &DamlDataRef) -> TokenStream {
 }
 
 fn quote_absolute_data_ref(abs_data_ref: &DamlAbsoluteDataRef) -> TokenStream {
-    let path: Vec<_> = if abs_data_ref.package_name.is_empty() {
-        abs_data_ref.module_path.iter().map(String::as_str).collect()
+    let path: Vec<&str> = if abs_data_ref.package_name.is_empty() {
+        abs_data_ref.module_path.iter().map(AsRef::as_ref).collect()
     } else {
-        iter::once(abs_data_ref.package_name).chain(abs_data_ref.module_path.iter().map(String::as_str)).collect()
+        iter::once(abs_data_ref.package_name).chain(abs_data_ref.module_path.iter().map(AsRef::as_ref)).collect()
     };
     let target_path_tokens: Vec<_> = path.into_iter().map(SnakeCase::to_snake_case).map(quote_escaped_ident).collect();
     quote!(
@@ -60,11 +60,11 @@ fn quote_absolute_data_ref(abs_data_ref: &DamlAbsoluteDataRef) -> TokenStream {
 
 fn quote_non_local_path(data_ref: &DamlNonLocalDataRef) -> TokenStream {
     let current_full_path: Vec<_> = iter::once(data_ref.source_package_name)
-        .chain(data_ref.source_module_path.iter().map(String::as_str))
+        .chain(data_ref.source_module_path.iter().map(AsRef::as_ref))
         .map(SnakeCase::to_snake_case)
         .collect();
     let target_full_path: Vec<_> = iter::once(data_ref.target_package_name)
-        .chain(data_ref.target_module_path.iter().map(String::as_str))
+        .chain(data_ref.target_module_path.iter().map(AsRef::as_ref))
         .map(SnakeCase::to_snake_case)
         .collect();
     let common_prefix_length =

@@ -3,23 +3,19 @@ use std::io::{Error, Write};
 use std::path::{Path, PathBuf};
 use std::{env, error, fs};
 
-const PROTOBUF_DAML_FILE: &str = "resources/protobuf/com/digitalasset/daml_lf/daml_lf.proto";
-const PROTOBUF_PATH: &str = "resources/protobuf/com/digitalasset/daml_lf/";
+const PROTOBUF_DAML_FILE: &str = "resources/protobuf/com/digitalasset/daml_lf_1_7/daml_lf.proto";
+const PROTOBUF_PATH: &str = "resources/protobuf/";
 const OUTPUT_PATH: &str = "src/protobuf_autogen";
 const MODULE_HEADER: &str = "#![allow(clippy::all, clippy::pedantic, intra_doc_link_resolution_failure)]\n";
 
 fn main() -> Result<(), Box<dyn error::Error>> {
     prost_build::compile_protos(&[PROTOBUF_DAML_FILE], &[PROTOBUF_PATH])?;
-
     let current_out_dir = env::var_os("OUT_DIR").ok_or_else(err_str)?.into_string().map_err(|_| err_str())?;
-
     fs::create_dir_all(OUTPUT_PATH)?;
     for file in fs::read_dir(current_out_dir)? {
         copy_entry(file?)?;
     }
-
     generate_module_src()?;
-
     println!("cargo:rerun-if-changed={}", PROTOBUF_PATH);
     Ok(())
 }

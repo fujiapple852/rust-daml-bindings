@@ -26,7 +26,7 @@ fn extract_enum_field_type(variant: &Variant) -> AttrType {
                     unnamed.len()
                 ))
             } else {
-                unnamed.first().map(|pair| AttrType::from_type(&pair.ty)).expect("TODO")
+                unnamed.first().map(|pair| AttrType::from_type(&pair.ty)).expect("Field.ty")
             },
         _ => panic!("only Unnamed or Unit enum variant expected"),
     }

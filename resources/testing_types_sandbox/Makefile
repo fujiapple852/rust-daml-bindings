@@ -1,5 +1,5 @@
 build:
-	daml build --target 1.6
+	daml build --target 1.7
 
 inspect:
 	daml damlc inspect-dar .daml/dist/*
