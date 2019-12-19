@@ -55,7 +55,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     // Create a stream of transactions processing pipeline for both Alice and Bob.
     let bob_processor = process_ping_pong(ledger_client.clone(), package_id.clone(), PARTY_BOB.to_owned())?;
-    let alice_processor = process_ping_pong(ledger_client.clone(), package_id.clone(), PARTY_ALICE.to_owned())?;
+    let alice_processor = process_ping_pong(ledger_client, package_id, PARTY_ALICE.to_owned())?;
 
     // Create a stream which selects over both Alice and Bob's processor streams and drive it to completion on the
     // main application thread.  Note that this is the only thread used in this application but the stream operate
@@ -201,5 +201,5 @@ fn get_ping_pong_package_id(
     all_archives
         .iter()
         .find(|(_, archive)| archive.contains_module(PINGPONG_MODULE_NAME))
-        .map_or(Err("package could not be found".into()), |(package_id, _)| Ok(package_id.to_string()))
+        .map_or(Err("package could not be found".into()), |(package_id, _)| Ok((*package_id).to_string()))
 }

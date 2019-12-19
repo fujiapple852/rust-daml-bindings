@@ -59,5 +59,5 @@ fn get_package_id_from_ledger(
     all_archives
         .iter()
         .find(|(_, archive)| archive.contains_module(module_name))
-        .map_or(Err("package could not be found".into()), |(package_id, _)| Ok(package_id.to_string()))
+        .map_or(Err("package could not be found".into()), |(package_id, _)| Ok((*package_id).to_string()))
 }

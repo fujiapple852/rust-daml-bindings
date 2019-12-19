@@ -92,7 +92,7 @@ impl DamlEnum {
 
     /// Determines which of the Variant's alternatives is encoded in this message.
     ///
-    /// Must be a valid NameString.
+    /// Must be a valid `NameString`.
     pub fn constructor(&self) -> &str {
         &self.constructor
     }

@@ -126,7 +126,7 @@ impl DamlLfArchivePayload {
         }
     }
 
-    /// The language_version version of this `payload`.
+    /// The `language_version` version of this `payload`.
     pub fn language_version(&self) -> &LanguageVersion {
         &self.language_version
     }

@@ -148,5 +148,5 @@ pub fn get_ping_pong_package_id(
     all_archives
         .iter()
         .find(|(_, archive)| archive.contains_module(PINGPONG_MODULE_NAME))
-        .map_or(Err("package could not be found".into()), |(package_id, _)| Ok(package_id.to_string()))
+        .map_or(Err("package could not be found".into()), |(package_id, _)| Ok((*package_id).to_string()))
 }

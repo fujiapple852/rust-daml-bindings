@@ -11,8 +11,7 @@
 //! [`daml_path!`]: macro.daml_path.html
 
 #![warn(clippy::all, clippy::pedantic)]
-#![allow(clippy::module_name_repetitions)]
-#![allow(clippy::shadow_unrelated)]
+#![allow(clippy::module_name_repetitions, clippy::shadow_unrelated, clippy::unit_cmp)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 

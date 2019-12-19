@@ -157,7 +157,7 @@ impl DamlLedgerClient {
             #[cfg(feature = "testing")]
             reset_service: DamlResetService::new(channel.clone(), ledger_identity.clone()),
             #[cfg(feature = "testing")]
-            time_service: DamlTimeService::new(channel.clone(), ledger_identity.clone()),
+            time_service: DamlTimeService::new(channel.clone(), ledger_identity),
         })
     }
 }
