@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 
 daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1.0.0-sdk_0_13_38-lf_1_7.dar",
+    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_41-lf_1_7.dar",
     module_filter_regex = "DA.Nested"
 );
 

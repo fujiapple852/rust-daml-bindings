@@ -6,7 +6,7 @@ use daml_ledger_api::{CommandExecutor, DamlSimpleExecutorBuilder};
 use daml_ledger_derive::daml_codegen;
 use std::convert::TryInto;
 
-daml_codegen!(dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1.0.0-sdk_0_13_38-lf_1_7.dar");
+daml_codegen!(dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_41-lf_1_7.dar");
 
 #[test]
 fn test_rent() -> TestResult {

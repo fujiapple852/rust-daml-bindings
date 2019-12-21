@@ -110,7 +110,9 @@ impl DamlLfArchive {
     pub fn from_bytes_named(name: impl Into<String>, bytes: impl IntoBuf) -> DamlLfResult<Self> {
         let archive: Archive = Archive::decode(bytes)?;
         let payload = DamlLfArchivePayload::from_bytes(archive.payload)?;
-        Ok(Self::new(name, payload, DamlLfHashFunction::SHA256, archive.hash))
+        let archive_name = name.into();
+        let sanitized_name = archive_name.rfind(&archive.hash).map_or(&archive_name[..], |i| &archive_name[..i - 1]);
+        Ok(Self::new(sanitized_name, payload, DamlLfHashFunction::SHA256, archive.hash))
     }
 
     /// Read and parse an archive from a `dalf` file.

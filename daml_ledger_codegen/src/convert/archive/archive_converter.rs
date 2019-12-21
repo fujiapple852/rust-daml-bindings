@@ -42,7 +42,7 @@ impl<'a> From<&DamlPackageWrapper<'a>> for DamlPackage<'a> {
                 node.data_types = data_types.into_iter().map(|dt| (dt.name(), dt)).collect();
             }
         }
-        DamlPackage::new(&package.payload.name, &package.payload.package_id, from_modules(package.modules()))
+        DamlPackage::new(package.payload.name, &package.payload.package_id, from_modules(package.modules()))
     }
 }
 

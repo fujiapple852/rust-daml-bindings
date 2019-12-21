@@ -21,12 +21,14 @@ fn main() -> DamlResult<()> {
 //
 // pub mod autogen {
 //    pub mod daml_prim;
-//    pub mod daml_stdlib_0_13_36;
+//    pub mod daml_prim_ghc_prim;
+//    pub mod daml_stdlib_0_13_41;
+//    pub mod daml_stdlib_0_13_41_da_internal_any;
+//    pub mod daml_stdlib_0_13_41_da_internal_template;
 //    pub mod testing_types_1_0_0;
+//    pub mod rental_0_0_1;
 //}
-//// const DAR_PATH: &str = "resources/testing_types_sandbox/archive/TestingTypes-1.0.0-sdk_0_13_36-lf_1_7.dar";
-// const DAR_PATH: &str = "resources/testing_types_sandbox/archive/TestingTypes-1.0.0-sdk_0_13_36-lf_1_6.dar";
-//
+// const DAR_PATH: &str = "resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_41-lf_1_7.dar";
 // const OUTPUT_PATH: &str = "sample_apps/rental/src/autogen";
 //
 // fn main() {
