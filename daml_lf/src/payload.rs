@@ -4,7 +4,7 @@ use crate::protobuf_autogen::daml_lf_1::module::Name;
 use crate::protobuf_autogen::daml_lf_1_7::archive_payload::Sum;
 use crate::protobuf_autogen::daml_lf_1_7::ArchivePayload;
 use crate::{LanguageV1MinorVersion, LanguageVersion};
-use bytes::IntoBuf;
+use bytes::Bytes;
 use itertools::Itertools;
 use prost::Message;
 use std::convert::TryFrom;
@@ -64,8 +64,8 @@ impl DamlLfArchivePayload {
     /// [`UnsupportedVersion`]: DamlLfError::UnsupportedVersion
     /// [`DamlLfParseError`]: DamlLfError::DamlLfParseError
     /// [`UnknownVersion`]: DamlLfError::UnknownVersion
-    pub fn from_bytes(payload_buffer: impl IntoBuf) -> DamlLfResult<Self> {
-        let payload: ArchivePayload = ArchivePayload::decode(payload_buffer)?;
+    pub fn from_bytes(payload_buffer: impl Into<Bytes>) -> DamlLfResult<Self> {
+        let payload: ArchivePayload = ArchivePayload::decode(payload_buffer.into())?;
         match payload.sum {
             Some(Sum::DamlLf0(_)) => Err(DamlLfError::UnsupportedVersion),
             Some(Sum::DamlLf1(p)) => Ok(Self::new(

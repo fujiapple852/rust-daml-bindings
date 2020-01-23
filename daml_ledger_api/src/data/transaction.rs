@@ -1,13 +1,12 @@
 use crate::data::event::DamlEvent;
 use crate::data::trace::DamlTraceContext;
 use crate::data::{DamlError, DamlResult};
-use crate::grpc_protobuf_autogen::event::Event;
-use crate::grpc_protobuf_autogen::transaction::Transaction;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::Transaction;
 use crate::util;
+use crate::util::Required;
 use chrono::DateTime;
 use chrono::Utc;
-use protobuf::RepeatedField;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 
 /// A DAML ledger transaction.
 #[derive(Debug, Eq, PartialEq)]
@@ -18,7 +17,7 @@ pub struct DamlTransaction {
     pub effective_at: DateTime<Utc>,
     pub events: Vec<DamlEvent>,
     pub offset: String,
-    pub trace_context: DamlTraceContext,
+    pub trace_context: Option<DamlTraceContext>,
 }
 
 impl DamlTransaction {
@@ -29,7 +28,7 @@ impl DamlTransaction {
         effective_at: impl Into<DateTime<Utc>>,
         events: impl Into<Vec<DamlEvent>>,
         offset: impl Into<String>,
-        trace_context: impl Into<DamlTraceContext>,
+        trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> Self {
         Self {
             transaction_id: transaction_id.into(),
@@ -70,7 +69,7 @@ impl DamlTransaction {
         &self.offset
     }
 
-    pub fn trace_context(&self) -> &DamlTraceContext {
+    pub fn trace_context(&self) -> &Option<DamlTraceContext> {
         &self.trace_context
     }
 }
@@ -78,18 +77,15 @@ impl DamlTransaction {
 impl TryFrom<Transaction> for DamlTransaction {
     type Error = DamlError;
 
-    fn try_from(mut tx: Transaction) -> Result<Self, Self::Error> {
+    fn try_from(tx: Transaction) -> Result<Self, Self::Error> {
         Ok(Self::new(
-            tx.take_transaction_id(),
-            tx.take_command_id(),
-            tx.take_workflow_id(),
-            util::make_datetime(&tx.take_effective_at()),
-            (tx.take_events() as RepeatedField<Event>)
-                .into_iter()
-                .map(TryInto::try_into)
-                .collect::<DamlResult<Vec<_>>>()?,
-            tx.take_offset(),
-            tx.take_trace_context(),
+            tx.transaction_id,
+            tx.command_id,
+            tx.workflow_id,
+            util::make_datetime(&tx.effective_at.req()?),
+            tx.events.into_iter().map(DamlEvent::try_from).collect::<DamlResult<Vec<_>>>()?,
+            tx.offset,
+            tx.trace_context.map(DamlTraceContext::from),
         ))
     }
 }

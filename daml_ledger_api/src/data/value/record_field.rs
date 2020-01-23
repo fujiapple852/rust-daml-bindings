@@ -1,7 +1,8 @@
 use crate::data::value::DamlValue;
 use crate::data::DamlError;
-use crate::grpc_protobuf_autogen::value::RecordField;
-use std::convert::{TryFrom, TryInto};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{RecordField, Value};
+use crate::util::Required;
+use std::convert::TryFrom;
 
 /// A representation of a single field on a DAML record.
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -30,9 +31,9 @@ impl DamlRecordField {
 impl TryFrom<RecordField> for DamlRecordField {
     type Error = DamlError;
 
-    fn try_from(mut field: RecordField) -> Result<Self, Self::Error> {
-        let label = field.take_label();
-        let value: DamlValue = field.take_value().try_into()?;
+    fn try_from(field: RecordField) -> Result<Self, Self::Error> {
+        let label = field.label;
+        let value: DamlValue = field.value.req().and_then(DamlValue::try_from)?;
         Ok(Self::new(
             if label.is_empty() {
                 None
@@ -46,11 +47,9 @@ impl TryFrom<RecordField> for DamlRecordField {
 
 impl From<DamlRecordField> for RecordField {
     fn from(daml_record_field: DamlRecordField) -> Self {
-        let mut field = Self::new();
-        if let Some(l) = daml_record_field.label {
-            field.set_label(l);
+        Self {
+            label: daml_record_field.label.unwrap_or_default(),
+            value: Some(Value::from(daml_record_field.value)),
         }
-        field.set_value(daml_record_field.value.into());
-        field
     }
 }

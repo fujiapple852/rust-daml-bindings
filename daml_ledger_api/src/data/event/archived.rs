@@ -1,5 +1,7 @@
-use crate::data::identifier::DamlIdentifier;
-use crate::grpc_protobuf_autogen::event::ArchivedEvent;
+use crate::data::{DamlError, DamlIdentifier, DamlResult};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::ArchivedEvent;
+use crate::util::Required;
+use std::convert::TryFrom;
 
 /// An event which represents archiving a contract on a DAML ledger.
 #[derive(Debug, Eq, PartialEq)]
@@ -42,8 +44,10 @@ impl DamlArchivedEvent {
     }
 }
 
-impl From<ArchivedEvent> for DamlArchivedEvent {
-    fn from(mut e: ArchivedEvent) -> Self {
-        Self::new(e.take_event_id(), e.take_contract_id(), e.take_template_id(), e.take_witness_parties())
+impl TryFrom<ArchivedEvent> for DamlArchivedEvent {
+    type Error = DamlError;
+
+    fn try_from(e: ArchivedEvent) -> DamlResult<Self> {
+        Ok(Self::new(e.event_id, e.contract_id, e.template_id.req().map(DamlIdentifier::from)?, e.witness_parties))
     }
 }

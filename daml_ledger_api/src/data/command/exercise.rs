@@ -1,7 +1,7 @@
 use crate::data::identifier::DamlIdentifier;
 use crate::data::value::DamlValue;
-use crate::grpc_protobuf_autogen::commands::Command;
-use crate::grpc_protobuf_autogen::commands::ExerciseCommand;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::command::Command;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::ExerciseCommand;
 
 /// Exercise a choice on an existing contract.
 #[derive(Debug, Eq, PartialEq)]
@@ -54,13 +54,11 @@ impl DamlExerciseCommand {
 
 impl From<DamlExerciseCommand> for Command {
     fn from(daml_exercise_command: DamlExerciseCommand) -> Self {
-        let mut exercise_command = ExerciseCommand::new();
-        exercise_command.set_template_id(daml_exercise_command.template_id.into());
-        exercise_command.set_choice_argument(daml_exercise_command.choice_argument.into());
-        exercise_command.set_contract_id(daml_exercise_command.contract_id);
-        exercise_command.set_choice(daml_exercise_command.choice);
-        let mut command = Self::new();
-        command.set_exercise(exercise_command);
-        command
+        Command::Exercise(ExerciseCommand {
+            template_id: Some(daml_exercise_command.template_id.into()),
+            contract_id: daml_exercise_command.contract_id,
+            choice: daml_exercise_command.choice,
+            choice_argument: Some(daml_exercise_command.choice_argument.into()),
+        })
     }
 }

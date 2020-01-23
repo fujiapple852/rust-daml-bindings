@@ -1,22 +1,18 @@
-use std::str::FromStr;
-
+use crate::data::value::{DamlEnum, DamlRecord, DamlVariant};
+use crate::data::{DamlError, DamlResult};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::map::Entry;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::value::Sum;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Enum, List, Map, Optional, Record, Value, Variant};
+use crate::util;
+use crate::util::Required;
 use bigdecimal::BigDecimal;
 use chrono::Date;
 use chrono::DateTime;
 use chrono::Utc;
-use protobuf::well_known_types::Empty;
-use protobuf::RepeatedField;
-
-use crate::data::value::record::DamlRecord;
-use crate::data::value::variant::{DamlEnum, DamlVariant};
-use crate::data::{DamlError, DamlResult};
-use crate::grpc_protobuf_autogen::value::Optional;
-use crate::grpc_protobuf_autogen::value::Value;
-use crate::grpc_protobuf_autogen::value::Value_oneof_Sum;
-use crate::grpc_protobuf_autogen::value::{List, Map, Map_Entry};
-use crate::util;
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
+
+use std::str::FromStr;
 
 /// A generic representation of data on a DAML ledger.
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -434,37 +430,31 @@ impl TryFrom<Value> for DamlValue {
     type Error = DamlError;
 
     fn try_from(value: Value) -> Result<Self, Self::Error> {
-        match value.Sum {
+        match value.sum {
             Some(sum) => {
                 let convert = |sum| {
                     Ok(match sum {
-                        Value_oneof_Sum::record(v) => DamlValue::Record(v.try_into()?),
-                        Value_oneof_Sum::variant(v) => DamlValue::Variant(v.try_into()?),
-                        Value_oneof_Sum::field_enum(e) => DamlValue::Enum(e.into()),
-                        Value_oneof_Sum::contract_id(v) => DamlValue::ContractId(v),
-                        Value_oneof_Sum::list(mut v) => DamlValue::List(
-                            (v.take_elements() as RepeatedField<Value>)
-                                .into_iter()
-                                .map(TryInto::try_into)
-                                .collect::<DamlResult<Vec<_>>>()?,
+                        Sum::Record(v) => DamlValue::Record(v.try_into()?),
+                        Sum::Variant(v) => DamlValue::Variant((*v).try_into()?),
+                        Sum::Enum(e) => DamlValue::Enum(e.into()),
+                        Sum::ContractId(v) => DamlValue::ContractId(v),
+                        Sum::List(v) => DamlValue::List(
+                            v.elements.into_iter().map(TryInto::try_into).collect::<DamlResult<Vec<_>>>()?,
                         ),
-                        Value_oneof_Sum::int64(v) => DamlValue::Int64(v),
-                        Value_oneof_Sum::numeric(v) => DamlValue::Numeric(BigDecimal::from_str(&v)?),
-                        Value_oneof_Sum::text(v) => DamlValue::Text(v),
-                        Value_oneof_Sum::timestamp(v) => DamlValue::Timestamp(util::datetime_from_micros(v)?),
-                        Value_oneof_Sum::party(v) => DamlValue::Party(v),
-                        Value_oneof_Sum::bool(v) => DamlValue::Bool(v),
-                        Value_oneof_Sum::unit(_) => DamlValue::Unit,
-                        Value_oneof_Sum::date(v) => DamlValue::Date(util::date_from_days(v)?),
-                        Value_oneof_Sum::optional(mut v) => DamlValue::Optional(if v.has_value() {
-                            Some(Box::new(v.take_value().try_into()?))
-                        } else {
-                            None
-                        }),
-                        Value_oneof_Sum::map(mut v) => DamlValue::Map(
-                            (v.take_entries() as RepeatedField<Map_Entry>)
+                        Sum::Int64(v) => DamlValue::Int64(v),
+                        Sum::Numeric(v) => DamlValue::Numeric(BigDecimal::from_str(&v)?),
+                        Sum::Text(v) => DamlValue::Text(v),
+                        Sum::Timestamp(v) => DamlValue::Timestamp(util::datetime_from_micros(v)?),
+                        Sum::Party(v) => DamlValue::Party(v),
+                        Sum::Bool(v) => DamlValue::Bool(v),
+                        Sum::Unit(_) => DamlValue::Unit,
+                        Sum::Date(v) => DamlValue::Date(util::date_from_days(v)?),
+                        Sum::Optional(v) =>
+                            DamlValue::Optional(v.value.map(|v| DamlValue::try_from(*v)).transpose()?.map(Box::new)),
+                        Sum::Map(v) => DamlValue::Map(
+                            v.entries
                                 .into_iter()
-                                .map(|mut v| Ok((v.take_key(), v.take_value().try_into()?)))
+                                .map(|v| Ok((v.key, v.value.req().and_then(DamlValue::try_from)?)))
                                 .collect::<DamlResult<HashMap<_, _>>>()?,
                         ),
                     })
@@ -478,50 +468,40 @@ impl TryFrom<Value> for DamlValue {
 
 impl From<DamlValue> for Value {
     fn from(daml_value: DamlValue) -> Self {
-        let mut value = Self::new();
-        match daml_value {
-            DamlValue::Record(v) => value.set_record(v.into()),
-            DamlValue::Variant(v) => value.set_variant(v.into()),
-            DamlValue::Enum(e) => value.set_field_enum(e.into()),
-            DamlValue::ContractId(v) => value.set_contract_id(v),
-            DamlValue::List(v) => {
-                let mut list = List::new();
-                list.set_elements(v.into_iter().map(Into::into).collect());
-                value.set_list(list);
-            },
-            DamlValue::Int64(v) => value.set_int64(v),
-
-            // TODO: review the soundness of the numeric formatting here and consider using the `rust-decimal` crate
-            DamlValue::Numeric(v) => value.set_numeric(format!("{:.37}", v)),
-            DamlValue::Text(v) => value.set_text(v),
-            DamlValue::Timestamp(v) => value.set_timestamp(v.timestamp()),
-            DamlValue::Party(v) => value.set_party(v),
-            DamlValue::Bool(v) => value.set_bool(v),
-            DamlValue::Unit => value.set_unit(Empty::new()),
-            DamlValue::Date(v) => value.set_date(util::days_from_date(v)),
-            DamlValue::Optional(Some(v)) => {
-                let mut opt = Optional::new();
-                opt.set_value((*v).into());
-                value.set_optional(opt);
-            },
-            DamlValue::Optional(None) => {
-                value.set_optional(Optional::new());
-            },
-            DamlValue::Map(v) => {
-                let mut map = Map::new();
-                map.set_entries(
-                    v.into_iter()
-                        .map(|(key, val)| {
-                            let mut entry = Map_Entry::new();
-                            entry.set_key(key);
-                            entry.set_value(val.into());
-                            entry
+        Self {
+            sum: match daml_value {
+                DamlValue::Record(v) => Some(Sum::Record(Record::from(v))),
+                DamlValue::Variant(v) => Some(Sum::Variant(Box::new(Variant::from(v)))),
+                DamlValue::Enum(e) => Some(Sum::Enum(Enum::from(e))),
+                DamlValue::ContractId(v) => Some(Sum::ContractId(v)),
+                DamlValue::List(v) => Some(Sum::List(List {
+                    elements: v.into_iter().map(Value::from).collect(),
+                })),
+                DamlValue::Int64(v) => Some(Sum::Int64(v)),
+                // TODO: review the soundness of the numeric formatting here and consider using the `rust-decimal` crate
+                DamlValue::Numeric(v) => Some(Sum::Numeric(format!("{:.37}", v))),
+                DamlValue::Text(v) => Some(Sum::Text(v)), // value.set_text(v),
+                DamlValue::Timestamp(v) => Some(Sum::Timestamp(v.timestamp())),
+                DamlValue::Party(v) => Some(Sum::Party(v)),
+                DamlValue::Bool(v) => Some(Sum::Bool(v)),
+                DamlValue::Unit => Some(Sum::Unit(())),
+                DamlValue::Date(v) => Some(Sum::Date(util::days_from_date(v))),
+                DamlValue::Optional(Some(v)) => Some(Sum::Optional(Box::new(Optional {
+                    value: Some(Box::new(Value::from(*v))),
+                }))),
+                DamlValue::Optional(None) => Some(Sum::Optional(Box::new(Optional {
+                    value: None,
+                }))),
+                DamlValue::Map(v) => Some(Sum::Map(Map {
+                    entries: v
+                        .into_iter()
+                        .map(|(key, val)| Entry {
+                            key,
+                            value: Some(val.into()),
                         })
                         .collect(),
-                );
-                value.set_map(map);
+                })),
             },
-        };
-        value
+        }
     }
 }

@@ -34,12 +34,29 @@ fn quote_choice_method(struct_name: &str, choice: &DamlChoice) -> TokenStream {
     let choice_name = &choice.name;
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let method_name_command_tokens = quote_command_method_name(&choice.name.to_snake_case());
-    let method_name_tokens = quote_escaped_ident(&choice.name.to_snake_case());
+    let _method_name_tokens = quote_escaped_ident(&choice.name.to_snake_case());
     let choice_argument_tokens = quote_method_arguments(&choice.fields.iter().collect::<Vec<_>>());
     let supported_fields: Vec<_> = choice.fields.iter().filter(|&field| is_supported_type(&field.ty)).collect();
     let all_choice_fields = quote_all_choice_fields(&supported_fields);
-    let return_type_tokens = quote_type(&choice.return_type);
-    let try_return_type_expression_tokens = quote_try_expression(&choice.return_type);
+    let _return_type_tokens = quote_type(&choice.return_type);
+    let _try_return_type_expression_tokens = quote_try_expression(&choice.return_type);
+
+    // TODO restore
+    //pub fn #method_name_tokens<E: CommandExecutor>(&self, #choice_argument_tokens) -> impl FnOnce(&E) -> DamlResult<#return_type_tokens> + '_ {
+    //    let template_id = #struct_name_tokens::package_id();
+    //    #all_choice_fields
+    //    let exercise_command = DamlExerciseCommand::new(
+    //        template_id,
+    //        self.contract_id(),
+    //        #choice_name,
+    //        params
+    //    );
+    //    move |exec| {
+    //        let value = exec.execute_exercise(exercise_command)?;
+    //        #try_return_type_expression_tokens
+    //    }
+    //}
+
     quote!(
         pub fn #method_name_command_tokens(&self, #choice_argument_tokens) -> DamlExerciseCommand {
             let template_id = #struct_name_tokens::package_id();
@@ -50,20 +67,6 @@ fn quote_choice_method(struct_name: &str, choice: &DamlChoice) -> TokenStream {
                 #choice_name,
                 params
             )
-        }
-        pub fn #method_name_tokens<E: CommandExecutor>(&self, #choice_argument_tokens) -> impl FnOnce(&E) -> DamlResult<#return_type_tokens> + '_ {
-            let template_id = #struct_name_tokens::package_id();
-            #all_choice_fields
-            let exercise_command = DamlExerciseCommand::new(
-                template_id,
-                self.contract_id(),
-                #choice_name,
-                params
-            );
-            move |exec| {
-                let value = exec.execute_exercise(exercise_command)?;
-                #try_return_type_expression_tokens
-            }
         }
     )
 }

@@ -19,56 +19,56 @@ The status of the feature set:
 - [ ] FFI Wrapper (C interface)
 
 ## Prerequisites
-The current implementation uses the [grpc-rs](https://github.com/pingcap/grpc-rs) library which is a thin Rust wrapper 
-over [gRPC Core](https://github.com/grpc/grpc) and so brings with it several build-time dependencies which are listed 
-below.  This library will be migrated to use [tower-grpc](https://github.com/tower-rs/tower-grpc) which is a pure Rust 
-implementation built on top of [PROST!](https://github.com/danburkert/prost) which does not have these dependencies.
+These ledger bindings use the [tonic](https://github.com/hyperium/tonic) GRPC library which in turn uses the 
+[PROST!](https://github.com/danburkert/prost) library for generating Rust representations of the DAML ledger API 
+protocols buffers.
 
-- Rust (stable) >= 1.38.0
-- Protoc >= 3.1.0
-- CMake >= 3.8.0
-- binutils >= 2.22
-- Go >=1.7
-- DA SDK (>=0.13.37)
+# Minimum Supported Rust Version
+This crate is guaranteed to compile on stable Rust 1.40 and up.
+
+# Supported DAML Version
+These bindings support `DAML-LF` versions `1.6` & `1.7` and has been tested against DAML SDKs up to `0.13.46`.
 
 ## Crates
 The project provides the following crates:
 
-| crate                      | description                                 | status      |
-|----------------------------|---------------------------------------------|-------------|
-| daml                       | DAML prelude & common entry point           | alpha       |
-| daml_ledger_api            | Basic DAML Ledger API binding in Rust       | alpha       |
-| daml_ledger_codegen        | Rust codegen for DAML archives              | alpha       |
-| daml_ledger_codegen_derive | Custom attribute for Rust DAML codegen      | alpha       |
-| daml_ledger_derive         | Custom attributes for Rust<>DAML conversion | alpha       |
-| daml_ledger_ffi            | FFI wrapper for C-style integration         | not started |
-| daml_ledger_macro          | Macros to create and extract DAML value     | alpha       |
-| daml_lf                    | Read Dar and Dalf files & bytes             | alpha       | 
-| ping_pong                  | Standalone application using the ledger api | alpha       |
-| rental                     | Standalone app using the codegen            | not started |
+| crate               | description                                 | status      |
+|---------------------|---------------------------------------------|-------------|
+| daml                | DAML prelude & common entry point           | alpha       |
+| daml_ledger_api     | Basic DAML Ledger API binding in Rust       | alpha       |
+| daml_ledger_codegen | Rust codegen for DAML archives              | alpha       |
+| daml_ledger_derive  | Custom attributes for Rust<>DAML conversion | alpha       |
+| daml_ledger_ffi     | FFI wrapper for C-style integration         | not started |
+| daml_ledger_macro   | Macros to create and extract DAML value     | alpha       |
+| daml_ledger_util    | Utilities to aid working with DAML ledgers  | alpha       |
+| daml_lf             | Read Dar and Dalf files & bytes             | alpha       | 
+| ping_pong_demo      | Standalone application using the ledger api | alpha       |
+| rental_demo         | Standalone app using the codegen            | alpha       |
 
 ## Build
 Standard Cargo debug/release build steps:
 
 ```
-$ cd rust-api-bindings
+$ cd rust-daml-bindings
 $ cargo build
 ```
 
-The build will trigger the generation of the `daml_ledger_api/src/grpc_protobuf_autogen` code from the protobuf 
-source files in `daml_ledger_client/resources/protobuf`.  Note that if you need to rebuild these Rust source files you
-can do so by touching `build.rs` and rerunning the cargo build.
+The build will trigger the generation of the GRPC protobuf code which is included by `daml_ledger_api/src/grpc_protobuf.rs`.  The protobuf source files are read from `daml_ledger_client/resources/protobuf`.  Note that if you need to rebuild these 
+Rust source files you can do so by touching `build.rs` and rerunning the cargo build.
 
 ## Features
 The API has a `testing` feature flag to control whether the testing-only GRPC services (`TimeService` & `ResetService`) are 
-built or not.  The feature is enabled by default but can be disabled for production builds by using the 
-`--no-default-features` switch:
+built or not.  The feature is disabled by default and must be enabled for integration tests.
 
 ```
-cargo build --no-default-features
+daml_ledger_api = { version = "0.1", features = [ "testing" ] }
 ```
 
-Note that the `testing` feature is required for the integration tests so that they can use the `ResetService`.
+The `admin` feature flag can be enabled to include the package and party management services.
+
+```
+daml_ledger_api = { version = "0.1", features = [ "admin" ] }
+```
 
 ## Run the Integration Tests
 The integration tests run against two instances of the DA Sandbox, one in `Static` time mode (on port `8081`) and one 
@@ -76,7 +76,7 @@ in `Wallclock` time mode (on port `8080`).  The tests assume that the standard `
 convenience that module is bundled with this library and both needed sandboxes can be started up as follows:
 
 ```
-$ cd rust-api-bindings/resources/testing_types_sandbox
+$ cd rust-daml-bindings/resources/testing_types_sandbox
 $ make run
 ```
 
@@ -84,7 +84,7 @@ $ make run
 To run all tests (unit, integration & doc tests):
 
 ```
-$ cd rust-api-bindings
+$ cd rust-daml-bindings
 $ cargo test --workspace
 ```
 
@@ -100,9 +100,9 @@ $ cargo run --package ping_pong_sample_app --release
 To run directly outside of cargo:
 
 ```
-$ cd rust-api-bindings
+$ cd rust-daml-bindings
 $ cargo build --release
-# target/release/ping_pong_sample_app
+# target/release/ping_pong_demo
 ```
 
 ## Clippy
@@ -110,7 +110,7 @@ Clippy is used for linting and is set per module to be `#![warn(clippy::all, cli
 throughout the source where needed.  Clippy can be run with:
 
 ```
-$ cd rust-api-bindings
+$ cd rust-daml-bindings
 $ cargo clippy --workspace
 $ cargo clippy --workspace --tests
 ```
@@ -119,8 +119,8 @@ $ cargo clippy --workspace --tests
 The code can be automatically formatted as follows (requires nightly Rust)::
 
 ```
-$ cd rust-api-bindings
-$ cargo +nightly fmt
+$ cd rust-daml-bindings
+$ cargo +nightly fmt --all
 ```
 
 See `rustfmt.toml` for configuration settings.
@@ -129,14 +129,14 @@ See `rustfmt.toml` for configuration settings.
 Rust docs can be generated as follows (requires nightly Rust):
 
 ```
-$ cd rust-api-bindings
+$ cd rust-daml-bindings
 $ cargo +nightly doc --all --no-deps --open
 ```
 
 ## Doctests
 
 ```
-$ cd rust-api-bindings
+$ cd rust-daml-bindings
 $ cargo test --doc --workspace
 ```
 

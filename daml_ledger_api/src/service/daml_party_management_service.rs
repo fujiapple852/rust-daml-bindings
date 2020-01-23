@@ -1,16 +1,13 @@
-use futures::Future;
-use grpcio::Channel;
-use grpcio::ClientUnaryReceiver;
-
-use crate::data::DamlError;
 use crate::data::DamlResult;
-use crate::grpc_protobuf_autogen::party_management_service::{
-    AllocatePartyRequest, AllocatePartyResponse, GetParticipantIdRequest, GetParticipantIdResponse,
-    ListKnownPartiesRequest, ListKnownPartiesResponse,
-};
-use crate::grpc_protobuf_autogen::party_management_service_grpc::PartyManagementServiceClient;
 
 use crate::data::party::DamlPartyDetails;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::admin::party_management_service_client::PartyManagementServiceClient;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::admin::{
+    AllocatePartyRequest, GetParticipantIdRequest, ListKnownPartiesRequest,
+};
+use crate::util::Required;
+use tonic::transport::Channel;
+use tonic::Request;
 
 /// Inspect the party management state of a ledger participant and modify the parts that are modifiable.
 ///
@@ -23,13 +20,13 @@ use crate::data::party::DamlPartyDetails;
 /// the claims in the token are insufficient to perform a given operation. Subsequently, only specific errors of
 /// individual calls not related to authorization will be described.
 pub struct DamlPartyManagementService {
-    grpc_client: PartyManagementServiceClient,
+    channel: Channel,
 }
 
 impl DamlPartyManagementService {
     pub fn new(channel: Channel) -> Self {
         Self {
-            grpc_client: PartyManagementServiceClient::new(channel),
+            channel,
         }
     }
 
@@ -41,40 +38,20 @@ impl DamlPartyManagementService {
     ///
     /// This method is expected to succeed provided the backing participant is healthy, otherwise it responds with
     /// `INTERNAL` grpc error.
-    pub fn get_participant_id(&self) -> DamlResult<impl Future<Item = String, Error = DamlError>> {
-        let request = GetParticipantIdRequest::new();
-        let async_response: ClientUnaryReceiver<GetParticipantIdResponse> =
-            self.grpc_client.get_participant_id_async(&request)?;
-        Ok(async_response.map_err(Into::into).map(|mut r| r.take_participant_id()))
-    }
-
-    /// Synchronous version of `get_participant_id` which blocks on the calling thread.
-    ///
-    /// See [`get_participant_id`] for details of the behaviour and example usage.
-    ///
-    /// [`get_participant_id`]: DamlPartyManagementService::get_participant_id
-    pub fn get_participant_id_sync(&self) -> DamlResult<String> {
-        self.get_participant_id()?.wait()
+    pub async fn get_participant_id(&self) -> DamlResult<String> {
+        let request = Request::new(GetParticipantIdRequest {});
+        let participant = self.client().get_participant_id(request).await?;
+        Ok(participant.into_inner().participant_id)
     }
 
     /// List the parties known by the backing participant.
     ///
     /// The list returned contains parties whose ledger access is facilitated bb backing participant and the ones
     /// maintained elsewhere.
-    pub fn list_known_parties(&self) -> DamlResult<impl Future<Item = Vec<DamlPartyDetails>, Error = DamlError>> {
-        let request = ListKnownPartiesRequest::new();
-        let async_response: ClientUnaryReceiver<ListKnownPartiesResponse> =
-            self.grpc_client.list_known_parties_async(&request)?;
-        Ok(async_response.map_err(Into::into).map(|mut r| r.take_party_details().into_iter().map(Into::into).collect()))
-    }
-
-    /// Synchronous version of `list_known_parties` which blocks on the calling thread.
-    ///
-    /// See [`list_known_parties`] for details of the behaviour and example usage.
-    ///
-    /// [`list_known_parties`]: DamlPartyManagementService::list_known_parties
-    pub fn list_known_parties_sync(&self) -> DamlResult<Vec<DamlPartyDetails>> {
-        self.list_known_parties()?.wait()
+    pub async fn list_known_parties(&self) -> DamlResult<Vec<DamlPartyDetails>> {
+        let request = Request::new(ListKnownPartiesRequest {});
+        let all_known_parties = self.client().list_known_parties(request).await?;
+        Ok(all_known_parties.into_inner().party_details.into_iter().map(DamlPartyDetails::from).collect())
     }
 
     /// Adds a new party to the set managed by the backing participant.
@@ -86,29 +63,20 @@ impl DamlPartyManagementService {
     ///
     /// This call will either succeed or respond with UNIMPLEMENTED if synchronous party allocation is not supported by
     /// the backing participant.
-    pub fn allocate_party(
-        &self,
-        party_id_hint: impl Into<String>,
-        display_name: impl Into<String>,
-    ) -> DamlResult<impl Future<Item = DamlPartyDetails, Error = DamlError>> {
-        let mut request = AllocatePartyRequest::new();
-        request.set_party_id_hint(party_id_hint.into());
-        request.set_display_name(display_name.into());
-        let async_response: ClientUnaryReceiver<AllocatePartyResponse> =
-            self.grpc_client.allocate_party_async(&request)?;
-        Ok(async_response.map_err(Into::into).map(|mut r| r.take_party_details().into()))
-    }
-
-    /// Synchronous version of `allocate_party` which blocks on the calling thread.
-    ///
-    /// See [`allocate_party`] for details of the behaviour and example usage.
-    ///
-    /// [`allocate_party`]: DamlPartyManagementService::allocate_party
-    pub fn allocate_party_sync(
+    pub async fn allocate_party(
         &self,
         party_id_hint: impl Into<String>,
         display_name: impl Into<String>,
     ) -> DamlResult<DamlPartyDetails> {
-        self.allocate_party(party_id_hint, display_name)?.wait()
+        let request = Request::new(AllocatePartyRequest {
+            party_id_hint: party_id_hint.into(),
+            display_name: display_name.into(),
+        });
+        let allocated_parties = self.client().allocate_party(request).await?;
+        Ok(DamlPartyDetails::from(allocated_parties.into_inner().party_details.req()?))
+    }
+
+    fn client(&self) -> PartyManagementServiceClient<Channel> {
+        PartyManagementServiceClient::new(self.channel.clone())
     }
 }

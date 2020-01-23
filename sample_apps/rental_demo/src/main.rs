@@ -1,20 +1,27 @@
 use daml::prelude::*;
-use daml_ledger_api::{DamlLedgerClient, DamlSimpleExecutorBuilder};
 
 include!("autogen/rental_0_0_1.rs");
+
+use daml_ledger_api::{DamlLedgerClient, DamlSimpleExecutorBuilder};
 use rental_0_0_1::da::rental::*;
 
-fn main() -> DamlResult<()> {
-    let client = DamlLedgerClient::connect("localhost", 8082)?.reset_and_wait()?;
+#[tokio::main]
+async fn main() -> DamlResult<()> {
+    let client = DamlLedgerClient::connect("localhost", 8082).await?.reset_and_wait().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let bob_executor = DamlSimpleExecutorBuilder::new(&client, "Bob").build();
     let proposal_data = RentalProposal::new("Alice", "Bob", "test");
-    let proposal_contract = alice_executor.execute(proposal_data.create())?;
-    dbg!(&proposal_contract);
-    let agreement_contract_id =
-        RentalProposalContractId::try_from(bob_executor.execute(proposal_contract.id().accept("", 0))?)?;
-    dbg!(&agreement_contract_id);
+    let proposal_event = alice_executor.execute_create(proposal_data.create_command()).await?;
+    let proposal_contract = RentalProposalContract::try_from(proposal_event)?;
+    let accept_result = bob_executor.execute_exercise(proposal_contract.id().accept_command("", 0)).await?;
+    let agreement_contract_id = RentalAgreementContractId::try_from(accept_result.try_contract_id()?.to_owned())?;
+    println!("{:?}", &agreement_contract_id);
     Ok(())
+
+    //    // Previous API (pre-async)
+    //    let proposal_contract = alice_executor.execute(proposal_data.create()).await?;
+    //    let agreement_contract_id =
+    // RentalAgreementContractId::try_from(bob_executor.execute(proposal_contract.id().accept("", 0))?)?;
 }
 
 // use daml_ledger_codegen::generator::{daml_codegen, ModuleOutputMode, RenderMethod};

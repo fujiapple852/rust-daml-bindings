@@ -6,7 +6,8 @@ members = [
   "daml_ledger_macro",
   "daml_ledger_codegen",
   "daml_ledger_derive",
+  "daml_ledger_util",
   "daml_lf",
-  "sample_apps/ping_pong",
-  "sample_apps/rental"
+  "sample_apps/ping_pong_demo",
+  "sample_apps/rental_demo"
 ]

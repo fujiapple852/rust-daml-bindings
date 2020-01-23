@@ -1,9 +1,10 @@
-use crate::grpc_protobuf_autogen::package_management_service::PackageDetails;
-use crate::grpc_protobuf_autogen::package_service::GetPackageResponse;
-use crate::grpc_protobuf_autogen::package_service::HashFunction;
-use crate::grpc_protobuf_autogen::package_service::PackageStatus;
+use crate::data::{DamlError, DamlResult};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::admin::PackageDetails;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{GetPackageResponse, HashFunction, PackageStatus};
 use crate::util;
+use crate::util::Required;
 use chrono::{DateTime, Utc};
+use std::convert::TryFrom;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlPackage {
@@ -38,9 +39,11 @@ impl DamlPackage {
     }
 }
 
-impl From<GetPackageResponse> for DamlPackage {
-    fn from(mut response: GetPackageResponse) -> Self {
-        Self::new(response.take_archive_payload(), response.take_hash(), response.get_hash_function())
+impl TryFrom<GetPackageResponse> for DamlPackage {
+    type Error = DamlError;
+
+    fn try_from(response: GetPackageResponse) -> DamlResult<Self> {
+        Ok(Self::new(response.archive_payload, response.hash, HashFunction::from_i32(response.hash_function).req()?))
     }
 }
 
@@ -53,8 +56,8 @@ pub enum DamlPackageStatus {
 impl From<PackageStatus> for DamlPackageStatus {
     fn from(status: PackageStatus) -> Self {
         match status {
-            PackageStatus::UNKNOWN => DamlPackageStatus::Unknown,
-            PackageStatus::REGISTERED => DamlPackageStatus::Registered,
+            PackageStatus::Unknown => DamlPackageStatus::Unknown,
+            PackageStatus::Registered => DamlPackageStatus::Registered,
         }
     }
 }
@@ -67,7 +70,7 @@ pub enum DamlHashFunction {
 impl From<HashFunction> for DamlHashFunction {
     fn from(hash_function: HashFunction) -> Self {
         match hash_function {
-            HashFunction::SHA256 => DamlHashFunction::SHA256,
+            HashFunction::Sha256 => DamlHashFunction::SHA256,
         }
     }
 }
@@ -117,13 +120,15 @@ impl DamlPackageDetails {
     }
 }
 
-impl From<PackageDetails> for DamlPackageDetails {
-    fn from(mut details: PackageDetails) -> Self {
-        Self::new(
-            details.take_package_id(),
-            details.get_package_size(),
-            util::make_datetime(&details.take_known_since()),
-            details.take_source_description(),
-        )
+impl TryFrom<PackageDetails> for DamlPackageDetails {
+    type Error = DamlError;
+
+    fn try_from(details: PackageDetails) -> DamlResult<Self> {
+        Ok(Self::new(
+            details.package_id,
+            details.package_size,
+            util::make_datetime(&details.known_since.req()?),
+            details.source_description,
+        ))
     }
 }

@@ -1,9 +1,8 @@
-use crate::data::identifier::DamlIdentifier;
 use crate::data::value::DamlValue;
-use crate::data::DamlError;
-use crate::grpc_protobuf_autogen::value::Variant;
-use crate::grpc_protobuf_autogen::value::{Enum, Value};
-use std::convert::{TryFrom, TryInto};
+use crate::data::{DamlError, DamlIdentifier};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Enum, Identifier, Value, Variant};
+use crate::util::Required;
+use std::convert::TryFrom;
 
 /// A representation of a DAML variant field.
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -42,29 +41,22 @@ impl DamlVariant {
 impl TryFrom<Variant> for DamlVariant {
     type Error = DamlError;
 
-    fn try_from(mut v: Variant) -> Result<Self, Self::Error> {
-        let value = v.take_value().try_into()?;
+    fn try_from(v: Variant) -> Result<Self, Self::Error> {
         Ok(Self::new(
-            v.take_constructor(),
-            Box::new(value),
-            if v.has_variant_id() {
-                Some(v.take_variant_id().into())
-            } else {
-                None
-            },
+            v.constructor,
+            Box::new(v.value.req().and_then(|q| DamlValue::try_from(*q))?),
+            v.variant_id.map(DamlIdentifier::from),
         ))
     }
 }
 
 impl From<DamlVariant> for Variant {
     fn from(daml_variant: DamlVariant) -> Self {
-        let mut variant = Self::new();
-        if let Some(id) = daml_variant.variant_id {
-            variant.set_variant_id(id.into());
+        Self {
+            constructor: daml_variant.constructor,
+            value: Some(Box::new(Value::from(*daml_variant.value))),
+            variant_id: None,
         }
-        variant.set_constructor(daml_variant.constructor);
-        variant.set_value(Into::<Value>::into(*(daml_variant.value)));
-        variant
     }
 }
 
@@ -99,25 +91,16 @@ impl DamlEnum {
 }
 
 impl From<Enum> for DamlEnum {
-    fn from(mut e: Enum) -> Self {
-        Self::new(
-            e.take_constructor(),
-            if e.has_enum_id() {
-                Some(e.take_enum_id().into())
-            } else {
-                None
-            },
-        )
+    fn from(e: Enum) -> Self {
+        Self::new(e.constructor, e.enum_id.map(DamlIdentifier::from))
     }
 }
 
 impl From<DamlEnum> for Enum {
     fn from(daml_enum: DamlEnum) -> Self {
-        let mut grpc_enum = Self::new();
-        if let Some(id) = daml_enum.enum_id {
-            grpc_enum.set_enum_id(id.into());
+        Self {
+            enum_id: daml_enum.enum_id.map(Identifier::from),
+            constructor: daml_enum.constructor,
         }
-        grpc_enum.set_constructor(daml_enum.constructor);
-        grpc_enum
     }
 }

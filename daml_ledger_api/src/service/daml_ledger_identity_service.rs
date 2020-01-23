@@ -1,32 +1,39 @@
-use futures::Future;
-use grpcio::Channel;
-use grpcio::ClientUnaryReceiver;
-
-use crate::data::DamlError;
 use crate::data::DamlResult;
-use crate::grpc_protobuf_autogen::ledger_identity_service::GetLedgerIdentityRequest;
-use crate::grpc_protobuf_autogen::ledger_identity_service::GetLedgerIdentityResponse;
-use crate::grpc_protobuf_autogen::ledger_identity_service_grpc::LedgerIdentityServiceClient;
+use crate::data::{DamlError, DamlTraceContext};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::ledger_identity_service_client::LedgerIdentityServiceClient;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{GetLedgerIdentityRequest, TraceContext};
+use tonic::transport::Channel;
+use tonic::Request;
 
 /// Obtain the unique identity that the DAML ledger.
 pub struct DamlLedgerIdentityService {
-    grpc_client: LedgerIdentityServiceClient,
+    channel: Channel,
 }
 
 impl DamlLedgerIdentityService {
     pub fn new(channel: Channel) -> Self {
         Self {
-            grpc_client: LedgerIdentityServiceClient::new(channel),
+            channel,
         }
     }
 
-    pub fn get_ledger_identity(&self) -> DamlResult<impl Future<Item = String, Error = DamlError>> {
-        let async_result: ClientUnaryReceiver<GetLedgerIdentityResponse> =
-            self.grpc_client.get_ledger_identity_async(&GetLedgerIdentityRequest::new())?;
-        Ok(async_result.map_err(Into::into).map(|mut r| r.take_ledger_id()))
+    /// DOCME fully document this.
+    pub async fn get_ledger_identity(&self) -> DamlResult<String> {
+        self.get_ledger_identity_with_trace(None).await
     }
 
-    pub fn get_ledger_identity_sync(&self) -> DamlResult<String> {
-        self.get_ledger_identity()?.wait()
+    pub async fn get_ledger_identity_with_trace(
+        &self,
+        trace_context: impl Into<Option<DamlTraceContext>>,
+    ) -> DamlResult<String> {
+        let request = Request::new(GetLedgerIdentityRequest {
+            trace_context: trace_context.into().map(TraceContext::from),
+        });
+        let async_result = self.client().get_ledger_identity(request).await.map_err(DamlError::from)?;
+        Ok(async_result.into_inner().ledger_id)
+    }
+
+    fn client(&self) -> LedgerIdentityServiceClient<Channel> {
+        LedgerIdentityServiceClient::new(self.channel.clone())
     }
 }

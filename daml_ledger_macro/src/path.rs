@@ -48,8 +48,8 @@
 ///
 /// Optional `fields` of type [`DamlValue::Optional`] can be accessed by appending a `?` character to the record
 /// `field` name or list element.  If the optional is `Some` then the embedded [`DamlValue`] is extracted and
-/// processing of the path expression continues.  If the optional is `None` then a [`OptionalIsNone`] error will be
-/// returned.
+/// processing of the path expression continues.  If the optional is `None` then a [`MissingRequiredField`] error
+/// will be returned.
 ///
 /// The final `field` may optionally have a `type` specifier by appending a `#` character followed by one
 /// of several supported `type` specifier codes.  If no `type` specifier code is provided then the expression will
@@ -143,7 +143,7 @@
 /// [`DamlValue::Map`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Map
 /// [`DamlValue::Enum`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Enum
 /// [`ListIndexOutOfRange`]: ../../doc/daml_ledger_api/data/enum.Error.html#variant.ListIndexOutOfRange
-/// [`OptionalIsNone`]: ../../doc/daml_ledger_api/data/enum.Error.html#variant.OptionalIsNone
+/// [`MissingRequiredField`]: ../../doc/daml_ledger_api/data/enum.Error.html#variant.MissingRequiredField
 /// [`UnknownField`]: ../../doc/daml_ledger_api/data/enum.Error.html#variant.UnknownField
 /// [`UnexpectedVariant`]: ../../doc/daml_ledger_api/data/enum.Error.html#variant.UnexpectedVariant
 #[macro_export]
@@ -168,7 +168,7 @@ macro_rules! daml_path {
             let field_value = daml_path!(@get_record_field $record, $path);
             let variant_value = daml_path!(@get_variant_value field_value, $($variant)? )?;
             let list_item_value = daml_path!(@get_list_item variant_value, $index);
-            let optional_value = list_item_value.try_optional()?.ok_or(DamlError::OptionalIsNone)?;
+            let optional_value = list_item_value.try_optional()?.ok_or(DamlError::MissingRequiredField)?;
             daml_path!(@priv $($type)? optional_value)
         }
     };
@@ -197,7 +197,7 @@ macro_rules! daml_path {
         {
             let field_value = daml_path!(@get_record_field $record, $path);
             let variant_value = daml_path!(@get_variant_value field_value, $($variant)? )?;
-            let optional_value = variant_value.try_optional()?.ok_or(DamlError::OptionalIsNone)?;
+            let optional_value = variant_value.try_optional()?.ok_or(DamlError::MissingRequiredField)?;
             daml_path!(@priv $($type)? optional_value)
         }
     };
@@ -208,7 +208,7 @@ macro_rules! daml_path {
             let field_value = daml_path!(@get_record_field $record, $path);
             let variant_value = daml_path!(@get_variant_value field_value, $($variant)? )?;
             let list_item_value = daml_path!(@get_list_item variant_value, $index);
-            let optional_value = list_item_value.try_optional()?.ok_or(DamlError::OptionalIsNone)?;
+            let optional_value = list_item_value.try_optional()?.ok_or(DamlError::MissingRequiredField)?;
             let field_as_record = &(optional_value.try_record()?);
             daml_path!( @priv field_as_record $($rest)* )
         }
@@ -230,7 +230,7 @@ macro_rules! daml_path {
         {
             let field_value = daml_path!(@get_record_field $record, $path);
             let variant_value = daml_path!(@get_variant_value field_value, $($variant)? )?;
-            let optional_value = variant_value.try_optional()?.ok_or(DamlError::OptionalIsNone)?;
+            let optional_value = variant_value.try_optional()?.ok_or(DamlError::MissingRequiredField)?;
             let field_as_record = &(optional_value.try_record()?);
             daml_path!( @priv field_as_record $($rest)* )
         }

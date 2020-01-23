@@ -1,56 +1,45 @@
 use crate::data::offset::DamlLedgerOffset;
 use crate::data::trace::DamlTraceContext;
-use crate::data::DamlError;
-use crate::grpc_protobuf_autogen::command_completion_service::Checkpoint;
-use crate::grpc_protobuf_autogen::command_completion_service::CompletionStreamResponse;
-use crate::grpc_protobuf_autogen::completion::Completion;
-use crate::grpc_protobuf_autogen::status::Status;
+use crate::data::{DamlError, DamlResult};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Checkpoint, Completion, CompletionStreamResponse};
+use crate::grpc_protobuf::google::rpc::Status;
 use crate::util;
+use crate::util::Required;
 use chrono::DateTime;
 use chrono::Utc;
-use protobuf::RepeatedField;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct DamlCompletionResponse {
-    pub checkpoint: DamlCheckpoint,
+    pub checkpoint: Option<DamlCheckpoint>,
     pub completions: Vec<DamlCompletion>,
 }
 
 impl DamlCompletionResponse {
-    pub fn new(checkpoint: impl Into<DamlCheckpoint>, completions: impl Into<Vec<DamlCompletion>>) -> Self {
+    pub fn new(checkpoint: impl Into<Option<DamlCheckpoint>>, completions: impl Into<Vec<DamlCompletion>>) -> Self {
         Self {
             checkpoint: checkpoint.into(),
             completions: completions.into(),
         }
     }
 
-    pub fn checkpoint(&self) -> &DamlCheckpoint {
+    pub fn checkpoint(&self) -> &Option<DamlCheckpoint> {
         &self.checkpoint
     }
 
     pub fn completions(&self) -> &[DamlCompletion] {
         &self.completions
     }
-
-    // TODO review this
-    pub fn take_completions(self) -> Vec<DamlCompletion> {
-        self.completions
-    }
 }
 
 impl TryFrom<CompletionStreamResponse> for DamlCompletionResponse {
     type Error = DamlError;
 
-    fn try_from(mut response: CompletionStreamResponse) -> Result<Self, Self::Error> {
-        let checkpoint: DamlCheckpoint = response.take_checkpoint().try_into()?;
-        Ok(Self::new(
-            checkpoint,
-            (response.take_completions() as RepeatedField<Completion>)
-                .into_iter()
-                .map(Into::into)
-                .collect::<Vec<DamlCompletion>>(),
-        ))
+    fn try_from(response: CompletionStreamResponse) -> Result<Self, Self::Error> {
+        let checkpoint = response.checkpoint.map(DamlCheckpoint::try_from).transpose()?;
+        let completions =
+            response.completions.into_iter().map(DamlCompletion::try_from).collect::<DamlResult<Vec<_>>>()?;
+        Ok(Self::new(checkpoint, completions))
     }
 }
 
@@ -80,9 +69,10 @@ impl DamlCheckpoint {
 impl TryFrom<Checkpoint> for DamlCheckpoint {
     type Error = DamlError;
 
-    fn try_from(mut checkpoint: Checkpoint) -> Result<Self, Self::Error> {
-        let offset: DamlLedgerOffset = checkpoint.take_offset().try_into()?;
-        Ok(Self::new(util::make_datetime(&checkpoint.take_record_time()), offset))
+    fn try_from(checkpoint: Checkpoint) -> Result<Self, Self::Error> {
+        let record_time = util::make_datetime(&checkpoint.record_time.req()?);
+        let offset = DamlLedgerOffset::try_from(checkpoint.offset.req()?)?;
+        Ok(Self::new(record_time, offset))
     }
 }
 
@@ -126,18 +116,19 @@ impl DamlCompletion {
     }
 }
 
-impl From<Completion> for DamlCompletion {
-    fn from(mut completion: Completion) -> Self {
-        Self::new(
-            completion.take_command_id(),
-            completion.take_status(),
-            completion.take_transaction_id(),
-            if completion.has_trace_context() {
-                Some(completion.take_trace_context().into())
-            } else {
-                None
-            },
-        )
+impl TryFrom<Completion> for DamlCompletion {
+    type Error = DamlError;
+
+    fn try_from(completion: Completion) -> DamlResult<Self> {
+        Ok(Self::new(
+            completion.command_id,
+            // The protobuf field `Completion.status` is documented as being optional but is treated as mandatory here
+            // as it is unclear what the absence of this field implies.  An alternative solution would be to create a
+            // special "unknown" `DamlStatus` value, perhaps by reworking `DamlStatus` as an enum.
+            DamlStatus::from(completion.status.req()?),
+            completion.transaction_id,
+            completion.trace_context.map(DamlTraceContext::from),
+        ))
     }
 }
 

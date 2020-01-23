@@ -1,7 +1,7 @@
 use crate::data::identifier::DamlIdentifier;
 use crate::data::value::DamlRecord;
-use crate::grpc_protobuf_autogen::commands::Command;
-use crate::grpc_protobuf_autogen::commands::CreateCommand;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::command::Command;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::CreateCommand;
 
 /// Create a new contract instance based on a template.
 #[derive(Debug, Eq, PartialEq)]
@@ -32,11 +32,9 @@ impl DamlCreateCommand {
 
 impl From<DamlCreateCommand> for Command {
     fn from(daml_create_command: DamlCreateCommand) -> Self {
-        let mut create_command = CreateCommand::new();
-        create_command.set_template_id(daml_create_command.template_id.into());
-        create_command.set_create_arguments(daml_create_command.create_arguments.into());
-        let mut command = Self::new();
-        command.set_create(create_command);
-        command
+        Command::Create(CreateCommand {
+            template_id: Some(daml_create_command.template_id.into()),
+            create_arguments: Some(daml_create_command.create_arguments.into()),
+        })
     }
 }

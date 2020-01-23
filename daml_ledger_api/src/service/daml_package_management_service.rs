@@ -1,15 +1,13 @@
 use crate::data::package::DamlPackageDetails;
-use crate::data::DamlError;
+
 use crate::data::DamlResult;
-use crate::grpc_protobuf_autogen::package_management_service::{
-    ListKnownPackagesRequest, ListKnownPackagesResponse, UploadDarFileRequest, UploadDarFileResponse,
-};
-use crate::grpc_protobuf_autogen::package_management_service_grpc::PackageManagementServiceClient;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::admin::package_management_service_client::PackageManagementServiceClient;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::admin::{ListKnownPackagesRequest, UploadDarFileRequest};
 use bytes::buf::Buf;
-use bytes::IntoBuf;
-use futures::Future;
-use grpcio::Channel;
-use grpcio::ClientUnaryReceiver;
+use bytes::Bytes;
+use std::convert::TryFrom;
+use tonic::transport::Channel;
+use tonic::Request;
 
 /// Query the DAML-LF packages supported by the ledger participant and upload DAR files.
 ///
@@ -21,33 +19,21 @@ use grpcio::ClientUnaryReceiver;
 /// `UNAUTHENTICATED`, if the caller fails to provide a valid access token, and will respond with `PERMISSION_DENIED`,
 /// if the claims in the token are insufficient to perform a given operation.
 pub struct DamlPackageManagementService {
-    grpc_client: PackageManagementServiceClient,
+    channel: Channel,
 }
 
 impl DamlPackageManagementService {
     pub fn new(channel: Channel) -> Self {
         Self {
-            grpc_client: PackageManagementServiceClient::new(channel),
+            channel,
         }
     }
 
     /// Returns the details of all DAML-LF packages known to the backing participant.
-    pub fn list_known_packages(&self) -> DamlResult<impl Future<Item = Vec<DamlPackageDetails>, Error = DamlError>> {
-        let request = ListKnownPackagesRequest::new();
-        let async_response: ClientUnaryReceiver<ListKnownPackagesResponse> =
-            self.grpc_client.list_known_packages_async(&request)?;
-        Ok(async_response
-            .map_err(Into::into)
-            .map(|mut r| r.take_package_details().into_iter().map(Into::into).collect()))
-    }
-
-    /// Synchronous version of `list_known_packages` which blocks on the calling thread.
-    ///
-    /// See [`list_known_packages`] for details of the behaviour and example usage.
-    ///
-    /// [`list_known_packages`]: DamlPackageManagementService::list_known_packages
-    pub fn list_known_packages_sync(&self) -> DamlResult<Vec<DamlPackageDetails>> {
-        self.list_known_packages()?.wait()
+    pub async fn list_known_packages(&self) -> DamlResult<Vec<DamlPackageDetails>> {
+        let request = Request::new(ListKnownPackagesRequest {});
+        let all_known_packages = self.client().list_known_packages(request).await?;
+        all_known_packages.into_inner().package_details.into_iter().map(DamlPackageDetails::try_from).collect()
     }
 
     /// Upload a DAR file to the backing participant.
@@ -61,20 +47,15 @@ impl DamlPackageManagementService {
     /// participant. If DAR file is too big or is malformed, the backing participant will respond with
     /// `INVALID_ARGUMENT`.  The maximum supported size is implementation specific.  Contains a DAML archive
     /// `dar`file, which in turn is a jar like zipped container for `daml_lf` archives.
-    pub fn upload_dar_file(&self, bytes: impl IntoBuf) -> DamlResult<impl Future<Item = (), Error = DamlError>> {
-        let mut request = UploadDarFileRequest::new();
-        request.set_dar_file(bytes.into_buf().bytes().to_vec());
-        let async_response: ClientUnaryReceiver<UploadDarFileResponse> =
-            self.grpc_client.upload_dar_file_async(&request)?;
-        Ok(async_response.map_err(Into::into).map(|_| ()))
+    pub async fn upload_dar_file(&self, bytes: impl Into<Bytes>, submission_id: Option<String>) -> DamlResult<()> {
+        let request = Request::new(UploadDarFileRequest {
+            dar_file: bytes.into().bytes().to_vec(),
+            submission_id: submission_id.unwrap_or_default()
+        });
+        self.client().upload_dar_file(request).await.map_err(Into::into).map(|_| ())
     }
 
-    /// Synchronous version of `upload_dar_file` which blocks on the calling thread.
-    ///
-    /// See [`upload_dar_file`] for details of the behaviour and example usage.
-    ///
-    /// [`upload_dar_file`]: DamlPackageManagementService::upload_dar_file
-    pub fn upload_dar_file_sync(&self, bytes: impl IntoBuf) -> DamlResult<()> {
-        self.upload_dar_file(bytes)?.wait()
+    fn client(&self) -> PackageManagementServiceClient<Channel> {
+        PackageManagementServiceClient::new(self.channel.clone())
     }
 }

@@ -2,7 +2,9 @@ use crate::data::command::{DamlCommand, DamlCreateCommand, DamlExerciseCommand};
 use crate::data::event::{DamlCreatedEvent, DamlTreeEvent};
 use crate::data::value::DamlValue;
 use crate::data::{DamlError, DamlResult, DamlTransaction, DamlTransactionTree};
+use crate::util::Required;
 use crate::{DamlCommandFactory, DamlLedgerClient};
+use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use std::ops::Add;
 use time::Duration;
@@ -73,17 +75,19 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
     }
 }
 
+#[async_trait]
 pub trait Executor {
     fn execute<T, F: FnOnce(&Self) -> DamlResult<T>>(&self, f: F) -> DamlResult<T> {
         f(self)
     }
 }
 
+#[async_trait]
 pub trait CommandExecutor {
-    fn execute_for_transaction_sync(&self, command: DamlCommand) -> DamlResult<DamlTransaction>;
-    fn execute_for_transaction_tree_sync(&self, command: DamlCommand) -> DamlResult<DamlTransactionTree>;
-    fn execute_create(&self, create_command: DamlCreateCommand) -> DamlResult<DamlCreatedEvent>;
-    fn execute_exercise(&self, exercise_command: DamlExerciseCommand) -> DamlResult<DamlValue>;
+    async fn execute_for_transaction(&self, command: DamlCommand) -> DamlResult<DamlTransaction>;
+    async fn execute_for_transaction_tree(&self, command: DamlCommand) -> DamlResult<DamlTransactionTree>;
+    async fn execute_create(&self, create_command: DamlCreateCommand) -> DamlResult<DamlCreatedEvent>;
+    async fn execute_exercise(&self, exercise_command: DamlExerciseCommand) -> DamlResult<DamlValue>;
 }
 
 pub struct DamlSimpleExecutor<'a> {
@@ -124,30 +128,32 @@ impl<'a> DamlSimpleExecutor<'a> {
         }
     }
 
-    fn submit_and_wait_for_transaction_sync(&self, command: DamlCommand) -> DamlResult<DamlTransaction> {
+    async fn submit_and_wait_for_transaction(&self, command: DamlCommand) -> DamlResult<DamlTransaction> {
         let commands = self.command_factory.make_command(command);
-        self.ledger_client.command_service().submit_and_wait_for_transaction_sync(commands)
+        self.ledger_client.command_service().submit_and_wait_for_transaction(commands).await
     }
 
-    fn submit_and_wait_for_transaction_tree_sync(&self, command: DamlCommand) -> DamlResult<DamlTransactionTree> {
+    async fn submit_and_wait_for_transaction_tree(&self, command: DamlCommand) -> DamlResult<DamlTransactionTree> {
         let commands = self.command_factory.make_command(command);
-        self.ledger_client.command_service().submit_and_wait_for_transaction_tree_sync(commands)
+        self.ledger_client.command_service().submit_and_wait_for_transaction_tree(commands).await
     }
 }
 
 impl Executor for DamlSimpleExecutor<'_> {}
 
+#[async_trait]
 impl CommandExecutor for DamlSimpleExecutor<'_> {
-    fn execute_for_transaction_sync(&self, command: DamlCommand) -> DamlResult<DamlTransaction> {
-        self.submit_and_wait_for_transaction_sync(command)
+    async fn execute_for_transaction(&self, command: DamlCommand) -> DamlResult<DamlTransaction> {
+        self.submit_and_wait_for_transaction(command).await
     }
 
-    fn execute_for_transaction_tree_sync(&self, command: DamlCommand) -> DamlResult<DamlTransactionTree> {
-        self.submit_and_wait_for_transaction_tree_sync(command)
+    async fn execute_for_transaction_tree(&self, command: DamlCommand) -> DamlResult<DamlTransactionTree> {
+        self.submit_and_wait_for_transaction_tree(command).await
     }
 
-    fn execute_create(&self, create_command: DamlCreateCommand) -> Result<DamlCreatedEvent, DamlError> {
-        self.submit_and_wait_for_transaction_sync(DamlCommand::Create(create_command))?
+    async fn execute_create(&self, create_command: DamlCreateCommand) -> Result<DamlCreatedEvent, DamlError> {
+        self.submit_and_wait_for_transaction(DamlCommand::Create(create_command))
+            .await?
             .take_events()
             .swap_remove(0)
             .try_created()
@@ -155,8 +161,8 @@ impl CommandExecutor for DamlSimpleExecutor<'_> {
 
     // TODO only takes the first root event
     // TODO abstract away the "find the root" logic
-    fn execute_exercise(&self, exercise_command: DamlExerciseCommand) -> Result<DamlValue, DamlError> {
-        let tx = self.submit_and_wait_for_transaction_tree_sync(DamlCommand::Exercise(exercise_command))?;
+    async fn execute_exercise(&self, exercise_command: DamlExerciseCommand) -> Result<DamlValue, DamlError> {
+        let tx = self.submit_and_wait_for_transaction_tree(DamlCommand::Exercise(exercise_command)).await?;
         let root_event_id = tx.root_event_ids()[0].to_owned();
         tx.take_events_by_id()
             .into_iter()
@@ -170,6 +176,6 @@ impl CommandExecutor for DamlSimpleExecutor<'_> {
                     None
                 }
             })
-            .ok_or(DamlError::OptionalIsNone) // TODO replace this silly error!
+            .req()
     }
 }

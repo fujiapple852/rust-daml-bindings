@@ -1,5 +1,7 @@
-use crate::grpc_protobuf_autogen::ledger_configuration_service::LedgerConfiguration;
-use protobuf::well_known_types;
+use crate::data::{DamlError, DamlResult};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::LedgerConfiguration;
+use crate::util::Required;
+use std::convert::TryFrom;
 use std::time::Duration;
 
 /// DAML ledger configuration information.
@@ -26,15 +28,17 @@ impl DamlLedgerConfiguration {
     }
 }
 
-impl From<LedgerConfiguration> for DamlLedgerConfiguration {
-    fn from(mut response: LedgerConfiguration) -> Self {
-        let min: well_known_types::Duration = response.take_min_ttl();
-        let max: well_known_types::Duration = response.take_max_ttl();
-        Self::new(from_duration(&min), from_duration(&max))
+impl TryFrom<LedgerConfiguration> for DamlLedgerConfiguration {
+    type Error = DamlError;
+
+    fn try_from(response: LedgerConfiguration) -> DamlResult<Self> {
+        let min: prost_types::Duration = response.min_ttl.req()?;
+        let max: prost_types::Duration = response.max_ttl.req()?;
+        Ok(Self::new(from_duration(&min), from_duration(&max)))
     }
 }
 
 #[allow(clippy::cast_sign_loss)]
-fn from_duration(duration: &well_known_types::Duration) -> Duration {
-    Duration::new(duration.get_seconds() as u64, duration.get_nanos() as u32)
+fn from_duration(duration: &prost_types::Duration) -> Duration {
+    Duration::new(duration.seconds as u64, duration.nanos as u32)
 }

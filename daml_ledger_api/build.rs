@@ -1,9 +1,7 @@
 use itertools::Itertools;
 use std::error;
 use std::fs;
-use std::fs::File;
 use std::io::Error;
-use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -15,30 +13,14 @@ const ALL_PROTO_SRC_PATHS: &[&str] = &[
     "google/rpc",
 ];
 const PROTO_ROOT_PATH: &str = "resources/protobuf";
-const OUTPUT_PATH: &str = "src/grpc_protobuf_autogen";
-const MODULE_HEADER: &[&str] = &["clippy::all", "clippy::pedantic", "renamed_and_removed_lints", "bare_trait_objects"];
 
 fn main() -> Result<(), Box<dyn error::Error>> {
-    fs::create_dir_all(OUTPUT_PATH)?;
     let all_protos = get_all_protos(ALL_PROTO_SRC_PATHS)?;
-    protoc_grpcio::compile_grpc_protos(all_protos, &[PROTO_ROOT_PATH], OUTPUT_PATH, None)?;
-    generate_module_src()?;
-    println!("cargo:rerun-if-changed={}", PROTO_ROOT_PATH);
-    Ok(())
-}
-
-fn generate_module_src() -> Result<(), Box<dyn error::Error>> {
-    let all_generated_src = get_generated_files(OUTPUT_PATH)?;
-    let names: Vec<String> = all_generated_src
-        .iter()
-        .map(|p| Ok(p.file_stem().ok_or("no filename")?.to_str().ok_or("invalid filename")?.to_owned()))
-        .collect::<Result<Vec<String>, String>>()?;
-    let mut file = File::create(Path::new(&format!("{}/mod.rs", OUTPUT_PATH)))?;
-    let rendered_headers: String = MODULE_HEADER.iter().map(|item| format!("#![allow({})]\n", item)).collect();
-    file.write(rendered_headers.as_bytes())?;
-    for name in names {
-        file.write(format!("pub mod {};\n", name).as_bytes())?;
-    }
+    tonic_build::configure()
+        .build_server(false)
+        .build_client(true)
+        .format(false)
+        .compile(all_protos.as_slice(), vec![PROTO_ROOT_PATH.into()].as_slice())?;
     Ok(())
 }
 
@@ -54,18 +36,6 @@ fn get_protos_from_dir(dir: &Path) -> Result<Vec<PathBuf>, Error> {
         .filter_map(|entry| match entry {
             Ok(d) => match d.path().extension() {
                 Some(a) if a == "proto" => Some(Ok(d.path())),
-                _ => None,
-            },
-            Err(e) => Some(Err(e)),
-        })
-        .collect()
-}
-
-fn get_generated_files<P: AsRef<Path>>(output_dir: P) -> Result<Vec<PathBuf>, Error> {
-    fs::read_dir(output_dir)?
-        .filter_map(|entry| match entry {
-            Ok(d) => match d.path().file_stem() {
-                Some(a) if a != "mod" => Some(Ok(d.path())),
                 _ => None,
             },
             Err(e) => Some(Err(e)),

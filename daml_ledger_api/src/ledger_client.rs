@@ -1,27 +1,21 @@
-use grpcio::{Channel, ChannelBuilder, EnvBuilder};
-use std::sync::Arc;
 #[cfg(feature = "testing")]
 use std::time::{Duration, Instant};
 
 #[cfg(feature = "testing")]
-use crate::data::DamlError::ResetTimeout;
-use crate::data::DamlResult;
+use crate::data::{DamlError, DamlResult};
 use crate::service::DamlActiveContractsService;
-use crate::service::DamlCommandCompletionService;
-use crate::service::DamlCommandService;
 use crate::service::DamlCommandSubmissionService;
-use crate::service::DamlLedgerConfigurationService;
 use crate::service::DamlLedgerIdentityService;
-use crate::service::DamlPackageService;
 #[cfg(feature = "testing")]
 use crate::service::DamlResetService;
-#[cfg(feature = "testing")]
-use crate::service::DamlTimeService;
-use crate::service::DamlTransactionService;
+use crate::service::{
+    DamlCommandCompletionService, DamlLedgerConfigurationService, DamlPackageService, DamlTimeService,
+};
+use crate::service::{DamlCommandService, DamlTransactionService};
 #[cfg(feature = "admin")]
 use crate::service::{DamlPackageManagementService, DamlPartyManagementService};
-use log::info;
-
+#[cfg(feature = "testing")]
+use tonic::transport::Channel;
 #[cfg(feature = "testing")]
 const RESET_TIMEOUT: Duration = Duration::from_secs(5);
 
@@ -49,9 +43,19 @@ pub struct DamlLedgerClient {
 }
 
 impl DamlLedgerClient {
-    pub fn connect(hostname: impl Into<String>, port: u16) -> DamlResult<Self> {
+    pub async fn connect(hostname: impl Into<String>, port: u16) -> DamlResult<Self> {
         let hostname = hostname.into();
-        Self::make_client_from_channel(&Self::make_channel(&hostname, port), hostname, port)
+        let channel = Self::wait_for_channel(&hostname, port).await?;
+        let ledger_identity = Self::wait_for_ledger_identity(&channel).await?;
+        Self::make_client_from_channel(&channel, &ledger_identity, hostname, port).await
+    }
+
+    #[cfg(feature = "testing")]
+    pub async fn reset_and_wait(self) -> DamlResult<Self> {
+        self.reset_service.reset().await?;
+        let channel = Self::wait_for_channel(&self.hostname, self.port).await?;
+        let ledger_identity = Self::wait_for_ledger_identity(&channel).await?;
+        Self::make_client_from_channel(&channel, &ledger_identity, self.hostname, self.port).await
     }
 
     pub fn hostname(&self) -> &str {
@@ -98,11 +102,13 @@ impl DamlLedgerClient {
         &self.active_contract_service
     }
 
+    // TODO has no tests!
     #[cfg(feature = "admin")]
     pub fn package_management_service(&self) -> &DamlPackageManagementService {
         &self.package_management_service
     }
 
+    // TODO has no tests!
     #[cfg(feature = "admin")]
     pub fn party_management_service(&self) -> &DamlPartyManagementService {
         &self.party_management_service
@@ -113,49 +119,61 @@ impl DamlLedgerClient {
         &self.time_service
     }
 
-    #[cfg(feature = "testing")]
-    pub fn reset_and_wait(self) -> DamlResult<Self> {
-        self.reset_service.reset_sync()?;
-        let channel = Self::make_channel(&self.hostname, self.port);
+    async fn wait_for_channel(hostname: &str, port: u16) -> DamlResult<Channel> {
+        let mut channel = Self::open_channel(hostname, port).await;
+        let start = Instant::now();
+        while let Err(e) = channel {
+            if start.elapsed() > RESET_TIMEOUT {
+                return Err(e);
+            }
+            channel = Self::open_channel(hostname, port).await;
+        }
+        channel
+    }
+
+    async fn wait_for_ledger_identity(channel: &Channel) -> DamlResult<String> {
         let ledger_identity_service = DamlLedgerIdentityService::new(channel.clone());
         let start = Instant::now();
-        let mut ledger_identity: DamlResult<String> = ledger_identity_service.get_ledger_identity_sync();
-        while let Err(_) = ledger_identity {
+        let mut ledger_identity: DamlResult<String> = ledger_identity_service.get_ledger_identity().await;
+        while let Err(e) = ledger_identity {
             if start.elapsed() > RESET_TIMEOUT {
-                return Err(ResetTimeout);
+                return Err(e);
             }
-            ledger_identity = ledger_identity_service.get_ledger_identity_sync();
+            ledger_identity = ledger_identity_service.get_ledger_identity().await;
         }
-        Self::make_client_from_channel(&channel, self.hostname, self.port)
+        ledger_identity
     }
 
-    fn make_channel(hostname: &str, port: u16) -> Channel {
-        let env = Arc::new(EnvBuilder::new().build());
-        ChannelBuilder::new(env).connect(&format!("{}:{}", hostname, port))
+    // TODO better control of connection string for clients needed
+    // TODO support tls and other options, perhaps let users BYO channel?
+    async fn open_channel(hostname: &str, port: u16) -> DamlResult<Channel> {
+        Channel::from_shared(format!("http://{}:{}", hostname, port))?.connect().await.map_err(DamlError::from)
     }
 
-    fn make_client_from_channel(channel: &Channel, hostname: String, port: u16) -> DamlResult<Self> {
-        info!("making client for {}:{}", hostname, port);
-        let ledger_identity_service = DamlLedgerIdentityService::new(channel.clone());
-        let ledger_identity = ledger_identity_service.get_ledger_identity_sync()?;
+    async fn make_client_from_channel(
+        channel: &Channel,
+        ledger_identity: &str,
+        hostname: String,
+        port: u16,
+    ) -> DamlResult<Self> {
         Ok(Self {
             hostname,
             port,
-            ledger_identity: ledger_identity.clone(),
-            ledger_identity_service,
-            ledger_configuration_service: DamlLedgerConfigurationService::new(channel.clone(), ledger_identity.clone()),
-            package_service: DamlPackageService::new(channel.clone(), ledger_identity.clone()),
-            command_submission_service: DamlCommandSubmissionService::new(channel.clone(), ledger_identity.clone()),
-            transaction_service: DamlTransactionService::new(channel.clone(), ledger_identity.clone()),
-            command_service: DamlCommandService::new(channel.clone(), ledger_identity.clone()),
-            command_completion_service: DamlCommandCompletionService::new(channel.clone(), ledger_identity.clone()),
-            active_contract_service: DamlActiveContractsService::new(channel.clone(), ledger_identity.clone()),
+            ledger_identity: ledger_identity.to_owned(),
+            ledger_identity_service: DamlLedgerIdentityService::new(channel.clone()),
+            ledger_configuration_service: DamlLedgerConfigurationService::new(channel.clone(), ledger_identity),
+            package_service: DamlPackageService::new(channel.clone(), ledger_identity),
+            command_submission_service: DamlCommandSubmissionService::new(channel.clone(), ledger_identity),
+            transaction_service: DamlTransactionService::new(channel.clone(), ledger_identity),
+            command_service: DamlCommandService::new(channel.clone(), ledger_identity),
+            command_completion_service: DamlCommandCompletionService::new(channel.clone(), ledger_identity),
+            active_contract_service: DamlActiveContractsService::new(channel.clone(), ledger_identity),
             #[cfg(feature = "admin")]
             package_management_service: DamlPackageManagementService::new(channel.clone()),
             #[cfg(feature = "admin")]
             party_management_service: DamlPartyManagementService::new(channel.clone()),
             #[cfg(feature = "testing")]
-            reset_service: DamlResetService::new(channel.clone(), ledger_identity.clone()),
+            reset_service: DamlResetService::new(channel.clone(), ledger_identity),
             #[cfg(feature = "testing")]
             time_service: DamlTimeService::new(channel.clone(), ledger_identity),
         })

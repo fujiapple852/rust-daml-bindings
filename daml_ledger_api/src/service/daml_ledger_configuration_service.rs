@@ -1,49 +1,53 @@
-use grpcio::Channel;
-
 use crate::data::DamlError;
 use crate::data::DamlLedgerConfiguration;
 use crate::data::DamlResult;
 use crate::data::DamlTraceContext;
-use crate::grpc_protobuf_autogen::ledger_configuration_service::GetLedgerConfigurationRequest;
-use crate::grpc_protobuf_autogen::ledger_configuration_service::GetLedgerConfigurationResponse;
-use crate::grpc_protobuf_autogen::ledger_configuration_service_grpc::LedgerConfigurationServiceClient;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::ledger_configuration_service_client::LedgerConfigurationServiceClient;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{GetLedgerConfigurationRequest, TraceContext};
+use crate::util::Required;
+use futures::stream::StreamExt;
 use futures::Stream;
-use grpcio::ClientSStreamReceiver;
+use std::convert::TryFrom;
+use tonic::transport::Channel;
+use tonic::Request;
 
 /// Subscribe to configuration changes of a DAML ledger.
 pub struct DamlLedgerConfigurationService {
-    grpc_client: LedgerConfigurationServiceClient,
+    channel: Channel,
     ledger_id: String,
 }
 
 impl DamlLedgerConfigurationService {
-    pub fn new(channel: Channel, ledger_id: String) -> Self {
+    pub fn new(channel: Channel, ledger_id: impl Into<String>) -> Self {
         Self {
-            grpc_client: LedgerConfigurationServiceClient::new(channel),
-            ledger_id,
+            channel,
+            ledger_id: ledger_id.into(),
         }
     }
 
-    /// TODO fully document this
-    pub fn get_ledger_configuration(
+    /// DOCME fully document this
+    pub async fn get_ledger_configuration(
         &self,
-    ) -> DamlResult<impl Stream<Item = DamlLedgerConfiguration, Error = DamlError>> {
-        self.get_ledger_configuration_with_trace(None)
+    ) -> DamlResult<impl Stream<Item = DamlResult<DamlLedgerConfiguration>>> {
+        self.get_ledger_configuration_with_trace(None).await
     }
 
-    pub fn get_ledger_configuration_with_trace(
+    pub async fn get_ledger_configuration_with_trace(
         &self,
         trace_context: impl Into<Option<DamlTraceContext>>,
-    ) -> DamlResult<impl Stream<Item = DamlLedgerConfiguration, Error = DamlError>> {
-        let mut request = GetLedgerConfigurationRequest::new();
-        request.set_ledger_id(self.ledger_id.clone());
-        if let Some(tc) = trace_context.into() {
-            request.set_trace_context(tc.into());
-        }
-        let async_response: ClientSStreamReceiver<GetLedgerConfigurationResponse> =
-            self.grpc_client.get_ledger_configuration(&request)?;
-        Ok(async_response
-            .map_err(Into::into)
-            .map(|mut r: GetLedgerConfigurationResponse| r.take_ledger_configuration().into()))
+    ) -> DamlResult<impl Stream<Item = DamlResult<DamlLedgerConfiguration>>> {
+        let request = Request::new(GetLedgerConfigurationRequest {
+            ledger_id: self.ledger_id.clone(),
+            trace_context: trace_context.into().map(TraceContext::from),
+        });
+        let config_stream = self.client().get_ledger_configuration(request).await?.into_inner();
+        Ok(config_stream.map(|item| match item {
+            Ok(config) => DamlLedgerConfiguration::try_from(config.ledger_configuration.req()?),
+            Err(e) => Err(DamlError::from(e)),
+        }))
+    }
+
+    fn client(&self) -> LedgerConfigurationServiceClient<Channel> {
+        LedgerConfigurationServiceClient::new(self.channel.clone())
     }
 }

@@ -1,7 +1,5 @@
 use crate::data::identifier::DamlIdentifier;
-use crate::grpc_protobuf_autogen::transaction_filter::Filters;
-use crate::grpc_protobuf_autogen::transaction_filter::InclusiveFilters;
-use crate::grpc_protobuf_autogen::transaction_filter::TransactionFilter;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Filters, InclusiveFilters, TransactionFilter};
 use std::collections::hash_map::HashMap;
 
 #[derive(Debug, Eq, PartialEq, Default)]
@@ -21,13 +19,15 @@ impl DamlFilters {
 
 impl From<DamlFilters> for Filters {
     fn from(daml_filters: DamlFilters) -> Self {
-        let mut filters = Self::new();
-        if !daml_filters.template_ids.is_empty() {
-            let mut inclusive = InclusiveFilters::new();
-            inclusive.set_template_ids(daml_filters.template_ids.into_iter().map(Into::into).collect());
-            filters.set_inclusive(inclusive);
+        Filters {
+            inclusive: if daml_filters.template_ids.is_empty() {
+                None
+            } else {
+                Some(InclusiveFilters {
+                    template_ids: daml_filters.template_ids.into_iter().map(Into::into).collect(),
+                })
+            },
         }
-        filters
     }
 }
 
@@ -56,10 +56,12 @@ impl DamlTransactionFilter {
 
 impl From<DamlTransactionFilter> for TransactionFilter {
     fn from(daml_transaction_filter: DamlTransactionFilter) -> Self {
-        let mut filter = Self::new();
-        filter.set_filters_by_party(
-            daml_transaction_filter.filters_by_party.into_iter().map(|(k, v)| (k, v.into())).collect(),
-        );
-        filter
+        TransactionFilter {
+            filters_by_party: daml_transaction_filter
+                .filters_by_party
+                .into_iter()
+                .map(|(k, v)| (k, Filters::from(v)))
+                .collect(),
+        }
     }
 }

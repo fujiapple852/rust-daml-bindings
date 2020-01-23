@@ -1,4 +1,4 @@
-use crate::grpc_protobuf_autogen::party_management_service::PartyDetails;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::admin::PartyDetails;
 
 /// The details of a DAML party.
 #[derive(Debug, Eq, PartialEq)]
@@ -34,7 +34,7 @@ impl DamlPartyDetails {
 }
 
 impl From<PartyDetails> for DamlPartyDetails {
-    fn from(mut details: PartyDetails) -> Self {
-        Self::new(details.take_party(), details.take_display_name(), details.is_local)
+    fn from(details: PartyDetails) -> Self {
+        Self::new(details.party, details.display_name, details.is_local)
     }
 }

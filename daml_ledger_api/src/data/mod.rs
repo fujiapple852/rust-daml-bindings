@@ -77,4 +77,4 @@ mod configuration;
 pub use self::configuration::DamlLedgerConfiguration;
 
 mod active;
-pub use self::active::DamlActiveContracts;
+pub use active::DamlActiveContracts;

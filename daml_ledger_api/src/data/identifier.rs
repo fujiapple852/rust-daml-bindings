@@ -1,4 +1,4 @@
-use crate::grpc_protobuf_autogen::value::Identifier;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::Identifier;
 
 /// Unique identifier of an entity on a DAML ledger.
 #[derive(Debug, PartialEq, Eq, Default, Clone)]
@@ -32,16 +32,16 @@ impl DamlIdentifier {
 
 impl From<DamlIdentifier> for Identifier {
     fn from(daml_identifier: DamlIdentifier) -> Self {
-        let mut identifier = Self::new();
-        identifier.set_package_id(daml_identifier.package_id);
-        identifier.set_module_name(daml_identifier.module_name);
-        identifier.set_entity_name(daml_identifier.entity_name);
-        identifier
+        Self {
+            package_id: daml_identifier.package_id,
+            module_name: daml_identifier.module_name,
+            entity_name: daml_identifier.entity_name,
+        }
     }
 }
 
 impl From<Identifier> for DamlIdentifier {
-    fn from(mut id: Identifier) -> Self {
-        Self::new(id.take_package_id(), id.take_module_name(), id.take_entity_name())
+    fn from(id: Identifier) -> Self {
+        Self::new(id.package_id, id.module_name, id.entity_name)
     }
 }

@@ -10,7 +10,7 @@ mod daml_party_management_service;
 mod daml_reset_service;
 mod daml_time_service;
 mod daml_transaction_service;
-mod verbosity;
+mod daml_verbosity;
 
 // reexport all types (flatten module name space)
 pub use self::daml_active_contracts_service::*;
@@ -25,4 +25,4 @@ pub use self::daml_party_management_service::*;
 pub use self::daml_reset_service::*;
 pub use self::daml_time_service::*;
 pub use self::daml_transaction_service::*;
-pub use self::verbosity::DamlVerbosity;
+pub use self::daml_verbosity::DamlVerbosity;

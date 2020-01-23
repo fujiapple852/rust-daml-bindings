@@ -1,0 +1,12 @@
+[package]
+name = "daml_ledger_util"
+description = "Utilities for working with the DAML Ledger API"
+version = "0.1.0"
+authors = ["FujiApple <fujiapple852@gmail.com>"]
+readme = "README.md"
+keywords = ["daml", "api", "ledger"]
+edition = "2018"
+
+[dependencies]
+daml_ledger_api = { path = "../daml_ledger_api" }
+daml_lf = { path = "../daml_lf" }

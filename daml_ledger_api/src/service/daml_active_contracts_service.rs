@@ -1,18 +1,18 @@
-use grpcio::Channel;
-
 use crate::data::filter::DamlTransactionFilter;
-use crate::data::DamlActiveContracts;
 use crate::data::DamlError;
 use crate::data::DamlResult;
-use crate::data::DamlTraceContext;
-use crate::grpc_protobuf_autogen::active_contracts_service::GetActiveContractsRequest;
-use crate::grpc_protobuf_autogen::active_contracts_service::GetActiveContractsResponse;
-use crate::grpc_protobuf_autogen::active_contracts_service_grpc::ActiveContractsServiceClient;
+use crate::data::{DamlActiveContracts, DamlTraceContext};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::active_contracts_service_client::ActiveContractsServiceClient;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{
+    GetActiveContractsRequest, TraceContext, TransactionFilter,
+};
 use crate::service::DamlVerbosity;
-use futures::future::{err, ok};
+
 use futures::Stream;
-use grpcio::ClientSStreamReceiver;
-use std::convert::TryInto;
+use futures::StreamExt;
+use std::convert::TryFrom;
+use tonic::transport::Channel;
+use tonic::Request;
 
 /// Returns a stream of the active contracts on a DAML ledger.
 ///
@@ -25,50 +25,46 @@ use std::convert::TryInto;
 ///
 /// [`DamlLedgerOffsetBoundary::Begin`]: crate::data::offset::DamlLedgerOffsetBoundary::Begin
 pub struct DamlActiveContractsService {
-    grpc_client: ActiveContractsServiceClient,
+    channel: Channel,
     ledger_id: String,
 }
 
 impl DamlActiveContractsService {
-    pub fn new(channel: Channel, ledger_id: String) -> Self {
+    pub fn new(channel: Channel, ledger_id: impl Into<String>) -> Self {
         Self {
-            grpc_client: ActiveContractsServiceClient::new(channel),
-            ledger_id,
+            channel,
+            ledger_id: ledger_id.into(),
         }
     }
 
-    pub fn get_active_contracts(
+    pub async fn get_active_contracts(
         &self,
         filter: impl Into<DamlTransactionFilter>,
-        verbose: DamlVerbosity,
-    ) -> DamlResult<impl Stream<Item = DamlActiveContracts, Error = DamlError>> {
-        self.get_active_contracts_with_trace(filter, verbose, None)
+        verbose: impl Into<DamlVerbosity>,
+    ) -> DamlResult<impl Stream<Item = DamlResult<DamlActiveContracts>>> {
+        self.get_active_contracts_with_trace(filter, verbose, None).await
     }
 
-    pub fn get_active_contracts_with_trace(
+    pub async fn get_active_contracts_with_trace(
         &self,
         filter: impl Into<DamlTransactionFilter>,
         verbose: impl Into<DamlVerbosity>,
         trace_context: impl Into<Option<DamlTraceContext>>,
-    ) -> DamlResult<impl Stream<Item = DamlActiveContracts, Error = DamlError>> {
-        let mut request = GetActiveContractsRequest::new();
-        request.set_ledger_id(self.ledger_id.clone());
-        request.set_filter(filter.into().into());
-        match verbose.into() {
-            DamlVerbosity::Verbose => request.set_verbose(true),
-            DamlVerbosity::NotVerbose => request.set_verbose(false),
-            _ => {},
-        }
-        if let Some(tc) = trace_context.into() {
-            request.set_trace_context(tc.into());
-        }
-        let async_response: ClientSStreamReceiver<GetActiveContractsResponse> =
-            self.grpc_client.get_active_contracts(&request)?;
-        Ok(async_response.map_err(Into::into).map(TryInto::try_into).and_then(
-            |active_contracts| match active_contracts {
-                Ok(active) => ok(active),
-                Err(e) => err(e),
-            },
-        ))
+    ) -> DamlResult<impl Stream<Item = DamlResult<DamlActiveContracts>>> {
+        let request = Request::new(GetActiveContractsRequest {
+            ledger_id: self.ledger_id.clone(),
+            filter: Some(TransactionFilter::from(filter.into())),
+            verbose: bool::from(verbose.into()),
+            trace_context: trace_context.into().map(TraceContext::from),
+        });
+        let active_contract_stream = self.client().get_active_contracts(request).await?.into_inner();
+        Ok(active_contract_stream.map(|c| match c {
+            Ok(c) => DamlActiveContracts::try_from(c),
+            Err(e) => Err(DamlError::from(e)),
+        }))
+    }
+
+    fn client(&self) -> ActiveContractsServiceClient<Channel> {
+        ActiveContractsServiceClient::new(self.channel.clone())
     }
 }

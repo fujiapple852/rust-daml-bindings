@@ -1,12 +1,8 @@
-use crate::data::event::archived::DamlArchivedEvent;
-use crate::data::event::created::DamlCreatedEvent;
-use crate::data::event::exercised::DamlExercisedEvent;
+use crate::data::event::{DamlArchivedEvent, DamlCreatedEvent, DamlExercisedEvent};
 use crate::data::{DamlError, DamlResult};
-use crate::grpc_protobuf_autogen::event::Event;
-use crate::grpc_protobuf_autogen::event::Event_oneof_event;
-use crate::grpc_protobuf_autogen::transaction::TreeEvent;
-use crate::grpc_protobuf_autogen::transaction::TreeEvent_oneof_kind;
-use std::convert::{TryFrom, TryInto};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{event, tree_event};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Event, TreeEvent};
+use std::convert::TryFrom;
 
 /// A DAML ledger event.
 #[derive(Debug, Eq, PartialEq)]
@@ -51,8 +47,8 @@ impl TryFrom<Event> for DamlEvent {
             Some(e) => {
                 let convert = |sum| {
                     Ok(match sum {
-                        Event_oneof_event::created(e) => DamlEvent::Created(Box::new(e.try_into()?)),
-                        Event_oneof_event::archived(e) => DamlEvent::Archived(Box::new(e.into())),
+                        event::Event::Created(e) => DamlEvent::Created(Box::new(DamlCreatedEvent::try_from(e)?)),
+                        event::Event::Archived(e) => DamlEvent::Archived(Box::new(DamlArchivedEvent::try_from(e)?)),
                     })
                 };
                 convert(e)
@@ -76,8 +72,8 @@ impl TryFrom<TreeEvent> for DamlTreeEvent {
             Some(e) => {
                 let convert = |sum| {
                     Ok(match sum {
-                        TreeEvent_oneof_kind::created(e) => DamlTreeEvent::Created(e.try_into()?),
-                        TreeEvent_oneof_kind::exercised(e) => DamlTreeEvent::Exercised(e.try_into()?),
+                        tree_event::Kind::Created(e) => DamlTreeEvent::Created(DamlCreatedEvent::try_from(e)?),
+                        tree_event::Kind::Exercised(e) => DamlTreeEvent::Exercised(DamlExercisedEvent::try_from(e)?),
                     })
                 };
                 convert(e)

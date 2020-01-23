@@ -1,5 +1,4 @@
-use crate::grpc_protobuf_autogen::trace_context::TraceContext;
-use protobuf::well_known_types::UInt64Value;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::TraceContext;
 
 /// Ledger tracing information.
 #[derive(Debug, Eq, PartialEq, Default)]
@@ -44,27 +43,25 @@ impl DamlTraceContext {
 }
 
 impl From<TraceContext> for DamlTraceContext {
-    fn from(mut trace_context: TraceContext) -> Self {
+    fn from(trace_context: TraceContext) -> Self {
         Self::new(
-            trace_context.get_trace_id_high(),
-            trace_context.get_trace_id(),
-            trace_context.get_span_id(),
-            (trace_context.take_parent_span_id() as UInt64Value).get_value(),
-            trace_context.get_sampled(),
+            trace_context.trace_id_high,
+            trace_context.trace_id,
+            trace_context.span_id,
+            trace_context.parent_span_id.unwrap_or_default(),
+            trace_context.sampled,
         )
     }
 }
 
 impl From<DamlTraceContext> for TraceContext {
     fn from(daml_trace_context: DamlTraceContext) -> Self {
-        let mut trace_context = Self::new();
-        trace_context.set_trace_id_high(daml_trace_context.trace_id_high);
-        trace_context.set_trace_id(daml_trace_context.trace_id);
-        trace_context.set_span_id(daml_trace_context.span_id);
-        let mut parent_span_id = UInt64Value::new();
-        parent_span_id.set_value(daml_trace_context.parent_span_id);
-        trace_context.set_parent_span_id(parent_span_id);
-        trace_context.set_sampled(daml_trace_context.sampled);
-        trace_context
+        TraceContext {
+            trace_id_high: daml_trace_context.trace_id_high,
+            trace_id: daml_trace_context.trace_id,
+            span_id: daml_trace_context.span_id,
+            parent_span_id: Some(daml_trace_context.parent_span_id),
+            sampled: daml_trace_context.sampled,
+        }
     }
 }

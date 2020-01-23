@@ -1,8 +1,8 @@
-use crate::data::identifier::DamlIdentifier;
 use crate::data::value::DamlValue;
-use crate::data::DamlError;
-use crate::grpc_protobuf_autogen::event::ExercisedEvent;
-use std::convert::{TryFrom, TryInto};
+use crate::data::{DamlError, DamlIdentifier};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::ExercisedEvent;
+use crate::util::Required;
+use std::convert::TryFrom;
 
 /// An event which represents exercising of a choice on a contract on a DAML ledger.
 #[derive(Debug, Eq, PartialEq)]
@@ -91,20 +91,18 @@ impl DamlExercisedEvent {
 impl TryFrom<ExercisedEvent> for DamlExercisedEvent {
     type Error = DamlError;
 
-    fn try_from(mut event: ExercisedEvent) -> Result<Self, Self::Error> {
-        let value: DamlValue = event.take_choice_argument().try_into()?;
-        let exercise_result: DamlValue = event.take_exercise_result().try_into()?;
+    fn try_from(event: ExercisedEvent) -> Result<Self, Self::Error> {
         Ok(Self::new(
-            event.take_event_id(),
-            event.take_contract_id(),
-            event.take_template_id(),
-            event.take_choice(),
-            value,
-            event.take_acting_parties(),
-            event.get_consuming(),
-            event.take_witness_parties(),
-            event.take_child_event_ids(),
-            exercise_result,
+            event.event_id,
+            event.contract_id,
+            event.template_id.req().map(DamlIdentifier::from)?,
+            event.choice,
+            event.choice_argument.req().and_then(DamlValue::try_from)?,
+            event.acting_parties,
+            event.consuming,
+            event.witness_parties,
+            event.child_event_ids,
+            event.exercise_result.req().and_then(DamlValue::try_from)?,
         ))
     }
 }

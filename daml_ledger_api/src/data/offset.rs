@@ -1,7 +1,7 @@
 use crate::data::DamlError;
-use crate::grpc_protobuf_autogen::ledger_offset::LedgerOffset;
-use crate::grpc_protobuf_autogen::ledger_offset::LedgerOffset_LedgerBoundary;
-use crate::grpc_protobuf_autogen::ledger_offset::LedgerOffset_oneof_value;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::ledger_offset::{LedgerBoundary, Value};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::LedgerOffset;
+use crate::util::Required;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::str::FromStr;
@@ -49,37 +49,30 @@ impl TryFrom<LedgerOffset> for DamlLedgerOffset {
     type Error = DamlError;
 
     fn try_from(offset: LedgerOffset) -> Result<Self, Self::Error> {
-        match offset.value {
-            Some(sum) => {
-                let convert = |sum| {
-                    Ok(match sum {
-                        LedgerOffset_oneof_value::absolute(abs) =>
-                            DamlLedgerOffset::Absolute(u64::from_str(&abs).map_err(|e| {
-                                DamlError::new_failed_conversion(format!("invalid ledger offset: {}", e.to_string()))
-                            })?),
-                        LedgerOffset_oneof_value::boundary(LedgerOffset_LedgerBoundary::LEDGER_BEGIN) =>
-                            DamlLedgerOffset::Boundary(DamlLedgerOffsetBoundary::Begin),
-                        LedgerOffset_oneof_value::boundary(LedgerOffset_LedgerBoundary::LEDGER_END) =>
-                            DamlLedgerOffset::Boundary(DamlLedgerOffsetBoundary::End),
-                    })
-                };
-                convert(sum)
+        match offset.value.req()? {
+            Value::Absolute(abs) => match u64::from_str(&abs) {
+                Ok(v) => Ok(DamlLedgerOffset::Absolute(v)),
+                Err(e) => Err(DamlError::new_failed_conversion(format!("invalid ledger offset: {}", e.to_string()))),
             },
-            None => Err(DamlError::OptionalIsNone),
+            Value::Boundary(i) => match LedgerBoundary::from_i32(i) {
+                Some(LedgerBoundary::LedgerBegin) => Ok(DamlLedgerOffset::Boundary(DamlLedgerOffsetBoundary::Begin)),
+                Some(LedgerBoundary::LedgerEnd) => Ok(DamlLedgerOffset::Boundary(DamlLedgerOffsetBoundary::End)),
+                None => Err(DamlError::new_failed_conversion(format!("unknown ledger boundary offset: {}", i))),
+            },
         }
     }
 }
 
 impl From<DamlLedgerOffset> for LedgerOffset {
     fn from(daml_ledger_offset: DamlLedgerOffset) -> Self {
-        let mut offset = Self::new();
-        match daml_ledger_offset {
-            DamlLedgerOffset::Absolute(s) => offset.set_absolute(s.to_string()),
-            DamlLedgerOffset::Boundary(DamlLedgerOffsetBoundary::Begin) =>
-                offset.set_boundary(LedgerOffset_LedgerBoundary::LEDGER_BEGIN),
-            DamlLedgerOffset::Boundary(DamlLedgerOffsetBoundary::End) =>
-                offset.set_boundary(LedgerOffset_LedgerBoundary::LEDGER_END),
+        LedgerOffset {
+            value: match daml_ledger_offset {
+                DamlLedgerOffset::Absolute(s) => Some(Value::Absolute(s.to_string())),
+                DamlLedgerOffset::Boundary(DamlLedgerOffsetBoundary::Begin) =>
+                    Some(Value::Boundary(LedgerBoundary::LedgerBegin as i32)),
+                DamlLedgerOffset::Boundary(DamlLedgerOffsetBoundary::End) =>
+                    Some(Value::Boundary(LedgerBoundary::LedgerEnd as i32)),
+            },
         }
-        offset
     }
 }

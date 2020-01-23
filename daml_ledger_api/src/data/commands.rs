@@ -1,5 +1,5 @@
 use crate::data::command::DamlCommand;
-use crate::grpc_protobuf_autogen::commands::Commands;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Command, Commands};
 use crate::util;
 use chrono::DateTime;
 use chrono::Utc;
@@ -37,7 +37,7 @@ impl DamlCommands {
         }
     }
 
-    pub fn workflow_id(&self) -> &String {
+    pub fn workflow_id(&self) -> &str {
         &self.workflow_id
     }
 
@@ -68,14 +68,17 @@ impl DamlCommands {
 
 impl From<DamlCommands> for Commands {
     fn from(daml_commands: DamlCommands) -> Self {
-        let mut commands = Self::new();
-        commands.set_application_id(daml_commands.application_id);
-        commands.set_command_id(daml_commands.command_id);
-        commands.set_party(daml_commands.party);
-        commands.set_ledger_effective_time(util::make_timestamp_secs(daml_commands.ledger_effective_time));
-        commands.set_maximum_record_time(util::make_timestamp_secs(daml_commands.maximum_record_time));
-        commands.set_workflow_id(daml_commands.workflow_id);
-        commands.set_commands(daml_commands.commands.into_iter().map(Into::into).collect());
-        commands
+        Commands {
+            // To allow each `DamlCommands` to be reusable between ledgers The DAML ledger id is updated immediately
+            // prior to sending to the server.
+            ledger_id: String::new(),
+            workflow_id: daml_commands.workflow_id,
+            application_id: daml_commands.application_id,
+            command_id: daml_commands.command_id,
+            party: daml_commands.party,
+            ledger_effective_time: Some(util::make_timestamp_secs(daml_commands.ledger_effective_time)),
+            maximum_record_time: Some(util::make_timestamp_secs(daml_commands.maximum_record_time)),
+            commands: daml_commands.commands.into_iter().map(Command::from).collect(),
+        }
     }
 }

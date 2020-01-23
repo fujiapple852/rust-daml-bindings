@@ -1,22 +1,21 @@
 use crate::data::{DamlError, DamlResult};
-use chrono::Date;
 use chrono::DateTime;
 use chrono::NaiveDateTime;
 use chrono::Utc;
-use protobuf::well_known_types::Timestamp;
+use chrono::{Date, Timelike};
 use std::time::UNIX_EPOCH;
 
 #[allow(clippy::cast_possible_wrap)]
-pub fn make_timestamp_secs(datetime: DateTime<Utc>) -> Timestamp {
-    let mut timestamp = Timestamp::new();
-    timestamp.set_seconds(datetime.timestamp());
-    timestamp.set_nanos(datetime.timestamp_subsec_nanos() as i32);
-    timestamp
+pub fn make_timestamp_secs(datetime: DateTime<Utc>) -> prost_types::Timestamp {
+    prost_types::Timestamp {
+        seconds: datetime.timestamp(),
+        nanos: datetime.nanosecond() as i32,
+    }
 }
 
 #[allow(clippy::cast_sign_loss)]
-pub fn make_datetime(timestamp: &Timestamp) -> DateTime<Utc> {
-    let naive_datetime = NaiveDateTime::from_timestamp(timestamp.get_seconds(), timestamp.get_nanos() as u32);
+pub fn make_datetime(timestamp: &prost_types::Timestamp) -> DateTime<Utc> {
+    let naive_datetime = NaiveDateTime::from_timestamp(timestamp.seconds, timestamp.nanos as u32);
     DateTime::from_utc(naive_datetime, Utc)
 }
 
@@ -48,4 +47,14 @@ pub fn datetime_from_micros(micros: i64) -> DamlResult<DateTime<Utc>> {
 pub fn days_from_date(date: Date<Utc>) -> i32 {
     let duration: time::Duration = date.signed_duration_since(DateTime::<Utc>::from(UNIX_EPOCH).date());
     duration.num_days() as i32
+}
+
+pub trait Required<T> {
+    fn req(self) -> DamlResult<T>;
+}
+
+impl<T> Required<T> for Option<T> {
+    fn req(self) -> DamlResult<T> {
+        self.ok_or_else(|| DamlError::MissingRequiredField)
+    }
 }

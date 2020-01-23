@@ -1,15 +1,17 @@
 use std::error;
 use std::fmt;
+use tonic::codegen::http;
 
 /// A DAML ledger error.
 #[derive(Debug)]
 pub enum DamlError {
-    GRPC(grpcio::Error),
-    ResetTimeout,
+    GRPCTransportError(tonic::transport::Error),
+    GRPCStatusError(tonic::Status),
+    InvalidUriError(http::uri::InvalidUri),
     UnexpectedType(String, String),
     UnknownField(String),
     ListIndexOutOfRange(usize),
-    OptionalIsNone,
+    MissingRequiredField,
     UnexpectedVariant(String, String),
     Other(String),
     FailedConversion(String),
@@ -24,13 +26,14 @@ impl DamlError {
 impl fmt::Display for DamlError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            DamlError::GRPC(e) => write!(fmt, "{}", (e as &dyn error::Error).description()),
-            DamlError::ResetTimeout => write!(fmt, "timed out resetting ledger"),
+            DamlError::InvalidUriError(e) => write!(fmt, "{}", (e as &dyn error::Error).description()),
+            DamlError::GRPCTransportError(e) => write!(fmt, "{}", (e as &dyn error::Error).description()),
+            DamlError::GRPCStatusError(e) => write!(fmt, "{}", (e as &dyn error::Error).description()),
             DamlError::UnexpectedType(expected, actual) =>
                 write!(fmt, "unexpected type, expected {} but found {}", expected, actual),
             DamlError::UnknownField(name) => write!(fmt, "unknown field {}", name),
             DamlError::ListIndexOutOfRange(index) => write!(fmt, "list index {} out of range", index),
-            DamlError::OptionalIsNone => write!(fmt, "optional value is None"),
+            DamlError::MissingRequiredField => write!(fmt, "expected optional value is None"),
             DamlError::UnexpectedVariant(expected, actual) =>
                 write!(fmt, "unexpected variant constructor, expected {} but found {}", expected, actual),
             DamlError::Other(e) => write!(fmt, "{}", e),
@@ -39,18 +42,23 @@ impl fmt::Display for DamlError {
     }
 }
 
-impl error::Error for DamlError {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        match self {
-            DamlError::GRPC(e) => Some(e),
-            _ => None,
-        }
+impl error::Error for DamlError {}
+
+impl From<tonic::Status> for DamlError {
+    fn from(e: tonic::Status) -> Self {
+        DamlError::GRPCStatusError(e)
     }
 }
 
-impl From<grpcio::Error> for DamlError {
-    fn from(e: grpcio::Error) -> Self {
-        DamlError::GRPC(e)
+impl From<tonic::transport::Error> for DamlError {
+    fn from(e: tonic::transport::Error) -> Self {
+        DamlError::GRPCTransportError(e)
+    }
+}
+
+impl From<http::uri::InvalidUri> for DamlError {
+    fn from(e: http::uri::InvalidUri) -> Self {
+        DamlError::InvalidUriError(e)
     }
 }
 

@@ -1,12 +1,13 @@
 use crate::data::event::DamlTreeEvent;
 use crate::data::trace::DamlTraceContext;
 use crate::data::{DamlError, DamlResult};
-use crate::grpc_protobuf_autogen::transaction::TransactionTree;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::TransactionTree;
 use crate::util;
+use crate::util::Required;
 use chrono::DateTime;
 use chrono::Utc;
 use std::collections::HashMap;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 
 /// A DAML ledger transaction tree.
 #[derive(Debug, Eq, PartialEq)]
@@ -18,7 +19,7 @@ pub struct DamlTransactionTree {
     pub offset: String,
     pub events_by_id: HashMap<String, DamlTreeEvent>,
     pub root_event_ids: Vec<String>,
-    pub trace_context: DamlTraceContext,
+    pub trace_context: Option<DamlTraceContext>,
 }
 
 impl DamlTransactionTree {
@@ -31,7 +32,7 @@ impl DamlTransactionTree {
         offset: impl Into<String>,
         events_by_id: impl Into<HashMap<String, DamlTreeEvent>>,
         root_event_ids: impl Into<Vec<String>>,
-        trace_context: impl Into<DamlTraceContext>,
+        trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> Self {
         Self {
             transaction_id: transaction_id.into(),
@@ -77,7 +78,7 @@ impl DamlTransactionTree {
         &self.offset
     }
 
-    pub fn trace_context(&self) -> &DamlTraceContext {
+    pub fn trace_context(&self) -> &Option<DamlTraceContext> {
         &self.trace_context
     }
 }
@@ -85,24 +86,24 @@ impl DamlTransactionTree {
 impl TryFrom<TransactionTree> for DamlTransactionTree {
     type Error = DamlError;
 
-    fn try_from(mut tx: TransactionTree) -> Result<Self, Self::Error> {
+    fn try_from(tx: TransactionTree) -> Result<Self, Self::Error> {
         let events_by_id = tx
-            .take_events_by_id()
+            .events_by_id
             .into_iter()
-            .map(|(id, event)| match event.try_into() {
+            .map(|(id, event)| match DamlTreeEvent::try_from(event) {
                 Ok(m) => Ok((id, m)),
                 Err(e) => Err(e),
             })
-            .collect::<DamlResult<HashMap<String, DamlTreeEvent>>>()?;
+            .collect::<DamlResult<HashMap<_, _>>>()?;
         Ok(Self::new(
-            tx.take_transaction_id(),
-            tx.take_command_id(),
-            tx.take_workflow_id(),
-            util::make_datetime(&tx.take_effective_at()),
-            tx.take_offset(),
+            tx.transaction_id,
+            tx.command_id,
+            tx.workflow_id,
+            util::make_datetime(&tx.effective_at.req()?),
+            tx.offset,
             events_by_id,
-            tx.take_root_event_ids(),
-            tx.take_trace_context(),
+            tx.root_event_ids,
+            tx.trace_context.map(DamlTraceContext::from),
         ))
     }
 }

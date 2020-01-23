@@ -1,6 +1,7 @@
 use crate::data::identifier::DamlIdentifier;
 use crate::data::value::{DamlRecord, DamlValue};
-use crate::grpc_protobuf_autogen::commands::{Command, CreateAndExerciseCommand};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::command::Command;
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::CreateAndExerciseCommand;
 
 /// Create a contract and exercise a choice on it in the same transaction.
 #[derive(Debug, Eq, PartialEq)]
@@ -51,13 +52,11 @@ impl DamlCreateAndExerciseCommand {
 
 impl From<DamlCreateAndExerciseCommand> for Command {
     fn from(daml_create_and_exercise_command: DamlCreateAndExerciseCommand) -> Self {
-        let mut create_and_exercise_command = CreateAndExerciseCommand::new();
-        create_and_exercise_command.set_template_id(daml_create_and_exercise_command.template_id.into());
-        create_and_exercise_command.set_create_arguments(daml_create_and_exercise_command.create_arguments.into());
-        create_and_exercise_command.set_choice(daml_create_and_exercise_command.choice);
-        create_and_exercise_command.set_choice_argument(daml_create_and_exercise_command.choice_argument.into());
-        let mut command = Self::new();
-        command.set_createAndExercise(create_and_exercise_command);
-        command
+        Command::CreateAndExercise(CreateAndExerciseCommand {
+            template_id: Some(daml_create_and_exercise_command.template_id.into()),
+            create_arguments: Some(daml_create_and_exercise_command.create_arguments.into()),
+            choice: daml_create_and_exercise_command.choice,
+            choice_argument: Some(daml_create_and_exercise_command.choice_argument.into()),
+        })
     }
 }

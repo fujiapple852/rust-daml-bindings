@@ -1,8 +1,8 @@
-use crate::data::identifier::DamlIdentifier;
 use crate::data::value::{DamlRecord, DamlValue};
-use crate::data::DamlError;
-use crate::grpc_protobuf_autogen::event::CreatedEvent;
-use std::convert::{TryFrom, TryInto};
+use crate::data::{DamlError, DamlIdentifier};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::CreatedEvent;
+use crate::util::Required;
+use std::convert::TryFrom;
 
 /// An event which represents creating a contract on a DAML ledger.
 #[derive(Debug, Eq, PartialEq)]
@@ -102,23 +102,17 @@ impl DamlCreatedEvent {
 impl TryFrom<CreatedEvent> for DamlCreatedEvent {
     type Error = DamlError;
 
-    fn try_from(mut event: CreatedEvent) -> Result<Self, Self::Error> {
-        let contract_key = if event.has_contract_key() {
-            Some(event.take_contract_key().try_into()?)
-        } else {
-            None
-        };
-        let create_arguments: DamlRecord = event.take_create_arguments().try_into()?;
+    fn try_from(event: CreatedEvent) -> Result<Self, Self::Error> {
         Ok(Self::new(
-            event.take_event_id(),
-            event.take_contract_id(),
-            event.take_template_id(),
-            contract_key,
-            create_arguments,
-            event.take_witness_parties(),
-            event.take_signatories(),
-            event.take_observers(),
-            event.take_agreement_text().take_value(),
+            event.event_id,
+            event.contract_id,
+            event.template_id.req()?,
+            event.contract_key.map(DamlValue::try_from).transpose()?,
+            event.create_arguments.req().and_then(DamlRecord::try_from)?,
+            event.witness_parties,
+            event.signatories,
+            event.observers,
+            event.agreement_text.req()?,
         ))
     }
 }

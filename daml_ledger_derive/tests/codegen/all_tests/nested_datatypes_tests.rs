@@ -1,6 +1,6 @@
 use crate::common::test_utils::{
-    new_static_sandbox, update_create_command_package_id_for_testing, update_exercise_command_package_id_for_testing,
-    TestResult, SANDBOX_LOCK,
+    new_static_sandbox_async, update_create_command_package_id_for_testing,
+    update_exercise_command_package_id_for_testing, TestResult, SANDBOX_LOCK,
 };
 use daml::prelude::DamlTextMap;
 use daml_ledger_api::data::command::DamlCommand;
@@ -11,15 +11,15 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 
 daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_41-lf_1_7.dar",
+    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_46-lf_1_7.dar",
     module_filter_regex = "DA.Nested"
 );
 
-#[test]
-pub fn test() -> TestResult {
+#[tokio::test]
+pub async fn test() -> TestResult {
     use testing_types_1_0_0::da::nested::*;
     let _lock = SANDBOX_LOCK.lock()?;
-    let client = new_static_sandbox()?;
+    let client = new_static_sandbox_async().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
 
     // construct dummy data
@@ -31,9 +31,9 @@ pub fn test() -> TestResult {
 
     // submit create command and extract result
     let create_command = nested_template.create_command();
-    let create_command = update_create_command_package_id_for_testing(&client, create_command)?;
+    let create_command = update_create_command_package_id_for_testing(&client, create_command).await?;
 
-    let command_result = alice_executor.execute_for_transaction_sync(DamlCommand::Create(create_command))?;
+    let command_result = alice_executor.execute_for_transaction(DamlCommand::Create(create_command)).await?;
     let event: DamlEvent = command_result.take_events().swap_remove(0);
     let nested_contract: NestedTemplateContract = match event {
         DamlEvent::Created(e) => (*e).try_into()?,
@@ -49,8 +49,8 @@ pub fn test() -> TestResult {
     let list_of_opt_of_map_of_data_param = vec![Some(my_map_param), None, None];
     let exercise_command =
         nested_contract.id().do_something_complex_command(opt_of_list_param, list_of_opt_of_map_of_data_param);
-    let exercise_command = update_exercise_command_package_id_for_testing(&client, exercise_command)?;
-    let exercise_result = alice_executor.execute_for_transaction_sync(DamlCommand::Exercise(exercise_command))?;
+    let exercise_command = update_exercise_command_package_id_for_testing(&client, exercise_command).await?;
+    let exercise_result = alice_executor.execute_for_transaction(DamlCommand::Exercise(exercise_command)).await?;
     let created_event: DamlEvent = exercise_result.take_events().swap_remove(1);
     let new_contract: NestedTemplateContract = created_event.try_created()?.try_into()?;
     let new_data: &NestedTemplate = new_contract.data();

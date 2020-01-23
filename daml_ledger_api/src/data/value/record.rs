@@ -1,10 +1,6 @@
-use crate::data::identifier::DamlIdentifier;
-use crate::data::value::record_field::DamlRecordField;
-use crate::data::value::DamlValue;
-use crate::data::{DamlError, DamlResult};
-use crate::grpc_protobuf_autogen::value::Record;
-use crate::grpc_protobuf_autogen::value::RecordField;
-use protobuf::RepeatedField;
+use crate::data::value::{DamlRecordField, DamlValue};
+use crate::data::{DamlError, DamlIdentifier, DamlResult};
+use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Identifier, Record, RecordField};
 use std::convert::{TryFrom, TryInto};
 
 /// A representation of the fields on a DAML `template` or `data` construct.
@@ -61,27 +57,18 @@ impl DamlRecord {
 impl TryFrom<Record> for DamlRecord {
     type Error = DamlError;
 
-    fn try_from(mut record: Record) -> Result<Self, Self::Error> {
-        let fields = (record.take_fields() as RepeatedField<RecordField>)
-            .into_iter()
-            .map(TryInto::try_into)
-            .collect::<DamlResult<Vec<DamlRecordField>>>()?;
-        Ok(Self::new(
-            fields,
-            if record.has_record_id() {
-                Some(record.take_record_id())
-            } else {
-                None
-            },
-        ))
+    fn try_from(record: Record) -> Result<Self, Self::Error> {
+        let fields = record.fields.into_iter().map(TryInto::try_into).collect::<DamlResult<Vec<DamlRecordField>>>()?;
+        Ok(Self::new(fields, record.record_id.map(DamlIdentifier::from)))
     }
 }
 
 impl From<DamlRecord> for Record {
     fn from(daml_record: DamlRecord) -> Self {
-        let mut new_record = Self::new();
-        new_record.set_fields(daml_record.fields.into_iter().map(Into::into).collect());
-        new_record
+        Self {
+            record_id: daml_record.record_id.map(Identifier::from),
+            fields: daml_record.fields.into_iter().map(RecordField::from).collect(),
+        }
     }
 }
 

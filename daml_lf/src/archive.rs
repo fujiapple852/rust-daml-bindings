@@ -1,7 +1,7 @@
 use crate::protobuf_autogen::daml_lf_1_7::Archive;
 use crate::DamlLfArchivePayload;
 use crate::DamlLfResult;
-use bytes::IntoBuf;
+use bytes::Bytes;
 use prost::Message;
 use std::ffi::OsStr;
 use std::fs::File;
@@ -72,7 +72,7 @@ impl DamlLfArchive {
     /// [`UnknownVersion`]: crate::DamlLfError::UnknownVersion
     /// [`UnsupportedVersion`]: crate::DamlLfError::UnsupportedVersion
     /// [`DamlLfArchivePayload`]: DamlLfArchivePayload
-    pub fn from_bytes(bytes: impl IntoBuf) -> DamlLfResult<Self> {
+    pub fn from_bytes(bytes: impl Into<Bytes>) -> DamlLfResult<Self> {
         Self::from_bytes_named(DEFAULT_ARCHIVE_NAME, bytes)
     }
 
@@ -107,8 +107,8 @@ impl DamlLfArchive {
     /// [`UnknownVersion`]: crate::DamlLfError::UnknownVersion
     /// [`UnsupportedVersion`]: crate::DamlLfError::UnsupportedVersion
     /// [`DamlLfArchivePayload`]: DamlLfArchivePayload
-    pub fn from_bytes_named(name: impl Into<String>, bytes: impl IntoBuf) -> DamlLfResult<Self> {
-        let archive: Archive = Archive::decode(bytes)?;
+    pub fn from_bytes_named(name: impl Into<String>, bytes: impl Into<Bytes>) -> DamlLfResult<Self> {
+        let archive: Archive = Archive::decode(bytes.into())?;
         let payload = DamlLfArchivePayload::from_bytes(archive.payload)?;
         let archive_name = name.into();
         let sanitized_name = archive_name.rfind(&archive.hash).map_or(&archive_name[..], |i| &archive_name[..i - 1]);
