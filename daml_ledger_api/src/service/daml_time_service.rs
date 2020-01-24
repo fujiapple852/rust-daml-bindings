@@ -34,7 +34,7 @@ impl DamlTimeService {
         });
         let time_stream = self.client().get_time(request).await?.into_inner();
         Ok(time_stream.map(|item| match item {
-            Ok(r) => Ok(util::make_datetime(&r.current_time.req()?)),
+            Ok(r) => Ok(util::from_grpc_timestamp(&r.current_time.req()?)),
             Err(e) => Err(DamlError::from(e)),
         }))
     }
@@ -47,8 +47,8 @@ impl DamlTimeService {
     ) -> DamlResult<()> {
         let request = Request::new(SetTimeRequest {
             ledger_id: self.ledger_id.clone(),
-            current_time: Some(util::make_timestamp_secs(current_time.into())),
-            new_time: Some(util::make_timestamp_secs(new_time.into())),
+            current_time: Some(util::to_grpc_timestamp(current_time.into())?),
+            new_time: Some(util::to_grpc_timestamp(new_time.into())?),
         });
         self.client().set_time(request).await?;
         Ok(())

@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The DAML Authors. All rights reserved.
+// Copyright (c) 2020 The DAML Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
@@ -80,6 +80,10 @@ message Value {
 
     // The Enum type
     Enum enum = 17;
+
+    // The GenMap type
+    GenMap gen_map = 18;
+
   }
 }
 
@@ -182,4 +186,13 @@ message Map {
     }
 
     repeated Entry entries = 1;
+}
+
+message GenMap{
+  message Entry {
+    Value key = 1;
+    Value value = 2;
+  }
+
+  repeated Entry entries = 1;
 }

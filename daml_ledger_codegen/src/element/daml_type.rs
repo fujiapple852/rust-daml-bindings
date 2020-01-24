@@ -1,3 +1,4 @@
+// TODO support GenMap
 /// Representation of a DAML type.
 #[derive(Debug)]
 pub enum DamlType<'a> {

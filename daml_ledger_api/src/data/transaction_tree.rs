@@ -99,7 +99,7 @@ impl TryFrom<TransactionTree> for DamlTransactionTree {
             tx.transaction_id,
             tx.command_id,
             tx.workflow_id,
-            util::make_datetime(&tx.effective_at.req()?),
+            util::from_grpc_timestamp(&tx.effective_at.req()?),
             tx.offset,
             events_by_id,
             tx.root_event_ids,

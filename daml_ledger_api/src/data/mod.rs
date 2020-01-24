@@ -78,3 +78,6 @@ pub use self::configuration::DamlLedgerConfiguration;
 
 mod active;
 pub use active::DamlActiveContracts;
+
+mod time_model;
+pub use time_model::DamlTimeModel;

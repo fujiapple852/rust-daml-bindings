@@ -82,7 +82,7 @@ impl TryFrom<Transaction> for DamlTransaction {
             tx.transaction_id,
             tx.command_id,
             tx.workflow_id,
-            util::make_datetime(&tx.effective_at.req()?),
+            util::from_grpc_timestamp(&tx.effective_at.req()?),
             tx.events.into_iter().map(DamlEvent::try_from).collect::<DamlResult<Vec<_>>>()?,
             tx.offset,
             tx.trace_context.map(DamlTraceContext::from),

@@ -44,13 +44,17 @@ impl DamlPackageManagementService {
     /// # Errors
     ///
     /// This method will return `UNIMPLEMENTED`, if `dar` package uploading is not supported by the backing
-    /// participant. If DAR file is too big or is malformed, the backing participant will respond with
-    /// `INVALID_ARGUMENT`.  The maximum supported size is implementation specific.  Contains a DAML archive
-    /// `dar`file, which in turn is a jar like zipped container for `daml_lf` archives.
+    /// participant.
+    ///
+    /// If DAR file is too big or is malformed, the backing participant will respond with
+    /// `INVALID_ARGUMENT`.
+    ///
+    /// The maximum supported size is implementation specific.  Contains a DAML archive `dar`file, which in turn is a
+    /// jar like zipped container for `daml_lf` archives.
     pub async fn upload_dar_file(&self, bytes: impl Into<Bytes>, submission_id: Option<String>) -> DamlResult<()> {
         let request = Request::new(UploadDarFileRequest {
             dar_file: bytes.into().bytes().to_vec(),
-            submission_id: submission_id.unwrap_or_default()
+            submission_id: submission_id.unwrap_or_default(),
         });
         self.client().upload_dar_file(request).await.map_err(Into::into).map(|_| ())
     }

@@ -47,7 +47,7 @@ pub fn quote_make_create_command_method(struct_name: &str) -> TokenStream {
     let _contract_struct_name = quote_contract_struct_name(struct_name);
 
     // TODO restore
-    //pub fn create<E: CommandExecutor>(&self) -> impl FnOnce(&E) -> DamlResult<#contract_struct_name> + '_ {
+    // pub fn create<E: CommandExecutor>(&self) -> impl FnOnce(&E) -> DamlResult<#contract_struct_name> + '_ {
     //        let template_id = Self::package_id();
     //        let value: DamlValue = self.to_owned().into();
     //        let create_command = DamlCreateCommand::new(template_id, value.try_take_record().unwrap());

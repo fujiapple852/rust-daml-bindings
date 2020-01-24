@@ -1,6 +1,6 @@
 use crate::convert::archive::wrapper::payload::*;
-use daml_lf::protobuf_autogen::daml_lf_1::package_ref;
 use daml_lf::protobuf_autogen::daml_lf_1::r#type::*;
+use daml_lf::protobuf_autogen::daml_lf_1::{package_ref, PrimType};
 use daml_lf::protobuf_autogen::daml_lf_1::{ModuleRef, PackageRef, Type, TypeConName};
 
 #[derive(Debug)]
@@ -29,19 +29,20 @@ pub enum DamlTypePayload<'a> {
 impl<'a> From<&'a Type> for DamlTypePayload<'a> {
     fn from(ty: &'a Type) -> Self {
         match ty.sum.as_ref().expect("Type.sum") {
-            Sum::Prim(prim) => match prim.prim {
-                0 => DamlTypePayload::Unit,
-                1 => DamlTypePayload::Bool,
-                2 => DamlTypePayload::Int64,
-                3 | 17 => DamlTypePayload::Numeric,
-                5 => DamlTypePayload::Text,
-                6 => DamlTypePayload::Timestamp,
-                8 => DamlTypePayload::Party,
-                9 => DamlTypePayload::List(Box::new(DamlTypePayload::from(prim.args.first().expect("Prim.args")))),
-                10 => DamlTypePayload::Update,
-                11 => DamlTypePayload::Scenario,
-                12 => DamlTypePayload::Date,
-                13 => {
+            Sum::Prim(prim) => match PrimType::from_i32(prim.prim).expect("Prim.prim") {
+                PrimType::Unit => DamlTypePayload::Unit,
+                PrimType::Bool => DamlTypePayload::Bool,
+                PrimType::Int64 => DamlTypePayload::Int64,
+                PrimType::Numeric | PrimType::Decimal => DamlTypePayload::Numeric,
+                PrimType::Text => DamlTypePayload::Text,
+                PrimType::Timestamp => DamlTypePayload::Timestamp,
+                PrimType::Party => DamlTypePayload::Party,
+                PrimType::List =>
+                    DamlTypePayload::List(Box::new(DamlTypePayload::from(prim.args.first().expect("Prim.args")))),
+                PrimType::Update => DamlTypePayload::Update,
+                PrimType::Scenario => DamlTypePayload::Scenario,
+                PrimType::Date => DamlTypePayload::Date,
+                PrimType::ContractId => {
                     if let Some(Sum::Con(Con {
                         tycon: Some(tcn),
                         ..
@@ -52,12 +53,13 @@ impl<'a> From<&'a Type> for DamlTypePayload<'a> {
                         DamlTypePayload::ContractId(None)
                     }
                 },
-                14 => DamlTypePayload::Optional(Box::new(DamlTypePayload::from(prim.args.first().expect("Prim.args")))),
-                15 => DamlTypePayload::Arrow,
-                16 => DamlTypePayload::TextMap(Box::new(DamlTypePayload::from(prim.args.first().expect("Prim.args")))),
-                18 => DamlTypePayload::Any,
-                19 => DamlTypePayload::TypeRep,
-                _ => panic!(format!("unsupported primitive type {:?}", prim)),
+                PrimType::Optional =>
+                    DamlTypePayload::Optional(Box::new(DamlTypePayload::from(prim.args.first().expect("Prim.args")))),
+                PrimType::Arrow => DamlTypePayload::Arrow,
+                PrimType::Map =>
+                    DamlTypePayload::TextMap(Box::new(DamlTypePayload::from(prim.args.first().expect("Prim.args")))),
+                PrimType::Any => DamlTypePayload::Any,
+                PrimType::TypeRep => DamlTypePayload::TypeRep,
             },
             Sum::Con(Con {
                 tycon: Some(tcn),

@@ -1,23 +1,16 @@
-#[cfg(feature = "testing")]
-use std::time::{Duration, Instant};
-
-#[cfg(feature = "testing")]
 use crate::data::{DamlError, DamlResult};
-use crate::service::DamlActiveContractsService;
-use crate::service::DamlCommandSubmissionService;
-use crate::service::DamlLedgerIdentityService;
-#[cfg(feature = "testing")]
-use crate::service::DamlResetService;
 use crate::service::{
-    DamlCommandCompletionService, DamlLedgerConfigurationService, DamlPackageService, DamlTimeService,
+    DamlActiveContractsService, DamlCommandCompletionService, DamlCommandService, DamlCommandSubmissionService,
+    DamlLedgerConfigurationService, DamlLedgerIdentityService, DamlPackageService, DamlTransactionService,
 };
-use crate::service::{DamlCommandService, DamlTransactionService};
 #[cfg(feature = "admin")]
-use crate::service::{DamlPackageManagementService, DamlPartyManagementService};
+use crate::service::{DamlConfigManagementService, DamlPackageManagementService, DamlPartyManagementService};
 #[cfg(feature = "testing")]
+use crate::service::{DamlResetService, DamlTimeService};
+use std::time::{Duration, Instant};
 use tonic::transport::Channel;
-#[cfg(feature = "testing")]
-const RESET_TIMEOUT: Duration = Duration::from_secs(5);
+
+const DEFAULT_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// DAML ledger client connection.
 pub struct DamlLedgerClient {
@@ -36,6 +29,8 @@ pub struct DamlLedgerClient {
     package_management_service: DamlPackageManagementService,
     #[cfg(feature = "admin")]
     party_management_service: DamlPartyManagementService,
+    #[cfg(feature = "admin")]
+    config_management_service: DamlConfigManagementService,
     #[cfg(feature = "testing")]
     reset_service: DamlResetService,
     #[cfg(feature = "testing")]
@@ -102,16 +97,19 @@ impl DamlLedgerClient {
         &self.active_contract_service
     }
 
-    // TODO has no tests!
     #[cfg(feature = "admin")]
     pub fn package_management_service(&self) -> &DamlPackageManagementService {
         &self.package_management_service
     }
 
-    // TODO has no tests!
     #[cfg(feature = "admin")]
     pub fn party_management_service(&self) -> &DamlPartyManagementService {
         &self.party_management_service
+    }
+
+    #[cfg(feature = "admin")]
+    pub fn config_management_service(&self) -> &DamlConfigManagementService {
+        &self.config_management_service
     }
 
     #[cfg(feature = "testing")]
@@ -123,7 +121,7 @@ impl DamlLedgerClient {
         let mut channel = Self::open_channel(hostname, port).await;
         let start = Instant::now();
         while let Err(e) = channel {
-            if start.elapsed() > RESET_TIMEOUT {
+            if start.elapsed() > DEFAULT_TIMEOUT {
                 return Err(e);
             }
             channel = Self::open_channel(hostname, port).await;
@@ -136,7 +134,7 @@ impl DamlLedgerClient {
         let start = Instant::now();
         let mut ledger_identity: DamlResult<String> = ledger_identity_service.get_ledger_identity().await;
         while let Err(e) = ledger_identity {
-            if start.elapsed() > RESET_TIMEOUT {
+            if start.elapsed() > DEFAULT_TIMEOUT {
                 return Err(e);
             }
             ledger_identity = ledger_identity_service.get_ledger_identity().await;
@@ -172,6 +170,8 @@ impl DamlLedgerClient {
             package_management_service: DamlPackageManagementService::new(channel.clone()),
             #[cfg(feature = "admin")]
             party_management_service: DamlPartyManagementService::new(channel.clone()),
+            #[cfg(feature = "admin")]
+            config_management_service: DamlConfigManagementService::new(channel.clone()),
             #[cfg(feature = "testing")]
             reset_service: DamlResetService::new(channel.clone(), ledger_identity),
             #[cfg(feature = "testing")]

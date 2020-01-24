@@ -50,7 +50,7 @@
 /// To support such cases either use `(get_party_name_str())#p` or provide a [`DamlValue`]
 /// `DamlValue::new_party(get_party_name_str())`.
 ///
-/// There is currently no support for [`DamlValue::Map`] or [`DamlValue::Enum`].
+/// There is currently no support for [`DamlValue::Map`], ['DamlValue::GenMap'] or [`DamlValue::Enum`].
 ///
 /// # Examples
 ///
@@ -109,6 +109,7 @@
 /// [`DamlValue::ContractId`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.ContractId
 /// [`DamlValue::Text`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Text
 /// [`DamlValue::Map`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Map
+/// [`DamlValue::GenMap`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.GenMap
 /// [`DamlValue::Enum`]: ../../doc/daml_ledger_api/data/value/enum.DamlValue.html#variant.Enum
 /// [`DamlRecord`]: ../../doc/daml_ledger_api/data/value/struct.DamlRecord.html
 #[macro_export]

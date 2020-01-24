@@ -43,7 +43,7 @@ impl DamlCommandService {
     ///
     /// # Errors
     ///
-    /// Propagates communication failure errors as ['GRPCTransportError'] and DAML server failures as
+    /// Propagates communication failure errors as [`GRPCTransportError`] and DAML server failures as
     /// [`GRPCStatusError`] errors.
     ///
     /// # Examples
@@ -91,7 +91,7 @@ impl DamlCommandService {
     ) -> DamlResult<String> {
         let commands = commands.into();
         let command_id = commands.command_id().to_owned();
-        let request = self.make_request(commands, trace_context);
+        let request = self.make_request(commands, trace_context)?;
         self.client().submit_and_wait(request).await?;
         Ok(command_id)
     }
@@ -113,7 +113,7 @@ impl DamlCommandService {
         commands: impl Into<DamlCommands>,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<String> {
-        let request = self.make_request(commands, trace_context);
+        let request = self.make_request(commands, trace_context)?;
         Ok(self.client().submit_and_wait_for_transaction_id(request).await?.into_inner().transaction_id)
     }
 
@@ -137,7 +137,7 @@ impl DamlCommandService {
         commands: impl Into<DamlCommands>,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<DamlTransaction> {
-        let request = self.make_request(commands, trace_context);
+        let request = self.make_request(commands, trace_context)?;
         self.client()
             .submit_and_wait_for_transaction(request)
             .await?
@@ -166,7 +166,7 @@ impl DamlCommandService {
         commands: impl Into<DamlCommands>,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<DamlTransactionTree> {
-        let request = self.make_request(commands, trace_context);
+        let request = self.make_request(commands, trace_context)?;
         self.client()
             .submit_and_wait_for_transaction_tree(request)
             .await?
@@ -184,12 +184,12 @@ impl DamlCommandService {
         &self,
         commands: impl Into<DamlCommands>,
         trace_context: impl Into<Option<DamlTraceContext>>,
-    ) -> Request<SubmitAndWaitRequest> {
-        let mut commands = Commands::from(commands.into());
+    ) -> DamlResult<Request<SubmitAndWaitRequest>> {
+        let mut commands = Commands::try_from(commands.into())?;
         commands.ledger_id = self.ledger_id.clone();
-        Request::new(SubmitAndWaitRequest {
+        Ok(Request::new(SubmitAndWaitRequest {
             commands: Some(commands),
             trace_context: trace_context.into().map(TraceContext::from),
-        })
+        }))
     }
 }

@@ -4,6 +4,7 @@ use crate::data::DamlResult;
 use crate::data::DamlTraceContext;
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::command_submission_service_client::CommandSubmissionServiceClient;
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Commands, SubmitRequest, TraceContext};
+use std::convert::TryFrom;
 use tonic::transport::Channel;
 use tonic::Request;
 
@@ -34,7 +35,7 @@ impl DamlCommandSubmissionService {
         let commands = commands.into();
         let command_id = commands.command_id().to_owned();
         let request = Request::new(SubmitRequest {
-            commands: Some(self.create_ledger_commands(commands)),
+            commands: Some(self.create_ledger_commands(commands)?),
             trace_context: trace_context.into().map(TraceContext::from),
         });
         self.client().submit(request).await.map_err(DamlError::from)?;
@@ -46,9 +47,9 @@ impl DamlCommandSubmissionService {
     }
 
     // Convert into a GRPC `Commands` and inject the ledger id
-    fn create_ledger_commands(&self, commands: DamlCommands) -> Commands {
-        let mut commands = Commands::from(commands);
+    fn create_ledger_commands(&self, commands: DamlCommands) -> DamlResult<Commands> {
+        let mut commands = Commands::try_from(commands)?;
         commands.ledger_id = self.ledger_id.clone();
-        commands
+        Ok(commands)
     }
 }

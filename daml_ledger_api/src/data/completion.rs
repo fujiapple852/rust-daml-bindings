@@ -70,7 +70,7 @@ impl TryFrom<Checkpoint> for DamlCheckpoint {
     type Error = DamlError;
 
     fn try_from(checkpoint: Checkpoint) -> Result<Self, Self::Error> {
-        let record_time = util::make_datetime(&checkpoint.record_time.req()?);
+        let record_time = util::from_grpc_timestamp(&checkpoint.record_time.req()?);
         let offset = DamlLedgerOffset::try_from(checkpoint.offset.req()?)?;
         Ok(Self::new(record_time, offset))
     }

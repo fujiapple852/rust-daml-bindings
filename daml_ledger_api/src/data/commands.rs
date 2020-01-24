@@ -1,8 +1,10 @@
 use crate::data::command::DamlCommand;
+use crate::data::{DamlError, DamlResult};
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Command, Commands};
 use crate::util;
 use chrono::DateTime;
 use chrono::Utc;
+use std::convert::TryFrom;
 
 /// A list of DAML commands.
 #[derive(Debug, Eq, PartialEq)]
@@ -66,9 +68,11 @@ impl DamlCommands {
     }
 }
 
-impl From<DamlCommands> for Commands {
-    fn from(daml_commands: DamlCommands) -> Self {
-        Commands {
+impl TryFrom<DamlCommands> for Commands {
+    type Error = DamlError;
+
+    fn try_from(daml_commands: DamlCommands) -> DamlResult<Commands> {
+        Ok(Commands {
             // To allow each `DamlCommands` to be reusable between ledgers The DAML ledger id is updated immediately
             // prior to sending to the server.
             ledger_id: String::new(),
@@ -76,9 +80,9 @@ impl From<DamlCommands> for Commands {
             application_id: daml_commands.application_id,
             command_id: daml_commands.command_id,
             party: daml_commands.party,
-            ledger_effective_time: Some(util::make_timestamp_secs(daml_commands.ledger_effective_time)),
-            maximum_record_time: Some(util::make_timestamp_secs(daml_commands.maximum_record_time)),
+            ledger_effective_time: Some(util::to_grpc_timestamp(daml_commands.ledger_effective_time)?),
+            maximum_record_time: Some(util::to_grpc_timestamp(daml_commands.maximum_record_time)?),
             commands: daml_commands.commands.into_iter().map(Command::from).collect(),
-        }
+        })
     }
 }

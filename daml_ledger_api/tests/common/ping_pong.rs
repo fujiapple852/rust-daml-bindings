@@ -21,6 +21,7 @@ pub const PING_ENTITY_NAME: &str = "Ping";
 pub const ALICE_PARTY: &str = "Alice";
 pub const BOB_PARTY: &str = "Bob";
 pub const COMMAND_ID_PREFIX: &str = "cmd";
+pub const SUBMISSION_ID_PREFIX: &str = "cmd";
 pub const WORKFLOW_ID_PREFIX: &str = "wf";
 pub const APPLICATION_ID_PREFIX: &str = "app";
 pub const ERR_STR: &str = "error";

@@ -5,7 +5,7 @@ use crate::util::Required;
 use std::convert::TryFrom;
 
 /// A representation of a DAML variant field.
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Ord, PartialOrd)]
 pub struct DamlVariant {
     pub variant_id: Option<DamlIdentifier>,
     pub constructor: String,
@@ -61,7 +61,7 @@ impl From<DamlVariant> for Variant {
 }
 
 /// A representation of a DAML enum, a value with finite set of alternative representations.
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Ord, PartialOrd)]
 pub struct DamlEnum {
     enum_id: Option<DamlIdentifier>,
     constructor: String,

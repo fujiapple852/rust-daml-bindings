@@ -127,7 +127,7 @@ impl TryFrom<PackageDetails> for DamlPackageDetails {
         Ok(Self::new(
             details.package_id,
             details.package_size,
-            util::make_datetime(&details.known_since.req()?),
+            util::from_grpc_timestamp(&details.known_since.req()?),
             details.source_description,
         ))
     }

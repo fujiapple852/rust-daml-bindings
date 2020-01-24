@@ -3,20 +3,33 @@ use chrono::DateTime;
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use chrono::{Date, Timelike};
-use std::time::UNIX_EPOCH;
+use std::convert::TryFrom;
+use std::error::Error;
+use std::time::{Duration, UNIX_EPOCH};
 
-#[allow(clippy::cast_possible_wrap)]
-pub fn make_timestamp_secs(datetime: DateTime<Utc>) -> prost_types::Timestamp {
-    prost_types::Timestamp {
+#[allow(clippy::cast_sign_loss)]
+pub fn from_grpc_timestamp(timestamp: &prost_types::Timestamp) -> DateTime<Utc> {
+    let naive_datetime = NaiveDateTime::from_timestamp(timestamp.seconds, timestamp.nanos as u32);
+    DateTime::from_utc(naive_datetime, Utc)
+}
+
+pub fn to_grpc_timestamp(datetime: DateTime<Utc>) -> DamlResult<prost_types::Timestamp> {
+    Ok(prost_types::Timestamp {
         seconds: datetime.timestamp(),
-        nanos: datetime.nanosecond() as i32,
-    }
+        nanos: i32::try_from(datetime.nanosecond()).map_err(|e| DamlError::new_failed_conversion(e.description()))?,
+    })
 }
 
 #[allow(clippy::cast_sign_loss)]
-pub fn make_datetime(timestamp: &prost_types::Timestamp) -> DateTime<Utc> {
-    let naive_datetime = NaiveDateTime::from_timestamp(timestamp.seconds, timestamp.nanos as u32);
-    DateTime::from_utc(naive_datetime, Utc)
+pub fn from_grpc_duration(duration: &prost_types::Duration) -> Duration {
+    Duration::new(duration.seconds as u64, duration.nanos as u32)
+}
+
+pub fn to_grpc_duration(duration: &Duration) -> DamlResult<prost_types::Duration> {
+    Ok(prost_types::Duration {
+        seconds: i64::try_from(duration.as_secs()).map_err(|e| DamlError::new_failed_conversion(e.description()))?,
+        nanos: i32::try_from(duration.subsec_nanos()).map_err(|e| DamlError::new_failed_conversion(e.description()))?,
+    })
 }
 
 pub fn date_from_days(days: i32) -> DamlResult<Date<Utc>> {
@@ -49,6 +62,7 @@ pub fn days_from_date(date: Date<Utc>) -> i32 {
     duration.num_days() as i32
 }
 
+/// Required value.
 pub trait Required<T> {
     fn req(self) -> DamlResult<T>;
 }

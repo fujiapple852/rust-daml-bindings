@@ -1,6 +1,6 @@
 use crate::data::{DamlError, DamlResult};
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::LedgerConfiguration;
-use crate::util::Required;
+use crate::util::{from_grpc_duration, Required};
 use std::convert::TryFrom;
 use std::time::Duration;
 
@@ -34,11 +34,6 @@ impl TryFrom<LedgerConfiguration> for DamlLedgerConfiguration {
     fn try_from(response: LedgerConfiguration) -> DamlResult<Self> {
         let min: prost_types::Duration = response.min_ttl.req()?;
         let max: prost_types::Duration = response.max_ttl.req()?;
-        Ok(Self::new(from_duration(&min), from_duration(&max)))
+        Ok(Self::new(from_grpc_duration(&min), from_grpc_duration(&max)))
     }
-}
-
-#[allow(clippy::cast_sign_loss)]
-fn from_duration(duration: &prost_types::Duration) -> Duration {
-    Duration::new(duration.seconds as u64, duration.nanos as u32)
 }

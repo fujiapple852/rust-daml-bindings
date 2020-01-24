@@ -42,8 +42,8 @@ fn quote_choice_method(struct_name: &str, choice: &DamlChoice) -> TokenStream {
     let _try_return_type_expression_tokens = quote_try_expression(&choice.return_type);
 
     // TODO restore
-    //pub fn #method_name_tokens<E: CommandExecutor>(&self, #choice_argument_tokens) -> impl FnOnce(&E) -> DamlResult<#return_type_tokens> + '_ {
-    //    let template_id = #struct_name_tokens::package_id();
+    // pub fn #method_name_tokens<E: CommandExecutor>(&self, #choice_argument_tokens) -> impl FnOnce(&E) ->
+    // DamlResult<#return_type_tokens> + '_ {    let template_id = #struct_name_tokens::package_id();
     //    #all_choice_fields
     //    let exercise_command = DamlExerciseCommand::new(
     //        template_id,
