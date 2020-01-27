@@ -10,7 +10,7 @@ use std::sync::Mutex;
 
 pub type TestResult = ::std::result::Result<(), Box<dyn Error>>;
 
-pub const SANDBOX_HOST: &str = "localhost";
+pub const SANDBOX_HOST: &str = "127.0.0.1";
 pub const SANDBOX_PORT: u16 = 8081;
 
 lazy_static! {

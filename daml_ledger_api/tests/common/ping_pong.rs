@@ -26,7 +26,7 @@ pub const WORKFLOW_ID_PREFIX: &str = "wf";
 pub const APPLICATION_ID_PREFIX: &str = "app";
 pub const ERR_STR: &str = "error";
 pub const EPOCH: &str = "1970-01-01T00:00:00Z";
-pub const SANDBOX_HOST: &str = "localhost";
+pub const SANDBOX_HOST: &str = "127.0.0.1";
 pub const SANDBOX_WALLCLOCK_PORT: u16 = 8080;
 pub const SANDBOX_STATIC_PORT: u16 = 8081;
 

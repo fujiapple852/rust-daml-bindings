@@ -5,16 +5,16 @@ inspect:
 	daml damlc inspect-dar .daml/dist/*
 
 run-wallclock:
-	daml sandbox --port 8080 -w .daml/dist/* &
+	nohup daml sandbox --port 8080 -w --ledgerid sandbox-wallclock .daml/dist/* >sandbox_wallclock.log 2>&1 &
 
 run-static:
-	daml sandbox --port 8081 .daml/dist/* &
+	nohup daml sandbox --port 8081 --ledgerid sandbox-static .daml/dist/* >sandbox_static.log 2>&1 &
 
 run-wallclock-db:
-	daml sandbox --port 8080 --ledgerid sandbox-wallclock -w --jdbcurl "jdbc:postgresql://localhost:54320/wallclock_sandbox?user=postgres" .daml/dist/* &
+	nohup daml sandbox --port 8080 --ledgerid sandbox-wallclock -w --jdbcurl "jdbc:postgresql://localhost:54320/wallclock_sandbox?user=postgres" .daml/dist/* &
 
 run-static-db:
-	daml sandbox --port 8081 --ledgerid sandbox-static --jdbcurl "jdbc:postgresql://localhost:54320/static_sandbox?user=postgres" .daml/dist/* &
+	nohup daml sandbox --port 8081 --ledgerid sandbox-static --jdbcurl "jdbc:postgresql://localhost:54320/static_sandbox?user=postgres" .daml/dist/* &
 
 run-navigator-wallclock:
 	daml navigator server localhost 8080
@@ -31,10 +31,10 @@ run-only: run-wallclock run-static
 restart: kill run-only
 
 kill:
-	jps | grep sandbox | cut -d" " -f 1 | xargs kill
+	jps | grep daml-sdk | cut -d" " -f 1 | xargs kill
 
 show:
-	jps | grep sandbox
+	jps | grep daml-sdk
 
 db-start:
 	docker run --rm -d --name my_postgres -v my_dbdata:/var/lib/postgresql/data -p 54320:5432 postgres:11

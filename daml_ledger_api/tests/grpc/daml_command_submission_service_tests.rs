@@ -7,7 +7,6 @@ use daml_ledger_api::data::command::{DamlCommand, DamlCreateCommand};
 use daml_ledger_api::data::DamlResult;
 use daml_ledger_util::package::find_module_package_id;
 use futures::prelude::*;
-use futures::StreamExt;
 
 /// Submit a command using the submission service and confirm successful execution from the completion service.
 ///
