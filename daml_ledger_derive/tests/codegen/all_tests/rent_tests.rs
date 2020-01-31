@@ -6,12 +6,12 @@ use daml_ledger_api::{CommandExecutor, DamlSimpleExecutorBuilder};
 use daml_ledger_derive::daml_codegen;
 use std::convert::TryInto;
 
-daml_codegen!(dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_46-lf_1_7.dar");
+daml_codegen!(dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_50-lf_1_7.dar");
 
 #[tokio::test]
 async fn test_rent() -> TestResult {
     let _lock = SANDBOX_LOCK.lock()?;
-    let client = new_static_sandbox_async().await?;
+    let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let bob_executor = DamlSimpleExecutorBuilder::new(&client, "Bob").build();
     let proposal = testing_types_1_0_0::da::rent_demo::RentalProposal::new("Alice", "Bob", "Some Terms");

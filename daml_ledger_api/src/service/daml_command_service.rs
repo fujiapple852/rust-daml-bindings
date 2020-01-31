@@ -4,10 +4,12 @@ use crate::data::{DamlCommands, DamlTransaction, DamlTransactionTree};
 
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::command_service_client::CommandServiceClient;
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Commands, SubmitAndWaitRequest, TraceContext};
+use crate::ledger_client::DamlTokenRefresh;
+use crate::service::common::make_request;
 use crate::util::Required;
+use log::{debug, trace};
 use std::convert::TryFrom;
 use tonic::transport::Channel;
-use tonic::Request;
 
 /// Submit commands to a DAML ledger and await the completion.
 ///
@@ -16,14 +18,16 @@ use tonic::Request;
 pub struct DamlCommandService {
     channel: Channel,
     ledger_id: String,
+    auth_token: Option<String>,
 }
 
 impl DamlCommandService {
     /// Create a `DamlCommandService` for a given GRPC `channel` and `ledger_id`.
-    pub fn new(channel: Channel, ledger_id: impl Into<String>) -> Self {
+    pub fn new(channel: Channel, ledger_id: impl Into<String>, auth_token: Option<String>) -> Self {
         Self {
             channel,
             ledger_id: ledger_id.into(),
+            auth_token,
         }
     }
 
@@ -52,12 +56,12 @@ impl DamlCommandService {
     /// # use futures::future::Future;
     /// # use chrono::Utc;
     /// # use daml_ledger_api::data::DamlCommands;
-    /// # use daml_ledger_api::DamlLedgerClient;
+    /// # use daml_ledger_api::DamlLedgerClientBuilder;
     /// # use daml_ledger_api::data::DamlResult;
     /// # use std::error::Error;
     /// # fn main() -> DamlResult<()> {
-    /// # futures::executor::block_on(async {
-    /// let ledger_client = DamlLedgerClient::connect("localhost", 7600).await?;
+    /// futures::executor::block_on(async {
+    /// let ledger_client = DamlLedgerClientBuilder::uri("http://127.0.0.1").connect().await?;
     /// # let commands: DamlCommands = DamlCommands::new("", "", "", "", Utc::now(), Utc::now(), vec![]);
     /// let future_command = ledger_client.command_service().submit_and_wait(commands).await;
     /// match future_command {
@@ -89,10 +93,12 @@ impl DamlCommandService {
         commands: impl Into<DamlCommands>,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<String> {
+        debug!("submit_and_wait");
         let commands = commands.into();
         let command_id = commands.command_id().to_owned();
-        let request = self.make_request(commands, trace_context)?;
-        self.client().submit_and_wait(request).await?;
+        let payload = self.make_payload(commands, trace_context)?;
+        trace!("submit_and_wait payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        self.client().submit_and_wait(make_request(payload, &self.auth_token)?).await?;
         Ok(command_id)
     }
 
@@ -113,8 +119,15 @@ impl DamlCommandService {
         commands: impl Into<DamlCommands>,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<String> {
-        let request = self.make_request(commands, trace_context)?;
-        Ok(self.client().submit_and_wait_for_transaction_id(request).await?.into_inner().transaction_id)
+        debug!("submit_and_wait_for_transaction_id");
+        let payload = self.make_payload(commands, trace_context)?;
+        trace!("submit_and_wait_for_transaction_id payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        Ok(self
+            .client()
+            .submit_and_wait_for_transaction_id(make_request(payload, &self.auth_token)?)
+            .await?
+            .into_inner()
+            .transaction_id)
     }
 
     /// Submits a composite [`DamlCommands`] and returns the resulting [`DamlTransaction`].
@@ -137,9 +150,11 @@ impl DamlCommandService {
         commands: impl Into<DamlCommands>,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<DamlTransaction> {
-        let request = self.make_request(commands, trace_context)?;
+        debug!("submit_and_wait_for_transaction");
+        let payload = self.make_payload(commands, trace_context)?;
+        trace!("submit_and_wait_for_transaction payload = {:?}, auth_token = {:?}", payload, self.auth_token);
         self.client()
-            .submit_and_wait_for_transaction(request)
+            .submit_and_wait_for_transaction(make_request(payload, &self.auth_token)?)
             .await?
             .into_inner()
             .transaction
@@ -166,9 +181,11 @@ impl DamlCommandService {
         commands: impl Into<DamlCommands>,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<DamlTransactionTree> {
-        let request = self.make_request(commands, trace_context)?;
+        debug!("submit_and_wait_for_transaction_tree");
+        let payload = self.make_payload(commands, trace_context)?;
+        trace!("submit_and_wait_for_transaction_tree payload = {:?}, auth_token = {:?}", payload, self.auth_token);
         self.client()
-            .submit_and_wait_for_transaction_tree(request)
+            .submit_and_wait_for_transaction_tree(make_request(payload, &self.auth_token)?)
             .await?
             .into_inner()
             .transaction
@@ -180,16 +197,22 @@ impl DamlCommandService {
         CommandServiceClient::new(self.channel.clone())
     }
 
-    fn make_request(
+    fn make_payload(
         &self,
         commands: impl Into<DamlCommands>,
         trace_context: impl Into<Option<DamlTraceContext>>,
-    ) -> DamlResult<Request<SubmitAndWaitRequest>> {
+    ) -> DamlResult<SubmitAndWaitRequest> {
         let mut commands = Commands::try_from(commands.into())?;
         commands.ledger_id = self.ledger_id.clone();
-        Ok(Request::new(SubmitAndWaitRequest {
+        Ok(SubmitAndWaitRequest {
             commands: Some(commands),
             trace_context: trace_context.into().map(TraceContext::from),
-        }))
+        })
+    }
+}
+
+impl DamlTokenRefresh for DamlCommandService {
+    fn refresh_token(&mut self, auth_token: Option<String>) {
+        self.auth_token = auth_token
     }
 }

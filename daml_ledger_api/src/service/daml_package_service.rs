@@ -8,22 +8,26 @@ use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::package_service_cl
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{
     GetPackageRequest, GetPackageStatusRequest, ListPackagesRequest, PackageStatus, TraceContext,
 };
+use crate::ledger_client::DamlTokenRefresh;
+use crate::service::common::make_request;
 use crate::util::Required;
+use log::{debug, trace};
 use std::convert::TryFrom;
 use tonic::transport::Channel;
-use tonic::Request;
 
 /// Query and extract the DAML LF packages that are supported by the DAML ledger.
 pub struct DamlPackageService {
     channel: Channel,
     ledger_id: String,
+    auth_token: Option<String>,
 }
 
 impl DamlPackageService {
-    pub fn new(channel: Channel, ledger_id: impl Into<String>) -> Self {
+    pub fn new(channel: Channel, ledger_id: impl Into<String>, auth_token: Option<String>) -> Self {
         Self {
             channel,
             ledger_id: ledger_id.into(),
+            auth_token,
         }
     }
 
@@ -36,11 +40,13 @@ impl DamlPackageService {
         &self,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<Vec<String>> {
-        let request = Request::new(ListPackagesRequest {
+        debug!("list_packages");
+        let payload = ListPackagesRequest {
             ledger_id: self.ledger_id.clone(),
             trace_context: trace_context.into().map(TraceContext::from),
-        });
-        let all_packages = self.client().list_packages(request).await?;
+        };
+        trace!("list_packages payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let all_packages = self.client().list_packages(make_request(payload, &self.auth_token)?).await?;
         Ok(all_packages.into_inner().package_ids)
     }
 
@@ -54,12 +60,14 @@ impl DamlPackageService {
         package_id: impl Into<String>,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<DamlPackage> {
-        let request = Request::new(GetPackageRequest {
+        debug!("get_package");
+        let payload = GetPackageRequest {
             ledger_id: self.ledger_id.clone(),
             package_id: package_id.into(),
             trace_context: trace_context.into().map(TraceContext::from),
-        });
-        let package = self.client().get_package(request).await?;
+        };
+        trace!("get_package payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let package = self.client().get_package(make_request(payload, &self.auth_token)?).await?;
         DamlPackage::try_from(package.into_inner())
     }
 
@@ -73,16 +81,24 @@ impl DamlPackageService {
         package_id: impl Into<String>,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<DamlPackageStatus> {
-        let request = Request::new(GetPackageStatusRequest {
+        debug!("get_package_status");
+        let payload = GetPackageStatusRequest {
             ledger_id: self.ledger_id.clone(),
             package_id: package_id.into(),
             trace_context: trace_context.into().map(TraceContext::from),
-        });
-        let package_status = self.client().get_package_status(request).await?;
+        };
+        trace!("get_package_status payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let package_status = self.client().get_package_status(make_request(payload, &self.auth_token)?).await?;
         Ok(DamlPackageStatus::from(PackageStatus::from_i32(package_status.into_inner().package_status).req()?))
     }
 
     fn client(&self) -> PackageServiceClient<Channel> {
         PackageServiceClient::new(self.channel.clone())
+    }
+}
+
+impl DamlTokenRefresh for DamlPackageService {
+    fn refresh_token(&mut self, auth_token: Option<String>) {
+        self.auth_token = auth_token
     }
 }

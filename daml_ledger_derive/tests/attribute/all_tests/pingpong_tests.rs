@@ -28,7 +28,7 @@ fn test_local_round_trip() -> TestResult {
 #[tokio::test]
 async fn test_ledger_create() -> TestResult {
     let _lock = SANDBOX_LOCK.lock()?;
-    let client = new_static_sandbox_async().await?;
+    let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let ping = Ping::new("Alice", "Bob", 0);
     let create_ping_command = ping.create_command();
@@ -46,7 +46,7 @@ async fn test_ledger_create() -> TestResult {
 #[tokio::test]
 async fn test_ledger_create_and_exercise_with_nested() -> TestResult {
     let _lock = SANDBOX_LOCK.lock()?;
-    let client = new_static_sandbox_async().await?;
+    let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
 
     let ping = Ping::new("Alice", "Bob", 0);

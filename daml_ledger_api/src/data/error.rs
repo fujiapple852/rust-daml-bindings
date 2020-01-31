@@ -1,3 +1,4 @@
+use futures::io::Error;
 use std::error;
 use std::fmt;
 use tonic::codegen::http;
@@ -7,7 +8,9 @@ use tonic::codegen::http;
 pub enum DamlError {
     GRPCTransportError(tonic::transport::Error),
     GRPCStatusError(tonic::Status),
+    GRPCPermissionError(tonic::Status),
     InvalidUriError(http::uri::InvalidUri),
+    StdError(Error),
     UnexpectedType(String, String),
     UnknownField(String),
     ListIndexOutOfRange(usize),
@@ -26,9 +29,11 @@ impl DamlError {
 impl fmt::Display for DamlError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            DamlError::InvalidUriError(e) => write!(fmt, "{}", (e as &dyn error::Error).description()),
-            DamlError::GRPCTransportError(e) => write!(fmt, "{}", (e as &dyn error::Error).description()),
-            DamlError::GRPCStatusError(e) => write!(fmt, "{}", (e as &dyn error::Error).description()),
+            DamlError::InvalidUriError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
+            DamlError::GRPCTransportError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
+            DamlError::GRPCStatusError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
+            DamlError::GRPCPermissionError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
+            DamlError::StdError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
             DamlError::UnexpectedType(expected, actual) =>
                 write!(fmt, "unexpected type, expected {} but found {}", expected, actual),
             DamlError::UnknownField(name) => write!(fmt, "unknown field {}", name),
@@ -46,7 +51,10 @@ impl error::Error for DamlError {}
 
 impl From<tonic::Status> for DamlError {
     fn from(e: tonic::Status) -> Self {
-        DamlError::GRPCStatusError(e)
+        match e.code() {
+            tonic::Code::PermissionDenied => DamlError::GRPCPermissionError(e),
+            _ => DamlError::GRPCStatusError(e),
+        }
     }
 }
 
@@ -71,6 +79,12 @@ impl From<&str> for DamlError {
 impl From<bigdecimal::ParseBigDecimalError> for DamlError {
     fn from(e: bigdecimal::ParseBigDecimalError) -> Self {
         DamlError::FailedConversion(e.to_string())
+    }
+}
+
+impl From<Error> for DamlError {
+    fn from(e: Error) -> Self {
+        DamlError::StdError(e)
     }
 }
 

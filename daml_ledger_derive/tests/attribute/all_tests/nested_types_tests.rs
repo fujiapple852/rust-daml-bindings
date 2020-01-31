@@ -20,7 +20,7 @@ pub fn test_round_trip() -> TestResult {
 #[tokio::test]
 pub async fn test_complex_create_and_exercise() -> TestResult {
     let _lock = SANDBOX_LOCK.lock()?;
-    let client = new_static_sandbox_async().await?;
+    let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
 
     // construct dummy data

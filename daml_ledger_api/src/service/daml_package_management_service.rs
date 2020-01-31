@@ -3,11 +3,13 @@ use crate::data::package::DamlPackageDetails;
 use crate::data::DamlResult;
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::admin::package_management_service_client::PackageManagementServiceClient;
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::admin::{ListKnownPackagesRequest, UploadDarFileRequest};
+use crate::ledger_client::DamlTokenRefresh;
+use crate::service::common::make_request;
 use bytes::buf::Buf;
 use bytes::Bytes;
+use log::{debug, trace};
 use std::convert::TryFrom;
 use tonic::transport::Channel;
-use tonic::Request;
 
 /// Query the DAML-LF packages supported by the ledger participant and upload DAR files.
 ///
@@ -20,19 +22,23 @@ use tonic::Request;
 /// if the claims in the token are insufficient to perform a given operation.
 pub struct DamlPackageManagementService {
     channel: Channel,
+    auth_token: Option<String>,
 }
 
 impl DamlPackageManagementService {
-    pub fn new(channel: Channel) -> Self {
+    pub fn new(channel: Channel, auth_token: Option<String>) -> Self {
         Self {
             channel,
+            auth_token,
         }
     }
 
     /// Returns the details of all DAML-LF packages known to the backing participant.
     pub async fn list_known_packages(&self) -> DamlResult<Vec<DamlPackageDetails>> {
-        let request = Request::new(ListKnownPackagesRequest {});
-        let all_known_packages = self.client().list_known_packages(request).await?;
+        debug!("list_known_packages");
+        let payload = ListKnownPackagesRequest {};
+        trace!("list_known_packages payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let all_known_packages = self.client().list_known_packages(make_request(payload, &self.auth_token)?).await?;
         all_known_packages.into_inner().package_details.into_iter().map(DamlPackageDetails::try_from).collect()
     }
 
@@ -52,14 +58,22 @@ impl DamlPackageManagementService {
     /// The maximum supported size is implementation specific.  Contains a DAML archive `dar`file, which in turn is a
     /// jar like zipped container for `daml_lf` archives.
     pub async fn upload_dar_file(&self, bytes: impl Into<Bytes>, submission_id: Option<String>) -> DamlResult<()> {
-        let request = Request::new(UploadDarFileRequest {
+        debug!("upload_dar_file");
+        let payload = UploadDarFileRequest {
             dar_file: bytes.into().bytes().to_vec(),
             submission_id: submission_id.unwrap_or_default(),
-        });
-        self.client().upload_dar_file(request).await.map_err(Into::into).map(|_| ())
+        };
+        trace!("upload_dar_file payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        self.client().upload_dar_file(make_request(payload, &self.auth_token)?).await.map_err(Into::into).map(|_| ())
     }
 
     fn client(&self) -> PackageManagementServiceClient<Channel> {
         PackageManagementServiceClient::new(self.channel.clone())
+    }
+}
+
+impl DamlTokenRefresh for DamlPackageManagementService {
+    fn refresh_token(&mut self, auth_token: Option<String>) {
+        self.auth_token = auth_token
     }
 }

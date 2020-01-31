@@ -6,8 +6,8 @@ use daml_ledger_api::data::command::{
 use daml_ledger_api::data::value::{DamlRecord, DamlRecordBuilder, DamlValue};
 use daml_ledger_api::data::DamlIdentifier;
 use daml_ledger_api::data::DamlResult;
-use daml_ledger_api::DamlCommandFactory;
-use daml_ledger_api::DamlLedgerClient;
+use daml_ledger_api::{DamlCommandFactory, DamlLedgerClientBuilder};
+use daml_ledger_api::{DamlLedgerClient, DamlSandboxTokenBuilder};
 use std::error::Error;
 use std::ops::Add;
 use std::sync::Mutex;
@@ -26,9 +26,10 @@ pub const WORKFLOW_ID_PREFIX: &str = "wf";
 pub const APPLICATION_ID_PREFIX: &str = "app";
 pub const ERR_STR: &str = "error";
 pub const EPOCH: &str = "1970-01-01T00:00:00Z";
-pub const SANDBOX_HOST: &str = "127.0.0.1";
-pub const SANDBOX_WALLCLOCK_PORT: u16 = 8080;
-pub const SANDBOX_STATIC_PORT: u16 = 8081;
+pub const STATIC_SANDBOX_URI: &str = "https://localhost:8081";
+pub const WALLCLOCK_SANDBOX_URI: &str = "https://localhost:8080";
+pub const TOKEN_VALIDITY_SECS: i64 = 60;
+pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/certs/ec256.key";
 
 lazy_static! {
     pub static ref STATIC_SANDBOX_LOCK: Mutex<()> = Mutex::new(());
@@ -36,12 +37,12 @@ lazy_static! {
 }
 
 pub async fn new_wallclock_sandbox() -> DamlResult<DamlLedgerClient> {
-    let client = DamlLedgerClient::connect(SANDBOX_HOST, SANDBOX_WALLCLOCK_PORT).await?;
+    let client = DamlLedgerClientBuilder::uri(WALLCLOCK_SANDBOX_URI).with_auth(make_ec256_token()?).connect().await?;
     client.reset_and_wait().await
 }
 
 pub async fn new_static_sandbox() -> DamlResult<DamlLedgerClient> {
-    let client = DamlLedgerClient::connect(SANDBOX_HOST, SANDBOX_STATIC_PORT).await?;
+    let client = DamlLedgerClientBuilder::uri(STATIC_SANDBOX_URI).with_auth(make_ec256_token()?).connect().await?;
     client.reset_and_wait().await
 }
 
@@ -125,4 +126,12 @@ pub async fn test_create_ping_and_exercise_reset_ping(
     let commands = commands_factory.make_command_with_id(create_and_exercise_command, command_id);
     ledger_client.command_service().submit_and_wait(commands).await?;
     Ok(())
+}
+
+fn make_ec256_token() -> DamlResult<String> {
+    Ok(DamlSandboxTokenBuilder::new_with_duration_secs(TOKEN_VALIDITY_SECS)
+        .admin(true)
+        .act_as(vec![String::from(ALICE_PARTY), String::from(BOB_PARTY)])
+        .read_as(vec![String::from(ALICE_PARTY), String::from(BOB_PARTY)])
+        .new_ec256_token(std::fs::read_to_string(TOKEN_KEY_PATH)?)?)
 }

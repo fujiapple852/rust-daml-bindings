@@ -2,12 +2,12 @@ use daml::prelude::*;
 
 include!("autogen/rental_0_0_1.rs");
 
-use daml_ledger_api::{DamlLedgerClient, DamlSimpleExecutorBuilder};
+use daml_ledger_api::{DamlLedgerClientBuilder, DamlSimpleExecutorBuilder};
 use rental_0_0_1::da::rental::*;
 
 #[tokio::main]
 async fn main() -> DamlResult<()> {
-    let client = DamlLedgerClient::connect("localhost", 8082).await?.reset_and_wait().await?;
+    let client = DamlLedgerClientBuilder::uri("http://localhost:8082").connect().await?.reset_and_wait().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let bob_executor = DamlSimpleExecutorBuilder::new(&client, "Bob").build();
     let proposal_data = RentalProposal::new("Alice", "Bob", "test");

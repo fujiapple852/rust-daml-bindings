@@ -4,7 +4,6 @@ use chrono::NaiveDateTime;
 use chrono::Utc;
 use chrono::{Date, Timelike};
 use std::convert::TryFrom;
-use std::error::Error;
 use std::time::{Duration, UNIX_EPOCH};
 
 #[allow(clippy::cast_sign_loss)]
@@ -16,7 +15,7 @@ pub fn from_grpc_timestamp(timestamp: &prost_types::Timestamp) -> DateTime<Utc> 
 pub fn to_grpc_timestamp(datetime: DateTime<Utc>) -> DamlResult<prost_types::Timestamp> {
     Ok(prost_types::Timestamp {
         seconds: datetime.timestamp(),
-        nanos: i32::try_from(datetime.nanosecond()).map_err(|e| DamlError::new_failed_conversion(e.description()))?,
+        nanos: i32::try_from(datetime.nanosecond()).map_err(|e| DamlError::new_failed_conversion(e.to_string()))?,
     })
 }
 
@@ -27,8 +26,8 @@ pub fn from_grpc_duration(duration: &prost_types::Duration) -> Duration {
 
 pub fn to_grpc_duration(duration: &Duration) -> DamlResult<prost_types::Duration> {
     Ok(prost_types::Duration {
-        seconds: i64::try_from(duration.as_secs()).map_err(|e| DamlError::new_failed_conversion(e.description()))?,
-        nanos: i32::try_from(duration.subsec_nanos()).map_err(|e| DamlError::new_failed_conversion(e.description()))?,
+        seconds: i64::try_from(duration.as_secs()).map_err(|e| DamlError::new_failed_conversion(e.to_string()))?,
+        nanos: i32::try_from(duration.subsec_nanos()).map_err(|e| DamlError::new_failed_conversion(e.to_string()))?,
     })
 }
 

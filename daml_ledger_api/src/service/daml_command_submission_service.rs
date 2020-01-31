@@ -4,21 +4,25 @@ use crate::data::DamlResult;
 use crate::data::DamlTraceContext;
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::command_submission_service_client::CommandSubmissionServiceClient;
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Commands, SubmitRequest, TraceContext};
+use crate::ledger_client::DamlTokenRefresh;
+use crate::service::common::make_request;
+use log::{debug, trace};
 use std::convert::TryFrom;
 use tonic::transport::Channel;
-use tonic::Request;
 
 /// Advance the state of a DAML ledger by submitting commands.
 pub struct DamlCommandSubmissionService {
     channel: Channel,
     ledger_id: String,
+    auth_token: Option<String>,
 }
 
 impl DamlCommandSubmissionService {
-    pub fn new(channel: Channel, ledger_id: impl Into<String>) -> Self {
+    pub fn new(channel: Channel, ledger_id: impl Into<String>, auth_token: Option<String>) -> Self {
         Self {
             channel,
             ledger_id: ledger_id.into(),
+            auth_token,
         }
     }
 
@@ -32,13 +36,15 @@ impl DamlCommandSubmissionService {
         commands: impl Into<DamlCommands>,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<String> {
+        debug!("submit_request");
         let commands = commands.into();
         let command_id = commands.command_id().to_owned();
-        let request = Request::new(SubmitRequest {
+        let payload = SubmitRequest {
             commands: Some(self.create_ledger_commands(commands)?),
             trace_context: trace_context.into().map(TraceContext::from),
-        });
-        self.client().submit(request).await.map_err(DamlError::from)?;
+        };
+        trace!("submit_request payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        self.client().submit(make_request(payload, &self.auth_token)?).await.map_err(DamlError::from)?;
         Ok(command_id)
     }
 
@@ -51,5 +57,11 @@ impl DamlCommandSubmissionService {
         let mut commands = Commands::try_from(commands)?;
         commands.ledger_id = self.ledger_id.clone();
         Ok(commands)
+    }
+}
+
+impl DamlTokenRefresh for DamlCommandSubmissionService {
+    fn refresh_token(&mut self, auth_token: Option<String>) {
+        self.auth_token = auth_token
     }
 }

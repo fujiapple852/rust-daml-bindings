@@ -5,7 +5,7 @@
 //! transactions or submitting commands.
 
 #![warn(clippy::all, clippy::pedantic)]
-#![allow(clippy::module_name_repetitions, clippy::use_self, clippy::must_use_candidate)]
+#![allow(clippy::module_name_repetitions, clippy::use_self, clippy::must_use_candidate, clippy::missing_errors_doc)]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
@@ -17,7 +17,7 @@ pub mod data;
 pub mod service;
 
 mod ledger_client;
-pub use ledger_client::DamlLedgerClient;
+pub use ledger_client::{DamlLedgerClient, DamlLedgerClientBuilder};
 
 mod command_factory;
 pub use command_factory::DamlCommandFactory;
@@ -27,6 +27,11 @@ pub use executor::{CommandExecutor, DamlLedgerTimeMode, DamlSimpleExecutor, Daml
 
 mod grpc_protobuf;
 mod util;
+
+#[cfg(feature = "testing")]
+mod sandbox_auth;
+#[cfg(feature = "testing")]
+pub use sandbox_auth::DamlSandboxTokenBuilder;
 
 // Re-export types used by the public API
 #[doc(hidden)]

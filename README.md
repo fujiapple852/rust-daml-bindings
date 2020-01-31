@@ -8,17 +8,20 @@ The project is in an early development stage and the API is unstable.  It has no
 The status of the feature set:
 
 - [x] Support for all DAML Ledger API (v1) GRPC services
-- [X] Support for async I/O and streams (via `futures` [0.1.x](https://docs.rs/futures/0.1.25/futures/))
-- [X] Sample Application and full suite of Sandbox integration tests
+- [X] Support for http & https (TLS)
+- [X] Support for passing JWT bearer tokens (HS256/RS256/EC256 DAML Sandbox token builder provided)
+- [X] Fully async API (via `async`/`await`, `std::futures` & `futures` [0.3.x](https://docs.rs/futures/0.3.1/futures/))
+- [X] Full suite of Sandbox integration tests
 - [X] Macros to create and extract DAML values
-- [X] Support for DAML LF
-- [X] Custom Attributes (for automatic Rust<>DAML conversions)
-- [X] Code Generator (from DAML LF)
+- [X] Support for parsing DAML LF (versions `1.6` and `1.7`)
+- [X] Code Generator (generate Rust types from DAML LF) 
+- [X] Custom attributes for automatic Rust<>DAML conversions
+- [X] Sample applications
 - [ ] Executor API
 - [ ] Client Authentication
 - [ ] FFI Wrapper (C interface)
 
-## Prerequisites
+## Dependencies
 These ledger bindings use the [tonic](https://github.com/hyperium/tonic) GRPC library which in turn uses the 
 [PROST!](https://github.com/danburkert/prost) library for generating Rust representations of the DAML ledger API 
 protocols buffers.
@@ -42,8 +45,6 @@ The project provides the following crates:
 | daml_ledger_macro   | Macros to create and extract DAML value     | alpha       |
 | daml_ledger_util    | Utilities to aid working with DAML ledgers  | alpha       |
 | daml_lf             | Read Dar and Dalf files & bytes             | alpha       | 
-| ping_pong_demo      | Standalone application using the ledger api | alpha       |
-| rental_demo         | Standalone app using the codegen            | alpha       |
 
 ## Build
 Standard Cargo debug/release build steps:
@@ -102,7 +103,7 @@ To run directly outside of cargo:
 ```
 $ cd rust-daml-bindings
 $ cargo build --release
-# target/release/ping_pong_demo
+$ target/release/ping_pong_demo
 ```
 
 ## Clippy

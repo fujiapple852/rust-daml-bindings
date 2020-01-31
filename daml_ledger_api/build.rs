@@ -19,7 +19,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     tonic_build::configure()
         .build_server(false)
         .build_client(true)
-        .format(false)
+        .format(true)
         .compile(all_protos.as_slice(), vec![PROTO_ROOT_PATH.into()].as_slice())?;
     Ok(())
 }

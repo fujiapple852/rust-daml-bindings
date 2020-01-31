@@ -1,3 +1,4 @@
+mod common;
 mod daml_active_contracts_service;
 mod daml_command_completion_service;
 mod daml_command_service;

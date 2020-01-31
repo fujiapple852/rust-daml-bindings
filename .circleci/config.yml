@@ -23,7 +23,7 @@ jobs:
           command: cargo build --all --all-targets
       - run:
           name: Start sandbox
-          command: cd resources/testing_types_sandbox && make run && sleep 5
+          command: cd resources/testing_types_sandbox && make run-ec256 && sleep 5
       - run:
           name: Test all targets
           command: cargo test --workspace --all-targets

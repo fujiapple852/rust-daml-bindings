@@ -2,18 +2,22 @@ use crate::data::DamlResult;
 use crate::data::{DamlError, DamlTraceContext};
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::ledger_identity_service_client::LedgerIdentityServiceClient;
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{GetLedgerIdentityRequest, TraceContext};
+use crate::ledger_client::DamlTokenRefresh;
+use crate::service::common::make_request;
+use log::{debug, trace};
 use tonic::transport::Channel;
-use tonic::Request;
 
 /// Obtain the unique identity that the DAML ledger.
 pub struct DamlLedgerIdentityService {
     channel: Channel,
+    auth_token: Option<String>,
 }
 
 impl DamlLedgerIdentityService {
-    pub fn new(channel: Channel) -> Self {
+    pub fn new(channel: Channel, auth_token: Option<String>) -> Self {
         Self {
             channel,
+            auth_token,
         }
     }
 
@@ -26,14 +30,26 @@ impl DamlLedgerIdentityService {
         &self,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<String> {
-        let request = Request::new(GetLedgerIdentityRequest {
+        debug!("get_ledger_identity");
+        let payload = GetLedgerIdentityRequest {
             trace_context: trace_context.into().map(TraceContext::from),
-        });
-        let async_result = self.client().get_ledger_identity(request).await.map_err(DamlError::from)?;
+        };
+        trace!("get_ledger_identity payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let async_result = self
+            .client()
+            .get_ledger_identity(make_request(payload, &self.auth_token)?)
+            .await
+            .map_err(DamlError::from)?;
         Ok(async_result.into_inner().ledger_id)
     }
 
     fn client(&self) -> LedgerIdentityServiceClient<Channel> {
         LedgerIdentityServiceClient::new(self.channel.clone())
+    }
+}
+
+impl DamlTokenRefresh for DamlLedgerIdentityService {
+    fn refresh_token(&mut self, auth_token: Option<String>) {
+        self.auth_token = auth_token
     }
 }

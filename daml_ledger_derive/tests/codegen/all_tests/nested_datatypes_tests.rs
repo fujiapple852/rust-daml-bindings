@@ -1,6 +1,6 @@
 use crate::common::test_utils::{
-    new_static_sandbox_async, update_create_command_package_id_for_testing,
-    update_exercise_command_package_id_for_testing, TestResult, SANDBOX_LOCK,
+    new_static_sandbox, update_create_command_package_id_for_testing, update_exercise_command_package_id_for_testing,
+    TestResult, SANDBOX_LOCK,
 };
 use daml::prelude::DamlTextMap;
 use daml_ledger_api::data::command::DamlCommand;
@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 
 daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_46-lf_1_7.dar",
+    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_50-lf_1_7.dar",
     module_filter_regex = "DA.Nested"
 );
 
@@ -19,7 +19,7 @@ daml_codegen!(
 pub async fn test() -> TestResult {
     use testing_types_1_0_0::da::nested::*;
     let _lock = SANDBOX_LOCK.lock()?;
-    let client = new_static_sandbox_async().await?;
+    let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
 
     // construct dummy data

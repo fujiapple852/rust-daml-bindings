@@ -5,9 +5,11 @@ use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::admin::party_manag
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::admin::{
     AllocatePartyRequest, GetParticipantIdRequest, ListKnownPartiesRequest,
 };
+use crate::ledger_client::DamlTokenRefresh;
+use crate::service::common::make_request;
 use crate::util::Required;
+use log::{debug, trace};
 use tonic::transport::Channel;
-use tonic::Request;
 
 /// Inspect the party management state of a ledger participant and modify the parts that are modifiable.
 ///
@@ -21,12 +23,14 @@ use tonic::Request;
 /// individual calls not related to authorization will be described.
 pub struct DamlPartyManagementService {
     channel: Channel,
+    auth_token: Option<String>,
 }
 
 impl DamlPartyManagementService {
-    pub fn new(channel: Channel) -> Self {
+    pub fn new(channel: Channel, auth_token: Option<String>) -> Self {
         Self {
             channel,
+            auth_token,
         }
     }
 
@@ -39,8 +43,10 @@ impl DamlPartyManagementService {
     /// This method is expected to succeed provided the backing participant is healthy, otherwise it responds with
     /// `INTERNAL` grpc error.
     pub async fn get_participant_id(&self) -> DamlResult<String> {
-        let request = Request::new(GetParticipantIdRequest {});
-        let participant = self.client().get_participant_id(request).await?;
+        debug!("get_participant_id");
+        let payload = GetParticipantIdRequest {};
+        trace!("get_participant_id payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let participant = self.client().get_participant_id(make_request(payload, &self.auth_token)?).await?;
         Ok(participant.into_inner().participant_id)
     }
 
@@ -49,8 +55,10 @@ impl DamlPartyManagementService {
     /// The list returned contains parties whose ledger access is facilitated bb backing participant and the ones
     /// maintained elsewhere.
     pub async fn list_known_parties(&self) -> DamlResult<Vec<DamlPartyDetails>> {
-        let request = Request::new(ListKnownPartiesRequest {});
-        let all_known_parties = self.client().list_known_parties(request).await?;
+        debug!("list_known_parties");
+        let payload = ListKnownPartiesRequest {};
+        trace!("list_known_parties payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let all_known_parties = self.client().list_known_parties(make_request(payload, &self.auth_token)?).await?;
         Ok(all_known_parties.into_inner().party_details.into_iter().map(DamlPartyDetails::from).collect())
     }
 
@@ -68,15 +76,23 @@ impl DamlPartyManagementService {
         party_id_hint: impl Into<String>,
         display_name: impl Into<String>,
     ) -> DamlResult<DamlPartyDetails> {
-        let request = Request::new(AllocatePartyRequest {
+        debug!("allocate_party");
+        let payload = AllocatePartyRequest {
             party_id_hint: party_id_hint.into(),
             display_name: display_name.into(),
-        });
-        let allocated_parties = self.client().allocate_party(request).await?;
+        };
+        trace!("allocate_party payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let allocated_parties = self.client().allocate_party(make_request(payload, &self.auth_token)?).await?;
         Ok(DamlPartyDetails::from(allocated_parties.into_inner().party_details.req()?))
     }
 
     fn client(&self) -> PartyManagementServiceClient<Channel> {
         PartyManagementServiceClient::new(self.channel.clone())
+    }
+}
+
+impl DamlTokenRefresh for DamlPartyManagementService {
+    fn refresh_token(&mut self, auth_token: Option<String>) {
+        self.auth_token = auth_token
     }
 }

@@ -11,7 +11,8 @@
     clippy::needless_pass_by_value,
     clippy::use_self,
     clippy::cast_sign_loss,
-    clippy::must_use_candidate
+    clippy::must_use_candidate,
+    clippy::missing_errors_doc
 )]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]

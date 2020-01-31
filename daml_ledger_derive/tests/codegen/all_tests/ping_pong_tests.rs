@@ -1,5 +1,5 @@
 use crate::common::test_utils::{
-    new_static_sandbox_async, update_create_command_package_id_for_testing, TestResult, SANDBOX_LOCK,
+    new_static_sandbox, update_create_command_package_id_for_testing, TestResult, SANDBOX_LOCK,
 };
 use daml::prelude::*;
 use daml_ledger_api::data::event::DamlEvent;
@@ -7,7 +7,7 @@ use daml_ledger_api::DamlSimpleExecutorBuilder;
 use daml_ledger_derive::daml_codegen;
 
 daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_46-lf_1_7.dar",
+    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_50-lf_1_7.dar",
     module_filter_regex = "DA.PingPong",
     mode = "Full"
 );
@@ -15,7 +15,7 @@ daml_codegen!(
 #[tokio::test]
 async fn test_create_ping_contract() -> TestResult {
     let _lock = SANDBOX_LOCK.lock()?;
-    let client = new_static_sandbox_async().await?;
+    let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let ping = testing_types_1_0_0::da::ping_pong::Ping::new("Alice", "Bob", 0);
     let create_ping_command = ping.create_command();
