@@ -11,7 +11,7 @@ use daml_ledger_api::{DamlLedgerClient, DamlSandboxTokenBuilder};
 use std::error::Error;
 use std::ops::Add;
 use std::sync::Mutex;
-use time::Duration;
+use std::time::Duration;
 use uuid::Uuid;
 
 pub type TestResult = ::std::result::Result<(), Box<dyn Error>>;
@@ -29,6 +29,7 @@ pub const EPOCH: &str = "1970-01-01T00:00:00Z";
 pub const STATIC_SANDBOX_URI: &str = "https://localhost:8081";
 pub const WALLCLOCK_SANDBOX_URI: &str = "https://localhost:8080";
 pub const TOKEN_VALIDITY_SECS: i64 = 60;
+pub const CONNECT_TIMEOUT_MS: u64 = 500;
 pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/certs/ec256.key";
 
 lazy_static! {
@@ -37,13 +38,11 @@ lazy_static! {
 }
 
 pub async fn new_wallclock_sandbox() -> DamlResult<DamlLedgerClient> {
-    let client = DamlLedgerClientBuilder::uri(WALLCLOCK_SANDBOX_URI).with_auth(make_ec256_token()?).connect().await?;
-    client.reset_and_wait().await
+    new_sandbox(WALLCLOCK_SANDBOX_URI).await
 }
 
 pub async fn new_static_sandbox() -> DamlResult<DamlLedgerClient> {
-    let client = DamlLedgerClientBuilder::uri(STATIC_SANDBOX_URI).with_auth(make_ec256_token()?).connect().await?;
-    client.reset_and_wait().await
+    new_sandbox(STATIC_SANDBOX_URI).await
 }
 
 pub fn create_test_ping_record(sender: &str, receiver: &str, count: i64) -> DamlRecord {
@@ -56,7 +55,7 @@ pub fn create_test_ping_record(sender: &str, receiver: &str, count: i64) -> Daml
 
 pub fn create_test_command_factory(workflow_id: &str, application_id: &str, sending_party: &str) -> DamlCommandFactory {
     let ledger_effective_time: DateTime<Utc> = EPOCH.parse::<DateTime<Utc>>().expect("invalid datetime");
-    let maximum_record_time = ledger_effective_time.add(Duration::seconds(30));
+    let maximum_record_time = ledger_effective_time.add(time::Duration::seconds(30));
     DamlCommandFactory::new(workflow_id, application_id, sending_party, ledger_effective_time, maximum_record_time)
 }
 
@@ -126,6 +125,15 @@ pub async fn test_create_ping_and_exercise_reset_ping(
     let commands = commands_factory.make_command_with_id(create_and_exercise_command, command_id);
     ledger_client.command_service().submit_and_wait(commands).await?;
     Ok(())
+}
+
+async fn new_sandbox(uri: &str) -> DamlResult<DamlLedgerClient> {
+    let client = DamlLedgerClientBuilder::uri(uri)
+        .timeout(Duration::from_millis(CONNECT_TIMEOUT_MS))
+        .with_auth(make_ec256_token()?)
+        .connect()
+        .await?;
+    client.reset_and_wait().await
 }
 
 fn make_ec256_token() -> DamlResult<String> {

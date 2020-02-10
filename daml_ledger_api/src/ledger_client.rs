@@ -317,7 +317,7 @@ impl DamlLedgerClient {
         #[cfg(feature = "testing")]
         self.reset_service.refresh_token(Some(new_token.clone()));
         #[cfg(feature = "testing")]
-        self.time_service.refresh_token(Some(new_token.clone()));
+        self.time_service.refresh_token(Some(new_token));
         self
     }
 }
