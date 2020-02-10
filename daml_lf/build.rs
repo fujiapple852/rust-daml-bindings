@@ -34,9 +34,9 @@ fn generate_module_src() -> Result<(), Box<dyn error::Error>> {
         .map(|p| Ok(p.file_stem().ok_or("no filename")?.to_str().ok_or("invalid filename")?.to_owned()))
         .collect::<Result<Vec<String>, String>>()?;
     let mut file = File::create(Path::new(&format!("{}/mod.rs", OUTPUT_PATH)))?;
-    file.write(MODULE_HEADER.as_bytes())?;
+    file.write_all(MODULE_HEADER.as_bytes())?;
     for name in names {
-        file.write(format!("pub mod {};\n", name).as_bytes())?;
+        file.write_all(format!("pub mod {};\n", name).as_bytes())?;
     }
     Ok(())
 }
