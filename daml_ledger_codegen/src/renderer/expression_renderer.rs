@@ -4,33 +4,50 @@ use crate::renderer::{quote_escaped_ident, quote_ident};
 use proc_macro2::TokenStream;
 use quote::quote;
 
+pub const VALUE_IDENT: &str = "value";
+
 /// Recursively quote a DAML `new_xxx()` expression.
-pub fn quote_new_value_expression(daml_type: &DamlType) -> TokenStream {
+pub fn quote_new_value_expression(value_ident: &str, daml_type: &DamlType) -> TokenStream {
+    let value_ident_tokens = quote_ident(value_ident);
     match daml_type {
         DamlType::List(inner) => {
-            let inner = quote_new_value_expression(inner);
-            quote!(DamlValue::new_list(value.into_iter().map(|value| #inner ).collect::<Vec<_>>()))
+            let inner = quote_new_value_expression(value_ident, inner);
+            quote!(DamlValue::new_list(#value_ident_tokens.into_iter().map(|#value_ident_tokens| #inner ).collect::<Vec<_>>()))
         },
         DamlType::TextMap(inner) => {
-            let inner = quote_new_value_expression(inner);
+            let inner = quote_new_value_expression(value_ident, inner);
             quote!(
-                DamlValue::new_map(value
+                DamlValue::new_map(#value_ident_tokens
                     .into_iter()
-                    .map(|(k, value)| (k, #inner ))
+                    .map(|(k, #value_ident_tokens)| (k, #inner ))
                     .collect::<HashMap<_, _>>())
             )
         },
         DamlType::Optional(inner) => {
-            let inner = quote_new_value_expression(inner);
-            quote!(DamlValue::new_optional(value.map(|value| #inner )))
+            let inner = quote_new_value_expression(value_ident, inner);
+            quote!(DamlValue::new_optional(#value_ident_tokens.map(|#value_ident_tokens| #inner )))
         },
-        DamlType::DataRef(_) => quote!(value.into()),
-        DamlType::BoxedDataRef(_) => quote!((*value).into()),
-        _ => {
+        DamlType::DataRef(_) => quote!(#value_ident_tokens.into()),
+        DamlType::BoxedDataRef(_) => quote!((*#value_ident_tokens).into()),
+        DamlType::ContractId(_)
+        | DamlType::Int64
+        | DamlType::Numeric
+        | DamlType::Text
+        | DamlType::Timestamp
+        | DamlType::Party
+        | DamlType::Bool
+        | DamlType::Unit
+        | DamlType::Date
+        | DamlType::Update
+        | DamlType::Scenario
+        | DamlType::Var
+        | DamlType::Arrow
+        | DamlType::Any
+        | DamlType::TypeRep => {
             let (new_method_name, with_param) = new_method(daml_type);
             let new_method_name_tokens = quote_escaped_ident(new_method_name);
             if with_param {
-                quote!(DamlValue::#new_method_name_tokens(value))
+                quote!(DamlValue::#new_method_name_tokens(#value_ident_tokens))
             } else {
                 quote!(DamlValue::#new_method_name_tokens())
             }
@@ -39,40 +56,54 @@ pub fn quote_new_value_expression(daml_type: &DamlType) -> TokenStream {
 }
 
 /// Recursively quote a DAML `try_xxx()` expression.
-// TODO assumes "value: DamlValue" is in scope, should be passed in
-pub fn quote_try_expression(daml_type: &DamlType) -> TokenStream {
+pub fn quote_try_expression(value_ident: &str, daml_type: &DamlType) -> TokenStream {
+    let value_ident_tokens = quote_ident(value_ident);
     match daml_type {
         DamlType::List(inner) => {
-            let inner = quote_try_expression(inner);
-            quote!(value
-                   .try_take_list()?
-                   .into_iter()
-                   .map(|value| #inner )
-                   .collect::<DamlResult<DamlList<_>>>()
+            let inner = quote_try_expression(value_ident, inner);
+            quote!(#value_ident_tokens
+                     .try_take_list()?
+                     .into_iter()
+                     .map(|#value_ident_tokens| #inner )
+                     .collect::<DamlResult<DamlList<_>>>()
             )
         },
         DamlType::TextMap(inner) => {
-            let inner = quote_try_expression(inner);
-            quote!(
-                value.try_take_map()?
+            let inner = quote_try_expression(value_ident, inner);
+            quote!(#value_ident_tokens
+                    .try_take_map()?
                     .into_iter()
-                    .map(|(k, value)| Ok((k, #inner? )) )
+                    .map(|(k, #value_ident_tokens)| Ok((k, #inner? )) )
                     .collect::<DamlResult<DamlTextMap<_>>>()
             )
         },
         DamlType::Optional(inner) => {
-            let inner = quote_try_expression(inner);
-            quote!(value.try_take_optional()?.map(|value| #inner ).transpose())
+            let inner = quote_try_expression(value_ident, inner);
+            quote!(#value_ident_tokens.try_take_optional()?.map(|#value_ident_tokens| #inner ).transpose())
         },
         DamlType::DataRef(data_ref) => {
             let type_tokens = quote_data_ref(data_ref);
-            quote!({let data: DamlResult<#type_tokens> = value.try_into(); data})
+            quote!({let data: DamlResult<#type_tokens> = #value_ident_tokens.try_into(); data})
         },
-        DamlType::BoxedDataRef(_) => quote!(value.try_into().map(Box::new)),
-        _ => {
+        DamlType::BoxedDataRef(_) => quote!(#value_ident_tokens.try_into().map(Box::new)),
+        DamlType::ContractId(_)
+        | DamlType::Int64
+        | DamlType::Numeric
+        | DamlType::Text
+        | DamlType::Timestamp
+        | DamlType::Party
+        | DamlType::Bool
+        | DamlType::Unit
+        | DamlType::Date
+        | DamlType::Update
+        | DamlType::Scenario
+        | DamlType::Var
+        | DamlType::Arrow
+        | DamlType::Any
+        | DamlType::TypeRep => {
             let try_method_name = quote_ident(try_method(daml_type));
             let type_name = quote_ident(daml_type.name());
-            quote!({let field: DamlResult<#type_name> = value.#try_method_name().map(Into::into); field})
+            quote!({let field: DamlResult<#type_name> = #value_ident_tokens.#try_method_name().map(Into::into); field})
         },
     }
 }

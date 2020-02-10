@@ -3,7 +3,9 @@ use proc_macro2::TokenStream;
 use quote::quote;
 
 use crate::element::{DamlField, DamlRecord, DamlType};
-use crate::renderer::expression_renderer::{quote_method_arguments, quote_new_value_expression, quote_try_expression};
+use crate::renderer::expression_renderer::{
+    quote_method_arguments, quote_new_value_expression, quote_try_expression, VALUE_IDENT,
+};
 use crate::renderer::type_renderer::quote_type;
 use crate::renderer::{is_supported_type, quote_escaped_ident};
 
@@ -153,7 +155,7 @@ fn quote_new_method_init(struct_fields: &[&DamlField]) -> TokenStream {
 fn quote_declare_field_from_trait_impl(field_name: &str, field_type: &DamlType) -> TokenStream {
     let field_name_tokens = quote_escaped_ident(field_name);
     let field_source_tokens = quote!(value.#field_name_tokens);
-    let rendered_new_value_tokens = quote_new_value_expression(field_type);
+    let rendered_new_value_tokens = quote_new_value_expression(VALUE_IDENT, field_type);
     let name_string = quote!(stringify!(#field_name_tokens));
     quote!(
         {
@@ -168,7 +170,7 @@ fn quote_declare_field_from_trait_impl(field_name: &str, field_type: &DamlType) 
 
 fn quote_try_from_trait_field(field: &DamlField) -> TokenStream {
     let field_name_string = &field.name;
-    let try_field_expression_tokens = quote_try_expression(&field.ty);
+    let try_field_expression_tokens = quote_try_expression(VALUE_IDENT, &field.ty);
     quote!(
         {
             let value = record.field(#field_name_string)?.to_owned();

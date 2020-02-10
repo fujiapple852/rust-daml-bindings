@@ -4,7 +4,9 @@ use quote::quote;
 
 use crate::element::{DamlChoice, DamlField, DamlType};
 use crate::renderer::data_renderer::full::quote_contract_struct::quote_contract_id_struct_name;
-use crate::renderer::expression_renderer::{quote_method_arguments, quote_new_value_expression, quote_try_expression};
+use crate::renderer::expression_renderer::{
+    quote_method_arguments, quote_new_value_expression, quote_try_expression, VALUE_IDENT,
+};
 use crate::renderer::is_supported_type;
 use crate::renderer::renderer_utils::quote_escaped_ident;
 use crate::renderer::type_renderer::quote_type;
@@ -39,7 +41,7 @@ fn quote_choice_method(struct_name: &str, choice: &DamlChoice) -> TokenStream {
     let supported_fields: Vec<_> = choice.fields.iter().filter(|&field| is_supported_type(&field.ty)).collect();
     let all_choice_fields = quote_all_choice_fields(&supported_fields);
     let _return_type_tokens = quote_type(&choice.return_type);
-    let _try_return_type_expression_tokens = quote_try_expression(&choice.return_type);
+    let _try_return_type_expression_tokens = quote_try_expression(VALUE_IDENT, &choice.return_type);
 
     // TODO restore
     // pub fn #method_name_tokens<E: CommandExecutor>(&self, #choice_argument_tokens) -> impl FnOnce(&E) ->
@@ -104,7 +106,7 @@ fn quote_declare_all_choice_fields(choice_parameters: &[&DamlField]) -> TokenStr
 fn quote_declare_choice_field(field_name: &str, field_type: &DamlType) -> TokenStream {
     let field_name = quote_escaped_ident(field_name);
     let field_source_tokens = quote!(#field_name);
-    let rendered_new_value_tokens = quote_new_value_expression(field_type);
+    let rendered_new_value_tokens = quote_new_value_expression(VALUE_IDENT, field_type);
     let name_string = quote!(stringify!(#field_name));
     quote!(
         let #field_name: DamlValue = {

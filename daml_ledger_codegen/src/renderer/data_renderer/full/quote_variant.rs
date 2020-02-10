@@ -4,7 +4,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 
 use crate::element::{DamlField, DamlType, DamlVariant};
-use crate::renderer::expression_renderer::{quote_new_value_expression, quote_try_expression};
+use crate::renderer::expression_renderer::{quote_new_value_expression, quote_try_expression, VALUE_IDENT};
 use crate::renderer::type_renderer::quote_type;
 use crate::renderer::{is_supported_type, quote_escaped_ident};
 
@@ -114,7 +114,7 @@ fn quote_from_trait_match_arm(variant_name: &str, variant: &DamlField) -> TokenS
             #variant_name_tokens::#name => DamlValue::new_variant(DamlVariant::new(#variant_string, Box::new(DamlValue::new_unit()), None))
         )
     } else {
-        let rendered_new_value_tokens = quote_new_value_expression(&variant.ty);
+        let rendered_new_value_tokens = quote_new_value_expression(VALUE_IDENT, &variant.ty);
         quote!(
             #variant_name_tokens::#name(value) => DamlValue::new_variant(DamlVariant::new(#variant_string, Box::new(#rendered_new_value_tokens), None))
         )
@@ -134,7 +134,7 @@ fn quote_try_from_trait_match_arm(variant_name: &str, variant: &DamlField) -> To
             #variant_constructor_string_tokens => Ok(#variant_name_tokens::#variant_constructor_name_tokens)
         )
     } else {
-        let try_field_expression_tokens = quote_try_expression(&variant.ty);
+        let try_field_expression_tokens = quote_try_expression(VALUE_IDENT, &variant.ty);
         quote!(
             #variant_constructor_string_tokens => Ok(#variant_name_tokens::#variant_constructor_name_tokens({
                 let value = *variant.take_value();

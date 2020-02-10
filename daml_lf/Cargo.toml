@@ -10,7 +10,7 @@ build = "build.rs"
 
 [dependencies]
 bytes = "0.5"
-prost = "0.6"
+prost = { version = "0.6", features = [ "no-recursion-limit" ] }
 prost-derive = "0.6"
 zip = "0.5"
 yaml-rust = "0.4"
