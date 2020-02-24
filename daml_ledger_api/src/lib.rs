@@ -16,6 +16,12 @@ pub mod data;
 /// DAML GRPC API services (i.e. command & transaction services).
 pub mod service;
 
+/// DAML primitive data types.
+pub mod primitive_types;
+
+/// Serialize & Deserialize DAML types.
+pub mod serialize;
+
 mod ledger_client;
 pub use ledger_client::{DamlLedgerClient, DamlLedgerClientBuilder};
 
@@ -32,9 +38,3 @@ mod util;
 mod sandbox_auth;
 #[cfg(feature = "testing")]
 pub use sandbox_auth::DamlSandboxTokenBuilder;
-
-// Re-export types used by the public API
-#[doc(hidden)]
-pub use bigdecimal;
-#[doc(hidden)]
-pub use chrono;

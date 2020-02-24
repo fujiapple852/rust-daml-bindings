@@ -22,9 +22,9 @@ async fn test_using_enum() -> TestResult {
     let repaint_result = alice_executor.execute_for_transaction(DamlCommand::Exercise(exercise_command)).await?;
     let repaint_event: DamlEvent = repaint_result.take_events().swap_remove(1);
     let new_car_contract: CarContract = repaint_event.try_created()?.try_into()?;
-    assert_eq!("Alice", &new_car_contract.data().owner);
-    assert_eq!("Bob", &new_car_contract.data().driver);
-    assert_eq!("Ford", &new_car_contract.data().make);
+    assert_eq!("Alice", new_car_contract.data().owner);
+    assert_eq!("Bob", new_car_contract.data().driver);
+    assert_eq!("Ford", new_car_contract.data().make);
     assert_eq!(SimpleColor::Red, new_car_contract.data().color);
     Ok(())
 }

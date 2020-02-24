@@ -52,8 +52,9 @@ impl<'a> From<&DamlDataWrapper<'a>> for DamlData<'a> {
         match data {
             DamlDataWrapper::Record(record) => {
                 let name = record.payload.name.resolve_last(record.parent_package);
+                let type_arguments: Vec<_> = record.type_arguments().map(DamlTypeVar::from).collect();
                 let fields: Vec<_> = record.fields().map(|f| DamlField::from(&f)).collect();
-                DamlData::Record(DamlRecord::new(name, fields))
+                DamlData::Record(DamlRecord::new(name, fields, type_arguments))
             },
             DamlDataWrapper::Template(template) => {
                 let resolver = template.parent_package;
@@ -71,12 +72,14 @@ impl<'a> From<&DamlDataWrapper<'a>> for DamlData<'a> {
             },
             DamlDataWrapper::Variant(variant) => {
                 let name = variant.payload.name.resolve_last(variant.parent_package);
+                let type_arguments: Vec<_> = variant.type_arguments().map(DamlTypeVar::from).collect();
                 let fields: Vec<_> = variant.fields().map(|f| DamlField::from(&f)).collect();
-                DamlData::Variant(DamlVariant::new(name, fields))
+                DamlData::Variant(DamlVariant::new(name, fields, type_arguments))
             },
             DamlDataWrapper::Enum(data_enum) => {
                 let resolver = data_enum.parent_package;
                 let name = data_enum.payload.name.resolve_last(resolver);
+                let type_arguments: Vec<_> = data_enum.type_arguments().map(DamlTypeVar::from).collect();
                 let constructors: Vec<&str> = if data_enum
                     .parent_package
                     .language_version
@@ -91,7 +94,7 @@ impl<'a> From<&DamlDataWrapper<'a>> for DamlData<'a> {
                     );
                     data_enum.payload.constructors_str.iter().map(AsRef::as_ref).collect()
                 };
-                DamlData::Enum(DamlEnum::new(name, constructors))
+                DamlData::Enum(DamlEnum::new(name, constructors, type_arguments))
             },
         }
     }
@@ -138,8 +141,14 @@ impl<'a> From<&DamlTypeWrapper<'a>> for DamlType<'a> {
             let current_module_path = daml_type.parent_module.path.resolve(resolver);
             let target_module_path = data_ref.payload.module_path.resolve(resolver);
             let data_name = data_ref.payload.data_name.resolve_last(data_ref.parent_package);
+            let type_arguments: Vec<_> = data_ref.type_arguments().map(|arg| DamlType::from(&arg)).collect();
             if target_package_name == current_package_name && target_module_path == current_module_path {
-                DamlDataRef::Local(DamlLocalDataRef::new(data_name, target_package_name, target_module_path))
+                DamlDataRef::Local(DamlLocalDataRef::new(
+                    data_name,
+                    target_package_name,
+                    target_module_path,
+                    type_arguments,
+                ))
             } else {
                 DamlDataRef::NonLocal(DamlNonLocalDataRef::new(
                     data_name,
@@ -147,6 +156,7 @@ impl<'a> From<&DamlTypeWrapper<'a>> for DamlType<'a> {
                     current_module_path,
                     target_package_name,
                     target_module_path,
+                    type_arguments,
                 ))
             }
         }
@@ -175,16 +185,45 @@ impl<'a> From<&DamlTypeWrapper<'a>> for DamlType<'a> {
                 let data_ref_wrapper = daml_type.data_ref();
                 let target_data_wrapper = data_ref_wrapper.get_data();
                 let data_ref = make_data_ref(daml_type, data_ref_wrapper, target_data_wrapper);
-                if DamlDataFinder::new(daml_type.parent_data()).find(target_data_wrapper) {
+                if DamlDataBoxChecker::should_box(daml_type.parent_data(), target_data_wrapper) {
                     DamlType::BoxedDataRef(data_ref)
                 } else {
                     DamlType::DataRef(data_ref)
                 }
             },
-            DamlTypePayload::Var => DamlType::Var,
+            DamlTypePayload::Var(_) => DamlType::Var(DamlVar::from(&daml_type.var())),
             DamlTypePayload::Arrow => DamlType::Arrow,
             DamlTypePayload::Any => DamlType::Any,
             DamlTypePayload::TypeRep => DamlType::TypeRep,
+        }
+    }
+}
+
+/// Convert from `DamlTypeVarWrapper` to `DamlTypeVar`.
+impl<'a> From<DamlTypeVarWrapper<'a>> for DamlTypeVar<'a> {
+    fn from(typevar: DamlTypeVarWrapper<'a>) -> Self {
+        DamlTypeVar::new(typevar.payload.var.resolve(typevar.parent_package), DamlKind::from(&typevar.payload.kind))
+    }
+}
+
+/// Convert from `DamlVarWrapper` to `DamlVar`.
+impl<'a> From<&DamlVarWrapper<'a>> for DamlVar<'a> {
+    fn from(var: &DamlVarWrapper<'a>) -> Self {
+        let type_arguments = var.type_arguments().map(|arg| DamlType::from(&arg)).collect();
+        DamlVar::new(var.payload.var.resolve(var.parent_package), type_arguments)
+    }
+}
+
+/// Convert from `DamlKindPayload` to `DamlKind`.
+impl From<&DamlKindPayload> for DamlKind {
+    fn from(kind: &DamlKindPayload) -> Self {
+        match kind {
+            DamlKindPayload::Star => DamlKind::Star,
+            DamlKindPayload::Arrow(arrow) => DamlKind::Arrow(Box::new(DamlArrow::new(
+                arrow.params.iter().map(DamlKind::from).collect(),
+                DamlKind::from(&arrow.result),
+            ))),
+            DamlKindPayload::Nat => DamlKind::Nat,
         }
     }
 }

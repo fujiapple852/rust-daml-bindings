@@ -8,6 +8,7 @@ pub mod archive {
             mod module_payload;
             mod package_payload;
             mod type_payload;
+            mod typevar_payload;
 
             pub use archive_payload::*;
             pub use data_payload::*;
@@ -16,27 +17,32 @@ pub mod archive {
             pub use module_payload::*;
             pub use package_payload::*;
             pub use type_payload::*;
+            pub use typevar_payload::*;
         }
 
         mod archive_wrapper;
-        mod data_type_finder;
+        mod data_data_box_checker;
         mod data_wrapper;
         mod field_wrapper;
         mod module_wrapper;
         mod package_wrapper;
         mod type_wrapper;
+        mod typevar_wrapper;
 
         pub use archive_wrapper::*;
-        pub use data_type_finder::*;
+        pub use data_data_box_checker::*;
         pub use data_wrapper::*;
         pub use field_wrapper::*;
         pub use module_wrapper::*;
         pub use package_wrapper::*;
         pub use type_wrapper::*;
+        pub use typevar_wrapper::*;
 
         // TODO, leaky abstractions
         pub use payload::DamlArchivePayload;
+        pub use payload::DamlKindPayload;
         pub use payload::DamlTypePayload;
+        pub use payload::DamlVarPayload;
         pub use payload::PackageInternedResolver;
     }
 

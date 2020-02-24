@@ -18,7 +18,7 @@ pub enum DamlType<'a> {
     Optional(Box<DamlType<'a>>),
     DataRef(DamlDataRef<'a>),
     BoxedDataRef(DamlDataRef<'a>),
-    Var,
+    Var(DamlVar<'a>),
     Arrow,
     Any,
     TypeRep,
@@ -42,6 +42,43 @@ impl<'a> DamlType<'a> {
             _ => panic!(format!("DamlType::name called for unsupported type {:?}", self)),
         }
     }
+
+    /// Returns true if this [`DamlType`] contain a reference to `type_var`, false otherwise.
+    pub fn contains_type_var(&self, type_var: &str) -> bool {
+        fn data_ref_contains_type_var(data_ref: &DamlDataRef, type_var: &str) -> bool {
+            match data_ref {
+                DamlDataRef::Local(local) => local.type_arguments.iter().any(|f| f.contains_type_var(type_var)),
+                DamlDataRef::NonLocal(non_local) =>
+                    non_local.type_arguments.iter().any(|f| f.contains_type_var(type_var)),
+                DamlDataRef::Absolute(abs) => abs.type_arguments.iter().any(|f| f.contains_type_var(type_var)),
+            }
+        }
+        match self {
+            &DamlType::Var(DamlVar {
+                var,
+                ..
+            }) => var == type_var,
+            DamlType::List(inner) | DamlType::TextMap(inner) | DamlType::Optional(inner) =>
+                inner.contains_type_var(type_var),
+            DamlType::ContractId(data_ref) =>
+                data_ref.as_ref().map_or(false, |dr| data_ref_contains_type_var(dr, type_var)),
+            DamlType::DataRef(data_ref) | DamlType::BoxedDataRef(data_ref) =>
+                data_ref_contains_type_var(data_ref, type_var),
+            DamlType::Int64
+            | DamlType::Numeric
+            | DamlType::Text
+            | DamlType::Timestamp
+            | DamlType::Party
+            | DamlType::Bool
+            | DamlType::Unit
+            | DamlType::Date
+            | DamlType::Update
+            | DamlType::Scenario
+            | DamlType::Arrow
+            | DamlType::Any
+            | DamlType::TypeRep => false,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -56,14 +93,21 @@ pub struct DamlLocalDataRef<'a> {
     pub data_name: &'a str,
     pub package_name: &'a str,
     pub module_path: Vec<&'a str>,
+    pub type_arguments: Vec<DamlType<'a>>,
 }
 
 impl<'a> DamlLocalDataRef<'a> {
-    pub fn new(data_name: &'a str, package_name: &'a str, module_path: Vec<&'a str>) -> Self {
+    pub fn new(
+        data_name: &'a str,
+        package_name: &'a str,
+        module_path: Vec<&'a str>,
+        type_arguments: Vec<DamlType<'a>>,
+    ) -> Self {
         Self {
             data_name,
             package_name,
             module_path,
+            type_arguments,
         }
     }
 }
@@ -75,6 +119,7 @@ pub struct DamlNonLocalDataRef<'a> {
     pub source_module_path: Vec<&'a str>,
     pub target_package_name: &'a str,
     pub target_module_path: Vec<&'a str>,
+    pub type_arguments: Vec<DamlType<'a>>,
 }
 
 impl<'a> DamlNonLocalDataRef<'a> {
@@ -84,6 +129,7 @@ impl<'a> DamlNonLocalDataRef<'a> {
         source_module_path: Vec<&'a str>,
         target_package_name: &'a str,
         target_module_path: Vec<&'a str>,
+        type_arguments: Vec<DamlType<'a>>,
     ) -> Self {
         Self {
             data_name,
@@ -91,6 +137,7 @@ impl<'a> DamlNonLocalDataRef<'a> {
             source_module_path,
             target_package_name,
             target_module_path,
+            type_arguments,
         }
     }
 }
@@ -100,14 +147,36 @@ pub struct DamlAbsoluteDataRef<'a> {
     pub data_name: &'a str,
     pub package_name: &'a str,
     pub module_path: Vec<&'a str>,
+    pub type_arguments: Vec<DamlType<'a>>,
 }
 
 impl<'a> DamlAbsoluteDataRef<'a> {
-    pub fn new(data_name: &'a str, package_name: &'a str, module_path: Vec<&'a str>) -> Self {
+    pub fn new(
+        data_name: &'a str,
+        package_name: &'a str,
+        module_path: Vec<&'a str>,
+        type_arguments: Vec<DamlType<'a>>,
+    ) -> Self {
         Self {
             data_name,
             package_name,
             module_path,
+            type_arguments,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct DamlVar<'a> {
+    pub var: &'a str,
+    pub type_arguments: Vec<DamlType<'a>>,
+}
+
+impl<'a> DamlVar<'a> {
+    pub fn new(var: &'a str, type_arguments: Vec<DamlType<'a>>) -> Self {
+        Self {
+            var,
+            type_arguments,
         }
     }
 }

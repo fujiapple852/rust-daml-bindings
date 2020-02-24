@@ -1,5 +1,5 @@
 use crate::convert::archive::wrapper::payload::*;
-use daml_lf::protobuf_autogen::daml_lf_1::r#type::*;
+use daml_lf::protobuf_autogen::daml_lf_1::r#type::{Con, Sum, Var};
 use daml_lf::protobuf_autogen::daml_lf_1::{package_ref, PrimType};
 use daml_lf::protobuf_autogen::daml_lf_1::{ModuleRef, PackageRef, Type, TypeConName};
 
@@ -20,7 +20,7 @@ pub enum DamlTypePayload<'a> {
     TextMap(Box<DamlTypePayload<'a>>),
     Optional(Box<DamlTypePayload<'a>>),
     DataRef(DamlDataRefPayload<'a>),
-    Var,
+    Var(DamlVarPayload<'a>),
     Arrow,
     Any,
     TypeRep,
@@ -42,16 +42,12 @@ impl<'a> From<&'a Type> for DamlTypePayload<'a> {
                 PrimType::Update => DamlTypePayload::Update,
                 PrimType::Scenario => DamlTypePayload::Scenario,
                 PrimType::Date => DamlTypePayload::Date,
-                PrimType::ContractId => {
-                    if let Some(Sum::Con(Con {
-                        tycon: Some(tcn),
-                        ..
-                    })) = prim.args.first().unwrap().sum.as_ref()
-                    {
-                        DamlTypePayload::ContractId(Some(DamlDataRefPayload::from(tcn)))
-                    } else {
-                        DamlTypePayload::ContractId(None)
-                    }
+                PrimType::ContractId => match prim.args.as_slice() {
+                    [Type {
+                        sum: Some(Sum::Con(con)),
+                    }] => DamlTypePayload::ContractId(Some(DamlDataRefPayload::from(con))),
+                    args if !args.is_empty() => panic!("ContractId with multiple type constructor arguments"),
+                    _ => DamlTypePayload::ContractId(None),
                 },
                 PrimType::Optional =>
                     DamlTypePayload::Optional(Box::new(DamlTypePayload::from(prim.args.first().expect("Prim.args")))),
@@ -61,80 +57,109 @@ impl<'a> From<&'a Type> for DamlTypePayload<'a> {
                 PrimType::Any => DamlTypePayload::Any,
                 PrimType::TypeRep => DamlTypePayload::TypeRep,
             },
-            Sum::Con(Con {
-                tycon: Some(tcn),
-                ..
-            }) => DamlTypePayload::DataRef(DamlDataRefPayload::from(tcn)),
-            Sum::Var(_) => DamlTypePayload::Var,
+            Sum::Con(con) => DamlTypePayload::DataRef(DamlDataRefPayload::from(con)),
+            Sum::Var(var) => DamlTypePayload::Var(DamlVarPayload::from(var)),
             _ => panic!("unsupported type"),
         }
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct DamlDataRefPayload<'a> {
-    pub package_ref: DamlPackageRef<'a>,
+    pub package_ref: DamlPackageRefPayload<'a>,
     pub module_path: InternableDottedName<'a>,
     pub data_name: InternableDottedName<'a>,
+    pub type_arguments: Vec<DamlTypePayload<'a>>,
 }
 
 impl<'a> DamlDataRefPayload<'a> {
     pub fn new(
-        package_ref: DamlPackageRef<'a>,
+        package_ref: DamlPackageRefPayload<'a>,
         module_path: InternableDottedName<'a>,
         data_name: InternableDottedName<'a>,
+        type_arguments: Vec<DamlTypePayload<'a>>,
     ) -> Self {
         Self {
             package_ref,
             module_path,
             data_name,
+            type_arguments,
         }
     }
 }
 
-impl<'a> From<&'a TypeConName> for DamlDataRefPayload<'a> {
-    fn from(type_con_name: &'a TypeConName) -> Self {
-        match type_con_name {
-            TypeConName {
-                module:
-                    Some(ModuleRef {
-                        package_ref: Some(package_ref),
-                        module_name: Some(module_name),
+impl<'a> From<&'a Con> for DamlDataRefPayload<'a> {
+    fn from(con: &'a Con) -> Self {
+        match con {
+            Con {
+                tycon:
+                    Some(TypeConName {
+                        module:
+                            Some(ModuleRef {
+                                package_ref: Some(package_ref),
+                                module_name: Some(module_name),
+                            }),
+                        name: Some(data_name),
                     }),
-                name: Some(data_name),
+                args,
             } => Self::new(
                 package_ref.into(),
                 InternableDottedName::from(module_name),
                 InternableDottedName::from(data_name),
+                args.iter().map(DamlTypePayload::from).collect(),
             ),
-            _ => panic!("TypeConName"),
+            _ => panic!("Con.tycon"),
         }
     }
 }
 
 #[derive(Debug, PartialEq)]
-pub enum DamlPackageRef<'a> {
+pub enum DamlPackageRefPayload<'a> {
     This,
     PackageId(&'a str),
     InternedId(i32),
 }
 
-impl<'a> DamlPackageRef<'a> {
+impl<'a> DamlPackageRefPayload<'a> {
     pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> Option<&'a str> {
         match self {
-            DamlPackageRef::This => Some(resolver.package_id()),
-            &DamlPackageRef::PackageId(s) => Some(s),
-            &DamlPackageRef::InternedId(i) => resolver.interned_strings().get(i as usize).map(AsRef::as_ref),
+            DamlPackageRefPayload::This => Some(resolver.package_id()),
+            &DamlPackageRefPayload::PackageId(s) => Some(s),
+            &DamlPackageRefPayload::InternedId(i) => resolver.interned_strings().get(i as usize).map(AsRef::as_ref),
         }
     }
 }
 
-impl<'a> From<&'a PackageRef> for DamlPackageRef<'a> {
+impl<'a> From<&'a PackageRef> for DamlPackageRefPayload<'a> {
     fn from(package_ref: &'a PackageRef) -> Self {
         match package_ref.sum.as_ref().expect("PackageRef.sum") {
-            package_ref::Sum::Self_(_) => DamlPackageRef::This,
-            package_ref::Sum::PackageIdStr(s) => DamlPackageRef::PackageId(s.as_str()),
-            &package_ref::Sum::PackageIdInternedStr(i) => DamlPackageRef::InternedId(i),
+            package_ref::Sum::Self_(_) => DamlPackageRefPayload::This,
+            package_ref::Sum::PackageIdStr(s) => DamlPackageRefPayload::PackageId(s.as_str()),
+            &package_ref::Sum::PackageIdInternedStr(i) => DamlPackageRefPayload::InternedId(i),
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct DamlVarPayload<'a> {
+    pub var: InternableString<'a>,
+    pub type_arguments: Vec<DamlTypePayload<'a>>,
+}
+
+impl<'a> DamlVarPayload<'a> {
+    pub fn new(var: InternableString<'a>, type_arguments: Vec<DamlTypePayload<'a>>) -> Self {
+        Self {
+            var,
+            type_arguments,
+        }
+    }
+}
+
+impl<'a> From<&'a Var> for DamlVarPayload<'a> {
+    fn from(var: &'a Var) -> Self {
+        DamlVarPayload::new(
+            InternableString::from(var.var.as_ref().expect("Var.var")),
+            var.args.iter().map(DamlTypePayload::from).collect(),
+        )
     }
 }

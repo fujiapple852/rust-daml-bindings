@@ -6,13 +6,16 @@ use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{
 };
 use crate::util;
 use crate::util::Required;
-use bigdecimal::BigDecimal;
-use chrono::Date;
-use chrono::DateTime;
-use chrono::Utc;
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 
+use crate::primitive_types::{
+    DamlBool, DamlContractId, DamlDate, DamlInt64, DamlNumeric, DamlParty, DamlText, DamlTimestamp, DamlUnit,
+};
+use crate::serialize::{
+    DamlDeserializableType, DamlDeserializeFrom, DamlDeserializeInto, DamlSerializableType, DamlSerializeFrom,
+    DamlSerializeInto,
+};
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
@@ -23,16 +26,16 @@ pub enum DamlValue {
     Record(DamlRecord),
     Variant(DamlVariant),
     Enum(DamlEnum),
-    ContractId(String),
+    ContractId(DamlContractId),
     List(Vec<DamlValue>),
-    Int64(i64),
-    Numeric(BigDecimal),
-    Text(String),
-    Timestamp(DateTime<Utc>),
-    Party(String),
-    Bool(bool),
+    Int64(DamlInt64),
+    Numeric(DamlNumeric),
+    Text(DamlText),
+    Timestamp(DamlTimestamp),
+    Party(DamlParty),
+    Bool(DamlBool),
     Unit,
-    Date(Date<Utc>),
+    Date(DamlDate),
     Optional(Option<Box<DamlValue>>),
     Map(HashMap<String, DamlValue>),
     GenMap(HashMap<DamlValue, DamlValue>),
@@ -51,7 +54,7 @@ impl DamlValue {
         DamlValue::Enum(enum_variant.into())
     }
 
-    pub fn new_contract_id(contract_id: impl Into<String>) -> Self {
+    pub fn new_contract_id(contract_id: impl Into<DamlContractId>) -> Self {
         DamlValue::ContractId(contract_id.into())
     }
 
@@ -59,27 +62,27 @@ impl DamlValue {
         DamlValue::List(list.into())
     }
 
-    pub fn new_int64(value: impl Into<i64>) -> Self {
+    pub fn new_int64(value: impl Into<DamlInt64>) -> Self {
         DamlValue::Int64(value.into())
     }
 
-    pub fn new_numeric(numeric: impl Into<BigDecimal>) -> Self {
+    pub fn new_numeric(numeric: impl Into<DamlNumeric>) -> Self {
         DamlValue::Numeric(numeric.into())
     }
 
-    pub fn new_text(text: impl Into<String>) -> Self {
+    pub fn new_text(text: impl Into<DamlText>) -> Self {
         DamlValue::Text(text.into())
     }
 
-    pub fn new_timestamp(timestamp: impl Into<DateTime<Utc>>) -> Self {
+    pub fn new_timestamp(timestamp: impl Into<DamlTimestamp>) -> Self {
         DamlValue::Timestamp(timestamp.into())
     }
 
-    pub fn new_party(party: impl Into<String>) -> Self {
+    pub fn new_party(party: impl Into<DamlParty>) -> Self {
         DamlValue::Party(party.into())
     }
 
-    pub fn new_bool(value: bool) -> Self {
+    pub fn new_bool(value: DamlBool) -> Self {
         DamlValue::Bool(value)
     }
 
@@ -87,7 +90,7 @@ impl DamlValue {
         DamlValue::Unit
     }
 
-    pub fn new_date(date: impl Into<Date<Utc>>) -> Self {
+    pub fn new_date(date: impl Into<DamlDate>) -> Self {
         DamlValue::Date(date.into())
     }
 
@@ -117,35 +120,35 @@ impl DamlValue {
         }
     }
 
-    pub fn try_date(&self) -> DamlResult<Date<Utc>> {
+    pub fn try_date(&self) -> DamlResult<DamlDate> {
         match *self {
             DamlValue::Date(d) => Ok(d),
             _ => Err(self.make_unexpected_type_error("Date")),
         }
     }
 
-    pub fn try_date_ref(&self) -> DamlResult<&Date<Utc>> {
+    pub fn try_date_ref(&self) -> DamlResult<&DamlDate> {
         match self {
             DamlValue::Date(d) => Ok(d),
             _ => Err(self.make_unexpected_type_error("Date")),
         }
     }
 
-    pub fn try_int64(&self) -> DamlResult<i64> {
+    pub fn try_int64(&self) -> DamlResult<DamlInt64> {
         match self {
             DamlValue::Int64(i) => Ok(*i),
             _ => Err(self.make_unexpected_type_error("Int64")),
         }
     }
 
-    pub fn try_int64_ref(&self) -> DamlResult<&i64> {
+    pub fn try_int64_ref(&self) -> DamlResult<&DamlInt64> {
         match self {
             DamlValue::Int64(i) => Ok(i),
             _ => Err(self.make_unexpected_type_error("Int64")),
         }
     }
 
-    pub fn try_numeric(&self) -> DamlResult<&BigDecimal> {
+    pub fn try_numeric(&self) -> DamlResult<&DamlNumeric> {
         match self {
             DamlValue::Numeric(d) => Ok(d),
             _ => Err(self.make_unexpected_type_error("Numeric")),
@@ -153,21 +156,21 @@ impl DamlValue {
     }
 
     // BigDecimal does not implement the Copy trait
-    pub fn try_numeric_clone(&self) -> DamlResult<BigDecimal> {
+    pub fn try_numeric_clone(&self) -> DamlResult<DamlNumeric> {
         match self {
             DamlValue::Numeric(d) => Ok(d.clone()),
             _ => Err(self.make_unexpected_type_error("Numeric")),
         }
     }
 
-    pub fn try_bool(&self) -> DamlResult<bool> {
+    pub fn try_bool(&self) -> DamlResult<DamlBool> {
         match self {
             DamlValue::Bool(b) => Ok(*b),
             _ => Err(self.make_unexpected_type_error("Bool")),
         }
     }
 
-    pub fn try_bool_ref(&self) -> DamlResult<&bool> {
+    pub fn try_bool_ref(&self) -> DamlResult<&DamlBool> {
         match self {
             DamlValue::Bool(b) => Ok(b),
             _ => Err(self.make_unexpected_type_error("Bool")),
@@ -181,14 +184,14 @@ impl DamlValue {
         }
     }
 
-    pub fn try_timestamp(&self) -> DamlResult<DateTime<Utc>> {
+    pub fn try_timestamp(&self) -> DamlResult<DamlTimestamp> {
         match *self {
             DamlValue::Timestamp(ts) => Ok(ts),
             _ => Err(self.make_unexpected_type_error("Timestamp")),
         }
     }
 
-    pub fn try_timestamp_ref(&self) -> DamlResult<&DateTime<Utc>> {
+    pub fn try_timestamp_ref(&self) -> DamlResult<&DamlTimestamp> {
         match self {
             DamlValue::Timestamp(ts) => Ok(ts),
             _ => Err(self.make_unexpected_type_error("Timestamp")),
@@ -197,14 +200,18 @@ impl DamlValue {
 
     pub fn try_party(&self) -> DamlResult<&str> {
         match self {
-            DamlValue::Party(s) => Ok(&s[..]),
+            DamlValue::Party(DamlParty {
+                party: s,
+            }) => Ok(&s[..]),
             _ => Err(self.make_unexpected_type_error("Party")),
         }
     }
 
     pub fn try_contract_id(&self) -> DamlResult<&str> {
         match self {
-            DamlValue::ContractId(s) => Ok(&s[..]),
+            DamlValue::ContractId(DamlContractId {
+                contract_id: s,
+            }) => Ok(&s[..]),
             _ => Err(self.make_unexpected_type_error("ContractId")),
         }
     }
@@ -449,6 +456,227 @@ impl From<f64> for DamlValue {
     }
 }
 
+impl DamlSerializeFrom<DamlUnit> for DamlValue {
+    fn serialize_from(_: DamlUnit) -> DamlValue {
+        Self::new_unit()
+    }
+}
+
+impl DamlSerializeFrom<DamlBool> for DamlValue {
+    fn serialize_from(b: DamlBool) -> DamlValue {
+        Self::new_bool(b)
+    }
+}
+
+impl DamlSerializeFrom<DamlInt64> for DamlValue {
+    fn serialize_from(i: DamlInt64) -> DamlValue {
+        Self::new_int64(i)
+    }
+}
+
+impl DamlSerializeFrom<DamlText> for DamlValue {
+    fn serialize_from(text: DamlText) -> DamlValue {
+        Self::new_text(text)
+    }
+}
+
+impl DamlSerializeFrom<DamlParty> for DamlValue {
+    fn serialize_from(party: DamlParty) -> DamlValue {
+        Self::new_party(party.party)
+    }
+}
+
+impl DamlSerializeFrom<DamlContractId> for DamlValue {
+    fn serialize_from(contract_id: DamlContractId) -> DamlValue {
+        Self::new_contract_id(contract_id.contract_id)
+    }
+}
+
+impl DamlSerializeFrom<DamlNumeric> for DamlValue {
+    fn serialize_from(numeric: DamlNumeric) -> DamlValue {
+        Self::new_numeric(numeric)
+    }
+}
+
+impl DamlSerializeFrom<DamlTimestamp> for DamlValue {
+    fn serialize_from(timestamp: DamlTimestamp) -> DamlValue {
+        Self::new_timestamp(timestamp)
+    }
+}
+
+impl DamlSerializeFrom<DamlDate> for DamlValue {
+    fn serialize_from(date: DamlDate) -> DamlValue {
+        Self::new_date(date)
+    }
+}
+
+impl<T> DamlSerializeFrom<Box<T>> for DamlValue
+where
+    T: DamlSerializableType + DamlSerializeInto<DamlValue>,
+{
+    fn serialize_from(boxed: Box<T>) -> DamlValue {
+        T::serialize_into(*boxed)
+    }
+}
+
+impl<T> DamlSerializeFrom<Option<T>> for DamlValue
+where
+    T: DamlSerializableType + DamlSerializeInto<DamlValue>,
+{
+    fn serialize_from(optional: Option<T>) -> DamlValue {
+        DamlValue::new_optional(optional.map(T::serialize_into))
+    }
+}
+
+impl<T> DamlSerializeFrom<Vec<T>> for DamlValue
+where
+    T: DamlSerializableType + DamlSerializeInto<DamlValue>,
+{
+    fn serialize_from(list: Vec<T>) -> DamlValue {
+        DamlValue::new_list(list.into_iter().map(T::serialize_into).collect::<Vec<_>>())
+    }
+}
+
+#[allow(clippy::implicit_hasher)]
+impl<T> DamlSerializeFrom<HashMap<String, T>> for DamlValue
+where
+    T: DamlSerializableType + DamlSerializeInto<DamlValue>,
+{
+    fn serialize_from(text_map: HashMap<String, T>) -> DamlValue {
+        DamlValue::new_map(text_map.into_iter().map(|(k, v)| (k, T::serialize_into(v))).collect::<HashMap<String, _>>())
+    }
+}
+
+impl DamlDeserializeFrom for DamlUnit {
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::Unit => Ok(()),
+            _ => Err(value.make_unexpected_type_error("Unit")),
+        }
+    }
+}
+
+impl DamlDeserializeFrom for DamlBool {
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::Bool(b) => Ok(b),
+            _ => Err(value.make_unexpected_type_error("Bool")),
+        }
+    }
+}
+
+impl DamlDeserializeFrom for DamlInt64 {
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::Int64(i) => Ok(i),
+            _ => Err(value.make_unexpected_type_error("Int64")),
+        }
+    }
+}
+
+impl DamlDeserializeFrom for DamlText {
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::Text(s) => Ok(s),
+            _ => Err(value.make_unexpected_type_error("Text")),
+        }
+    }
+}
+
+impl DamlDeserializeFrom for DamlParty {
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::Party(party) => Ok(party),
+            _ => Err(value.make_unexpected_type_error("Party")),
+        }
+    }
+}
+
+impl DamlDeserializeFrom for DamlContractId {
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::ContractId(contract_id) => Ok(contract_id),
+            _ => Err(value.make_unexpected_type_error("ContractId")),
+        }
+    }
+}
+
+impl DamlDeserializeFrom for DamlNumeric {
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::Numeric(numeric) => Ok(numeric),
+            _ => Err(value.make_unexpected_type_error("Numeric")),
+        }
+    }
+}
+
+impl DamlDeserializeFrom for DamlTimestamp {
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::Timestamp(timestamp) => Ok(timestamp),
+            _ => Err(value.make_unexpected_type_error("Timestamp")),
+        }
+    }
+}
+
+impl DamlDeserializeFrom for DamlDate {
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::Date(date) => Ok(date),
+            _ => Err(value.make_unexpected_type_error("Date")),
+        }
+    }
+}
+
+impl<T> DamlDeserializeFrom for Box<T>
+where
+    T: DamlDeserializeFrom + DamlDeserializableType,
+{
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        Ok(Box::new(value.deserialize_into()?))
+    }
+}
+
+impl<T> DamlDeserializeFrom for Option<T>
+where
+    T: DamlDeserializeFrom + DamlDeserializableType,
+{
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::Optional(o) => Ok(o.map(|a| T::deserialize_from(*a)).transpose()?),
+            _ => Err(value.make_unexpected_type_error("Option")),
+        }
+    }
+}
+
+impl<T> DamlDeserializeFrom for Vec<T>
+where
+    T: DamlDeserializeFrom + DamlDeserializableType,
+{
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::List(l) => Ok(l.into_iter().map(T::deserialize_from).collect::<DamlResult<Vec<_>>>()?),
+            _ => Err(value.make_unexpected_type_error("List")),
+        }
+    }
+}
+
+#[allow(clippy::implicit_hasher)]
+impl<T> DamlDeserializeFrom for HashMap<String, T>
+where
+    T: DamlDeserializeFrom + DamlDeserializableType,
+{
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::Map(text_map) => Ok(text_map
+                .into_iter()
+                .map(|(k, v)| Ok((k, T::deserialize_from(v)?)))
+                .collect::<DamlResult<HashMap<String, _>>>()?),
+            _ => Err(value.make_unexpected_type_error("Map")),
+        }
+    }
+}
+
 impl TryFrom<Value> for DamlValue {
     type Error = DamlError;
 
@@ -460,15 +688,15 @@ impl TryFrom<Value> for DamlValue {
                         Sum::Record(v) => DamlValue::Record(v.try_into()?),
                         Sum::Variant(v) => DamlValue::Variant((*v).try_into()?),
                         Sum::Enum(e) => DamlValue::Enum(e.into()),
-                        Sum::ContractId(v) => DamlValue::ContractId(v),
+                        Sum::ContractId(v) => DamlValue::ContractId(DamlContractId::new(v)),
                         Sum::List(v) => DamlValue::List(
                             v.elements.into_iter().map(TryInto::try_into).collect::<DamlResult<Vec<_>>>()?,
                         ),
                         Sum::Int64(v) => DamlValue::Int64(v),
-                        Sum::Numeric(v) => DamlValue::Numeric(BigDecimal::from_str(&v)?),
+                        Sum::Numeric(v) => DamlValue::Numeric(DamlNumeric::from_str(&v)?),
                         Sum::Text(v) => DamlValue::Text(v),
                         Sum::Timestamp(v) => DamlValue::Timestamp(util::datetime_from_micros(v)?),
-                        Sum::Party(v) => DamlValue::Party(v),
+                        Sum::Party(v) => DamlValue::Party(DamlParty::new(v)),
                         Sum::Bool(v) => DamlValue::Bool(v),
                         Sum::Unit(_) => DamlValue::Unit,
                         Sum::Date(v) => DamlValue::Date(util::date_from_days(v)?),
@@ -507,7 +735,7 @@ impl From<DamlValue> for Value {
                 DamlValue::Record(v) => Some(Sum::Record(Record::from(v))),
                 DamlValue::Variant(v) => Some(Sum::Variant(Box::new(Variant::from(v)))),
                 DamlValue::Enum(e) => Some(Sum::Enum(Enum::from(e))),
-                DamlValue::ContractId(v) => Some(Sum::ContractId(v)),
+                DamlValue::ContractId(v) => Some(Sum::ContractId(v.contract_id)),
                 DamlValue::List(v) => Some(Sum::List(List {
                     elements: v.into_iter().map(Value::from).collect(),
                 })),
@@ -516,7 +744,7 @@ impl From<DamlValue> for Value {
                 DamlValue::Numeric(v) => Some(Sum::Numeric(format!("{:.37}", v))),
                 DamlValue::Text(v) => Some(Sum::Text(v)), // value.set_text(v),
                 DamlValue::Timestamp(v) => Some(Sum::Timestamp(v.timestamp())),
-                DamlValue::Party(v) => Some(Sum::Party(v)),
+                DamlValue::Party(v) => Some(Sum::Party(v.party)),
                 DamlValue::Bool(v) => Some(Sum::Bool(v)),
                 DamlValue::Unit => Some(Sum::Unit(())),
                 DamlValue::Date(v) => Some(Sum::Date(util::days_from_date(v))),
@@ -569,7 +797,9 @@ impl Hash for DamlValue {
             DamlValue::List(v) => v.hash(state),
             DamlValue::Int64(v) => v.hash(state),
             DamlValue::Numeric(v) => v.hash(state),
-            DamlValue::Text(v) | DamlValue::Party(v) | DamlValue::ContractId(v) => v.hash(state),
+            DamlValue::Text(v) => v.hash(state),
+            DamlValue::Party(v) => v.party.hash(state),
+            DamlValue::ContractId(v) => v.contract_id.hash(state),
             DamlValue::Timestamp(v) => v.hash(state),
             DamlValue::Bool(v) => v.hash(state),
             DamlValue::Unit => {},
@@ -598,12 +828,12 @@ impl PartialOrd for DamlValue {
             (DamlValue::Record(v1), DamlValue::Record(v2)) => v1.partial_cmp(v2),
             (DamlValue::Variant(v1), DamlValue::Variant(v2)) => v1.partial_cmp(v2),
             (DamlValue::Enum(v1), DamlValue::Enum(v2)) => v1.partial_cmp(v2),
-            (DamlValue::List(v1), DamlValue::List(v2)) => v1.partial_cmp(v2),
+            (DamlValue::List(v1), DamlValue::List(v2)) => v1.partial_cmp(v2.as_ref()),
             (DamlValue::Int64(v1), DamlValue::Int64(v2)) => v1.partial_cmp(v2),
             (DamlValue::Numeric(v1), DamlValue::Numeric(v2)) => v1.partial_cmp(v2),
-            (DamlValue::Text(v1), DamlValue::Text(v2))
-            | (DamlValue::Party(v1), DamlValue::Party(v2))
-            | (DamlValue::ContractId(v1), DamlValue::ContractId(v2)) => v1.partial_cmp(v2),
+            (DamlValue::Text(v1), DamlValue::Text(v2)) => v1.partial_cmp(v2),
+            (DamlValue::Party(v1), DamlValue::Party(v2)) => v1.party.partial_cmp(&v2.party),
+            (DamlValue::ContractId(v1), DamlValue::ContractId(v2)) => v1.contract_id.partial_cmp(&v2.contract_id),
             (DamlValue::Timestamp(v1), DamlValue::Timestamp(v2)) => v1.partial_cmp(v2),
             (DamlValue::Bool(v1), DamlValue::Bool(v2)) => v1.partial_cmp(v2),
             (DamlValue::Unit, DamlValue::Unit) => Some(Ordering::Equal),

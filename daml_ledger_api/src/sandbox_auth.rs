@@ -225,7 +225,7 @@ mod tests {
                 act_as: vec!["Alice".to_owned(), "Bob".to_owned()],
                 read_as: vec!["Alice".to_owned(), "Bob".to_owned()],
             },
-            exp: 1581292002,
+            exp: 1_581_292_002,
         };
         let serialized = serde_json::to_string(&token).unwrap();
         assert_eq!(
@@ -245,7 +245,7 @@ mod tests {
                 act_as: vec!["Alice".to_owned(), "Bob".to_owned()],
                 read_as: vec!["Alice".to_owned(), "Bob".to_owned()],
             },
-            exp: 1581292002,
+            exp: 1_581_292_002,
         };
         let token_str =
             encode(&Header::default(), &token, &EncodingKey::from_secret("testsecret".as_ref())).expect("token");
@@ -257,7 +257,7 @@ mod tests {
 
     #[test]
     fn test_builder_with_secret() -> DamlResult<()> {
-        let token_str = DamlSandboxTokenBuilder::new_with_expiry(1581292002)
+        let token_str = DamlSandboxTokenBuilder::new_with_expiry(1_581_292_002)
             .ledger_id("sandbox")
             .admin(true)
             .act_as(vec!["Alice".to_owned(), "Bob".to_owned()])

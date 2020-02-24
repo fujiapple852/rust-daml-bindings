@@ -11,7 +11,7 @@ use crate::renderer::data_renderer::full::{quote_choice, quote_daml_record_and_i
 use crate::renderer::{quote_escaped_ident, to_module_path};
 
 pub fn quote_daml_template(daml_template: &DamlTemplate) -> TokenStream {
-    let struct_and_impl_tokens = quote_daml_record_and_impl(&daml_template.name, &daml_template.fields);
+    let struct_and_impl_tokens = quote_daml_record_and_impl(&daml_template.name, &daml_template.fields, &[]);
     let package_id_method_tokens =
         quote_package_id_method(&daml_template.name, &daml_template.package_id, &daml_template.module_path);
     let make_create_method_tokens = quote_make_create_command_method(&daml_template.name);
@@ -45,23 +45,11 @@ pub fn quote_package_id_method(struct_name: &str, package_id: &str, path: &[&str
 pub fn quote_make_create_command_method(struct_name: &str) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let _contract_struct_name = quote_contract_struct_name(struct_name);
-
-    // TODO restore
-    // pub fn create<E: CommandExecutor>(&self) -> impl FnOnce(&E) -> DamlResult<#contract_struct_name> + '_ {
-    //        let template_id = Self::package_id();
-    //        let value: DamlValue = self.to_owned().into();
-    //        let create_command = DamlCreateCommand::new(template_id, value.try_take_record().unwrap());
-    //    move |exec| {
-    //        let result = exec.execute_create(create_command)?;
-    //        #contract_struct_name::try_from(result)
-    //    }
-    //}
-
     quote!(
         impl #struct_name_tokens {
             pub fn create_command(&self) -> DamlCreateCommand {
                 let template_id = Self::package_id();
-                let value: DamlValue = self.to_owned().into();
+                let value: DamlValue = self.to_owned().serialize_into();
                 DamlCreateCommand::new(template_id, value.try_take_record().unwrap())
             }
         }

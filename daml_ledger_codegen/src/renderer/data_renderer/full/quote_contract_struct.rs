@@ -68,13 +68,14 @@ fn quote_contract_struct_impl_try_from(struct_name: &str) -> TokenStream {
     let contract_id_struct_name_tokens = quote_contract_id_struct_name(struct_name);
     quote!(
         impl TryFrom<DamlCreatedEvent> for #contract_struct_name_tokens {
+
             type Error = DamlError;
             fn try_from(event: DamlCreatedEvent) -> std::result::Result<Self, <#contract_struct_name_tokens as TryFrom<DamlCreatedEvent>>::Error> {
                 let contract_id = event.contract_id().to_owned();
                 let record: DamlRecord = event.take_create_arguments();
                 Ok(Self {
-                    id: #contract_id_struct_name_tokens::try_from(contract_id)?,
-                    data: DamlValue::new_record(record).try_into()?,
+                    id: #contract_id_struct_name_tokens::try_from(DamlContractId::new(contract_id))?,
+                    data: DamlValue::new_record(record).deserialize_into()?,
                 })
             }
         }
@@ -87,7 +88,7 @@ fn quote_contract_id_struct(struct_name: &str) -> TokenStream {
     quote!(
         #[derive(Debug)]
         pub struct #contract_id_struct_name_tokens {
-            pub contract_id: String,
+            pub contract_id: DamlContractId,
         }
     )
 }
@@ -112,7 +113,7 @@ fn quote_contract_id_struct_impl_getters(struct_name: &str) -> TokenStream {
     let contract_id_struct_name_tokens = quote_contract_id_struct_name(struct_name);
     quote!(
         impl #contract_id_struct_name_tokens {
-            pub fn contract_id(&self) -> &str {
+            pub fn contract_id(&self) -> &DamlContractId {
                 &self.contract_id
             }
         }

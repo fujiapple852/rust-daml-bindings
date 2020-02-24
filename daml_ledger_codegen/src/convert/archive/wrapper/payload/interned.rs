@@ -151,6 +151,24 @@ impl<'a> From<&'a template_choice::Name> for InternableString<'a> {
     }
 }
 
+impl<'a> From<&'a type_var_with_kind::Var> for InternableString<'a> {
+    fn from(name: &'a type_var_with_kind::Var) -> Self {
+        match name {
+            type_var_with_kind::Var::VarStr(s) => InternableString::Literal(s.as_str()),
+            &type_var_with_kind::Var::VarInternedStr(i) => InternableString::Interned(i),
+        }
+    }
+}
+
+impl<'a> From<&'a r#type::var::Var> for InternableString<'a> {
+    fn from(name: &'a r#type::var::Var) -> Self {
+        match name {
+            r#type::var::Var::VarStr(s) => InternableString::Literal(s.as_str()),
+            &r#type::var::Var::VarInternedStr(i) => InternableString::Interned(i),
+        }
+    }
+}
+
 impl<'a> From<&'a def_data_type::Name> for InternableDottedName<'a> {
     fn from(name: &'a def_data_type::Name) -> Self {
         match name {

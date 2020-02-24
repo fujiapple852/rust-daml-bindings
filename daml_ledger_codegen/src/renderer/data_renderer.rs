@@ -17,13 +17,17 @@ pub mod full {
     mod quote_choices;
     mod quote_contract_struct;
     mod quote_enum;
+    mod quote_generic_common;
     mod quote_main_struct;
+    mod quote_method_params;
     mod quote_template;
     mod quote_variant;
 
     pub use quote_choices::*;
     pub use quote_enum::*;
+    pub use quote_generic_common::*;
     pub use quote_main_struct::*;
+    pub use quote_method_params::*;
     pub use quote_template::*;
     pub use quote_variant::*;
 }

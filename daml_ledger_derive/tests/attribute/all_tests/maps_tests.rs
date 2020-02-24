@@ -20,8 +20,8 @@ pub fn test_maps() -> TestResult {
     map_of_list.insert("a".to_owned(), vec![1, 2, 3]);
     map_of_list.insert("b".to_owned(), vec![9, 8, 7]);
     let data_with_map = DataWithMap::new(map_of_unit, map_of_primitive, map_of_records, map_of_list);
-    let value: DamlValue = data_with_map.clone().into();
-    let data_with_map_again: DataWithMap = value.try_into()?;
+    let value: DamlValue = data_with_map.clone().serialize_into();
+    let data_with_map_again: DataWithMap = value.deserialize_into()?;
     assert_eq!(data_with_map, data_with_map_again);
     Ok(())
 }

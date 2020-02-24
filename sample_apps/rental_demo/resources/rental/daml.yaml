@@ -1,4 +1,4 @@
-sdk-version: 0.13.46
+sdk-version: 0.13.54
 name: rental
 source: daml/DA/Rental.daml
 version: 0.0.1

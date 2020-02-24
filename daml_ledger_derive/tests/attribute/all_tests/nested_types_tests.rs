@@ -11,8 +11,8 @@ pub fn test_round_trip() -> TestResult {
     let opt_of_list = Some(vec!["text".to_owned()]);
     let list_of_opt_of_map = vec![Some(my_map), None];
     let nested = NestedTypes::new(opt_of_list, list_of_opt_of_map);
-    let value: DamlValue = nested.clone().into();
-    let nested_again: NestedTypes = value.try_into()?;
+    let value: DamlValue = nested.clone().serialize_into();
+    let nested_again: NestedTypes = value.deserialize_into()?;
     assert_eq!(nested, nested_again);
     Ok(())
 }

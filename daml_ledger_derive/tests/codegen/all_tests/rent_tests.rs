@@ -6,7 +6,7 @@ use daml_ledger_api::{CommandExecutor, DamlSimpleExecutorBuilder};
 use daml_ledger_derive::daml_codegen;
 use std::convert::TryInto;
 
-daml_codegen!(dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_50-lf_1_7.dar");
+daml_codegen!(dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_54-lf_1_7.dar");
 
 #[tokio::test]
 async fn test_rent() -> TestResult {
@@ -29,8 +29,8 @@ async fn test_rent() -> TestResult {
     let accept_event: DamlEvent = accept_result.take_events().swap_remove(1);
     let agreement_contract: testing_types_1_0_0::da::rent_demo::RentalAgreementContract =
         accept_event.try_created()?.try_into()?;
-    assert_eq!("Alice", &agreement_contract.data().landlord);
-    assert_eq!("Bob", &agreement_contract.data().tenant);
+    assert_eq!("Alice", agreement_contract.data().landlord.as_str());
+    assert_eq!("Bob", agreement_contract.data().tenant.as_str());
     assert_eq!("Some Terms", &agreement_contract.data().terms);
     Ok(())
 }

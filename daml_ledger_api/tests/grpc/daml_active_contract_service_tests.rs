@@ -36,7 +36,7 @@ async fn test_get_active_contracts() -> TestResult {
         .get_active_contracts(DamlTransactionFilter::for_parties(&[ALICE_PARTY, BOB_PARTY][..]), DamlVerbosity::Verbose)
         .await?;
     let active_contracts: Vec<DamlResult<DamlActiveContracts>> = active_contracts_future.collect().await;
-    let active_contracts: Vec<_> = active_contracts.into_iter().map(|e| e.unwrap()).collect();
+    let active_contracts: Vec<_> = active_contracts.into_iter().map(std::result::Result::unwrap).collect();
     let create_count1: Vec<&DamlRecordField> = active_contracts[0]
         .active_contracts()
         .first()

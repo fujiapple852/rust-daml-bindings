@@ -16,7 +16,7 @@ pub enum AttrType {
     List(Box<AttrType>),
     TextMap(Box<AttrType>),
     Optional(Box<AttrType>),
-    Data(String, Vec<String>),
+    DataRef(String, Vec<String>, Vec<AttrType>),
 }
 
 impl AttrType {
@@ -50,83 +50,74 @@ pub fn data_type_string_from_path(path: &Path) -> String {
         ))
     }
     match daml_type_from_path(path) {
-        // TODO ignoring path here
-        AttrType::Data(data, _) => data,
+        AttrType::DataRef(data, ..) => data,
         _ => panic!("expected a single type"),
     }
 }
 
 fn daml_type_from_path(path: &Path) -> AttrType {
     let segments: Vec<_> = path.segments.iter().collect();
-    match segments.as_slice() {
-        [] => panic!("path has no segments"),
-        [seg] => daml_type_from_path_segment(seg),
-        _ =>
-            if segments.first().unwrap().ident == "crate" {
-                let data_name = segments.last().unwrap().ident.to_string();
-                let path: Vec<String> = segments[1..segments.len() - 1].iter().map(|s| s.ident.to_string()).collect();
-                AttrType::Data(data_name, path)
-            } else {
-                panic!("data type path must be absolute and begin with crate::")
-            },
-    }
+    daml_type_from_segments(segments.as_slice())
 }
 
-fn daml_type_from_path_segment(segment: &PathSegment) -> AttrType {
-    if segment.arguments.is_empty() {
-        daml_type_from_primitive_segment(&segment)
-    } else {
-        daml_type_from_parameterized_segment(&segment)
-    }
-}
-
-fn daml_type_from_primitive_segment(segment: &PathSegment) -> AttrType {
-    match segment.ident.to_string().as_ref() {
-        "DamlContractId" => AttrType::ContractId(Box::new(AttrType::Unit)),
-        "DamlInt64" => AttrType::Int64,
-        "DamlNumeric" => AttrType::Numeric,
-        "DamlText" => AttrType::Text,
-        "DamlTimestamp" => AttrType::Timestamp,
-        "DamlParty" => AttrType::Party,
-        "DamlBool" => AttrType::Bool,
-        "DamlUnit" => AttrType::Unit,
-        "DamlDate" => AttrType::Date,
-        data_name => AttrType::Data(data_name.to_owned(), vec![]),
-    }
-}
-
-fn daml_type_from_parameterized_segment(segment: &PathSegment) -> AttrType {
-    let ty = get_single_type_parameter(&segment.arguments);
-    match segment.ident.to_string().as_ref() {
-        "Box" => {
+fn daml_type_from_segments(segments: &[&PathSegment]) -> AttrType {
+    let (last_segment, path) = split_segments(segments);
+    let type_params = extract_type_parameters(&last_segment.arguments);
+    match (last_segment.ident.to_string().as_ref(), type_params.as_slice()) {
+        ("DamlInt64", _) => AttrType::Int64,
+        ("DamlNumeric", _) => AttrType::Numeric,
+        ("DamlText", _) => AttrType::Text,
+        ("DamlTimestamp", _) => AttrType::Timestamp,
+        ("DamlParty", _) => AttrType::Party,
+        ("DamlBool", _) => AttrType::Bool,
+        ("DamlUnit", _) => AttrType::Unit,
+        ("DamlDate", _) => AttrType::Date,
+        ("Box", &[ty]) => {
             let nested = AttrType::from_type(ty);
             match nested {
-                AttrType::Data(..) => AttrType::Box(Box::new(nested)),
+                AttrType::DataRef(..) => AttrType::Box(Box::new(nested)),
                 _ => panic!("Box may only be applied to data types"),
             }
         },
-        "DamlList" => AttrType::List(Box::new(AttrType::from_type(ty))),
-        "DamlTextMap" => AttrType::TextMap(Box::new(AttrType::from_type(ty))),
-        "DamlOptional" => AttrType::Optional(Box::new(AttrType::from_type(ty))),
-        "DamlContractId" => AttrType::ContractId(Box::new(AttrType::from_type(ty))),
-        _ => panic!(format!(
-            "unexpected parameterized type {}, expected one of Box, DamlList, DamlTextMap, DamlOptional or \
-             DamlContractId",
-            segment.ident.to_string()
-        )),
+        ("DamlList", &[ty]) => AttrType::List(Box::new(AttrType::from_type(ty))),
+        ("DamlTextMap", &[ty]) => AttrType::TextMap(Box::new(AttrType::from_type(ty))),
+        ("DamlOptional", &[ty]) => AttrType::Optional(Box::new(AttrType::from_type(ty))),
+        ("DamlContractId", &[ty]) => AttrType::ContractId(Box::new(AttrType::from_type(ty))),
+        ("DamlContractId", _) => AttrType::ContractId(Box::new(AttrType::Unit)),
+        (data_name, type_arguments) => AttrType::DataRef(
+            data_name.to_owned(),
+            path,
+            type_arguments.iter().map(|&arg| AttrType::from_type(arg)).collect(),
+        ),
     }
 }
 
-fn get_single_type_parameter(path_args: &PathArguments) -> &Type {
+fn split_segments<'a>(segments: &'a [&PathSegment]) -> (&'a PathSegment, Vec<String>) {
+    let (last_segment, path) = match segments {
+        [] => panic!("path has no segments"),
+        [segment] => (segment, vec![]),
+        _ => {
+            let last = segments.last().expect("PathSegment");
+            let path = segments[1..segments.len() - 1].iter().map(|&s| s.ident.to_string()).collect();
+            (last, path)
+        },
+    };
+    (last_segment, path)
+}
+
+fn extract_type_parameters(path_args: &PathArguments) -> Vec<&Type> {
     match path_args {
         PathArguments::AngleBracketed(AngleBracketedGenericArguments {
             args,
             ..
-        }) => match args.first() {
-            Some(GenericArgument::Type(ty)) => ty,
-            _ => panic!("failed to extract type from first AngleBracketed path argument"),
-        },
-        PathArguments::None => panic!("path argument is None"),
+        }) => args
+            .iter()
+            .filter_map(|arg| match arg {
+                GenericArgument::Type(ty) => Some(ty),
+                _ => None,
+            })
+            .collect::<Vec<_>>(),
+        PathArguments::None => vec![],
         PathArguments::Parenthesized(_) => panic!("path argument is Parenthesized"),
     }
 }

@@ -4,9 +4,7 @@ use quote::quote;
 
 use crate::element::{DamlChoice, DamlField, DamlType};
 use crate::renderer::data_renderer::full::quote_contract_struct::quote_contract_id_struct_name;
-use crate::renderer::expression_renderer::{
-    quote_method_arguments, quote_new_value_expression, quote_try_expression, VALUE_IDENT,
-};
+use crate::renderer::data_renderer::full::quote_method_arguments;
 use crate::renderer::is_supported_type;
 use crate::renderer::renderer_utils::quote_escaped_ident;
 use crate::renderer::type_renderer::quote_type;
@@ -23,7 +21,6 @@ pub fn quote_choice(name: &str, items: &[DamlChoice]) -> TokenStream {
 }
 
 /// Generate all choice methods within the parent `impl` block.
-#[allow(clippy::filter_map)]
 fn quote_all_choice_methods(struct_name: &str, items: &[DamlChoice]) -> TokenStream {
     let all_choice_methods: Vec<_> = items.iter().map(|choice| quote_choice_method(&struct_name, &choice)).collect();
     quote!(
@@ -40,32 +37,13 @@ fn quote_choice_method(struct_name: &str, choice: &DamlChoice) -> TokenStream {
     let choice_argument_tokens = quote_method_arguments(&choice.fields.iter().collect::<Vec<_>>());
     let supported_fields: Vec<_> = choice.fields.iter().filter(|&field| is_supported_type(&field.ty)).collect();
     let all_choice_fields = quote_all_choice_fields(&supported_fields);
-    let _return_type_tokens = quote_type(&choice.return_type);
-    let _try_return_type_expression_tokens = quote_try_expression(VALUE_IDENT, &choice.return_type);
-
-    // TODO restore
-    // pub fn #method_name_tokens<E: CommandExecutor>(&self, #choice_argument_tokens) -> impl FnOnce(&E) ->
-    // DamlResult<#return_type_tokens> + '_ {    let template_id = #struct_name_tokens::package_id();
-    //    #all_choice_fields
-    //    let exercise_command = DamlExerciseCommand::new(
-    //        template_id,
-    //        self.contract_id(),
-    //        #choice_name,
-    //        params
-    //    );
-    //    move |exec| {
-    //        let value = exec.execute_exercise(exercise_command)?;
-    //        #try_return_type_expression_tokens
-    //    }
-    //}
-
     quote!(
         pub fn #method_name_command_tokens(&self, #choice_argument_tokens) -> DamlExerciseCommand {
             let template_id = #struct_name_tokens::package_id();
             #all_choice_fields
             DamlExerciseCommand::new(
                 template_id,
-                self.contract_id(),
+                self.contract_id().as_str(),
                 #choice_name,
                 params
             )
@@ -104,16 +82,14 @@ fn quote_declare_all_choice_fields(choice_parameters: &[&DamlField]) -> TokenStr
 
 /// Generate a choice field.
 fn quote_declare_choice_field(field_name: &str, field_type: &DamlType) -> TokenStream {
-    let field_name = quote_escaped_ident(field_name);
-    let field_source_tokens = quote!(#field_name);
-    let rendered_new_value_tokens = quote_new_value_expression(VALUE_IDENT, field_type);
-    let name_string = quote!(stringify!(#field_name));
+    let field_source_tokens = quote_escaped_ident(field_name);
+    let name_string = quote!(#field_name);
+    let choice_type_tokens = quote_type(field_type);
+    let serialize_value_tokens = quote!(
+        <#choice_type_tokens as DamlSerializeInto<DamlValue>>::serialize_into(#field_source_tokens.into())
+    );
     quote!(
-        let #field_name: DamlValue = {
-            let value = #field_source_tokens.into();
-            #rendered_new_value_tokens
-        };
-        records.push(DamlRecordField::new(Some(#name_string), #field_name));
+        records.push(DamlRecordField::new(Some(#name_string), #serialize_value_tokens));
     )
 }
 

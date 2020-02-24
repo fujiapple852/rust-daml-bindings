@@ -13,7 +13,6 @@ async fn test_circle_variant() -> TestResult {
     let _lock = SANDBOX_LOCK.lock()?;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
-
     let circle_template =
         CircleTemplate::new("Alice", Circle::new(1.223_000_000_1, Color::Other(RGBA::new(255, 0, 100, 99))));
     let create_command = circle_template.create_command();
@@ -41,10 +40,9 @@ async fn test_all_variant_types() -> TestResult {
     let _lock = SANDBOX_LOCK.lock()?;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
-
     let mut map_of_party: HashMap<String, DamlParty> = HashMap::new();
-    map_of_party.insert("sender".to_owned(), "Alice".to_owned());
-    map_of_party.insert("receiver".to_owned(), "Bob".to_owned());
+    map_of_party.insert("sender".to_owned(), DamlParty::new("Alice"));
+    map_of_party.insert("receiver".to_owned(), DamlParty::new("Bob"));
     let mut map_of_records: HashMap<String, RecordArgument> = HashMap::new();
     map_of_records.insert("Alice".to_owned(), RecordArgument::new(8, vec!["test1".to_owned()]));
     map_of_records.insert("Bob".to_owned(), RecordArgument::new(4, vec!["test2".to_owned()]));

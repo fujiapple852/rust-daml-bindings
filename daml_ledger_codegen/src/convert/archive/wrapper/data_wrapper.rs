@@ -1,6 +1,6 @@
 use crate::convert::archive::wrapper::payload::{
     DamlChoicePayload, DamlDataPayload, DamlFieldPayload, DamlModulePayload, DamlPackagePayload, DamlTemplatePayload,
-    EnumPayload, RecordPayload, VariantPayload,
+    EnumPayload, InternableDottedName, RecordPayload, VariantPayload,
 };
 use crate::convert::archive::wrapper::*;
 
@@ -45,8 +45,22 @@ impl<'a> DamlDataWrapper<'a> {
                 data,
                 variant,
             )),
-            DamlDataPayload::Enum(data_enum) =>
-                DamlDataWrapper::Enum(DamlEnumWrapper::new(parent_archive, parent_package, parent_module, data_enum)),
+            DamlDataPayload::Enum(data_enum) => DamlDataWrapper::Enum(DamlEnumWrapper::new(
+                parent_archive,
+                parent_package,
+                parent_module,
+                data,
+                data_enum,
+            )),
+        }
+    }
+
+    pub fn name(&self) -> InternableDottedName<'a> {
+        match self {
+            DamlDataWrapper::Record(record) => record.payload.name,
+            DamlDataWrapper::Template(template) => template.payload.name,
+            DamlDataWrapper::Variant(variant) => variant.payload.name,
+            DamlDataWrapper::Enum(data_enum) => data_enum.payload.name,
         }
     }
 }
@@ -173,11 +187,27 @@ impl<'a> DamlRecordWrapper<'a> {
     }
 
     pub fn fields(self) -> impl Iterator<Item = DamlFieldWrapper<'a>> {
-        self.payload.fields.iter().map(move |field| self.wrap_field(field))
+        self.payload.fields.iter().map(move |field| {
+            DamlFieldWrapper::wrap(
+                self.parent_archive,
+                self.parent_package,
+                self.parent_module,
+                self.parent_data,
+                field,
+            )
+        })
     }
 
-    fn wrap_field(self, field: &'a DamlFieldPayload) -> DamlFieldWrapper<'a> {
-        DamlFieldWrapper::wrap(self.parent_archive, self.parent_package, self.parent_module, self.parent_data, field)
+    pub fn type_arguments(self) -> impl Iterator<Item = DamlTypeVarWrapper<'a>> {
+        self.payload.type_arguments.iter().map(move |param| {
+            DamlTypeVarWrapper::wrap(
+                self.parent_archive,
+                self.parent_package,
+                self.parent_module,
+                self.parent_data,
+                param,
+            )
+        })
     }
 }
 
@@ -214,11 +244,27 @@ impl<'a> DamlVariantWrapper<'a> {
     }
 
     pub fn fields(self) -> impl Iterator<Item = DamlFieldWrapper<'a>> {
-        self.payload.fields.iter().map(move |field| self.wrap_field(field))
+        self.payload.fields.iter().map(move |field| {
+            DamlFieldWrapper::wrap(
+                self.parent_archive,
+                self.parent_package,
+                self.parent_module,
+                self.parent_data,
+                field,
+            )
+        })
     }
 
-    fn wrap_field(self, field: &'a DamlFieldPayload) -> DamlFieldWrapper<'a> {
-        DamlFieldWrapper::wrap(self.parent_archive, self.parent_package, self.parent_module, self.parent_data, field)
+    pub fn type_arguments(self) -> impl Iterator<Item = DamlTypeVarWrapper<'a>> {
+        self.payload.type_arguments.iter().map(move |param| {
+            DamlTypeVarWrapper::wrap(
+                self.parent_archive,
+                self.parent_package,
+                self.parent_module,
+                self.parent_data,
+                param,
+            )
+        })
     }
 }
 
@@ -227,6 +273,7 @@ pub struct DamlEnumWrapper<'a> {
     pub parent_archive: &'a DamlArchivePayload<'a>,
     pub parent_package: &'a DamlPackagePayload<'a>,
     pub parent_module: &'a DamlModulePayload<'a>,
+    pub parent_data: &'a DamlDataPayload<'a>,
     pub payload: &'a EnumPayload<'a>,
 }
 
@@ -241,13 +288,27 @@ impl<'a> DamlEnumWrapper<'a> {
         parent_archive: &'a DamlArchivePayload<'a>,
         parent_package: &'a DamlPackagePayload<'a>,
         parent_module: &'a DamlModulePayload<'a>,
+        parent_data: &'a DamlDataPayload<'a>,
         payload: &'a EnumPayload<'a>,
     ) -> Self {
         Self {
             parent_archive,
             parent_package,
             parent_module,
+            parent_data,
             payload,
         }
+    }
+
+    pub fn type_arguments(self) -> impl Iterator<Item = DamlTypeVarWrapper<'a>> {
+        self.payload.type_arguments.iter().map(move |param| {
+            DamlTypeVarWrapper::wrap(
+                self.parent_archive,
+                self.parent_package,
+                self.parent_module,
+                self.parent_data,
+                param,
+            )
+        })
     }
 }

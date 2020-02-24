@@ -1,6 +1,5 @@
 mod archive_renderer;
 mod data_renderer;
-mod expression_renderer;
 mod field_renderer;
 mod module_renderer;
 mod package_renderer;

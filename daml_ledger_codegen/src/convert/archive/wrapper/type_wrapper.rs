@@ -37,17 +37,35 @@ impl<'a> DamlTypeWrapper<'a> {
 
     pub fn data_ref(self) -> DamlDataRefWrapper<'a> {
         match self.payload {
-            DamlTypePayload::DataRef(data_ref) =>
-                DamlDataRefWrapper::new(self.parent_archive, self.parent_package, self.parent_module, data_ref),
+            DamlTypePayload::DataRef(data_ref) => DamlDataRefWrapper::new(
+                self.parent_archive,
+                self.parent_package,
+                self.parent_module,
+                self.parent_data,
+                data_ref,
+            ),
             _ => panic!("expected DataRef"),
         }
     }
 
     pub fn contract_id_data_ref(self) -> DamlDataRefWrapper<'a> {
         match self.payload {
-            DamlTypePayload::ContractId(Some(data_ref)) =>
-                DamlDataRefWrapper::new(self.parent_archive, self.parent_package, self.parent_module, data_ref),
+            DamlTypePayload::ContractId(Some(data_ref)) => DamlDataRefWrapper::new(
+                self.parent_archive,
+                self.parent_package,
+                self.parent_module,
+                self.parent_data,
+                data_ref,
+            ),
             _ => panic!("expected ContractId"),
+        }
+    }
+
+    pub fn var(self) -> DamlVarWrapper<'a> {
+        match self.payload {
+            DamlTypePayload::Var(var) =>
+                DamlVarWrapper::new(self.parent_archive, self.parent_package, self.parent_module, self.parent_data, var),
+            _ => panic!("expected Var"),
         }
     }
 
@@ -63,11 +81,12 @@ impl<'a> DamlTypeWrapper<'a> {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy)]
 pub struct DamlDataRefWrapper<'a> {
     pub parent_archive: &'a DamlArchivePayload<'a>,
     pub parent_package: &'a DamlPackagePayload<'a>,
     pub parent_module: &'a DamlModulePayload<'a>,
+    pub parent_data: &'a DamlDataPayload<'a>,
     pub payload: &'a DamlDataRefPayload<'a>,
 }
 
@@ -76,14 +95,22 @@ impl<'a> DamlDataRefWrapper<'a> {
         parent_archive: &'a DamlArchivePayload,
         parent_package: &'a DamlPackagePayload,
         parent_module: &'a DamlModulePayload,
+        parent_data: &'a DamlDataPayload,
         payload: &'a DamlDataRefPayload,
     ) -> Self {
         Self {
             parent_archive,
             parent_package,
             parent_module,
+            parent_data,
             payload,
         }
+    }
+
+    pub fn type_arguments(self) -> impl Iterator<Item = DamlTypeWrapper<'a>> {
+        self.payload.type_arguments.iter().map(move |arg| {
+            DamlTypeWrapper::wrap(self.parent_archive, self.parent_package, self.parent_module, self.parent_data, arg)
+        })
     }
 
     pub fn get_data(self) -> DamlDataWrapper<'a> {
@@ -104,5 +131,38 @@ impl<'a> DamlDataRefWrapper<'a> {
             .find(|dt| dt.name().resolve(target_package) == source_data_type_name)
             .unwrap_or_else(|| panic!("data_type lookup failed for {}", &self.payload.data_name.to_string()));
         DamlDataWrapper::wrap(self.parent_archive, target_package, target_module, target_data_type)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct DamlVarWrapper<'a> {
+    pub parent_archive: &'a DamlArchivePayload<'a>,
+    pub parent_package: &'a DamlPackagePayload<'a>,
+    pub parent_module: &'a DamlModulePayload<'a>,
+    pub parent_data: &'a DamlDataPayload<'a>,
+    pub payload: &'a DamlVarPayload<'a>,
+}
+
+impl<'a> DamlVarWrapper<'a> {
+    pub fn new(
+        parent_archive: &'a DamlArchivePayload,
+        parent_package: &'a DamlPackagePayload,
+        parent_module: &'a DamlModulePayload,
+        parent_data: &'a DamlDataPayload,
+        payload: &'a DamlVarPayload,
+    ) -> Self {
+        Self {
+            parent_archive,
+            parent_package,
+            parent_module,
+            parent_data,
+            payload,
+        }
+    }
+
+    pub fn type_arguments(self) -> impl Iterator<Item = DamlTypeWrapper<'a>> {
+        self.payload.type_arguments.iter().map(move |arg| {
+            DamlTypeWrapper::wrap(self.parent_archive, self.parent_package, self.parent_module, self.parent_data, arg)
+        })
     }
 }

@@ -1,5 +1,5 @@
 use crate::element::daml_field::DamlField;
-use crate::element::DamlType;
+use crate::element::{DamlType, DamlTypeVar};
 
 #[derive(Debug)]
 pub enum DamlData<'a> {
@@ -68,13 +68,15 @@ impl<'a> DamlChoice<'a> {
 pub struct DamlRecord<'a> {
     pub name: &'a str,
     pub fields: Vec<DamlField<'a>>,
+    pub type_arguments: Vec<DamlTypeVar<'a>>,
 }
 
 impl<'a> DamlRecord<'a> {
-    pub fn new(name: &'a str, fields: Vec<DamlField<'a>>) -> Self {
+    pub fn new(name: &'a str, fields: Vec<DamlField<'a>>, type_arguments: Vec<DamlTypeVar<'a>>) -> Self {
         Self {
             name,
             fields,
+            type_arguments,
         }
     }
 }
@@ -83,13 +85,15 @@ impl<'a> DamlRecord<'a> {
 pub struct DamlVariant<'a> {
     pub name: &'a str,
     pub fields: Vec<DamlField<'a>>,
+    pub type_arguments: Vec<DamlTypeVar<'a>>,
 }
 
 impl<'a> DamlVariant<'a> {
-    pub fn new(name: &'a str, fields: Vec<DamlField<'a>>) -> Self {
+    pub fn new(name: &'a str, fields: Vec<DamlField<'a>>, type_arguments: Vec<DamlTypeVar<'a>>) -> Self {
         Self {
             name,
             fields,
+            type_arguments,
         }
     }
 }
@@ -98,13 +102,15 @@ impl<'a> DamlVariant<'a> {
 pub struct DamlEnum<'a> {
     pub name: &'a str,
     pub constructors: Vec<&'a str>,
+    pub type_arguments: Vec<DamlTypeVar<'a>>,
 }
 
 impl<'a> DamlEnum<'a> {
-    pub fn new(name: &'a str, constructors: Vec<&'a str>) -> Self {
+    pub fn new(name: &'a str, constructors: Vec<&'a str>, type_arguments: Vec<DamlTypeVar<'a>>) -> Self {
         Self {
             name,
             constructors,
+            type_arguments,
         }
     }
 }

@@ -11,7 +11,7 @@ pub fn generate_data_struct(input: DeriveInput) -> proc_macro::TokenStream {
     let tokens = match input.data {
         Data::Struct(data_struct) => match &data_struct.fields {
             Fields::Named(fields_named) => {
-                let record: AttrRecord = extract_record(struct_name, fields_named);
+                let record: AttrRecord = extract_record(struct_name, fields_named, &input.generics);
                 let daml_record = DamlRecord::from(&record);
                 quote_daml_record(&daml_record)
             },
@@ -30,7 +30,7 @@ pub fn generate_data_variant(input: DeriveInput) -> proc_macro::TokenStream {
     let variant_name = input.ident.to_string();
     let tokens = match input.data {
         Data::Enum(data_enum) => {
-            let variant: AttrVariant = extract_variant(variant_name, &data_enum);
+            let variant: AttrVariant = extract_variant(variant_name, &data_enum, &input.generics);
             let daml_variant = DamlVariant::from(&variant);
             quote_daml_variant(&daml_variant)
         },
@@ -46,7 +46,7 @@ pub fn generate_data_enum(input: DeriveInput) -> proc_macro::TokenStream {
     let enum_name = input.ident.to_string();
     let tokens = match input.data {
         Data::Enum(data_enum) => {
-            let enum_variants = extract_enum(enum_name, &data_enum);
+            let enum_variants = extract_enum(enum_name, &data_enum, &input.generics);
             let daml_enum = DamlEnum::from(&enum_variants);
             quote_daml_enum(&daml_enum)
         },

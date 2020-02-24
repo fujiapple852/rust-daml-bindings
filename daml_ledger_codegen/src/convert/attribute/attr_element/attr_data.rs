@@ -1,16 +1,18 @@
 use crate::convert::attribute::attr_element::{extract_enum_data, extract_struct_data, AttrField, AttrType};
-use syn::{DataEnum, FieldsNamed};
+use syn::{DataEnum, FieldsNamed, GenericParam, Generics};
 
 pub struct AttrRecord {
     pub name: String,
     pub fields: Vec<AttrField>,
+    pub type_arguments: Vec<String>,
 }
 
 impl AttrRecord {
-    pub fn new(name: String, fields: Vec<AttrField>) -> Self {
+    pub fn new(name: String, fields: Vec<AttrField>, type_arguments: Vec<String>) -> Self {
         Self {
             name,
             fields,
+            type_arguments,
         }
     }
 }
@@ -36,13 +38,15 @@ impl AttrTemplate {
 pub struct AttrVariant {
     pub name: String,
     pub fields: Vec<AttrField>,
+    pub type_arguments: Vec<String>,
 }
 
 impl AttrVariant {
-    pub fn new(name: String, fields: Vec<AttrField>) -> Self {
+    pub fn new(name: String, fields: Vec<AttrField>, type_arguments: Vec<String>) -> Self {
         Self {
             name,
             fields,
+            type_arguments,
         }
     }
 }
@@ -50,20 +54,23 @@ impl AttrVariant {
 pub struct AttrEnum {
     pub name: String,
     pub fields: Vec<String>,
+    pub type_arguments: Vec<String>,
 }
 
 impl AttrEnum {
-    pub fn new(name: String, fields: Vec<String>) -> Self {
+    pub fn new(name: String, fields: Vec<String>, type_arguments: Vec<String>) -> Self {
         Self {
             name,
             fields,
+            type_arguments,
         }
     }
 }
 
-pub fn extract_record(name: String, fields_named: &FieldsNamed) -> AttrRecord {
+pub fn extract_record(name: String, fields_named: &FieldsNamed, generics: &Generics) -> AttrRecord {
     let fields: Vec<AttrField> = extract_struct_data(fields_named);
-    AttrRecord::new(name, fields)
+    let type_arguments = extract_generic_type_arguments(generics);
+    AttrRecord::new(name, fields, type_arguments)
 }
 
 pub fn extract_template(
@@ -76,11 +83,12 @@ pub fn extract_template(
     AttrTemplate::new(name, package_id, module_path, extract_struct_data(fields_named))
 }
 
-pub fn extract_variant(name: String, data_enum: &DataEnum) -> AttrVariant {
-    AttrVariant::new(name, extract_enum_data(data_enum))
+pub fn extract_variant(name: String, data_enum: &DataEnum, generics: &Generics) -> AttrVariant {
+    let type_arguments = extract_generic_type_arguments(generics);
+    AttrVariant::new(name, extract_enum_data(data_enum), type_arguments)
 }
 
-pub fn extract_enum(name: String, data_enum: &DataEnum) -> AttrEnum {
+pub fn extract_enum(name: String, data_enum: &DataEnum, generics: &Generics) -> AttrEnum {
     let variants = extract_enum_data(data_enum);
     let all_constructors: Vec<String> = variants
         .into_iter()
@@ -92,5 +100,20 @@ pub fn extract_enum(name: String, data_enum: &DataEnum) -> AttrEnum {
             }
         })
         .collect();
-    AttrEnum::new(name, all_constructors)
+    let type_arguments = extract_generic_type_arguments(generics);
+    AttrEnum::new(name, all_constructors, type_arguments)
+}
+
+fn extract_generic_type_arguments(generics: &Generics) -> Vec<String> {
+    generics
+        .params
+        .iter()
+        .filter_map(|param| {
+            if let GenericParam::Type(ty) = param {
+                Some(ty.ident.to_string())
+            } else {
+                None
+            }
+        })
+        .collect()
 }

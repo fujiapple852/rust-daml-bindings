@@ -40,15 +40,23 @@ impl<'a> DamlDataPayload<'a> {
 impl<'a> From<&'a DefDataType> for DamlDataPayload<'a> {
     fn from(def_data_type: &'a DefDataType) -> Self {
         let name = InternableDottedName::from(def_data_type.name.as_ref().expect("DefDataType.name"));
+        let type_arguments: Vec<_> = def_data_type.params.iter().map(DamlTypeVarPayload::from).collect();
         match def_data_type.data_cons.as_ref().expect("DefDataType.data_cons") {
-            DataCons::Record(fields) =>
-                Self::new_record(RecordPayload::new(name, fields.fields.iter().map(DamlFieldPayload::from).collect())),
-            DataCons::Variant(fields) =>
-                Self::new_variant(VariantPayload::new(name, fields.fields.iter().map(DamlFieldPayload::from).collect())),
+            DataCons::Record(fields) => Self::new_record(RecordPayload::new(
+                name,
+                fields.fields.iter().map(DamlFieldPayload::from).collect(),
+                type_arguments,
+            )),
+            DataCons::Variant(fields) => Self::new_variant(VariantPayload::new(
+                name,
+                fields.fields.iter().map(DamlFieldPayload::from).collect(),
+                type_arguments,
+            )),
             DataCons::Enum(constructors) => Self::new_enum(EnumPayload::new(
                 name,
                 constructors.constructors_str.as_slice(),
                 constructors.constructors_interned_str.as_slice(),
+                type_arguments,
             )),
         }
     }
@@ -116,13 +124,19 @@ impl<'a> From<&'a TemplateChoice> for DamlChoicePayload<'a> {
 pub struct RecordPayload<'a> {
     pub name: InternableDottedName<'a>,
     pub fields: Vec<DamlFieldPayload<'a>>,
+    pub type_arguments: Vec<DamlTypeVarPayload<'a>>,
 }
 
 impl<'a> RecordPayload<'a> {
-    pub fn new(name: InternableDottedName<'a>, fields: Vec<DamlFieldPayload<'a>>) -> Self {
+    pub fn new(
+        name: InternableDottedName<'a>,
+        fields: Vec<DamlFieldPayload<'a>>,
+        type_arguments: Vec<DamlTypeVarPayload<'a>>,
+    ) -> Self {
         Self {
             name,
             fields,
+            type_arguments,
         }
     }
 }
@@ -131,13 +145,19 @@ impl<'a> RecordPayload<'a> {
 pub struct VariantPayload<'a> {
     pub name: InternableDottedName<'a>,
     pub fields: Vec<DamlFieldPayload<'a>>,
+    pub type_arguments: Vec<DamlTypeVarPayload<'a>>,
 }
 
 impl<'a> VariantPayload<'a> {
-    pub fn new(name: InternableDottedName<'a>, fields: Vec<DamlFieldPayload<'a>>) -> Self {
+    pub fn new(
+        name: InternableDottedName<'a>,
+        fields: Vec<DamlFieldPayload<'a>>,
+        type_arguments: Vec<DamlTypeVarPayload<'a>>,
+    ) -> Self {
         Self {
             name,
             fields,
+            type_arguments,
         }
     }
 }
@@ -147,6 +167,7 @@ pub struct EnumPayload<'a> {
     pub name: InternableDottedName<'a>,
     pub constructors_str: &'a [String],
     pub constructors_interned_str: &'a [i32],
+    pub type_arguments: Vec<DamlTypeVarPayload<'a>>,
 }
 
 impl<'a> EnumPayload<'a> {
@@ -154,11 +175,13 @@ impl<'a> EnumPayload<'a> {
         name: InternableDottedName<'a>,
         constructors_str: &'a [String],
         constructors_interned_str: &'a [i32],
+        type_arguments: Vec<DamlTypeVarPayload<'a>>,
     ) -> Self {
         Self {
             name,
             constructors_str,
             constructors_interned_str,
+            type_arguments,
         }
     }
 }

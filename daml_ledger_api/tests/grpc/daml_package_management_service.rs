@@ -6,7 +6,7 @@ async fn test_list_known_packages() -> TestResult {
     let _lock = WALLCLOCK_SANDBOX_LOCK.lock()?;
     let ledger_client = new_wallclock_sandbox().await?;
     let known_packages = ledger_client.package_management_service().list_known_packages().await?;
-    assert!(known_packages.len() > 0);
+    assert!(!known_packages.is_empty());
     Ok(())
 }
 
