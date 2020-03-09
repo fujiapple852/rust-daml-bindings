@@ -39,7 +39,7 @@ impl PartialOrd for DamlLedgerOffset {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         match (self, other) {
             (DamlLedgerOffset::Absolute(a1), DamlLedgerOffset::Absolute(a2)) => Some(a1.cmp(a2)),
-            (DamlLedgerOffset::Boundary(b1), DamlLedgerOffset::Boundary(b2)) => Some(b1.cmp(&b2)),
+            (DamlLedgerOffset::Boundary(b1), DamlLedgerOffset::Boundary(b2)) => Some(b1.cmp(b2)),
             _ => None,
         }
     }

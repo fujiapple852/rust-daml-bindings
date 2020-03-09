@@ -1,7 +1,10 @@
 use daml_lf::protobuf_autogen::daml_lf_1::Module;
 
-use crate::convert::archive::wrapper::payload::*;
+use crate::convert::archive::wrapper::payload::util::Required;
+use crate::convert::archive::wrapper::payload::{DamlDataPayload, DamlTemplatePayload, InternableDottedName};
+use crate::convert::error::{DamlCodeGenError, DamlCodeGenResult};
 use std::collections::HashMap;
+use std::convert::TryFrom;
 
 #[derive(Debug)]
 pub struct DamlModulePayload<'a> {
@@ -16,22 +19,30 @@ impl<'a> PartialEq for DamlModulePayload<'a> {
     }
 }
 
-impl<'a> From<&'a Module> for DamlModulePayload<'a> {
-    fn from(module: &'a Module) -> Self {
-        let path = InternableDottedName::from(module.name.as_ref().expect("Module.name"));
-        let templates = module.templates.iter().map(DamlTemplatePayload::from).map(|t| (t.name, t)).collect();
-        let data_types = module.data_types.iter().map(DamlDataPayload::from).collect::<Vec<_>>();
-        Self {
+impl<'a> TryFrom<&'a Module> for DamlModulePayload<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(module: &'a Module) -> DamlCodeGenResult<Self> {
+        let path = InternableDottedName::from(module.name.as_ref().req()?);
+        let templates = module
+            .templates
+            .iter()
+            .flat_map(DamlTemplatePayload::try_from)
+            .map(|t| Ok((t.name, t)))
+            .collect::<DamlCodeGenResult<_>>()?;
+        let data_types =
+            module.data_types.iter().map(DamlDataPayload::try_from).collect::<DamlCodeGenResult<Vec<_>>>()?;
+        Ok(Self {
             data_types,
             templates,
             path,
-        }
+        })
     }
 }
 
 impl<'a> DamlModulePayload<'a> {
     /// Get a named template from this module.
-    pub fn template(&self, name: &InternableDottedName<'a>) -> Option<&DamlTemplatePayload> {
+    pub fn template(&self, name: &InternableDottedName<'a>) -> Option<&DamlTemplatePayload<'_>> {
         self.templates.get(name)
     }
 }

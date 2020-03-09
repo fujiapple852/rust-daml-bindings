@@ -10,13 +10,13 @@ use crate::renderer::data_renderer::full::quote_contract_struct::{
 use crate::renderer::data_renderer::full::{quote_choice, quote_daml_record_and_impl};
 use crate::renderer::{quote_escaped_ident, to_module_path};
 
-pub fn quote_daml_template(daml_template: &DamlTemplate) -> TokenStream {
-    let struct_and_impl_tokens = quote_daml_record_and_impl(&daml_template.name, &daml_template.fields, &[]);
+pub fn quote_daml_template(daml_template: &DamlTemplate<'_>) -> TokenStream {
+    let struct_and_impl_tokens = quote_daml_record_and_impl(daml_template.name, &daml_template.fields, &[]);
     let package_id_method_tokens =
-        quote_package_id_method(&daml_template.name, &daml_template.package_id, &daml_template.module_path);
-    let make_create_method_tokens = quote_make_create_command_method(&daml_template.name);
-    let contract_struct_and_impl_tokens = quote_contract_struct_and_impl(&daml_template.name);
-    let choices_impl_tokens = quote_choice(&daml_template.name, &daml_template.choices);
+        quote_package_id_method(daml_template.name, daml_template.package_id, &daml_template.module_path);
+    let make_create_method_tokens = quote_make_create_command_method(daml_template.name);
+    let contract_struct_and_impl_tokens = quote_contract_struct_and_impl(daml_template.name);
+    let choices_impl_tokens = quote_choice(daml_template.name, &daml_template.choices);
     quote!(
         #struct_and_impl_tokens
         #package_id_method_tokens

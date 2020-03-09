@@ -39,13 +39,20 @@ impl<'a> DamlType<'a> {
             DamlType::List(_) => "DamlList",
             DamlType::TextMap(_) => "DamlTextMap",
             DamlType::Optional(_) => "DamlOptional",
-            _ => panic!(format!("DamlType::name called for unsupported type {:?}", self)),
+            DamlType::Update => "None (Update)",
+            DamlType::Scenario => "None (Scenario)",
+            DamlType::DataRef(_) => "None (DataRef)",
+            DamlType::BoxedDataRef(_) => "None (BoxedDataRef)",
+            DamlType::Var(_) => "None (Var)",
+            DamlType::Arrow => "None (Arrow)",
+            DamlType::Any => "None (Any)",
+            DamlType::TypeRep => "None (TypeRep)",
         }
     }
 
     /// Returns true if this [`DamlType`] contain a reference to `type_var`, false otherwise.
     pub fn contains_type_var(&self, type_var: &str) -> bool {
-        fn data_ref_contains_type_var(data_ref: &DamlDataRef, type_var: &str) -> bool {
+        fn data_ref_contains_type_var(data_ref: &DamlDataRef<'_>, type_var: &str) -> bool {
             match data_ref {
                 DamlDataRef::Local(local) => local.type_arguments.iter().any(|f| f.contains_type_var(type_var)),
                 DamlDataRef::NonLocal(non_local) =>

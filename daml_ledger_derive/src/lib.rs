@@ -381,9 +381,9 @@
 //! [DAML Variant]: https://docs.daml.com/daml/reference/data-types.html#sum-types
 //! [DAML Enum]: https://docs.daml.com/daml/reference/data-types.html#sum-types
 //! [DAML primitive type alias]: ../daml_ledger_derive/index.html#mapping-daml-data-types-to-rust
-#![warn(clippy::all, clippy::pedantic)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(clippy::module_name_repetitions, clippy::default_trait_access, clippy::needless_pass_by_value)]
-#![allow(non_snake_case)]
+#![allow(non_snake_case, unused_extern_crates)]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
@@ -700,7 +700,7 @@ pub fn daml_codegen(attr: proc_macro::TokenStream) -> proc_macro::TokenStream {
         Some(name) => panic!(format!("unknown mode: {}, expected Intermediate or Full", name)),
         _ => RenderMethod::Full,
     };
-    let expanded = generate_tokens(&archive, filters.as_slice(), &render_method);
+    let expanded = generate_tokens(&archive, filters.as_slice(), &render_method).expect("failed to generate DAML code");
     proc_macro::TokenStream::from(expanded)
 }
 

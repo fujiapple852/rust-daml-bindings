@@ -5,12 +5,12 @@ use proc_macro2::TokenStream;
 
 use quote::quote;
 
-use crate::element::*;
+use crate::element::{DamlAbsoluteDataRef, DamlDataRef, DamlNonLocalDataRef, DamlType};
 use crate::renderer::renderer_utils::quote_escaped_ident;
 use crate::renderer::{normalize_generic_param, quote_ident};
 
 #[allow(clippy::match_same_arms)]
-pub fn quote_type(daml_type: &DamlType) -> TokenStream {
+pub fn quote_type(daml_type: &DamlType<'_>) -> TokenStream {
     match daml_type {
         DamlType::List(nested) | DamlType::TextMap(nested) | DamlType::Optional(nested) => {
             let prim_name_tokens = quote_escaped_ident(daml_type.name());
@@ -34,7 +34,7 @@ pub fn quote_type(daml_type: &DamlType) -> TokenStream {
     }
 }
 
-pub fn quote_data_ref(data_ref: &DamlDataRef) -> TokenStream {
+pub fn quote_data_ref(data_ref: &DamlDataRef<'_>) -> TokenStream {
     match data_ref {
         DamlDataRef::Local(local_data_ref) => {
             let target_type_tokens = quote_escaped_ident(&local_data_ref.data_name);
@@ -56,7 +56,7 @@ pub fn quote_data_ref(data_ref: &DamlDataRef) -> TokenStream {
     }
 }
 
-fn quote_generic_type_arguments(type_arguments: &[DamlType]) -> TokenStream {
+fn quote_generic_type_arguments(type_arguments: &[DamlType<'_>]) -> TokenStream {
     if type_arguments.is_empty() {
         quote!()
     } else {
@@ -65,7 +65,7 @@ fn quote_generic_type_arguments(type_arguments: &[DamlType]) -> TokenStream {
     }
 }
 
-fn quote_absolute_data_ref(abs_data_ref: &DamlAbsoluteDataRef) -> TokenStream {
+fn quote_absolute_data_ref(abs_data_ref: &DamlAbsoluteDataRef<'_>) -> TokenStream {
     let path: Vec<&str> = if abs_data_ref.package_name.is_empty() {
         abs_data_ref.module_path.iter().map(AsRef::as_ref).collect()
     } else {
@@ -77,7 +77,7 @@ fn quote_absolute_data_ref(abs_data_ref: &DamlAbsoluteDataRef) -> TokenStream {
     )
 }
 
-fn quote_non_local_path(data_ref: &DamlNonLocalDataRef) -> TokenStream {
+fn quote_non_local_path(data_ref: &DamlNonLocalDataRef<'_>) -> TokenStream {
     let current_full_path: Vec<_> = iter::once(data_ref.source_package_name)
         .chain(data_ref.source_module_path.iter().map(AsRef::as_ref))
         .map(SnakeCase::to_snake_case)

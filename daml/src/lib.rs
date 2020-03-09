@@ -21,7 +21,7 @@
 //! [daml_ledger_macro]: ../daml_ledger_macro/index.html
 //! [daml_lf]: ../daml_lf/index.html
 
-#![warn(clippy::all, clippy::pedantic)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(clippy::module_name_repetitions)]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]

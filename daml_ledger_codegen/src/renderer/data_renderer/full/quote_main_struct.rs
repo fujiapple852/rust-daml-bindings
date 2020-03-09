@@ -13,12 +13,12 @@ use crate::renderer::{
 };
 
 /// Generate the `Foo` struct and methods.
-pub fn quote_daml_record(daml_record: &DamlRecord) -> TokenStream {
+pub fn quote_daml_record(daml_record: &DamlRecord<'_>) -> TokenStream {
     quote_daml_record_and_impl(daml_record.name, &daml_record.fields, &daml_record.type_arguments)
 }
 
 /// Generate the `Foo` struct and methods.
-pub fn quote_daml_record_and_impl(name: &str, fields: &[DamlField], params: &[DamlTypeVar]) -> TokenStream {
+pub fn quote_daml_record_and_impl(name: &str, fields: &[DamlField<'_>], params: &[DamlTypeVar<'_>]) -> TokenStream {
     let supported_fields: Vec<_> = fields.iter().filter(|&field| is_supported_type(&field.ty)).collect();
     let struct_tokens = quote_struct(name, &supported_fields, params);
     let new_method_tokens = quote_new_method(name, &supported_fields, params);
@@ -33,7 +33,7 @@ pub fn quote_daml_record_and_impl(name: &str, fields: &[DamlField], params: &[Da
 }
 
 /// Generate `struct Foo {...}` struct.
-fn quote_struct(struct_name: &str, struct_fields: &[&DamlField], params: &[DamlTypeVar]) -> TokenStream {
+fn quote_struct(struct_name: &str, struct_fields: &[&DamlField<'_>], params: &[DamlTypeVar<'_>]) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let generic_param_tokens = quote_generic_param_list(params);
     let body_tokens = quote_struct_body(struct_fields);
@@ -50,7 +50,7 @@ fn quote_struct(struct_name: &str, struct_fields: &[&DamlField], params: &[DamlT
 }
 
 /// Generate the `Foo::new(...)` method.
-fn quote_new_method(struct_name: &str, struct_fields: &[&DamlField], params: &[DamlTypeVar]) -> TokenStream {
+fn quote_new_method(struct_name: &str, struct_fields: &[&DamlField<'_>], params: &[DamlTypeVar<'_>]) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let method_arguments_tokens = quote_method_arguments(struct_fields);
     let method_body_tokens = quote_new_method_init(struct_fields);
@@ -69,7 +69,11 @@ fn quote_new_method(struct_name: &str, struct_fields: &[&DamlField], params: &[D
 }
 
 /// Generate the `DamlSerializeFrom<Foo> for DamlValue` method.
-fn quote_serialize_trait_impl(struct_name: &str, struct_fields: &[&DamlField], params: &[DamlTypeVar]) -> TokenStream {
+fn quote_serialize_trait_impl(
+    struct_name: &str,
+    struct_fields: &[&DamlField<'_>],
+    params: &[DamlTypeVar<'_>],
+) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let generic_param_tokens = quote_generic_param_list(params);
     let generic_trail_bounds_tokens = quote_serialize_generic_trait_bounds(params);
@@ -86,8 +90,8 @@ fn quote_serialize_trait_impl(struct_name: &str, struct_fields: &[&DamlField], p
 /// Generate the `DamlDeserializeFrom for Foo` method.
 fn quote_deserialize_trait_impl(
     struct_name: &str,
-    struct_fields: &[&DamlField],
-    params: &[DamlTypeVar],
+    struct_fields: &[&DamlField<'_>],
+    params: &[DamlTypeVar<'_>],
 ) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let generic_param_tokens = quote_generic_param_list(params);
@@ -102,7 +106,7 @@ fn quote_deserialize_trait_impl(
     )
 }
 
-fn quote_struct_body(struct_fields: &[&DamlField]) -> TokenStream {
+fn quote_struct_body(struct_fields: &[&DamlField<'_>]) -> TokenStream {
     let all: Vec<_> = struct_fields
         .iter()
         .map(
@@ -119,7 +123,7 @@ fn quote_struct_body(struct_fields: &[&DamlField]) -> TokenStream {
     quote!( #( #all ,)* )
 }
 
-fn quote_new_method_init(struct_fields: &[&DamlField]) -> TokenStream {
+fn quote_new_method_init(struct_fields: &[&DamlField<'_>]) -> TokenStream {
     let all: Vec<_> = struct_fields
         .iter()
         .map(
@@ -135,7 +139,7 @@ fn quote_new_method_init(struct_fields: &[&DamlField]) -> TokenStream {
     quote!( #( #all ,)* )
 }
 
-fn quote_serialize_impl_body(struct_fields: &[&DamlField]) -> TokenStream {
+fn quote_serialize_impl_body(struct_fields: &[&DamlField<'_>]) -> TokenStream {
     if struct_fields.is_empty() {
         quote!(DamlValue::Record(DamlRecord::new(vec![], None::<DamlIdentifier>)))
     } else {
@@ -152,7 +156,7 @@ fn quote_serialize_impl_body(struct_fields: &[&DamlField]) -> TokenStream {
     }
 }
 
-fn quote_deserialize_trait_impl_body(struct_fields: &[&DamlField]) -> TokenStream {
+fn quote_deserialize_trait_impl_body(struct_fields: &[&DamlField<'_>]) -> TokenStream {
     if struct_fields.is_empty() {
         quote!(Ok(Self::new()))
     } else {
@@ -166,7 +170,7 @@ fn quote_deserialize_trait_impl_body(struct_fields: &[&DamlField]) -> TokenStrea
     }
 }
 
-fn quote_declare_field_serialize_trait_impl(field_name: &str, ty: &DamlType) -> TokenStream {
+fn quote_declare_field_serialize_trait_impl(field_name: &str, ty: &DamlType<'_>) -> TokenStream {
     let field_name_tokens = quote_escaped_ident(field_name);
     let field_source_tokens = quote!(value.#field_name_tokens);
     let field_type_tokens = quote_type(ty);
@@ -175,7 +179,7 @@ fn quote_declare_field_serialize_trait_impl(field_name: &str, ty: &DamlType) -> 
     )
 }
 
-fn quote_deserialize_trait_field(field: &DamlField) -> TokenStream {
+fn quote_deserialize_trait_field(field: &DamlField<'_>) -> TokenStream {
     let field_name_string = field.name;
     let field_type_tokens = quote_type(&field.ty);
     quote!(
@@ -183,7 +187,7 @@ fn quote_deserialize_trait_field(field: &DamlField) -> TokenStream {
     )
 }
 
-fn quote_decl_unused_phantom_params(params: &[DamlTypeVar], struct_fields: &[&DamlField]) -> TokenStream {
+fn quote_decl_unused_phantom_params(params: &[DamlTypeVar<'_>], struct_fields: &[&DamlField<'_>]) -> TokenStream {
     quote_unused_phantom_params(params, struct_fields, |param| {
         let name_tokens = quote_escaped_ident(make_ignored_ident(param.var));
         let param_tokens = quote_ident(normalize_generic_param(param.var).to_uppercase());
@@ -191,7 +195,7 @@ fn quote_decl_unused_phantom_params(params: &[DamlTypeVar], struct_fields: &[&Da
     })
 }
 
-fn quote_init_unused_phantom_params(params: &[DamlTypeVar], struct_fields: &[&DamlField]) -> TokenStream {
+fn quote_init_unused_phantom_params(params: &[DamlTypeVar<'_>], struct_fields: &[&DamlField<'_>]) -> TokenStream {
     quote_unused_phantom_params(params, struct_fields, |param| {
         let name_tokens = quote_escaped_ident(make_ignored_ident(param.var));
         quote!( #name_tokens: PhantomData )
@@ -199,9 +203,9 @@ fn quote_init_unused_phantom_params(params: &[DamlTypeVar], struct_fields: &[&Da
 }
 
 fn quote_unused_phantom_params(
-    params: &[DamlTypeVar],
-    struct_fields: &[&DamlField],
-    type_var_quoter: impl Fn(&DamlTypeVar) -> TokenStream,
+    params: &[DamlTypeVar<'_>],
+    struct_fields: &[&DamlField<'_>],
+    type_var_quoter: impl Fn(&DamlTypeVar<'_>) -> TokenStream,
 ) -> TokenStream {
     let all_params: Vec<_> = params
         .iter()

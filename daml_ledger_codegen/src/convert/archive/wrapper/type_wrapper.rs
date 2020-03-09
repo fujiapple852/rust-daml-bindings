@@ -1,5 +1,9 @@
-use crate::convert::archive::wrapper::payload::*;
-use crate::convert::archive::wrapper::*;
+use crate::convert::archive::wrapper::payload::{
+    DamlArchivePayload, DamlDataPayload, DamlDataRefPayload, DamlModulePayload, DamlPackagePayload, DamlTypePayload,
+    DamlVarPayload,
+};
+use crate::convert::archive::wrapper::DamlDataWrapper;
+use crate::convert::error::{DamlCodeGenError, DamlCodeGenResult};
 
 #[derive(Debug, Clone, Copy)]
 pub struct DamlTypeWrapper<'a> {
@@ -12,11 +16,11 @@ pub struct DamlTypeWrapper<'a> {
 
 impl<'a> DamlTypeWrapper<'a> {
     pub fn wrap(
-        parent_archive: &'a DamlArchivePayload,
-        parent_package: &'a DamlPackagePayload,
-        parent_module: &'a DamlModulePayload,
-        parent_data: &'a DamlDataPayload,
-        payload: &'a DamlTypePayload,
+        parent_archive: &'a DamlArchivePayload<'_>,
+        parent_package: &'a DamlPackagePayload<'_>,
+        parent_module: &'a DamlModulePayload<'_>,
+        parent_data: &'a DamlDataPayload<'_>,
+        payload: &'a DamlTypePayload<'_>,
     ) -> Self {
         Self {
             parent_archive,
@@ -27,49 +31,60 @@ impl<'a> DamlTypeWrapper<'a> {
         }
     }
 
-    pub fn nested_type(self) -> DamlTypeWrapper<'a> {
+    pub fn nested_type(self) -> DamlCodeGenResult<DamlTypeWrapper<'a>> {
         match self.payload {
             DamlTypePayload::List(nested) | DamlTypePayload::TextMap(nested) | DamlTypePayload::Optional(nested) =>
-                self.ty(nested),
-            _ => panic!("expected List, TextMap, Optional or ContractId"),
+                Ok(self.ty(nested)),
+            _ => Err(DamlCodeGenError::UnexpectedType(
+                "List, TextMap or Optional".to_owned(),
+                self.payload.name_for_error().to_owned(),
+            )),
         }
     }
 
-    pub fn data_ref(self) -> DamlDataRefWrapper<'a> {
+    pub fn data_ref(self) -> DamlCodeGenResult<DamlDataRefWrapper<'a>> {
         match self.payload {
-            DamlTypePayload::DataRef(data_ref) => DamlDataRefWrapper::new(
+            DamlTypePayload::DataRef(data_ref) => Ok(DamlDataRefWrapper::new(
                 self.parent_archive,
                 self.parent_package,
                 self.parent_module,
                 self.parent_data,
                 data_ref,
-            ),
-            _ => panic!("expected DataRef"),
+            )),
+            _ => Err(DamlCodeGenError::UnexpectedType("DataRef".to_owned(), self.payload.name_for_error().to_owned())),
         }
     }
 
-    pub fn contract_id_data_ref(self) -> DamlDataRefWrapper<'a> {
+    pub fn contract_id_data_ref(self) -> DamlCodeGenResult<DamlDataRefWrapper<'a>> {
         match self.payload {
-            DamlTypePayload::ContractId(Some(data_ref)) => DamlDataRefWrapper::new(
+            DamlTypePayload::ContractId(Some(data_ref)) => Ok(DamlDataRefWrapper::new(
                 self.parent_archive,
                 self.parent_package,
                 self.parent_module,
                 self.parent_data,
                 data_ref,
-            ),
-            _ => panic!("expected ContractId"),
+            )),
+            _ => Err(DamlCodeGenError::UnexpectedType(
+                "ContractId".to_string(),
+                self.payload.name_for_error().to_owned(),
+            )),
         }
     }
 
-    pub fn var(self) -> DamlVarWrapper<'a> {
+    pub fn var(self) -> DamlCodeGenResult<DamlVarWrapper<'a>> {
         match self.payload {
-            DamlTypePayload::Var(var) =>
-                DamlVarWrapper::new(self.parent_archive, self.parent_package, self.parent_module, self.parent_data, var),
-            _ => panic!("expected Var"),
+            DamlTypePayload::Var(var) => Ok(DamlVarWrapper::new(
+                self.parent_archive,
+                self.parent_package,
+                self.parent_module,
+                self.parent_data,
+                var,
+            )),
+            _ => Err(DamlCodeGenError::UnexpectedType("Var".to_owned(), self.payload.name_for_error().to_owned())),
         }
     }
 
-    fn ty(self, ty: &'a DamlTypePayload) -> DamlTypeWrapper<'a> {
+    fn ty(self, ty: &'a DamlTypePayload<'_>) -> DamlTypeWrapper<'a> {
         Self {
             payload: ty,
             ..self
@@ -92,11 +107,11 @@ pub struct DamlDataRefWrapper<'a> {
 
 impl<'a> DamlDataRefWrapper<'a> {
     pub fn new(
-        parent_archive: &'a DamlArchivePayload,
-        parent_package: &'a DamlPackagePayload,
-        parent_module: &'a DamlModulePayload,
-        parent_data: &'a DamlDataPayload,
-        payload: &'a DamlDataRefPayload,
+        parent_archive: &'a DamlArchivePayload<'_>,
+        parent_package: &'a DamlPackagePayload<'_>,
+        parent_module: &'a DamlModulePayload<'_>,
+        parent_data: &'a DamlDataPayload<'_>,
+        payload: &'a DamlDataRefPayload<'_>,
     ) -> Self {
         Self {
             parent_archive,
@@ -113,24 +128,30 @@ impl<'a> DamlDataRefWrapper<'a> {
         })
     }
 
-    pub fn get_data(self) -> DamlDataWrapper<'a> {
+    pub fn get_data(self) -> DamlCodeGenResult<DamlDataWrapper<'a>> {
         let source_resolver = self.parent_package;
-        let target_package_id =
-            self.payload.package_ref.resolve(source_resolver).expect("lookup_package_id_by_ref failed");
-        let target_package = self
+        let target_package_id = self.payload.package_ref.resolve(source_resolver)?;
+        let target_package: &DamlPackagePayload<'a> = self
             .parent_archive
             .package_by_id(target_package_id)
-            .unwrap_or_else(|| panic!("package_by_id lookup failed for {}", target_package_id));
+            .ok_or_else(|| DamlCodeGenError::UnknownPackage(target_package_id.to_owned()))?;
         let target_module = target_package
-            .module_by_name(&self.payload.module_path.resolve(source_resolver).join("."))
-            .unwrap_or_else(|| panic!("module_by_name lookup failed for {}", &self.payload.module_path.to_string()));
-        let source_data_type_name = self.payload.data_name.resolve(source_resolver);
-        let target_data_type = target_module
-            .data_types
-            .iter()
-            .find(|dt| dt.name().resolve(target_package) == source_data_type_name)
-            .unwrap_or_else(|| panic!("data_type lookup failed for {}", &self.payload.data_name.to_string()));
-        DamlDataWrapper::wrap(self.parent_archive, target_package, target_module, target_data_type)
+            .module_by_name(&self.payload.module_path.resolve(source_resolver)?.join("."))
+            .ok_or_else(|| DamlCodeGenError::UnknownModule(self.payload.module_path.to_string()))?;
+        let source_data_type_name = self.payload.data_name.resolve(source_resolver)?;
+        let data_types_iter =
+            target_module.data_types.iter().map(|dt| dt.name().resolve(target_package).map(|name| (name, dt)));
+        let target_data_type = itertools::process_results(data_types_iter, |mut iter| {
+            iter.find_map(|(name, dt)| {
+                if name == source_data_type_name {
+                    Some(dt)
+                } else {
+                    None
+                }
+            })
+        })?
+        .ok_or_else(|| DamlCodeGenError::UnknownData(source_data_type_name.join(".")))?;
+        Ok(DamlDataWrapper::wrap(self.parent_archive, target_package, target_module, target_data_type))
     }
 }
 
@@ -145,11 +166,11 @@ pub struct DamlVarWrapper<'a> {
 
 impl<'a> DamlVarWrapper<'a> {
     pub fn new(
-        parent_archive: &'a DamlArchivePayload,
-        parent_package: &'a DamlPackagePayload,
-        parent_module: &'a DamlModulePayload,
-        parent_data: &'a DamlDataPayload,
-        payload: &'a DamlVarPayload,
+        parent_archive: &'a DamlArchivePayload<'_>,
+        parent_package: &'a DamlPackagePayload<'_>,
+        parent_module: &'a DamlModulePayload<'_>,
+        parent_data: &'a DamlDataPayload<'_>,
+        payload: &'a DamlVarPayload<'_>,
     ) -> Self {
         Self {
             parent_archive,

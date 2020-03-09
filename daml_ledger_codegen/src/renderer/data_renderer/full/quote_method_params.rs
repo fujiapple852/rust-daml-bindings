@@ -5,7 +5,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 
 /// Quote the arguments to a method.
-pub fn quote_method_arguments(fields: &[&DamlField]) -> TokenStream {
+pub fn quote_method_arguments(fields: &[&DamlField<'_>]) -> TokenStream {
     let all_fields: Vec<_> = fields
         .iter()
         .map(

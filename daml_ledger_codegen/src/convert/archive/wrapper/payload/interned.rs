@@ -1,4 +1,9 @@
-use daml_lf::protobuf_autogen::daml_lf_1::*;
+use crate::convert::archive::wrapper::payload::util::Required;
+use crate::convert::error::{DamlCodeGenError, DamlCodeGenResult};
+use daml_lf::protobuf_autogen::daml_lf_1::{
+    def_data_type, def_template, field_with_type, module, module_ref, r#type, template_choice, type_con_name,
+    type_var_with_kind,
+};
 use daml_lf::{LanguageFeatureVersion, LanguageVersion};
 use std::fmt;
 use syn::export::fmt::Error;
@@ -12,23 +17,23 @@ pub trait PackageInternedResolver {
     fn interned_dotted_names(&self) -> &[&[i32]];
 
     /// Resolve an interned string by index.
-    fn resolve_string(&self, index: i32) -> &str {
-        self.interned_strings().get(index as usize).map(AsRef::as_ref).expect("InternableString")
+    fn resolve_string(&self, index: i32) -> DamlCodeGenResult<&str> {
+        Ok(self.interned_strings().get(index as usize).map(AsRef::as_ref).req()?)
     }
 
     /// Resolve multiple interned strings by indices.
-    fn resolve_strings(&self, indices: &[i32]) -> Vec<&str> {
-        indices.iter().map(|&i| self.resolve_string(i)).collect()
+    fn resolve_strings(&self, indices: &[i32]) -> DamlCodeGenResult<Vec<&str>> {
+        Ok(indices.iter().map(|&i| self.resolve_string(i)).collect::<DamlCodeGenResult<_>>()?)
     }
 
     /// Partially resolve an interned dotted name by index to interned string indices.
-    fn resolve_dotted_to_indices(&self, index: i32) -> &[i32] {
-        self.interned_dotted_names().get(index as usize).expect("InternableDottedName::Interned")
+    fn resolve_dotted_to_indices(&self, index: i32) -> DamlCodeGenResult<&[i32]> {
+        Ok(self.interned_dotted_names().get(index as usize).req()?)
     }
 
     /// Fully resolve an interned dotted name by index.
-    fn resolve_dotted(&self, index: i32) -> Vec<&str> {
-        self.resolve_strings(self.resolve_dotted_to_indices(index))
+    fn resolve_dotted(&self, index: i32) -> DamlCodeGenResult<Vec<&str>> {
+        Ok(self.resolve_strings(self.resolve_dotted_to_indices(index)?)?)
     }
 }
 
@@ -48,17 +53,17 @@ impl<'a> fmt::Display for InternableString<'a> {
 }
 
 impl<'a> InternableString<'a> {
-    pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> &'a str {
-        match *self {
+    pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> DamlCodeGenResult<&'a str> {
+        Ok(match *self {
             InternableString::Literal(s) => {
-                assert_does_not_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_STRINGS);
+                check_does_not_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_STRINGS)?;
                 s
             },
             InternableString::Interned(i) => {
-                assert_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_STRINGS);
-                resolver.resolve_string(i)
+                check_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_STRINGS)?;
+                resolver.resolve_string(i)?
             },
-        }
+        })
     }
 }
 
@@ -69,58 +74,66 @@ pub enum InternableDottedName<'a> {
 }
 
 impl<'a> InternableDottedName<'a> {
-    pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> Vec<&'a str> {
-        match *self {
+    pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> DamlCodeGenResult<Vec<&'a str>> {
+        Ok(match *self {
             InternableDottedName::Literal(dn) => {
-                assert_does_not_support_feature(
+                check_does_not_support_feature(
                     resolver.language_version(),
                     &LanguageFeatureVersion::INTERNED_DOTTED_NAMES,
-                );
+                )?;
                 dn.iter().map(AsRef::as_ref).collect()
             },
             InternableDottedName::Interned(i) => {
-                assert_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_DOTTED_NAMES);
-                resolver.resolve_dotted(i)
+                check_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_DOTTED_NAMES)?;
+                resolver.resolve_dotted(i)?
             },
-        }
+        })
     }
 
-    pub fn resolve_last(&self, resolver: &'a impl PackageInternedResolver) -> &'a str {
-        match *self {
+    pub fn resolve_last(&self, resolver: &'a impl PackageInternedResolver) -> DamlCodeGenResult<&'a str> {
+        Ok(match *self {
             InternableDottedName::Literal(dn) => {
-                assert_does_not_support_feature(
+                check_does_not_support_feature(
                     resolver.language_version(),
                     &LanguageFeatureVersion::INTERNED_DOTTED_NAMES,
-                );
-                dn.last().map(String::as_str).expect("InternableDottedName::Literal")
+                )?;
+                dn.last().map(String::as_str).req()?
             },
             InternableDottedName::Interned(i) => {
-                assert_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_DOTTED_NAMES);
-                resolver
-                    .resolve_dotted_to_indices(i)
-                    .last()
-                    .map(|&j| resolver.resolve_string(j))
-                    .expect("InternableDottedName::Interned")
+                check_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_DOTTED_NAMES)?;
+                resolver.resolve_dotted_to_indices(i)?.last().req().and_then(|&j| resolver.resolve_string(j))?
             },
-        }
+        })
     }
 }
 
-fn assert_support_feature(current_version: LanguageVersion, feature_version: &LanguageFeatureVersion) {
-    if !current_version.supports_feature(feature_version) {
-        panic!(
-            "DAML LF version {} does not support feature {} (requires version {})",
-            current_version, feature_version.name, feature_version.min_version
-        );
-    }
-}
-
-fn assert_does_not_support_feature(current_version: LanguageVersion, feature_version: &LanguageFeatureVersion) {
+fn check_support_feature(
+    current_version: LanguageVersion,
+    feature_version: &LanguageFeatureVersion,
+) -> DamlCodeGenResult<()> {
     if current_version.supports_feature(feature_version) {
-        panic!(
-            "DAML LF version {} supports feature {} but was not used (supported as of version {})",
-            current_version, feature_version.name, feature_version.min_version
-        );
+        Ok(())
+    } else {
+        Err(DamlCodeGenError::UnsupportedFeatureUsed(
+            current_version.to_string(),
+            feature_version.name.to_owned(),
+            feature_version.min_version.to_string(),
+        ))
+    }
+}
+
+fn check_does_not_support_feature(
+    current_version: LanguageVersion,
+    feature_version: &LanguageFeatureVersion,
+) -> DamlCodeGenResult<()> {
+    if current_version.supports_feature(feature_version) {
+        Err(DamlCodeGenError::SupportedFeatureUnused(
+            current_version.to_string(),
+            feature_version.name.to_owned(),
+            feature_version.min_version.to_string(),
+        ))
+    } else {
+        Ok(())
     }
 }
 

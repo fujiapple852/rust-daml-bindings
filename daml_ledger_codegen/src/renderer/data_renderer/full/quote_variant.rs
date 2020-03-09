@@ -11,13 +11,13 @@ use crate::renderer::type_renderer::quote_type;
 use crate::renderer::{is_supported_type, normalize_generic_param, quote_escaped_ident, quote_ident};
 
 /// Generate the variant `enum` and the `DamlDeserializeFrom` and `DamlDeserializeFrom` impls.
-pub fn quote_daml_variant(variant: &DamlVariant) -> TokenStream {
+pub fn quote_daml_variant(variant: &DamlVariant<'_>) -> TokenStream {
     let supported_fields: Vec<_> = variant.fields.iter().filter(|&field| is_supported_type(&field.ty)).collect();
-    let variant_tokens = quote_variant(&variant.name, &supported_fields, &variant.type_arguments);
+    let variant_tokens = quote_variant(variant.name, &supported_fields, &variant.type_arguments);
     let serialize_trait_impl_tokens =
-        quote_serialize_trait_impl(&variant.name, &supported_fields, &variant.type_arguments);
+        quote_serialize_trait_impl(variant.name, &supported_fields, &variant.type_arguments);
     let deserialize_trait_impl_tokens =
-        quote_deserialize_trait_impl(&variant.name, &supported_fields, &variant.type_arguments);
+        quote_deserialize_trait_impl(variant.name, &supported_fields, &variant.type_arguments);
     quote!(
         #variant_tokens
         #serialize_trait_impl_tokens
@@ -26,10 +26,10 @@ pub fn quote_daml_variant(variant: &DamlVariant) -> TokenStream {
 }
 
 /// Generate `enum Foo {...}` variant.
-fn quote_variant(variant_name: &str, variants: &[&DamlField], params: &[DamlTypeVar]) -> TokenStream {
+fn quote_variant(variant_name: &str, variants: &[&DamlField<'_>], params: &[DamlTypeVar<'_>]) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(variant_name);
     let generic_param_tokens = quote_generic_param_list(params);
-    let body_tokens = quote_variant_body(&variants);
+    let body_tokens = quote_variant_body(variants);
     let phantom_tokens = quote_unused_phantom_params(params, variants);
     quote!(
         #[derive(Eq, PartialEq, Clone, Debug)]
@@ -43,7 +43,7 @@ fn quote_variant(variant_name: &str, variants: &[&DamlField], params: &[DamlType
 }
 
 /// Generate the variant body.
-fn quote_variant_body(variants: &[&DamlField]) -> TokenStream {
+fn quote_variant_body(variants: &[&DamlField<'_>]) -> TokenStream {
     let all: Vec<_> = variants
         .iter()
         .map(
@@ -65,7 +65,11 @@ fn quote_variant_body(variants: &[&DamlField]) -> TokenStream {
 }
 
 /// Generate the `DamlSerializeFrom<Foo> for DamlValue` method.
-fn quote_serialize_trait_impl(variant_name: &str, variants: &[&DamlField], params: &[DamlTypeVar]) -> TokenStream {
+fn quote_serialize_trait_impl(
+    variant_name: &str,
+    variants: &[&DamlField<'_>],
+    params: &[DamlTypeVar<'_>],
+) -> TokenStream {
     let variant_name_tokens = quote_escaped_ident(variant_name);
     let generic_param_tokens = quote_generic_param_list(params);
     let generic_trail_bounds_tokens = quote_serialize_generic_trait_bounds(params);
@@ -84,7 +88,11 @@ fn quote_serialize_trait_impl(variant_name: &str, variants: &[&DamlField], param
 }
 
 /// Generate the `DamlDeserializeFrom for Foo` method.
-fn quote_deserialize_trait_impl(variant_name: &str, match_arms: &[&DamlField], params: &[DamlTypeVar]) -> TokenStream {
+fn quote_deserialize_trait_impl(
+    variant_name: &str,
+    match_arms: &[&DamlField<'_>],
+    params: &[DamlTypeVar<'_>],
+) -> TokenStream {
     let variant_name_tokens = quote_escaped_ident(variant_name);
     let generic_param_tokens = quote_generic_param_list(params);
     let generic_trail_bounds_tokens = quote_deserialize_generic_trait_bounds(params);
@@ -115,7 +123,7 @@ fn quote_deserialize_trait_impl(variant_name: &str, match_arms: &[&DamlField], p
 /// Quote a match arm of the `From<Foo> for DamlValue` `impl` block.
 ///
 /// `VariantName::Variant(value) => {...}`
-fn quote_from_trait_match_arm(variant_name: &str, variant: &DamlField) -> TokenStream {
+fn quote_from_trait_match_arm(variant_name: &str, variant: &DamlField<'_>) -> TokenStream {
     let variant_name_tokens = quote_escaped_ident(variant_name);
     let name = quote_escaped_ident(variant.name);
     let variant_string = variant.name;
@@ -137,7 +145,7 @@ fn quote_from_trait_match_arm(variant_name: &str, variant: &DamlField) -> TokenS
 /// Quote a match arm of the `TryFrom<DamlValue> for Foo` `impl` block.
 ///
 /// `"Variant" => Ok(VariantName::Variant(...))`
-fn quote_try_from_trait_match_arm(variant_name: &str, variant: &DamlField) -> TokenStream {
+fn quote_try_from_trait_match_arm(variant_name: &str, variant: &DamlField<'_>) -> TokenStream {
     let variant_name_tokens = quote_escaped_ident(variant_name);
     let variant_constructor_name_tokens = quote_escaped_ident(variant.name);
     let variant_constructor_string = variant.name;
@@ -153,7 +161,7 @@ fn quote_try_from_trait_match_arm(variant_name: &str, variant: &DamlField) -> To
     }
 }
 
-fn quote_unused_phantom_params(params: &[DamlTypeVar], variants: &[&DamlField]) -> TokenStream {
+fn quote_unused_phantom_params(params: &[DamlTypeVar<'_>], variants: &[&DamlField<'_>]) -> TokenStream {
     let unused_params: Vec<_> = params
         .iter()
         .filter_map(|p| {

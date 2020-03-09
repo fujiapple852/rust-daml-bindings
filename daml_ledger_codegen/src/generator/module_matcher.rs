@@ -1,3 +1,4 @@
+use crate::convert::error::{DamlCodeGenError, DamlCodeGenResult};
 use regex::Regex;
 
 pub struct ModuleMatcher {
@@ -5,15 +6,15 @@ pub struct ModuleMatcher {
 }
 
 impl ModuleMatcher {
-    pub fn new(module_filter_regex: &[&str]) -> ModuleMatcher {
+    pub fn new(module_filter_regex: &[&str]) -> DamlCodeGenResult<ModuleMatcher> {
         let matchers = module_filter_regex
             .iter()
             .map(|&re| Regex::new(re))
             .collect::<Result<Vec<_>, _>>()
-            .expect("invalid regex for module_filter_regex");
-        ModuleMatcher {
+            .map_err(DamlCodeGenError::InvalidModuleMatcherRegex)?;
+        Ok(ModuleMatcher {
             matchers,
-        }
+        })
     }
 
     pub fn matches(&self, path: &str) -> bool {

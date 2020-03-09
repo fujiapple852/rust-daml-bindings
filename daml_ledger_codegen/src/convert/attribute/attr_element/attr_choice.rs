@@ -39,7 +39,7 @@ fn get_single_attr_method(impl_item: &ImplItem) -> Option<AttrChoice> {
 fn output_type(return_type: &ReturnType) -> AttrType {
     match return_type {
         ReturnType::Default => AttrType::Unit,
-        ReturnType::r#Type(_, ty) => AttrType::from_type(&ty),
+        ReturnType::r#Type(_, ty) => AttrType::from_type(ty),
     }
 }
 

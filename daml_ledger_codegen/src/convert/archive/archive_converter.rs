@@ -1,28 +1,49 @@
 use crate::convert::archive::wrapper::DamlTypePayload;
 use crate::convert::archive::wrapper::PackageInternedResolver;
-use crate::convert::archive::wrapper::*;
-use crate::element::*;
+use crate::convert::archive::wrapper::{
+    DamlArchiveWrapper, DamlChoiceWrapper, DamlDataBoxChecker, DamlDataRefWrapper, DamlDataWrapper, DamlFieldWrapper,
+    DamlKindPayload, DamlModuleWrapper, DamlPackageWrapper, DamlTypeVarWrapper, DamlTypeWrapper, DamlVarWrapper,
+};
+use crate::convert::error::{DamlCodeGenError, DamlCodeGenResult};
+use crate::element::{
+    DamlArchive, DamlArrow, DamlChoice, DamlData, DamlDataRef, DamlEnum, DamlField, DamlKind, DamlLocalDataRef,
+    DamlModule, DamlNonLocalDataRef, DamlPackage, DamlRecord, DamlTemplate, DamlType, DamlTypeVar, DamlVar,
+    DamlVariant,
+};
 use daml_lf::LanguageFeatureVersion;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 
 /// Convert from `DamlArchiveWrapper` to `DamlArchive`.
-impl<'a> From<&DamlArchiveWrapper<'a>> for DamlArchive<'a> {
-    fn from(archive: &DamlArchiveWrapper<'a>) -> Self {
-        let packages: HashMap<_, _> = archive.packages().map(|v| (v.payload.name, DamlPackage::from(&v))).collect();
-        DamlArchive::new(archive.payload.name, packages)
+impl<'a> TryFrom<&DamlArchiveWrapper<'a>> for DamlArchive<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(archive: &DamlArchiveWrapper<'a>) -> DamlCodeGenResult<Self> {
+        let packages: HashMap<_, _> = archive
+            .packages()
+            .map(|v| Ok((v.payload.name, DamlPackage::try_from(&v)?)))
+            .collect::<DamlCodeGenResult<_>>()?;
+        Ok(DamlArchive::new(archive.payload.name, packages))
     }
 }
 
 /// Convert from `DamlPackageWrapper` to `DamlPackage`.
-impl<'a> From<&DamlPackageWrapper<'a>> for DamlPackage<'a> {
-    fn from(package: &DamlPackageWrapper<'a>) -> Self {
-        fn from_modules<'a, T: Iterator<Item = DamlModuleWrapper<'a>>>(modules: T) -> DamlModule<'a> {
-            modules.fold(DamlModule::new_root(), |mut root, module| {
-                let path = module.payload.path.resolve(module.parent_package);
-                let data_types: Vec<_> = module.data_types().map(|dt| DamlData::from(&dt)).collect();
-                add_module_to_tree(&mut root, data_types, path.clone(), path);
+impl<'a> TryFrom<&DamlPackageWrapper<'a>> for DamlPackage<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(package: &DamlPackageWrapper<'a>) -> DamlCodeGenResult<Self> {
+        fn from_modules<'a, T: Iterator<Item = DamlModuleWrapper<'a>>>(
+            modules: T,
+        ) -> DamlCodeGenResult<DamlModule<'a>> {
+            Ok(modules.fold(Ok(DamlModule::new_root()), |mut root, module| {
+                if let Ok(r) = root.as_mut() {
+                    let path = module.payload.path.resolve(module.parent_package)?;
+                    let data_types: Vec<_> =
+                        module.data_types().map(|dt| DamlData::try_from(&dt)).collect::<DamlCodeGenResult<_>>()?;
+                    add_module_to_tree(r, data_types, path.clone(), path);
+                }
                 root
-            })
+            })?)
         }
 
         fn add_module_to_tree<'a>(
@@ -42,51 +63,60 @@ impl<'a> From<&DamlPackageWrapper<'a>> for DamlPackage<'a> {
                 node.data_types = data_types.into_iter().map(|dt| (dt.name(), dt)).collect();
             }
         }
-        DamlPackage::new(package.payload.name, &package.payload.package_id, from_modules(package.modules()))
+        Ok(DamlPackage::new(package.payload.name, package.payload.package_id, from_modules(package.modules())?))
     }
 }
 
 /// Convert from `DamlDataWrapper` to `DamlData`.
-impl<'a> From<&DamlDataWrapper<'a>> for DamlData<'a> {
-    fn from(data: &DamlDataWrapper<'a>) -> Self {
-        match data {
+impl<'a> TryFrom<&DamlDataWrapper<'a>> for DamlData<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(data: &DamlDataWrapper<'a>) -> DamlCodeGenResult<Self> {
+        Ok(match data {
             DamlDataWrapper::Record(record) => {
-                let name = record.payload.name.resolve_last(record.parent_package);
-                let type_arguments: Vec<_> = record.type_arguments().map(DamlTypeVar::from).collect();
-                let fields: Vec<_> = record.fields().map(|f| DamlField::from(&f)).collect();
+                let name = record.payload.name.resolve_last(record.parent_package)?;
+                let type_arguments: Vec<_> =
+                    record.type_arguments().map(DamlTypeVar::try_from).collect::<DamlCodeGenResult<_>>()?;
+                let fields: Vec<_> =
+                    record.fields().map(|f| DamlField::try_from(&f)).collect::<DamlCodeGenResult<_>>()?;
                 DamlData::Record(DamlRecord::new(name, fields, type_arguments))
             },
             DamlDataWrapper::Template(template) => {
                 let resolver = template.parent_package;
-                let name = template.payload.name.resolve_last(template.parent_package);
-                let module_path = template.parent_module.path.resolve(resolver);
-                let fields: Vec<_> = template.fields().map(|f| DamlField::from(&f)).collect();
-                let choices: Vec<_> = template.choices().map(|c| DamlChoice::from(&c)).collect();
+                let name = template.payload.name.resolve_last(template.parent_package)?;
+                let module_path = template.parent_module.path.resolve(resolver)?;
+                let fields: Vec<_> =
+                    template.fields()?.map(|f| DamlField::try_from(&f)).collect::<DamlCodeGenResult<_>>()?;
+                let choices: Vec<_> =
+                    template.choices().map(|c| DamlChoice::try_from(&c)).collect::<DamlCodeGenResult<_>>()?;
                 DamlData::Template(DamlTemplate::new(
                     name,
-                    &template.parent_package.package_id,
+                    template.parent_package.package_id,
                     module_path,
                     fields,
                     choices,
                 ))
             },
             DamlDataWrapper::Variant(variant) => {
-                let name = variant.payload.name.resolve_last(variant.parent_package);
-                let type_arguments: Vec<_> = variant.type_arguments().map(DamlTypeVar::from).collect();
-                let fields: Vec<_> = variant.fields().map(|f| DamlField::from(&f)).collect();
+                let name = variant.payload.name.resolve_last(variant.parent_package)?;
+                let type_arguments: Vec<_> =
+                    variant.type_arguments().map(DamlTypeVar::try_from).collect::<DamlCodeGenResult<_>>()?;
+                let fields: Vec<_> =
+                    variant.fields().map(|f| DamlField::try_from(&f)).collect::<DamlCodeGenResult<_>>()?;
                 DamlData::Variant(DamlVariant::new(name, fields, type_arguments))
             },
             DamlDataWrapper::Enum(data_enum) => {
                 let resolver = data_enum.parent_package;
-                let name = data_enum.payload.name.resolve_last(resolver);
-                let type_arguments: Vec<_> = data_enum.type_arguments().map(DamlTypeVar::from).collect();
+                let name = data_enum.payload.name.resolve_last(resolver)?;
+                let type_arguments: Vec<_> =
+                    data_enum.type_arguments().map(DamlTypeVar::try_from).collect::<DamlCodeGenResult<_>>()?;
                 let constructors: Vec<&str> = if data_enum
                     .parent_package
                     .language_version
                     .supports_feature(&LanguageFeatureVersion::INTERNED_STRINGS)
                 {
                     assert!(data_enum.payload.constructors_str.is_empty(), "constructors_str should be empty!");
-                    resolver.resolve_strings(data_enum.payload.constructors_interned_str)
+                    resolver.resolve_strings(data_enum.payload.constructors_interned_str)?
                 } else {
                     assert!(
                         data_enum.payload.constructors_interned_str.is_empty(),
@@ -96,40 +126,47 @@ impl<'a> From<&DamlDataWrapper<'a>> for DamlData<'a> {
                 };
                 DamlData::Enum(DamlEnum::new(name, constructors, type_arguments))
             },
-        }
+        })
     }
 }
 
 /// Convert from `DamlChoiceWrapper` to `DamlChoice`.
-impl<'a> From<&DamlChoiceWrapper<'a>> for DamlChoice<'a> {
-    fn from(choice: &DamlChoiceWrapper<'a>) -> Self {
-        let name = choice.payload.name.resolve(choice.parent_package);
-        let target_data_type = choice.argument_type().data_ref().get_data();
+impl<'a> TryFrom<&DamlChoiceWrapper<'a>> for DamlChoice<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(choice: &DamlChoiceWrapper<'a>) -> DamlCodeGenResult<Self> {
+        let name = choice.payload.name.resolve(choice.parent_package)?;
+        let target_data_type = choice.argument_type().data_ref()?.get_data()?;
         match target_data_type {
             DamlDataWrapper::Record(record) => {
-                let fields: Vec<_> = record.fields().map(|f| DamlField::from(&f)).collect();
-                DamlChoice::new(name, fields, DamlType::from(&choice.return_type()))
+                let fields: Vec<_> =
+                    record.fields().map(|f| DamlField::try_from(&f)).collect::<DamlCodeGenResult<_>>()?;
+                Ok(DamlChoice::new(name, fields, DamlType::try_from(&choice.return_type())?))
             },
-            _ => panic!("DAML choice argument must be a Record"),
+            _ => Err(DamlCodeGenError::UnexpectedChoiceData),
         }
     }
 }
 
 /// Convert from `DamlFieldWrapper` to `DamlField`.
-impl<'a> From<&DamlFieldWrapper<'a>> for DamlField<'a> {
-    fn from(field: &DamlFieldWrapper<'a>) -> Self {
-        DamlField::new(field.payload.name.resolve(field.parent_package), DamlType::from(&field.ty()))
+impl<'a> TryFrom<&DamlFieldWrapper<'a>> for DamlField<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(field: &DamlFieldWrapper<'a>) -> DamlCodeGenResult<Self> {
+        Ok(DamlField::new(field.payload.name.resolve(field.parent_package)?, DamlType::try_from(&field.ty())?))
     }
 }
 
 /// Convert from `DamlTypeWrapper` to `DamlType`.
-impl<'a> From<&DamlTypeWrapper<'a>> for DamlType<'a> {
-    fn from(daml_type: &DamlTypeWrapper<'a>) -> Self {
+impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(daml_type: &DamlTypeWrapper<'a>) -> DamlCodeGenResult<Self> {
         fn make_data_ref<'a>(
             daml_type: &DamlTypeWrapper<'a>,
             data_ref: DamlDataRefWrapper<'a>,
             target_data: DamlDataWrapper<'a>,
-        ) -> DamlDataRef<'a> {
+        ) -> DamlCodeGenResult<DamlDataRef<'a>> {
             let resolver = daml_type.parent_package;
             let current_package_name = daml_type.parent_package.name;
             let target_package_name = match target_data {
@@ -138,34 +175,35 @@ impl<'a> From<&DamlTypeWrapper<'a>> for DamlType<'a> {
                 DamlDataWrapper::Variant(variant) => variant.parent_package.name,
                 DamlDataWrapper::Enum(data_enum) => data_enum.parent_package.name,
             };
-            let current_module_path = daml_type.parent_module.path.resolve(resolver);
-            let target_module_path = data_ref.payload.module_path.resolve(resolver);
-            let data_name = data_ref.payload.data_name.resolve_last(data_ref.parent_package);
-            let type_arguments: Vec<_> = data_ref.type_arguments().map(|arg| DamlType::from(&arg)).collect();
+            let current_module_path = daml_type.parent_module.path.resolve(resolver)?;
+            let target_module_path = data_ref.payload.module_path.resolve(resolver)?;
+            let data_name = data_ref.payload.data_name.resolve_last(data_ref.parent_package)?;
+            let type_arguments: Vec<_> =
+                data_ref.type_arguments().map(|arg| DamlType::try_from(&arg)).collect::<DamlCodeGenResult<_>>()?;
             if target_package_name == current_package_name && target_module_path == current_module_path {
-                DamlDataRef::Local(DamlLocalDataRef::new(
+                Ok(DamlDataRef::Local(DamlLocalDataRef::new(
                     data_name,
                     target_package_name,
                     target_module_path,
                     type_arguments,
-                ))
+                )))
             } else {
-                DamlDataRef::NonLocal(DamlNonLocalDataRef::new(
+                Ok(DamlDataRef::NonLocal(DamlNonLocalDataRef::new(
                     data_name,
                     current_package_name,
                     current_module_path,
                     target_package_name,
                     target_module_path,
                     type_arguments,
-                ))
+                )))
             }
         }
 
-        match daml_type.payload {
+        Ok(match daml_type.payload {
             DamlTypePayload::ContractId(Some(_)) => {
-                let data_ref_wrapper = daml_type.contract_id_data_ref();
-                let target_data_wrapper = data_ref_wrapper.get_data();
-                DamlType::ContractId(Some(make_data_ref(daml_type, data_ref_wrapper, target_data_wrapper)))
+                let data_ref_wrapper = daml_type.contract_id_data_ref()?;
+                let target_data_wrapper = data_ref_wrapper.get_data()?;
+                DamlType::ContractId(Some(make_data_ref(daml_type, data_ref_wrapper, target_data_wrapper)?))
             },
             DamlTypePayload::ContractId(None) => DamlType::ContractId(None),
             DamlTypePayload::Int64 => DamlType::Int64,
@@ -176,41 +214,50 @@ impl<'a> From<&DamlTypeWrapper<'a>> for DamlType<'a> {
             DamlTypePayload::Bool => DamlType::Bool,
             DamlTypePayload::Unit => DamlType::Unit,
             DamlTypePayload::Date => DamlType::Date,
-            DamlTypePayload::List(_) => DamlType::List(Box::new(DamlType::from(&daml_type.nested_type()))),
+            DamlTypePayload::List(_) => DamlType::List(Box::new(DamlType::try_from(&daml_type.nested_type()?)?)),
             DamlTypePayload::Update => DamlType::Update,
             DamlTypePayload::Scenario => DamlType::Scenario,
-            DamlTypePayload::TextMap(_) => DamlType::TextMap(Box::new(DamlType::from(&daml_type.nested_type()))),
-            DamlTypePayload::Optional(_) => DamlType::Optional(Box::new(DamlType::from(&daml_type.nested_type()))),
+            DamlTypePayload::TextMap(_) => DamlType::TextMap(Box::new(DamlType::try_from(&daml_type.nested_type()?)?)),
+            DamlTypePayload::Optional(_) =>
+                DamlType::Optional(Box::new(DamlType::try_from(&daml_type.nested_type()?)?)),
             DamlTypePayload::DataRef(_) => {
-                let data_ref_wrapper = daml_type.data_ref();
-                let target_data_wrapper = data_ref_wrapper.get_data();
-                let data_ref = make_data_ref(daml_type, data_ref_wrapper, target_data_wrapper);
-                if DamlDataBoxChecker::should_box(daml_type.parent_data(), target_data_wrapper) {
+                let data_ref_wrapper = daml_type.data_ref()?;
+                let target_data_wrapper = data_ref_wrapper.get_data()?;
+                let data_ref = make_data_ref(daml_type, data_ref_wrapper, target_data_wrapper)?;
+                if DamlDataBoxChecker::should_box(daml_type.parent_data(), target_data_wrapper)? {
                     DamlType::BoxedDataRef(data_ref)
                 } else {
                     DamlType::DataRef(data_ref)
                 }
             },
-            DamlTypePayload::Var(_) => DamlType::Var(DamlVar::from(&daml_type.var())),
+            DamlTypePayload::Var(_) => DamlType::Var(DamlVar::try_from(&daml_type.var()?)?),
             DamlTypePayload::Arrow => DamlType::Arrow,
             DamlTypePayload::Any => DamlType::Any,
             DamlTypePayload::TypeRep => DamlType::TypeRep,
-        }
+        })
     }
 }
 
 /// Convert from `DamlTypeVarWrapper` to `DamlTypeVar`.
-impl<'a> From<DamlTypeVarWrapper<'a>> for DamlTypeVar<'a> {
-    fn from(typevar: DamlTypeVarWrapper<'a>) -> Self {
-        DamlTypeVar::new(typevar.payload.var.resolve(typevar.parent_package), DamlKind::from(&typevar.payload.kind))
+impl<'a> TryFrom<DamlTypeVarWrapper<'a>> for DamlTypeVar<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(typevar: DamlTypeVarWrapper<'a>) -> DamlCodeGenResult<Self> {
+        Ok(DamlTypeVar::new(
+            typevar.payload.var.resolve(typevar.parent_package)?,
+            DamlKind::from(&typevar.payload.kind),
+        ))
     }
 }
 
 /// Convert from `DamlVarWrapper` to `DamlVar`.
-impl<'a> From<&DamlVarWrapper<'a>> for DamlVar<'a> {
-    fn from(var: &DamlVarWrapper<'a>) -> Self {
-        let type_arguments = var.type_arguments().map(|arg| DamlType::from(&arg)).collect();
-        DamlVar::new(var.payload.var.resolve(var.parent_package), type_arguments)
+impl<'a> TryFrom<&DamlVarWrapper<'a>> for DamlVar<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(var: &DamlVarWrapper<'a>) -> DamlCodeGenResult<Self> {
+        let type_arguments =
+            var.type_arguments().map(|arg| DamlType::try_from(&arg)).collect::<DamlCodeGenResult<_>>()?;
+        Ok(DamlVar::new(var.payload.var.resolve(var.parent_package)?, type_arguments))
     }
 }
 

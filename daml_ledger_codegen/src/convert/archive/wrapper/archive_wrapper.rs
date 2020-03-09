@@ -1,5 +1,5 @@
-use crate::convert::archive::wrapper::payload::*;
-use crate::convert::archive::wrapper::*;
+use crate::convert::archive::wrapper::payload::DamlArchivePayload;
+use crate::convert::archive::wrapper::DamlPackageWrapper;
 
 #[derive(Debug, Clone, Copy)]
 pub struct DamlArchiveWrapper<'a> {
@@ -7,7 +7,7 @@ pub struct DamlArchiveWrapper<'a> {
 }
 
 impl<'a> DamlArchiveWrapper<'a> {
-    pub fn wrap(payload: &'a DamlArchivePayload) -> Self {
+    pub fn wrap(payload: &'a DamlArchivePayload<'_>) -> Self {
         Self {
             payload,
         }

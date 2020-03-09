@@ -27,7 +27,7 @@ impl DamlError {
 }
 
 impl fmt::Display for DamlError {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             DamlError::InvalidUriError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
             DamlError::GRPCTransportError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),

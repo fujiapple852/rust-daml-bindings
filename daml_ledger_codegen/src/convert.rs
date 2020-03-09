@@ -1,3 +1,5 @@
+pub mod error;
+
 pub mod archive {
     pub mod wrapper {
         mod payload {
@@ -9,6 +11,7 @@ pub mod archive {
             mod package_payload;
             mod type_payload;
             mod typevar_payload;
+            mod util;
 
             pub use archive_payload::*;
             pub use data_payload::*;

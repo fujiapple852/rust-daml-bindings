@@ -1,5 +1,7 @@
-use crate::convert::archive::wrapper::payload::*;
-use crate::convert::archive::wrapper::*;
+use crate::convert::archive::wrapper::payload::{
+    DamlArchivePayload, DamlDataPayload, DamlModulePayload, DamlPackagePayload,
+};
+use crate::convert::archive::wrapper::DamlDataWrapper;
 
 #[derive(Debug, Clone, Copy)]
 pub struct DamlModuleWrapper<'a> {
@@ -25,7 +27,7 @@ impl<'a> DamlModuleWrapper<'a> {
         self.payload.data_types.iter().map(move |dt| self.wrap_data_type(dt))
     }
 
-    fn wrap_data_type(self, data: &'a DamlDataPayload) -> DamlDataWrapper<'a> {
+    fn wrap_data_type(self, data: &'a DamlDataPayload<'_>) -> DamlDataWrapper<'a> {
         DamlDataWrapper::wrap(self.parent_archive, self.parent_package, self.payload, data)
     }
 }

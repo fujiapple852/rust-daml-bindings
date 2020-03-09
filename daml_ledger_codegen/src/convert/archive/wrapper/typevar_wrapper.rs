@@ -1,4 +1,6 @@
-use crate::convert::archive::wrapper::payload::*;
+use crate::convert::archive::wrapper::payload::{
+    DamlArchivePayload, DamlDataPayload, DamlModulePayload, DamlPackagePayload, DamlTypeVarPayload,
+};
 
 #[derive(Debug, Clone, Copy)]
 pub struct DamlTypeVarWrapper<'a> {

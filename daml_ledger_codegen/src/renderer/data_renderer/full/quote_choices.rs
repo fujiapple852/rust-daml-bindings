@@ -10,8 +10,8 @@ use crate::renderer::renderer_utils::quote_escaped_ident;
 use crate::renderer::type_renderer::quote_type;
 use heck::SnakeCase;
 
-pub fn quote_choice(name: &str, items: &[DamlChoice]) -> TokenStream {
-    let all_choice_methods_tokens = quote_all_choice_methods(&name, items);
+pub fn quote_choice(name: &str, items: &[DamlChoice<'_>]) -> TokenStream {
+    let all_choice_methods_tokens = quote_all_choice_methods(name, items);
     let contract_struct_name_tokens = quote_contract_id_struct_name(name);
     quote!(
         impl #contract_struct_name_tokens {
@@ -21,15 +21,15 @@ pub fn quote_choice(name: &str, items: &[DamlChoice]) -> TokenStream {
 }
 
 /// Generate all choice methods within the parent `impl` block.
-fn quote_all_choice_methods(struct_name: &str, items: &[DamlChoice]) -> TokenStream {
-    let all_choice_methods: Vec<_> = items.iter().map(|choice| quote_choice_method(&struct_name, &choice)).collect();
+fn quote_all_choice_methods(struct_name: &str, items: &[DamlChoice<'_>]) -> TokenStream {
+    let all_choice_methods: Vec<_> = items.iter().map(|choice| quote_choice_method(struct_name, choice)).collect();
     quote!(
         #( #all_choice_methods )*
     )
 }
 
 /// Generate the `pub fn foo(&self, ...)` choice method.
-fn quote_choice_method(struct_name: &str, choice: &DamlChoice) -> TokenStream {
+fn quote_choice_method(struct_name: &str, choice: &DamlChoice<'_>) -> TokenStream {
     let choice_name = &choice.name;
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let method_name_command_tokens = quote_command_method_name(&choice.name.to_snake_case());
@@ -52,7 +52,7 @@ fn quote_choice_method(struct_name: &str, choice: &DamlChoice) -> TokenStream {
 }
 
 /// Generate the `DamlValue::Record` containing all choice fields.
-fn quote_all_choice_fields(supported_fields: &[&DamlField]) -> TokenStream {
+fn quote_all_choice_fields(supported_fields: &[&DamlField<'_>]) -> TokenStream {
     let all_choice_fields = quote_declare_all_choice_fields(supported_fields);
     if all_choice_fields.is_empty() {
         quote!(
@@ -68,7 +68,7 @@ fn quote_all_choice_fields(supported_fields: &[&DamlField]) -> TokenStream {
 }
 
 /// Generate all choice fields.
-fn quote_declare_all_choice_fields(choice_parameters: &[&DamlField]) -> TokenStream {
+fn quote_declare_all_choice_fields(choice_parameters: &[&DamlField<'_>]) -> TokenStream {
     choice_parameters
         .iter()
         .map(
@@ -81,7 +81,7 @@ fn quote_declare_all_choice_fields(choice_parameters: &[&DamlField]) -> TokenStr
 }
 
 /// Generate a choice field.
-fn quote_declare_choice_field(field_name: &str, field_type: &DamlType) -> TokenStream {
+fn quote_declare_choice_field(field_name: &str, field_type: &DamlType<'_>) -> TokenStream {
     let field_source_tokens = quote_escaped_ident(field_name);
     let name_string = quote!(#field_name);
     let choice_type_tokens = quote_type(field_type);

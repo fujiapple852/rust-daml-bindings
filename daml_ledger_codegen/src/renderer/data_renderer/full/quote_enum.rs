@@ -10,12 +10,12 @@ use crate::renderer::data_renderer::full::{
 use crate::renderer::quote_escaped_ident;
 
 /// Generate the `enum` and the `From` and `TryFrom` impls.
-pub fn quote_daml_enum(daml_enum: &DamlEnum) -> TokenStream {
-    let enum_tokens = quote_enum(&daml_enum.name, daml_enum.constructors.as_slice(), &daml_enum.type_arguments);
+pub fn quote_daml_enum(daml_enum: &DamlEnum<'_>) -> TokenStream {
+    let enum_tokens = quote_enum(daml_enum.name, daml_enum.constructors.as_slice(), &daml_enum.type_arguments);
     let serialize_impl_tokens =
-        quote_serialize_trait_impl(&daml_enum.name, daml_enum.constructors.as_slice(), &daml_enum.type_arguments);
+        quote_serialize_trait_impl(daml_enum.name, daml_enum.constructors.as_slice(), &daml_enum.type_arguments);
     let deserialize_trait_impl_tokens =
-        quote_deserialize_trait_impl(&daml_enum.name, daml_enum.constructors.as_slice(), &daml_enum.type_arguments);
+        quote_deserialize_trait_impl(daml_enum.name, daml_enum.constructors.as_slice(), &daml_enum.type_arguments);
     quote!(
         #enum_tokens
         #serialize_impl_tokens
@@ -24,10 +24,10 @@ pub fn quote_daml_enum(daml_enum: &DamlEnum) -> TokenStream {
 }
 
 /// Generate `enum Foo {...}` enum.
-fn quote_enum(enum_name: &str, variants: &[&str], type_arguments: &[DamlTypeVar]) -> TokenStream {
+fn quote_enum(enum_name: &str, variants: &[&str], type_arguments: &[DamlTypeVar<'_>]) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(enum_name);
     let generic_param_tokens = quote_generic_param_list(type_arguments);
-    let body_tokens = quote_enum_body(&variants);
+    let body_tokens = quote_enum_body(variants);
     quote!(
         #[derive(Eq, PartialEq, Clone, Debug)]
         pub enum #enum_name_tokens #generic_param_tokens {
@@ -51,7 +51,11 @@ fn quote_enum_body(enum_variants: &[&str]) -> TokenStream {
 }
 
 /// Generate the `DamlSerializeFrom<Foo> for DamlValue` method.
-fn quote_serialize_trait_impl(enum_name: &str, enum_variants: &[&str], type_arguments: &[DamlTypeVar]) -> TokenStream {
+fn quote_serialize_trait_impl(
+    enum_name: &str,
+    enum_variants: &[&str],
+    type_arguments: &[DamlTypeVar<'_>],
+) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(enum_name);
     let generic_param_tokens = quote_generic_param_list(type_arguments);
     let generic_trail_bounds_tokens = quote_serialize_generic_trait_bounds(type_arguments);
@@ -72,7 +76,7 @@ fn quote_serialize_trait_impl(enum_name: &str, enum_variants: &[&str], type_argu
 fn quote_deserialize_trait_impl(
     enum_name: &str,
     enum_variants: &[&str],
-    type_arguments: &[DamlTypeVar],
+    type_arguments: &[DamlTypeVar<'_>],
 ) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(enum_name);
     let generic_param_tokens = quote_generic_param_list(type_arguments);

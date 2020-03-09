@@ -1,6 +1,11 @@
-use crate::convert::archive::wrapper::payload::*;
-use daml_lf::protobuf_autogen::daml_lf_1::def_data_type::*;
-use daml_lf::protobuf_autogen::daml_lf_1::*;
+use crate::convert::archive::wrapper::payload::util::Required;
+use crate::convert::archive::wrapper::payload::{
+    DamlFieldPayload, DamlTypePayload, DamlTypeVarPayload, InternableDottedName, InternableString,
+};
+use crate::convert::error::{DamlCodeGenError, DamlCodeGenResult};
+use daml_lf::protobuf_autogen::daml_lf_1::def_data_type::DataCons;
+use daml_lf::protobuf_autogen::daml_lf_1::{DefDataType, DefTemplate, TemplateChoice};
+use std::convert::TryFrom;
 
 #[derive(Debug)]
 pub enum DamlDataPayload<'a> {
@@ -37,19 +42,22 @@ impl<'a> DamlDataPayload<'a> {
     }
 }
 
-impl<'a> From<&'a DefDataType> for DamlDataPayload<'a> {
-    fn from(def_data_type: &'a DefDataType) -> Self {
-        let name = InternableDottedName::from(def_data_type.name.as_ref().expect("DefDataType.name"));
-        let type_arguments: Vec<_> = def_data_type.params.iter().map(DamlTypeVarPayload::from).collect();
-        match def_data_type.data_cons.as_ref().expect("DefDataType.data_cons") {
+impl<'a> TryFrom<&'a DefDataType> for DamlDataPayload<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(def_data_type: &'a DefDataType) -> DamlCodeGenResult<Self> {
+        let name = InternableDottedName::from(def_data_type.name.as_ref().req()?);
+        let type_arguments: Vec<_> =
+            def_data_type.params.iter().map(DamlTypeVarPayload::try_from).collect::<DamlCodeGenResult<_>>()?;
+        Ok(match def_data_type.data_cons.as_ref().req()? {
             DataCons::Record(fields) => Self::new_record(RecordPayload::new(
                 name,
-                fields.fields.iter().map(DamlFieldPayload::from).collect(),
+                fields.fields.iter().map(DamlFieldPayload::try_from).collect::<DamlCodeGenResult<_>>()?,
                 type_arguments,
             )),
             DataCons::Variant(fields) => Self::new_variant(VariantPayload::new(
                 name,
-                fields.fields.iter().map(DamlFieldPayload::from).collect(),
+                fields.fields.iter().map(DamlFieldPayload::try_from).collect::<DamlCodeGenResult<_>>()?,
                 type_arguments,
             )),
             DataCons::Enum(constructors) => Self::new_enum(EnumPayload::new(
@@ -58,7 +66,7 @@ impl<'a> From<&'a DefDataType> for DamlDataPayload<'a> {
                 constructors.constructors_interned_str.as_slice(),
                 type_arguments,
             )),
-        }
+        })
     }
 }
 
@@ -77,12 +85,14 @@ impl<'a> DamlTemplatePayload<'a> {
     }
 }
 
-impl<'a> From<&'a DefTemplate> for DamlTemplatePayload<'a> {
-    fn from(def_template: &'a DefTemplate) -> Self {
-        Self::new(
-            InternableDottedName::from(def_template.tycon.as_ref().expect("DefTemplate.tycon")),
-            def_template.choices.iter().map(DamlChoicePayload::from).collect(),
-        )
+impl<'a> TryFrom<&'a DefTemplate> for DamlTemplatePayload<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(def_template: &'a DefTemplate) -> DamlCodeGenResult<Self> {
+        Ok(Self::new(
+            InternableDottedName::from(def_template.tycon.as_ref().req()?),
+            def_template.choices.iter().map(DamlChoicePayload::try_from).collect::<DamlCodeGenResult<_>>()?,
+        ))
     }
 }
 
@@ -107,16 +117,17 @@ impl<'a> DamlChoicePayload<'a> {
     }
 }
 
-impl<'a> From<&'a TemplateChoice> for DamlChoicePayload<'a> {
-    fn from(template_choice: &'a TemplateChoice) -> Self {
-        let argument_type =
-            template_choice.arg_binder.as_ref().and_then(|f| f.r#type.as_ref()).expect("TemplateChoice.arg_binder");
-        let return_type = template_choice.ret_type.as_ref().expect("TemplateChoice.ret_type");
-        Self::new(
-            InternableString::from(template_choice.name.as_ref().expect("TemplateChoice.name")),
-            DamlTypePayload::from(argument_type),
-            DamlTypePayload::from(return_type),
-        )
+impl<'a> TryFrom<&'a TemplateChoice> for DamlChoicePayload<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(template_choice: &'a TemplateChoice) -> DamlCodeGenResult<Self> {
+        let argument_type = template_choice.arg_binder.as_ref().and_then(|f| f.r#type.as_ref()).req()?;
+        let return_type = template_choice.ret_type.as_ref().req()?;
+        Ok(Self::new(
+            InternableString::from(template_choice.name.as_ref().req()?),
+            DamlTypePayload::try_from(argument_type)?,
+            DamlTypePayload::try_from(return_type)?,
+        ))
     }
 }
 

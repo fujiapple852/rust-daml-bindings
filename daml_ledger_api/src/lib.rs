@@ -4,8 +4,14 @@
 //! The API is separated into a small number of services that cover various aspects of the ledger, e.g. reading
 //! transactions or submitting commands.
 
-#![warn(clippy::all, clippy::pedantic)]
-#![allow(clippy::module_name_repetitions, clippy::use_self, clippy::must_use_candidate, clippy::missing_errors_doc)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
+#![allow(
+    clippy::module_name_repetitions,
+    clippy::use_self,
+    clippy::must_use_candidate,
+    clippy::missing_errors_doc,
+    clippy::missing_const_for_fn
+)]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]

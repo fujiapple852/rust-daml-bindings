@@ -1,4 +1,4 @@
-#![warn(clippy::all, clippy::pedantic)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 
@@ -106,8 +106,7 @@ async fn process_event(
     if count <= 10 {
         if party == receiver {
             info!("{} received:\t{} ({}) with count {}", receiver, entity_name, contract_id, count);
-            exercise_choice(ledger_client, &package_id, &entity_name, &party, contract_id, response(entity_name))
-                .await?;
+            exercise_choice(ledger_client, package_id, entity_name, party, contract_id, response(entity_name)).await?;
         }
         Ok(Some(()))
     } else {

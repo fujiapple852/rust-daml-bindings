@@ -17,7 +17,7 @@ impl<'a> From<&'a AttrRecord> for DamlRecord<'a> {
 
 impl<'a> From<&'a AttrTemplate> for DamlTemplate<'a> {
     fn from(attr_template: &'a AttrTemplate) -> Self {
-        let fields: Vec<DamlField> = attr_template.fields.iter().map(DamlField::from).collect();
+        let fields: Vec<DamlField<'_>> = attr_template.fields.iter().map(DamlField::from).collect();
         DamlTemplate::new(
             &attr_template.name,
             &attr_template.package_id,
@@ -61,6 +61,7 @@ impl<'a> From<&'a AttrField> for DamlField<'a> {
     }
 }
 
+#[allow(clippy::fallible_impl_from)]
 impl<'a> From<&'a AttrType> for DamlType<'a> {
     fn from(attr_type: &'a AttrType) -> Self {
         match attr_type {

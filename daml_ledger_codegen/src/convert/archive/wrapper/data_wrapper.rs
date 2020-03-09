@@ -2,7 +2,8 @@ use crate::convert::archive::wrapper::payload::{
     DamlChoicePayload, DamlDataPayload, DamlFieldPayload, DamlModulePayload, DamlPackagePayload, DamlTemplatePayload,
     EnumPayload, InternableDottedName, RecordPayload, VariantPayload,
 };
-use crate::convert::archive::wrapper::*;
+use crate::convert::archive::wrapper::{DamlArchivePayload, DamlFieldWrapper, DamlTypeVarWrapper, DamlTypeWrapper};
+use crate::convert::error::{DamlCodeGenError, DamlCodeGenResult};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum DamlDataWrapper<'a> {
@@ -14,10 +15,10 @@ pub enum DamlDataWrapper<'a> {
 
 impl<'a> DamlDataWrapper<'a> {
     pub fn wrap(
-        parent_archive: &'a DamlArchivePayload,
-        parent_package: &'a DamlPackagePayload,
-        parent_module: &'a DamlModulePayload,
-        data: &'a DamlDataPayload,
+        parent_archive: &'a DamlArchivePayload<'_>,
+        parent_package: &'a DamlPackagePayload<'_>,
+        parent_module: &'a DamlModulePayload<'_>,
+        data: &'a DamlDataPayload<'_>,
     ) -> Self {
         match data {
             DamlDataPayload::Record(record) =>
@@ -101,24 +102,24 @@ impl<'a> DamlTemplateWrapper<'a> {
         self.payload.choices.iter().map(move |choice| self.wrap_choice(choice))
     }
 
-    fn wrap_choice(self, choice: &'a DamlChoicePayload) -> DamlChoiceWrapper<'a> {
+    fn wrap_choice(self, choice: &'a DamlChoicePayload<'_>) -> DamlChoiceWrapper<'a> {
         DamlChoiceWrapper {
             parent_archive: self.parent_archive,
             parent_package: self.parent_package,
             parent_module: self.parent_module,
-            parent_data: &self.parent_data,
+            parent_data: self.parent_data,
             payload: choice,
         }
     }
 
-    pub fn fields(self) -> impl Iterator<Item = DamlFieldWrapper<'a>> {
+    pub fn fields(self) -> DamlCodeGenResult<impl Iterator<Item = DamlFieldWrapper<'a>>> {
         match self.parent_data {
-            DamlDataPayload::Record(record) => record.fields.iter().map(move |field| self.wrap_field(field)),
-            _ => panic!("expected parent to be Record"),
+            DamlDataPayload::Record(record) => Ok(record.fields.iter().map(move |field| self.wrap_field(field))),
+            _ => Err(DamlCodeGenError::UnexpectedData),
         }
     }
 
-    fn wrap_field(self, field: &'a DamlFieldPayload) -> DamlFieldWrapper<'a> {
+    fn wrap_field(self, field: &'a DamlFieldPayload<'_>) -> DamlFieldWrapper<'a> {
         DamlFieldWrapper::wrap(self.parent_archive, self.parent_package, self.parent_module, self.parent_data, field)
     }
 }

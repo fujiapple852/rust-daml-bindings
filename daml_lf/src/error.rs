@@ -22,7 +22,7 @@ impl DamlLfError {
 }
 
 impl fmt::Display for DamlLfError {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             DamlLfError::Other(e) => write!(fmt, "Other: {}", e),
             DamlLfError::DamlLfParseError(e) => write!(fmt, "ParseError: {}", (e as &prost::DecodeError)),

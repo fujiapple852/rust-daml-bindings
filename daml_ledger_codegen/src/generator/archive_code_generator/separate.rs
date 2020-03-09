@@ -13,7 +13,7 @@ const DISABLE_WARNINGS: &str = "#![allow(clippy::all, warnings)]";
 const USE_DAML_PRELUDE: &str = "use daml::prelude::*;";
 
 pub fn generate_archive_separate(
-    archive: &DamlArchive,
+    archive: &DamlArchive<'_>,
     output_path: &Path,
     module_matcher: &ModuleMatcher,
     render_method: &RenderMethod,
@@ -25,7 +25,7 @@ pub fn generate_archive_separate(
 }
 
 fn generate_package_source(
-    package: &DamlPackage,
+    package: &DamlPackage<'_>,
     output_path: &Path,
     module_matcher: &ModuleMatcher,
     render_method: &RenderMethod,
@@ -44,7 +44,7 @@ fn generate_package_source(
 }
 
 fn generate_module_source(
-    module: &DamlModule,
+    module: &DamlModule<'_>,
     package_dir_path: &Path,
     module_matcher: &ModuleMatcher,
     render_method: &RenderMethod,
@@ -59,17 +59,17 @@ fn generate_module_source(
     let mut module_file = create_file(&package_module_dir_path, &make_src_filename(module.name()))?;
     module_file.write_all(module_body.as_bytes())?;
     for child_module in sub_modules {
-        generate_module_source(child_module, &package_dir_path, module_matcher, render_method)?;
+        generate_module_source(child_module, package_dir_path, module_matcher, render_method)?;
     }
     Ok(())
 }
 
-fn is_interesting_module(module: &DamlModule, module_matcher: &ModuleMatcher) -> bool {
+fn is_interesting_module(module: &DamlModule<'_>, module_matcher: &ModuleMatcher) -> bool {
     (!module.data_types.is_empty() && module_matcher.matches(&to_module_path(module.path.as_slice())))
         || module.child_modules.values().any(|m| is_interesting_module(m, module_matcher))
 }
 
-fn quote_module_data_types(module: &DamlModule, render_method: &RenderMethod) -> String {
+fn quote_module_data_types(module: &DamlModule<'_>, render_method: &RenderMethod) -> String {
     quote_all_data(module.data_types.values().collect::<Vec<_>>().as_slice(), render_method).to_string()
 }
 

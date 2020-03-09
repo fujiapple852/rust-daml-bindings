@@ -1,7 +1,9 @@
-use crate::convert::archive::wrapper::payload::*;
+use crate::convert::archive::wrapper::payload::{DamlModulePayload, PackageInternedResolver};
+use crate::convert::error::{DamlCodeGenError, DamlCodeGenResult};
 use daml_lf::LanguageVersion;
 use daml_lf::{DamlLfArchive, DamlLfPackage};
 use std::collections::HashMap;
+use std::convert::TryFrom;
 
 #[derive(Debug)]
 pub struct DamlPackagePayload<'a> {
@@ -38,13 +40,15 @@ impl<'a> PartialEq for DamlPackagePayload<'a> {
 }
 
 impl<'a> DamlPackagePayload<'a> {
-    pub fn module_by_name(&self, module_path: &str) -> Option<&DamlModulePayload> {
+    pub fn module_by_name(&self, module_path: &str) -> Option<&DamlModulePayload<'_>> {
         self.modules.get(module_path)
     }
 }
 
-impl<'a> From<&'a DamlLfArchive> for DamlPackagePayload<'a> {
-    fn from(daml_lf_archive: &'a DamlLfArchive) -> Self {
+impl<'a> TryFrom<&'a DamlLfArchive> for DamlPackagePayload<'a> {
+    type Error = DamlCodeGenError;
+
+    fn try_from(daml_lf_archive: &'a DamlLfArchive) -> DamlCodeGenResult<Self> {
         // A temporary resolver for resolving interned strings before the DamlPackagePayload has been constructed.
         struct SelfResolver<'a> {
             pub language_version: LanguageVersion,
@@ -83,11 +87,11 @@ impl<'a> From<&'a DamlLfArchive> for DamlPackagePayload<'a> {
             }
 
             fn interned_dotted_names(&self) -> &[&[i32]] {
-                &self.interned_dotted_names
+                self.interned_dotted_names
             }
         }
 
-        match &daml_lf_archive.payload.package {
+        Ok(match &daml_lf_archive.payload.package {
             DamlLfPackage::V1(package) => {
                 let name = daml_lf_archive.name.as_str();
                 let language_version = daml_lf_archive.payload.language_version;
@@ -100,9 +104,9 @@ impl<'a> From<&'a DamlLfArchive> for DamlPackagePayload<'a> {
                 let modules = package
                     .modules
                     .iter()
-                    .map(DamlModulePayload::from)
-                    .map(|m| (m.path.resolve(&self_resolver).join("."), m))
-                    .collect();
+                    .flat_map(DamlModulePayload::try_from)
+                    .map(|m| Ok((m.path.resolve(&self_resolver)?.join("."), m)))
+                    .collect::<DamlCodeGenResult<_>>()?;
                 Self {
                     name,
                     language_version,
@@ -112,6 +116,6 @@ impl<'a> From<&'a DamlLfArchive> for DamlPackagePayload<'a> {
                     modules,
                 }
             },
-        }
+        })
     }
 }

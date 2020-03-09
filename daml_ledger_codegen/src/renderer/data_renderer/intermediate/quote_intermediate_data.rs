@@ -6,7 +6,7 @@ use heck::SnakeCase;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub fn quote_daml_template(template: &DamlTemplate) -> TokenStream {
+pub fn quote_daml_template(template: &DamlTemplate<'_>) -> TokenStream {
     let package_id = template.package_id;
     let module_name = to_module_path(template.module_path.as_slice());
     let name_tokens = quote_escaped_ident(template.name);
@@ -25,7 +25,7 @@ pub fn quote_daml_template(template: &DamlTemplate) -> TokenStream {
     )
 }
 
-fn quote_choice(choice: &DamlChoice) -> TokenStream {
+fn quote_choice(choice: &DamlChoice<'_>) -> TokenStream {
     let choice_name_tokens = quote_escaped_ident(choice.name);
     let function_name_tokens = quote_escaped_ident(choice.name.to_snake_case());
     let supported_fields: Vec<_> = choice.fields.iter().filter(|&field| is_supported_type(&field.ty)).collect();
@@ -36,7 +36,7 @@ fn quote_choice(choice: &DamlChoice) -> TokenStream {
     )
 }
 
-pub fn quote_daml_record(record: &DamlRecord) -> TokenStream {
+pub fn quote_daml_record(record: &DamlRecord<'_>) -> TokenStream {
     let name_tokens = quote_escaped_ident(&record.name);
     let supported_fields: Vec<_> = record.fields.iter().filter(|&field| is_supported_type(&field.ty)).collect();
     let all_fields_tokens = quote_fields(supported_fields.as_slice());
@@ -48,7 +48,7 @@ pub fn quote_daml_record(record: &DamlRecord) -> TokenStream {
     )
 }
 
-pub fn quote_daml_variant(variant: &DamlVariant) -> TokenStream {
+pub fn quote_daml_variant(variant: &DamlVariant<'_>) -> TokenStream {
     let name_tokens = quote_escaped_ident(variant.name);
     let all_variants_tokens: Vec<_> = variant
         .fields
@@ -69,7 +69,7 @@ pub fn quote_daml_variant(variant: &DamlVariant) -> TokenStream {
     )
 }
 
-fn quote_variant_field(field: &DamlField) -> TokenStream {
+fn quote_variant_field(field: &DamlField<'_>) -> TokenStream {
     let name_tokens = quote_escaped_ident(field.name);
     if let DamlType::Unit = field.ty {
         quote!(
@@ -83,7 +83,7 @@ fn quote_variant_field(field: &DamlField) -> TokenStream {
     }
 }
 
-pub fn quote_daml_enum(data_enum: &DamlEnum) -> TokenStream {
+pub fn quote_daml_enum(data_enum: &DamlEnum<'_>) -> TokenStream {
     let name_tokens = quote_escaped_ident(data_enum.name);
     let all_enum_constructors: Vec<_> = data_enum.constructors.iter().map(|field| quote_enum_field(field)).collect();
     quote!(

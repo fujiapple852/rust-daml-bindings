@@ -38,14 +38,14 @@ mod intermediate {
     pub use quote_intermediate_data::*;
 }
 
-pub fn quote_all_data(all_data: &[&DamlData], render_method: &RenderMethod) -> TokenStream {
+pub fn quote_all_data(all_data: &[&DamlData<'_>], render_method: &RenderMethod) -> TokenStream {
     let all_data_tokens: Vec<_> = all_data.iter().map(|&dt| quote_data(dt, render_method)).collect();
     quote!(
         #( #all_data_tokens )*
     )
 }
 
-pub fn quote_data(data_type: &DamlData, render_method: &RenderMethod) -> TokenStream {
+pub fn quote_data(data_type: &DamlData<'_>, render_method: &RenderMethod) -> TokenStream {
     match render_method {
         RenderMethod::Full => match data_type {
             DamlData::Template(template) => quote_daml_template_full(template),

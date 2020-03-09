@@ -39,8 +39,8 @@ pub fn normalize_generic_param(param: &str) -> &str {
 }
 
 /// Determine if this type supported by the code generator.
-pub fn is_supported_type(ty: &DamlType) -> bool {
-    fn is_data_ref_supported(data_ref: &DamlDataRef) -> bool {
+pub fn is_supported_type(ty: &DamlType<'_>) -> bool {
+    fn is_data_ref_supported(data_ref: &DamlDataRef<'_>) -> bool {
         match data_ref {
             DamlDataRef::Local(local) => local.type_arguments.iter().all(|f| is_supported_type(f)),
             DamlDataRef::NonLocal(non_local) => non_local.type_arguments.iter().all(|f| is_supported_type(f)),
@@ -56,7 +56,7 @@ pub fn is_supported_type(ty: &DamlType) -> bool {
         | DamlType::Bool
         | DamlType::Unit
         | DamlType::Date => true,
-        DamlType::List(inner) | DamlType::TextMap(inner) | DamlType::Optional(inner) => is_supported_type(&inner),
+        DamlType::List(inner) | DamlType::TextMap(inner) | DamlType::Optional(inner) => is_supported_type(inner),
         DamlType::ContractId(data_ref) => data_ref.as_ref().map_or(true, |dr| is_data_ref_supported(dr)),
         DamlType::DataRef(data_ref) | DamlType::BoxedDataRef(data_ref) => is_data_ref_supported(data_ref),
         DamlType::Var(DamlVar {

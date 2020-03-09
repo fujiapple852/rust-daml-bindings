@@ -1,5 +1,6 @@
 use crate::convert::archive::wrapper::payload::{DamlTypePayload, InternableDottedName};
 use crate::convert::archive::wrapper::{DamlDataWrapper, DamlFieldWrapper, DamlTypeWrapper};
+use crate::convert::error::DamlCodeGenResult;
 use std::collections::HashSet;
 
 /// Utility for determining whether a struct field should be boxed.
@@ -16,7 +17,7 @@ impl<'a> DamlDataBoxChecker<'a> {
     ///
     /// Note that type arguments to `DamlTypePayload::List` & `DamlTypePayload::TextMap` are not searched as these
     /// container types are boxed already.
-    pub fn should_box(parent_data: DamlDataWrapper<'a>, child_data: DamlDataWrapper<'a>) -> bool {
+    pub fn should_box(parent_data: DamlDataWrapper<'a>, child_data: DamlDataWrapper<'a>) -> DamlCodeGenResult<bool> {
         Self::new(parent_data).check_data(child_data)
     }
 
@@ -27,39 +28,40 @@ impl<'a> DamlDataBoxChecker<'a> {
         }
     }
 
-    fn check_data(&mut self, data: DamlDataWrapper<'a>) -> bool {
+    fn check_data(&mut self, data: DamlDataWrapper<'a>) -> DamlCodeGenResult<bool> {
         match data {
             DamlDataWrapper::Record(record) => self.check_field_types(record.fields()),
             DamlDataWrapper::Variant(variant) => self.check_field_types(variant.fields()),
-            _ => false,
+            _ => Ok(false),
         }
     }
 
-    fn check_field_types(&mut self, fields: impl Iterator<Item = DamlFieldWrapper<'a>>) -> bool {
+    fn check_field_types(&mut self, fields: impl Iterator<Item = DamlFieldWrapper<'a>>) -> DamlCodeGenResult<bool> {
         self.check_types(fields.map(DamlFieldWrapper::ty))
     }
 
-    fn check_types(&mut self, mut type_arguments: impl Iterator<Item = DamlTypeWrapper<'a>>) -> bool {
-        type_arguments.any(|ty| self.check_type(ty))
+    fn check_types(&mut self, types: impl Iterator<Item = DamlTypeWrapper<'a>>) -> DamlCodeGenResult<bool> {
+        let types_iter = types.map(|ty| self.check_type(ty));
+        Ok(itertools::process_results(types_iter, |mut iter| iter.any(|found| found))?)
     }
 
-    fn check_type(&mut self, daml_type: DamlTypeWrapper<'a>) -> bool {
-        match daml_type.payload {
-            DamlTypePayload::Optional(_) => self.check_type(daml_type.nested_type()),
+    fn check_type(&mut self, daml_type: DamlTypeWrapper<'a>) -> DamlCodeGenResult<bool> {
+        Ok(match daml_type.payload {
+            DamlTypePayload::Optional(_) => self.check_type(daml_type.nested_type()?)?,
             DamlTypePayload::DataRef(_) => {
-                let data_ref = daml_type.data_ref();
-                let data = data_ref.get_data();
+                let data_ref = daml_type.data_ref()?;
+                let data = data_ref.get_data()?;
                 data == self.search_data
-                    || self.memoized_visit_data(data)
-                    || self.check_types(data_ref.type_arguments())
+                    || self.memoized_visit_data(data)?
+                    || self.check_types(data_ref.type_arguments())?
             },
             _ => false,
-        }
+        })
     }
 
-    fn memoized_visit_data(&mut self, data: DamlDataWrapper<'a>) -> bool {
+    fn memoized_visit_data(&mut self, data: DamlDataWrapper<'a>) -> DamlCodeGenResult<bool> {
         if self.visited.contains(&data.name()) {
-            false
+            Ok(false)
         } else {
             self.visited.insert(data.name());
             self.check_data(data)

@@ -4,7 +4,7 @@
 //!
 //! [`daml_ledger_derive`]: ../daml_ledger_derive/index.html
 
-#![warn(clippy::all, clippy::pedantic)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
     clippy::module_name_repetitions,
     clippy::default_trait_access,
@@ -12,7 +12,8 @@
     clippy::use_self,
     clippy::cast_sign_loss,
     clippy::must_use_candidate,
-    clippy::missing_errors_doc
+    clippy::missing_errors_doc,
+    clippy::missing_const_for_fn
 )]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
