@@ -34,7 +34,7 @@ pub fn to_grpc_duration(duration: &Duration) -> DamlResult<prost_types::Duration
 pub fn date_from_days(days: i32) -> DamlResult<Date<Utc>> {
     Ok(DateTime::<Utc>::from(
         UNIX_EPOCH
-            + time::Duration::days(i64::from(days)).to_std().map_err(|e| {
+            + chrono::Duration::days(i64::from(days)).to_std().map_err(|e| {
                 DamlError::new_failed_conversion(format!("datetime from days {} out of range: {}", days, e.to_string()))
             })?,
     )
@@ -44,7 +44,7 @@ pub fn date_from_days(days: i32) -> DamlResult<Date<Utc>> {
 pub fn datetime_from_micros(micros: i64) -> DamlResult<DateTime<Utc>> {
     Ok(DateTime::<Utc>::from(
         UNIX_EPOCH
-            + time::Duration::microseconds(micros).to_std().map_err(|e| {
+            + chrono::Duration::microseconds(micros).to_std().map_err(|e| {
                 DamlError::new_failed_conversion(format!(
                     "datetime from micros {} out of range: {}",
                     micros,
@@ -57,7 +57,7 @@ pub fn datetime_from_micros(micros: i64) -> DamlResult<DateTime<Utc>> {
 // TODO the lossy cast to i32 here...
 #[allow(clippy::cast_possible_truncation)]
 pub fn days_from_date(date: Date<Utc>) -> i32 {
-    let duration: time::Duration = date.signed_duration_since(DateTime::<Utc>::from(UNIX_EPOCH).date());
+    let duration: chrono::Duration = date.signed_duration_since(DateTime::<Utc>::from(UNIX_EPOCH).date());
     duration.num_days() as i32
 }
 

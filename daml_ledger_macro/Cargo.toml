@@ -10,5 +10,4 @@ edition = "2018"
 [dependencies]
 daml_ledger_api = { path = "../daml_ledger_api" }
 chrono = "0.4"
-time = "0.1"
 bigdecimal = "0.1"

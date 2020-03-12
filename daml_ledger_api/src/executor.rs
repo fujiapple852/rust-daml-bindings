@@ -5,9 +5,8 @@ use crate::data::{DamlError, DamlResult, DamlTransaction, DamlTransactionTree};
 use crate::util::Required;
 use crate::{DamlCommandFactory, DamlLedgerClient};
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use std::ops::Add;
-use time::Duration;
 
 pub enum DamlLedgerTimeMode {
     Static,

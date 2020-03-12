@@ -11,6 +11,5 @@ daml_ledger_util = { path = "../../daml_ledger_util" }
 tokio = { version = "0.2", features = [ "macros" ] }
 futures = "0.3"
 chrono = "0.4"
-time = "0.1"
 log = "0.4"
-log4rs = "0.8"
+log4rs = "0.11"

@@ -15,7 +15,7 @@ prost-derive = "0.6"
 zip = "0.5"
 yaml-rust = "0.4"
 trim-margin = "0.1"
-itertools = "0.8"
+itertools = "0.9"
 
 [build-dependencies]
 prost-build = "0.6"

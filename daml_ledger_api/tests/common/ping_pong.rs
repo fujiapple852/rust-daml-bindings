@@ -55,7 +55,7 @@ pub fn create_test_ping_record(sender: &str, receiver: &str, count: i64) -> Daml
 
 pub fn create_test_command_factory(workflow_id: &str, application_id: &str, sending_party: &str) -> DamlCommandFactory {
     let ledger_effective_time: DateTime<Utc> = EPOCH.parse::<DateTime<Utc>>().expect("invalid datetime");
-    let maximum_record_time = ledger_effective_time.add(time::Duration::seconds(30));
+    let maximum_record_time = ledger_effective_time.add(chrono::Duration::seconds(30));
     DamlCommandFactory::new(workflow_id, application_id, sending_party, ledger_effective_time, maximum_record_time)
 }
 
