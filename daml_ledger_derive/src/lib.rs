@@ -388,7 +388,6 @@
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 
-extern crate proc_macro;
 use daml_ledger_codegen::generator::attribute_code_generator::*;
 use daml_ledger_codegen::generator::{generate_tokens, RenderMethod};
 use daml_lf::DarFile;

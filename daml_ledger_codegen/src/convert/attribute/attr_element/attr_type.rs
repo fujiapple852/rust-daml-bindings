@@ -93,16 +93,11 @@ fn daml_type_from_segments(segments: &[&PathSegment]) -> AttrType {
 }
 
 fn split_segments<'a>(segments: &'a [&PathSegment]) -> (&'a PathSegment, Vec<String>) {
-    let (last_segment, path) = match segments {
+    match segments {
         [] => panic!("path has no segments"),
         [segment] => (segment, vec![]),
-        _ => {
-            let last = segments.last().expect("PathSegment");
-            let path = segments[1..segments.len() - 1].iter().map(|&s| s.ident.to_string()).collect();
-            (last, path)
-        },
-    };
-    (last_segment, path)
+        [path @ .., last] => (last, path[1..].iter().map(|&s| s.ident.to_string()).collect()),
+    }
 }
 
 fn extract_type_parameters(path_args: &PathArguments) -> Vec<&Type> {
