@@ -5,8 +5,9 @@ use crate::data::{DamlError, DamlResult, DamlTransaction, DamlTransactionTree};
 use crate::util::Required;
 use crate::{DamlCommandFactory, DamlLedgerClient};
 use async_trait::async_trait;
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use std::ops::Add;
+use std::time::Duration;
 
 pub enum DamlLedgerTimeMode {
     Static,
@@ -20,6 +21,7 @@ pub struct DamlSimpleExecutorBuilder<'a> {
     workflow_id: Option<&'a str>,
     application_id: Option<&'a str>,
     submission_window_secs: Option<i64>,
+    deduplication_time: Option<Duration>,
 }
 
 impl<'a> DamlSimpleExecutorBuilder<'a> {
@@ -31,6 +33,7 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
             workflow_id: None,
             application_id: None,
             submission_window_secs: None,
+            deduplication_time: None,
         }
     }
 
@@ -62,6 +65,13 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
         }
     }
 
+    pub fn deduplication_time(self, deduplication_time: Duration) -> Self {
+        Self {
+            deduplication_time: Some(deduplication_time),
+            ..self
+        }
+    }
+
     pub fn build(self) -> DamlSimpleExecutor<'a> {
         DamlSimpleExecutor::new(
             self.ledger_client,
@@ -70,6 +80,7 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
             self.workflow_id.unwrap_or("default-workflow"),
             self.application_id.unwrap_or("default-application"),
             self.submission_window_secs.unwrap_or(30),
+            self.deduplication_time,
         )
     }
 }
@@ -102,12 +113,13 @@ impl<'a> DamlSimpleExecutor<'a> {
         workflow_id: &str,
         application_id: &str,
         submission_window_secs: i64,
+        deduplication_time: Option<Duration>,
     ) -> Self {
         let (ledger_effective_time, maximum_record_time) = match time_mode {
             DamlLedgerTimeMode::Static => {
                 let ledger_effective_time: DateTime<Utc> =
                     "1970-01-01T00:00:00Z".parse::<DateTime<Utc>>().expect("invalid datetime");
-                let maximum_record_time = ledger_effective_time.add(Duration::seconds(submission_window_secs));
+                let maximum_record_time = ledger_effective_time.add(chrono::Duration::seconds(submission_window_secs));
                 (ledger_effective_time, maximum_record_time)
             },
             _ => panic!("Wallclock time not yet supported"),
@@ -119,6 +131,7 @@ impl<'a> DamlSimpleExecutor<'a> {
             acting_party,
             ledger_effective_time,
             maximum_record_time,
+            deduplication_time,
         );
 
         Self {

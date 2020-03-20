@@ -136,7 +136,14 @@ async fn exercise_choice(
 fn create_command_factory(workflow_id: &str, application_id: &str, sending_party: &str) -> DamlCommandFactory {
     let ledger_effective_time: DateTime<Utc> = Utc::now();
     let maximum_record_time = ledger_effective_time.add(Duration::seconds(TRANSACTION_WINDOW_SECS));
-    DamlCommandFactory::new(workflow_id, application_id, sending_party, ledger_effective_time, maximum_record_time)
+    DamlCommandFactory::new(
+        workflow_id,
+        application_id,
+        sending_party,
+        ledger_effective_time,
+        maximum_record_time,
+        None,
+    )
 }
 
 fn response(entity_name: &str) -> &str {

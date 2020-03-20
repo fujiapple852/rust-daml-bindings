@@ -61,11 +61,11 @@ impl DamlCommandService {
     /// # fn main() -> DamlResult<()> {
     /// futures::executor::block_on(async {
     /// let ledger_client = DamlLedgerClientBuilder::uri("http://127.0.0.1").connect().await?;
-    /// # let commands: DamlCommands = DamlCommands::new("", "", "", "", Utc::now(), Utc::now(), vec![]);
+    /// # let commands: DamlCommands = DamlCommands::new("", "", "", "", Utc::now(), Utc::now(), vec![], None);
     /// let future_command = ledger_client.command_service().submit_and_wait(commands).await;
     /// match future_command {
     ///     Ok(command_id) => assert_eq!("1234", command_id),
-    ///     Err(e) => panic!(format!("submit_and_wait failed, error was {}", e.description())),
+    ///     Err(e) => panic!(format!("submit_and_wait failed, error was {}", e.to_string())),
     /// }
     /// # Ok(())
     /// # })

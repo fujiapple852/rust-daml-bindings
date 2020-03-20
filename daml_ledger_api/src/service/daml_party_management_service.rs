@@ -3,7 +3,7 @@ use crate::data::DamlResult;
 use crate::data::party::DamlPartyDetails;
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::admin::party_management_service_client::PartyManagementServiceClient;
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::admin::{
-    AllocatePartyRequest, GetParticipantIdRequest, ListKnownPartiesRequest,
+    AllocatePartyRequest, GetParticipantIdRequest, GetPartiesRequest, ListKnownPartiesRequest,
 };
 use crate::ledger_client::DamlTokenRefresh;
 use crate::service::common::make_request;
@@ -48,6 +48,19 @@ impl DamlPartyManagementService {
         trace!("get_participant_id payload = {:?}, auth_token = {:?}", payload, self.auth_token);
         let participant = self.client().get_participant_id(make_request(payload, &self.auth_token)?).await?;
         Ok(participant.into_inner().participant_id)
+    }
+
+    /// Get the party details of the given parties.
+    ///
+    /// Only known parties will be returned in the list.
+    pub async fn get_parties(&self, parties: impl Into<Vec<String>>) -> DamlResult<Vec<DamlPartyDetails>> {
+        debug!("get_parties");
+        let payload = GetPartiesRequest {
+            parties: parties.into(),
+        };
+        trace!("get_parties payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let parties = self.client().get_parties(make_request(payload, &self.auth_token)?).await?;
+        Ok(parties.into_inner().party_details.into_iter().map(DamlPartyDetails::from).collect())
     }
 
     /// List the parties known by the backing participant.

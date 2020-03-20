@@ -2,9 +2,11 @@ use crate::data::command::DamlCommand;
 use crate::data::{DamlError, DamlResult};
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Command, Commands};
 use crate::util;
+use crate::util::to_grpc_duration;
 use chrono::DateTime;
 use chrono::Utc;
 use std::convert::TryFrom;
+use std::time::Duration;
 
 /// A list of DAML commands.
 #[derive(Debug, Eq, PartialEq)]
@@ -16,9 +18,11 @@ pub struct DamlCommands {
     pub ledger_effective_time: DateTime<Utc>,
     pub maximum_record_time: DateTime<Utc>,
     pub commands: Vec<DamlCommand>,
+    pub deduplication_time: Option<Duration>,
 }
 
 impl DamlCommands {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         workflow_id: impl Into<String>,
         application_id: impl Into<String>,
@@ -27,6 +31,7 @@ impl DamlCommands {
         ledger_effective_time: impl Into<DateTime<Utc>>,
         maximum_record_time: impl Into<DateTime<Utc>>,
         commands: impl Into<Vec<DamlCommand>>,
+        deduplication_time: impl Into<Option<Duration>>,
     ) -> Self {
         Self {
             workflow_id: workflow_id.into(),
@@ -36,6 +41,7 @@ impl DamlCommands {
             ledger_effective_time: ledger_effective_time.into(),
             maximum_record_time: maximum_record_time.into(),
             commands: commands.into(),
+            deduplication_time: deduplication_time.into(),
         }
     }
 
@@ -66,6 +72,10 @@ impl DamlCommands {
     pub fn commands(&self) -> &[DamlCommand] {
         &self.commands
     }
+
+    pub fn deduplication_time(&self) -> &Option<Duration> {
+        &self.deduplication_time
+    }
 }
 
 impl TryFrom<DamlCommands> for Commands {
@@ -83,6 +93,7 @@ impl TryFrom<DamlCommands> for Commands {
             ledger_effective_time: Some(util::to_grpc_timestamp(daml_commands.ledger_effective_time)?),
             maximum_record_time: Some(util::to_grpc_timestamp(daml_commands.maximum_record_time)?),
             commands: daml_commands.commands.into_iter().map(Command::from).collect(),
+            deduplication_time: daml_commands.deduplication_time.as_ref().map(to_grpc_duration).transpose()?,
         })
     }
 }

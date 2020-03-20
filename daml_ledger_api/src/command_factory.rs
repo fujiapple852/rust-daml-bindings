@@ -2,9 +2,12 @@ use crate::data::command::DamlCommand;
 use crate::data::DamlCommands;
 use chrono::DateTime;
 use chrono::Utc;
+use std::time::Duration;
 use uuid::Uuid;
 
 /// Factory for creating [`DamlCommands`] to submit to a DAML ledger.
+// TODO ledger_effective_time / maximum_record_time may be deprecated and replaced with deduplication_time (mutually
+// exclusive?)
 #[derive(Debug)]
 pub struct DamlCommandFactory {
     workflow_id: String,
@@ -12,6 +15,7 @@ pub struct DamlCommandFactory {
     party: String,
     ledger_effective_time: DateTime<Utc>,
     maximum_record_time: DateTime<Utc>,
+    deduplication_time: Option<Duration>,
 }
 
 impl DamlCommandFactory {
@@ -21,6 +25,7 @@ impl DamlCommandFactory {
         party: impl Into<String>,
         ledger_effective_time: impl Into<DateTime<Utc>>,
         maximum_record_time: impl Into<DateTime<Utc>>,
+        deduplication_time: impl Into<Option<Duration>>,
     ) -> Self {
         Self {
             workflow_id: workflow_id.into(),
@@ -28,6 +33,7 @@ impl DamlCommandFactory {
             party: party.into(),
             ledger_effective_time: ledger_effective_time.into(),
             maximum_record_time: maximum_record_time.into(),
+            deduplication_time: deduplication_time.into(),
         }
     }
 
@@ -59,6 +65,10 @@ impl DamlCommandFactory {
         self.make_commands(vec![command], Some(command_id))
     }
 
+    pub fn deduplication_time(&self) -> &Option<Duration> {
+        &self.deduplication_time
+    }
+
     pub fn make_commands<S, V>(&self, commands: V, command_id: Option<S>) -> DamlCommands
     where
         S: Into<String>,
@@ -72,6 +82,7 @@ impl DamlCommandFactory {
             self.ledger_effective_time,
             self.maximum_record_time,
             commands.into(),
+            self.deduplication_time,
         )
     }
 }
