@@ -1,13 +1,15 @@
+use crate::convert::archive::wrapper::payload::util::Required;
 use crate::convert::archive::wrapper::payload::{DamlModulePayload, PackageInternedResolver};
 use crate::convert::error::{DamlCodeGenError, DamlCodeGenResult};
-use daml_lf::LanguageVersion;
 use daml_lf::{DamlLfArchive, DamlLfPackage};
+use daml_lf::{LanguageFeatureVersion, LanguageVersion};
 use std::collections::HashMap;
 use std::convert::TryFrom;
 
 #[derive(Debug)]
 pub struct DamlPackagePayload<'a> {
-    pub name: &'a str,
+    pub name: String,
+    pub version: Option<String>,
     pub language_version: LanguageVersion,
     pub package_id: &'a str,
     pub interned_strings: &'a [String],
@@ -93,7 +95,6 @@ impl<'a> TryFrom<&'a DamlLfArchive> for DamlPackagePayload<'a> {
 
         Ok(match &daml_lf_archive.payload.package {
             DamlLfPackage::V1(package) => {
-                let name = daml_lf_archive.name.as_str();
                 let language_version = daml_lf_archive.payload.language_version;
                 let package_id = daml_lf_archive.hash.as_str();
                 let interned_strings = package.interned_strings.as_slice();
@@ -101,6 +102,15 @@ impl<'a> TryFrom<&'a DamlLfArchive> for DamlPackagePayload<'a> {
                     package.interned_dotted_names.iter().map(|dn| dn.segments_interned_str.as_slice()).collect();
                 let self_resolver =
                     SelfResolver::new(language_version, package_id, interned_strings, &interned_dotted_names);
+                let (name, version) = if language_version.supports_feature(&LanguageFeatureVersion::PACKAGE_METADATA) {
+                    let metadata = package.metadata.as_ref().req()?;
+                    let meta_name = self_resolver.resolve_string(metadata.name_interned_str)?;
+                    let meta_version = self_resolver.resolve_string(metadata.version_interned_str)?;
+                    (meta_name.to_owned(), Some(meta_version.to_owned()))
+                } else {
+                    let name = daml_lf_archive.name.as_str();
+                    (name.to_owned(), None)
+                };
                 let modules = package
                     .modules
                     .iter()
@@ -109,6 +119,7 @@ impl<'a> TryFrom<&'a DamlLfArchive> for DamlPackagePayload<'a> {
                     .collect::<DamlCodeGenResult<_>>()?;
                 Self {
                     name,
+                    version,
                     language_version,
                     package_id,
                     interned_strings,

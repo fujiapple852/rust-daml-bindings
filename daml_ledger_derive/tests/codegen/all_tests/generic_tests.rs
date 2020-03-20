@@ -7,13 +7,13 @@ use daml_ledger_api::DamlSimpleExecutorBuilder;
 use daml_ledger_derive::daml_codegen;
 
 daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_54-lf_1_7.dar",
+    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_55-lf_1_8.dar",
     module_filter_regex = "DA.GenericTypes"
 );
 
 #[test]
 fn test_generic_local_roundtrip() -> TestResult {
-    use testing_types_1_0_0::da::generic_types::*;
+    use testing_types::da::generic_types::*;
     let conc = ConcreteDataRecord::new(GenericDataRecord::new(Some(vec![0]), vec!["".to_string()], 1));
     let value = DamlValue::serialize_from(conc.clone());
     let conc_again: ConcreteDataRecord = value.deserialize_into()?;
@@ -23,7 +23,7 @@ fn test_generic_local_roundtrip() -> TestResult {
 
 #[test]
 fn test_partial_generic_local_roundtrip() -> TestResult {
-    use testing_types_1_0_0::da::generic_types::*;
+    use testing_types::da::generic_types::*;
     let conc = PartialConcreteDataRecord::<DamlText>::new(GenericDataRecord::new(Some(vec![0]), "".to_string(), 1));
     let value = DamlValue::serialize_from(conc.clone());
     let conc_again: PartialConcreteDataRecord<DamlText> = value.deserialize_into()?;
@@ -33,7 +33,7 @@ fn test_partial_generic_local_roundtrip() -> TestResult {
 
 #[test]
 fn test_recursive_generic_record_local_roundtrip() -> TestResult {
-    use testing_types_1_0_0::da::generic_types::*;
+    use testing_types::da::generic_types::*;
     let pattern = PatternRecord::new(GenericWrapperRecord::new(PatternRecord::new(Some(GenericWrapperRecord::new(
         PatternRecord::new(None),
     )))));
@@ -45,7 +45,7 @@ fn test_recursive_generic_record_local_roundtrip() -> TestResult {
 
 #[test]
 fn test_recursive_generic_variant_local_roundtrip() -> TestResult {
-    use testing_types_1_0_0::da::generic_types::*;
+    use testing_types::da::generic_types::*;
     let pattern = PatternVariant::PStart(GenericWrapperRecord::new(PatternVariant::PEnd));
     let value = DamlValue::serialize_from(pattern.clone());
     let pattern_again = value.deserialize_into()?;
@@ -55,7 +55,7 @@ fn test_recursive_generic_variant_local_roundtrip() -> TestResult {
 
 #[tokio::test]
 async fn test_create_contract_with_generic() -> TestResult {
-    use testing_types_1_0_0::da::generic_types::*;
+    use testing_types::da::generic_types::*;
     let _lock = SANDBOX_LOCK.lock()?;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();

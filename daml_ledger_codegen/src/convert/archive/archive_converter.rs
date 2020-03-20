@@ -21,7 +21,7 @@ impl<'a> TryFrom<&DamlArchiveWrapper<'a>> for DamlArchive<'a> {
     fn try_from(archive: &DamlArchiveWrapper<'a>) -> DamlCodeGenResult<Self> {
         let packages: HashMap<_, _> = archive
             .packages()
-            .map(|v| Ok((v.payload.name, DamlPackage::try_from(&v)?)))
+            .map(|v| Ok((v.payload.name.as_str(), DamlPackage::try_from(&v)?)))
             .collect::<DamlCodeGenResult<_>>()?;
         Ok(DamlArchive::new(archive.payload.name, packages))
     }
@@ -63,7 +63,12 @@ impl<'a> TryFrom<&DamlPackageWrapper<'a>> for DamlPackage<'a> {
                 node.data_types = data_types.into_iter().map(|dt| (dt.name(), dt)).collect();
             }
         }
-        Ok(DamlPackage::new(package.payload.name, package.payload.package_id, from_modules(package.modules())?))
+        Ok(DamlPackage::new(
+            &package.payload.name,
+            package.payload.package_id,
+            package.payload.version.as_ref().map(AsRef::as_ref),
+            from_modules(package.modules())?,
+        ))
     }
 }
 
@@ -168,12 +173,12 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
             target_data: DamlDataWrapper<'a>,
         ) -> DamlCodeGenResult<DamlDataRef<'a>> {
             let resolver = daml_type.parent_package;
-            let current_package_name = daml_type.parent_package.name;
+            let current_package_name = daml_type.parent_package.name.as_str();
             let target_package_name = match target_data {
-                DamlDataWrapper::Record(record) => record.parent_package.name,
-                DamlDataWrapper::Template(template) => template.parent_package.name,
-                DamlDataWrapper::Variant(variant) => variant.parent_package.name,
-                DamlDataWrapper::Enum(data_enum) => data_enum.parent_package.name,
+                DamlDataWrapper::Record(record) => record.parent_package.name.as_str(),
+                DamlDataWrapper::Template(template) => template.parent_package.name.as_str(),
+                DamlDataWrapper::Variant(variant) => variant.parent_package.name.as_str(),
+                DamlDataWrapper::Enum(data_enum) => data_enum.parent_package.name.as_str(),
             };
             let current_module_path = daml_type.parent_module.path.resolve(resolver)?;
             let target_module_path = data_ref.payload.module_path.resolve(resolver)?;

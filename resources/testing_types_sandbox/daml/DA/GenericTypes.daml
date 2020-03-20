@@ -2,7 +2,7 @@ daml 1.2
 module DA.GenericTypes where
 
 -- Fully generic data record
-data GenericDataRecord aaa bbb = GenericDataRecordCtor with first: aaa; middle: bbb, last: Int
+data GenericDataRecord aaa bbb = GenericDataRecord with first: aaa; middle: bbb, last: Int
     deriving (Eq, Show)
 
 -- Partially applied generic data type
@@ -12,11 +12,11 @@ type PartialConcreteDataType ccc = GenericDataRecord (Optional [Int]) ccc
 type ConcreteDataType = PartialConcreteDataType [Text]
 
 -- Generic data which uses a partially applied data type record
-data PartialConcreteDataRecord ddd = PartialDataRecordCtor with alpha: PartialConcreteDataType ddd
+data PartialConcreteDataRecord ddd = PartialConcreteDataRecord with alpha: PartialConcreteDataType ddd
     deriving (Eq, Show)
 
 -- Concrete data record
-data ConcreteDataRecord = ConcreteDataRecordCtor with beta: ConcreteDataType
+data ConcreteDataRecord = ConcreteDataRecord with beta: ConcreteDataType
     deriving (Eq, Show)
 
 -- Fully generic data variant
@@ -24,7 +24,7 @@ data GenericVariant qqq = VarBob qqq | VarAlice [qqq]
     deriving (Eq, Show)
 
 -- Fully applied data variant
-data ConcreteVariant = ConcreteVarient with conc_param: GenericVariant [Optional Int]
+data ConcreteVariant = ConcreteVariant with conc_param: GenericVariant [Optional Int]
     deriving (Eq, Show)
 
 -- Fully generic data record
@@ -54,8 +54,8 @@ name = scenario do
     p <- getParty "party"
     submit p do create TemplateWithGeneric with 
                     party = p
-                    data_x = (GenericDataRecordCtor with first = (Some [0]); middle = ["test"]; last = 101)
-                    data_y = (GenericDataRecordCtor with first = 0; middle = "boo"; last = 200)
-                    data_z = (ConcreteDataRecordCtor with beta = (GenericDataRecordCtor with first = Some [3]; middle = ["hello"]; last = 99))
+                    data_x = (GenericDataRecord with first = (Some [0]); middle = ["test"]; last = 101)
+                    data_y = (GenericDataRecord with first = 0; middle = "boo"; last = 200)
+                    data_z = (ConcreteDataRecord with beta = (GenericDataRecord with first = Some [3]; middle = ["hello"]; last = 99))
                     data_q = (PStart (GenericWrapperRecord PEnd))
     assert True

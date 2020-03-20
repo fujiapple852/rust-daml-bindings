@@ -39,8 +39,7 @@ impl DamlCommandService {
     /// must be consumed via the [`DamlTransactionService`].
     ///
     /// Note that this method is executed _asynchronously_ on the _client_ side and so will immediately return a
-    /// future which must be driven to completion before a result can be observed.  See [`submit_and_wait`] for a
-    /// version of this method which is submitted _synchronous_ on the _client_ side.
+    /// future which must be driven to completion before a result can be observed.
     ///
     /// This method supports server side tracing by providing a [`DamlTraceContext`] via the optional `trace_context`
     /// parameter.

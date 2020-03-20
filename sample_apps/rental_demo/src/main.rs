@@ -1,16 +1,14 @@
-// TODO
-#![allow(unused_imports)]
-#![allow(clippy::all)]
-
 use daml::prelude::*;
 
 include!("autogen/rental_0_0_1.rs");
 
 use daml_ledger_api::{DamlLedgerClientBuilder, DamlSimpleExecutorBuilder};
-use rental_0_0_1::da::rental::*;
+use rental::da::rental::*;
 
 #[tokio::main]
 async fn main() -> DamlResult<()> {
+    log4rs::init_file("sample_apps/rental_demo/resources/log4rs.yml", log4rs::file::Deserializers::default())
+        .map_err(|e| DamlError::Other(e.to_string()))?;
     let client = DamlLedgerClientBuilder::uri("http://localhost:8082").connect().await?.reset_and_wait().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let bob_executor = DamlSimpleExecutorBuilder::new(&client, "Bob").build();
@@ -22,14 +20,4 @@ async fn main() -> DamlResult<()> {
         RentalAgreementContractId::try_from(DamlContractId::new(accept_result.try_contract_id()?.to_owned()))?;
     println!("{:?}", &agreement_contract_id);
     Ok(())
-
-    //    // Previous API (pre-async)
-    //    let proposal_contract = alice_executor.execute(proposal_data.create()).await?;
-    //    let agreement_contract_id =
-    // RentalAgreementContractId::try_from(bob_executor.execute(proposal_contract.id().accept("", 0))?)?;
 }
-
-// fn main() {
-// daml_codegen(DAR_PATH, OUTPUT_PATH, &[], RenderMethod::Full, ModuleOutputMode::Separate)
-//     .expect("failed to generate code for DAML archive");
-// }

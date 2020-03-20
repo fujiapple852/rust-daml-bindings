@@ -10,7 +10,7 @@ pub enum DamlCodeGenError {
     /// A required optional field was None.
     MissingRequiredField,
     /// A DAML type not supported by the code generator was found.
-    UnsupportedType,
+    UnsupportedType(String),
     /// A DAML choice was not a `DamlDataWrapper::Record`.
     UnexpectedChoiceData,
     /// A feature supported by this archive version was not used.
@@ -55,7 +55,7 @@ impl Display for DamlCodeGenError {
                 curr_ver, feature_ver, min_ver
             ),
             DamlCodeGenError::UnexpectedData => write!(fmt, "UnexpectedData"),
-            DamlCodeGenError::UnsupportedType => write!(fmt, "UnexpectedType"),
+            DamlCodeGenError::UnsupportedType(s) => write!(fmt, "UnexpectedType {}", s),
             DamlCodeGenError::UnknownPackage(s) => write!(fmt, "Unknown package {}", s),
             DamlCodeGenError::UnknownModule(s) => write!(fmt, "Unknown module {}", s),
             DamlCodeGenError::UnknownData(s) => write!(fmt, "Unknown data {}", s),

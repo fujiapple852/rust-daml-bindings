@@ -11,7 +11,7 @@ use futures::TryStreamExt;
 
 #[tokio::test]
 async fn test_submit_and_wait_for_create() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock()?;
+    let _lock = STATIC_SANDBOX_LOCK.lock();
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
@@ -23,18 +23,18 @@ async fn test_submit_and_wait_for_create() -> TestResult {
 
 #[tokio::test]
 async fn test_submit_and_wait_for_transaction_id() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock()?;
+    let _lock = STATIC_SANDBOX_LOCK.lock();
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
     let transaction_id = ledger_client.command_service().submit_and_wait_for_transaction_id(commands).await?;
-    assert_eq!("0", transaction_id);
+    assert_eq!("1", transaction_id);
     Ok(())
 }
 
 #[tokio::test]
 async fn test_submit_and_wait_for_transaction() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock()?;
+    let _lock = STATIC_SANDBOX_LOCK.lock();
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
@@ -50,12 +50,12 @@ async fn test_submit_and_wait_for_transaction() -> TestResult {
 
 #[tokio::test]
 async fn test_submit_and_wait_for_transaction_tree() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock()?;
+    let _lock = STATIC_SANDBOX_LOCK.lock();
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
     let transaction = ledger_client.command_service().submit_and_wait_for_transaction_tree(commands).await?;
-    match &transaction.events_by_id()["#0:0"] {
+    match &transaction.events_by_id()["#1:0"] {
         DamlTreeEvent::Created(e) => {
             assert_eq!("Ping", e.template_id().entity_name());
         },
@@ -67,10 +67,10 @@ async fn test_submit_and_wait_for_transaction_tree() -> TestResult {
 /// Test that we are able to retrieve the current ledger offset.
 #[tokio::test]
 async fn test_completion_end_after_no_commands() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock()?;
+    let _lock = STATIC_SANDBOX_LOCK.lock();
     let ledger_client = new_static_sandbox().await?;
     let completion_offset = ledger_client.command_completion_service().get_completion_end().await?;
-    assert_eq!(DamlLedgerOffset::Absolute(0), completion_offset);
+    assert_eq!(DamlLedgerOffset::Absolute(1), completion_offset);
     Ok(())
 }
 
@@ -78,17 +78,15 @@ async fn test_completion_end_after_no_commands() -> TestResult {
 /// of the Ping contract and the creation of the Pong contract.
 #[tokio::test]
 async fn test_create_contract_and_exercise_choice() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock()?;
+    let _lock = STATIC_SANDBOX_LOCK.lock();
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let application_id = create_test_uuid(APPLICATION_ID_PREFIX);
     let workflow_id = create_test_uuid(WORKFLOW_ID_PREFIX);
     let create_command_id = create_test_uuid(COMMAND_ID_PREFIX);
     let exercise_command_id = create_test_uuid(COMMAND_ID_PREFIX);
-    test_create_ping_contract(&ledger_client, &package_id, &application_id, &workflow_id, &create_command_id, 0)
-        .await?;
-    test_exercise_pong_choice(&ledger_client, &package_id, &application_id, &workflow_id, &exercise_command_id).await?;
-    let transactions_stream = ledger_client
+    create_ping_contract(&ledger_client, &package_id, &application_id, &workflow_id, &create_command_id, 0).await?;
+    let mut transactions_stream = ledger_client
         .transaction_service()
         .get_transactions(
             DamlLedgerOffset::Boundary(DamlLedgerOffsetBoundary::Begin),
@@ -97,14 +95,24 @@ async fn test_create_contract_and_exercise_choice() -> TestResult {
             DamlVerbosity::Verbose,
         )
         .await?;
-    let transactions: Vec<_> = transactions_stream.take(2).try_collect().await?;
-    let flattened_txs: Vec<&DamlTransaction> = transactions.iter().flatten().collect();
-    let create_tx: &DamlTransaction = &flattened_txs[0];
-    let exercise_tx: &DamlTransaction = &flattened_txs[1];
+    let created_transactions: Vec<DamlTransaction> = transactions_stream.next().await.expect("created transaction")?;
+    let create_tx: &DamlTransaction = &created_transactions[0];
     let ping_created_event = match create_tx.events().first().ok_or(ERR_STR)? {
         DamlEvent::Created(e) => e,
         _ => panic!(),
     };
+    exercise_pong_choice(
+        &ledger_client,
+        &package_id,
+        &application_id,
+        &workflow_id,
+        &exercise_command_id,
+        ping_created_event.contract_id(),
+    )
+    .await?;
+    let exercised_transactions: Vec<DamlTransaction> =
+        transactions_stream.next().await.expect("exercised transaction")?;
+    let exercise_tx: &DamlTransaction = &exercised_transactions[0];
     let ping_archived_event = match &exercise_tx.events()[0] {
         DamlEvent::Archived(e) => e,
         _ => panic!(),
@@ -123,7 +131,7 @@ async fn test_create_contract_and_exercise_choice() -> TestResult {
 
 #[tokio::test]
 async fn test_combined_create_and_exercise() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock()?;
+    let _lock = STATIC_SANDBOX_LOCK.lock();
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let application_id = create_test_uuid(APPLICATION_ID_PREFIX);

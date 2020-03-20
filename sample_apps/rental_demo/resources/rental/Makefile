@@ -1,4 +1,4 @@
-DAML_LF_VERSION = 1.7
+DAML_LF_VERSION = 1.8
 OUTPUT_PATH = .daml/dist
 DAR_NAME = rental
 
@@ -14,4 +14,4 @@ inspect:
 	daml damlc inspect-dar ${OUTPUT_FULL}
 
 run: build
-	daml sandbox --port 8082 ${OUTPUT_FULL}
+	daml sandbox --port 8082 --contract-id-seeding=strong ${OUTPUT_FULL}

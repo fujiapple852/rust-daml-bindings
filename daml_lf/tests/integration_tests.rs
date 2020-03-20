@@ -51,14 +51,21 @@ pub fn test_fat_dar() -> DamlLfResult<()> {
 
 #[test]
 pub fn test_daml_lf_1_6() -> DamlLfResult<()> {
-    let dar = DarFile::from_file("test_resources/TestingTypes-1.0.0-sdk_0_13_36-lf_1_6.dar")?;
+    let dar = DarFile::from_file("test_resources/TestingTypes-1_0_0-sdk_0_13_36-lf_1_6.dar")?;
     assert_eq!(LanguageVersion::V1_6, *dar.main().payload().language_version());
     Ok(())
 }
 
 #[test]
 pub fn test_daml_lf_1_7() -> DamlLfResult<()> {
-    let dar = DarFile::from_file("test_resources/TestingTypes-1.0.0-sdk_0_13_37-lf_1_7.dar")?;
+    let dar = DarFile::from_file("test_resources/TestingTypes-1_0_0-sdk_0_13_37-lf_1_7.dar")?;
     assert_eq!(LanguageVersion::V1_7, *dar.main().payload().language_version());
+    Ok(())
+}
+
+#[test]
+pub fn test_daml_lf_1_8() -> DamlLfResult<()> {
+    let dar = DarFile::from_file("test_resources/TestingTypes-1_0_0-sdk_0_13_55-lf_1_8.dar")?;
+    assert_eq!(LanguageVersion::V1_8, *dar.main().payload().language_version());
     Ok(())
 }

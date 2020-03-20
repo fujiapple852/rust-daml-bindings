@@ -83,14 +83,18 @@ impl<'a> TryFrom<&'a Type> for DamlTypePayload<'a> {
                 PrimType::Optional =>
                     Ok(DamlTypePayload::Optional(Box::new(DamlTypePayload::try_from(prim.args.first().req()?)?))),
                 PrimType::Arrow => Ok(DamlTypePayload::Arrow),
-                PrimType::Map =>
+                PrimType::Textmap =>
                     Ok(DamlTypePayload::TextMap(Box::new(DamlTypePayload::try_from(prim.args.first().req()?)?))),
                 PrimType::Any => Ok(DamlTypePayload::Any),
                 PrimType::TypeRep => Ok(DamlTypePayload::TypeRep),
             },
             Sum::Con(con) => Ok(DamlTypePayload::DataRef(DamlDataRefPayload::try_from(con)?)),
             Sum::Var(var) => Ok(DamlTypePayload::Var(DamlVarPayload::try_from(var)?)),
-            Sum::Fun(_) | Sum::Forall(_) | Sum::Tuple(_) | Sum::Nat(_) => Err(DamlCodeGenError::UnsupportedType),
+            Sum::Fun(_) => Err(DamlCodeGenError::UnsupportedType("Fun".to_owned())),
+            Sum::Forall(_) => Err(DamlCodeGenError::UnsupportedType("Forall".to_owned())),
+            Sum::Struct(_) => Err(DamlCodeGenError::UnsupportedType("Struct".to_owned())),
+            Sum::Nat(_) => Err(DamlCodeGenError::UnsupportedType("Nat".to_owned())),
+            Sum::Syn(_) => Err(DamlCodeGenError::UnsupportedType("Syn".to_owned())),
         }
     }
 }

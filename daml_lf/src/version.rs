@@ -19,6 +19,7 @@ impl LanguageVersion {
     pub const V1_5: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V5);
     pub const V1_6: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V6);
     pub const V1_7: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V7);
+    pub const V1_8: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V8);
 
     pub fn new_v1(minor: LanguageV1MinorVersion) -> Self {
         LanguageVersion::LV1(minor)
@@ -101,6 +102,10 @@ impl LanguageFeatureVersion {
         name: "OPTIONAL_EXERCISE_ACTOR",
         min_version: LanguageVersion::V1_5,
     };
+    pub const PACKAGE_METADATA: LanguageFeatureVersion = LanguageFeatureVersion {
+        name: "PACKAGE_METADATA",
+        min_version: LanguageVersion::V1_8,
+    };
     pub const PARTY_ORDERING: LanguageFeatureVersion = LanguageFeatureVersion {
         name: "PARTY_ORDERING",
         min_version: LanguageVersion::V1_1,
@@ -138,6 +143,7 @@ pub enum LanguageV1MinorVersion {
     V5,
     V6,
     V7,
+    V8,
 }
 
 impl Display for LanguageV1MinorVersion {
@@ -151,6 +157,7 @@ impl Display for LanguageV1MinorVersion {
             LanguageV1MinorVersion::V5 => write!(f, "5"),
             LanguageV1MinorVersion::V6 => write!(f, "6"),
             LanguageV1MinorVersion::V7 => write!(f, "7"),
+            LanguageV1MinorVersion::V8 => write!(f, "8"),
         }
     }
 }
@@ -168,6 +175,7 @@ impl TryFrom<&str> for LanguageV1MinorVersion {
             "5" => Ok(LanguageV1MinorVersion::V5),
             "6" => Ok(LanguageV1MinorVersion::V6),
             "7" => Ok(LanguageV1MinorVersion::V7),
+            "8" => Ok(LanguageV1MinorVersion::V8),
             _ => Err(DamlLfError::UnknownVersion),
         }
     }
@@ -186,6 +194,7 @@ mod tests {
         assert!(LanguageV1MinorVersion::V4 < LanguageV1MinorVersion::V5);
         assert!(LanguageV1MinorVersion::V5 < LanguageV1MinorVersion::V6);
         assert!(LanguageV1MinorVersion::V6 < LanguageV1MinorVersion::V7);
+        assert!(LanguageV1MinorVersion::V7 < LanguageV1MinorVersion::V8);
     }
 
     #[test]
@@ -204,6 +213,7 @@ mod tests {
         assert!(LanguageVersion::V1_4 < LanguageVersion::V1_5);
         assert!(LanguageVersion::V1_5 < LanguageVersion::V1_6);
         assert!(LanguageVersion::V1_6 < LanguageVersion::V1_7);
+        assert!(LanguageVersion::V1_7 < LanguageVersion::V1_8);
     }
 
     #[test]

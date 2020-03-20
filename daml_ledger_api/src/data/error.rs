@@ -6,6 +6,7 @@ use tonic::codegen::http;
 /// A DAML ledger error.
 #[derive(Debug)]
 pub enum DamlError {
+    TimeoutError(Box<DamlError>),
     GRPCTransportError(tonic::transport::Error),
     GRPCStatusError(tonic::Status),
     GRPCPermissionError(tonic::Status),
@@ -23,6 +24,10 @@ pub enum DamlError {
 impl DamlError {
     pub fn new_failed_conversion(msg: impl Into<String>) -> Self {
         DamlError::FailedConversion(msg.into())
+    }
+
+    pub fn new_timeout_error(inner: DamlError) -> Self {
+        DamlError::TimeoutError(Box::new(inner))
     }
 }
 
@@ -43,6 +48,7 @@ impl fmt::Display for DamlError {
                 write!(fmt, "unexpected variant constructor, expected {} but found {}", expected, actual),
             DamlError::Other(e) => write!(fmt, "{}", e),
             DamlError::FailedConversion(e) => write!(fmt, "failed conversion: {}", e),
+            DamlError::TimeoutError(e) => write!(fmt, "timeout error: {}", e),
         }
     }
 }

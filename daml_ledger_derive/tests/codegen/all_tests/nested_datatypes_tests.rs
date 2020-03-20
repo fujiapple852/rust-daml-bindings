@@ -11,13 +11,13 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 
 daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_54-lf_1_7.dar",
+    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_55-lf_1_8.dar",
     module_filter_regex = "DA.Nested"
 );
 
 #[tokio::test]
 pub async fn test() -> TestResult {
-    use testing_types_1_0_0::da::nested::*;
+    use testing_types::da::nested::*;
     let _lock = SANDBOX_LOCK.lock()?;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();

@@ -193,7 +193,7 @@ impl DamlLedgerClient {
         let start = Instant::now();
         while let Err(e) = channel {
             if start.elapsed() > config.timeout {
-                return Err(e);
+                return Err(DamlError::new_timeout_error(e));
             }
             channel = Self::make_channel(config).await;
         }
@@ -245,7 +245,7 @@ impl DamlLedgerClient {
         }
         while let Err(e) = ledger_identity {
             if start.elapsed() > *timeout {
-                return Err(e);
+                return Err(DamlError::new_timeout_error(e));
             }
             ledger_identity = ledger_identity_service.get_ledger_identity().await;
         }

@@ -3,7 +3,7 @@ use std::io::{Error, Write};
 use std::path::{Path, PathBuf};
 use std::{env, error, fs};
 
-const PROTOBUF_DAML_FILE: &str = "resources/protobuf/com/digitalasset/daml_lf_1_7/daml_lf.proto";
+const PROTOBUF_DAML_FILE: &str = "resources/protobuf/com/digitalasset/daml_lf_1_8/daml_lf.proto";
 const PROTOBUF_PATH: &str = "resources/protobuf/";
 const OUTPUT_PATH: &str = "src/protobuf_autogen";
 const MODULE_HEADER: &str = "#![allow(clippy::all, clippy::pedantic, intra_doc_link_resolution_failure)]\n";

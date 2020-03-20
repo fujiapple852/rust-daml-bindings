@@ -10,7 +10,6 @@ use daml_ledger_api::{DamlCommandFactory, DamlLedgerClientBuilder};
 use daml_ledger_api::{DamlLedgerClient, DamlSandboxTokenBuilder};
 use std::error::Error;
 use std::ops::Add;
-use std::sync::Mutex;
 use std::time::Duration;
 use uuid::Uuid;
 
@@ -26,15 +25,15 @@ pub const WORKFLOW_ID_PREFIX: &str = "wf";
 pub const APPLICATION_ID_PREFIX: &str = "app";
 pub const ERR_STR: &str = "error";
 pub const EPOCH: &str = "1970-01-01T00:00:00Z";
-pub const STATIC_SANDBOX_URI: &str = "https://localhost:8081";
-pub const WALLCLOCK_SANDBOX_URI: &str = "https://localhost:8080";
+pub const STATIC_SANDBOX_URI: &str = "https://127.0.0.1:8081";
+pub const WALLCLOCK_SANDBOX_URI: &str = "https://127.0.0.1:8080";
 pub const TOKEN_VALIDITY_SECS: i64 = 60;
-pub const CONNECT_TIMEOUT_MS: u64 = 500;
+pub const CONNECT_TIMEOUT_MS: u64 = 20000;
 pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/certs/ec256.key";
 
 lazy_static! {
-    pub static ref STATIC_SANDBOX_LOCK: Mutex<()> = Mutex::new(());
-    pub static ref WALLCLOCK_SANDBOX_LOCK: Mutex<()> = Mutex::new(());
+    pub static ref STATIC_SANDBOX_LOCK: parking_lot::Mutex<()> = parking_lot::Mutex::new(());
+    pub static ref WALLCLOCK_SANDBOX_LOCK: parking_lot::Mutex<()> = parking_lot::Mutex::new(());
 }
 
 pub async fn new_wallclock_sandbox() -> DamlResult<DamlLedgerClient> {
@@ -67,7 +66,7 @@ pub fn create_test_uuid(prefix: &str) -> String {
     format!("{}-{}", prefix, Uuid::new_v4())
 }
 
-pub async fn test_create_ping_contract(
+pub async fn create_ping_contract(
     ledger_client: &DamlLedgerClient,
     package_id: &str,
     application_id: &str,
@@ -84,18 +83,19 @@ pub async fn test_create_ping_contract(
     Ok(())
 }
 
-pub async fn test_exercise_pong_choice(
+pub async fn exercise_pong_choice(
     ledger_client: &DamlLedgerClient,
     package_id: &str,
     application_id: &str,
     workflow_id: &str,
     exercise_command_id: &str,
+    contract_id: &str,
 ) -> TestResult {
     let template_id = create_test_pp_id(package_id, PING_ENTITY_NAME);
     let bob_commands_factory = create_test_command_factory(workflow_id, application_id, BOB_PARTY);
     let exercise_command = DamlCommand::Exercise(DamlExerciseCommand::new(
         template_id,
-        "#0:0",
+        contract_id,
         "RespondPong",
         DamlValue::new_record(DamlRecord::empty()),
     ));

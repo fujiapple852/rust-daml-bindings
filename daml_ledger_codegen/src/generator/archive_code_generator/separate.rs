@@ -34,9 +34,10 @@ fn generate_package_source(
         package.root_module.child_modules.values().filter(|&m| is_interesting_module(m, module_matcher)).collect();
     let module_decl = root_modules.iter().map(|m| make_pub_mod_declaration(m.name())).join("\n");
     let package_body = format!("{}\n{}", DISABLE_WARNINGS, module_decl);
-    let package_dir_path = PathBuf::from(output_path).join(to_rust_identifier(package.name));
-    let mut package_file = create_file(&PathBuf::from(output_path), &make_src_filename(package.name))?;
+    let mut package_file =
+        create_file(&PathBuf::from(output_path), &make_package_filename(package.name, package.version))?;
     package_file.write_all(package_body.as_bytes())?;
+    let package_dir_path = PathBuf::from(output_path).join(&make_package_name(package.name, package.version));
     for module in root_modules {
         generate_module_source(module, &package_dir_path, module_matcher, render_method)?;
     }
@@ -56,7 +57,7 @@ fn generate_module_source(
     let module_body = format!("{}\n{}{}", USE_DAML_PRELUDE, sub_module_decl, module_types_text);
     let module_dir_path = module.path[..module.path.len() - 1].iter().map(to_rust_identifier).join("/");
     let package_module_dir_path = PathBuf::from(package_dir_path).join(module_dir_path);
-    let mut module_file = create_file(&package_module_dir_path, &make_src_filename(module.name()))?;
+    let mut module_file = create_file(&package_module_dir_path, &make_module_filename(module.name()))?;
     module_file.write_all(module_body.as_bytes())?;
     for child_module in sub_modules {
         generate_module_source(child_module, package_dir_path, module_matcher, render_method)?;
@@ -78,7 +79,19 @@ fn create_file(base_dir: &PathBuf, filename: &str) -> io::Result<File> {
     File::create(base_dir.join(filename))
 }
 
-fn make_src_filename(name: &str) -> String {
+fn make_package_filename(name: &str, version: Option<&str>) -> String {
+    format!("{}.rs", make_package_name(name, version))
+}
+
+fn make_package_name(name: &str, version: Option<&str>) -> String {
+    if let Some(v) = version {
+        format!("{}_{}", to_rust_identifier(name), to_rust_identifier(v))
+    } else {
+        to_rust_identifier(name)
+    }
+}
+
+fn make_module_filename(name: &str) -> String {
     format!("{}.rs", to_rust_identifier(name))
 }
 

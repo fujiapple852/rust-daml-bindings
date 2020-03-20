@@ -8,12 +8,12 @@ use futures::StreamExt;
 
 #[tokio::test]
 async fn test_get_active_contracts() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock()?;
+    let _lock = STATIC_SANDBOX_LOCK.lock();
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let application_id = create_test_uuid(APPLICATION_ID_PREFIX);
     let workflow_id = create_test_uuid(WORKFLOW_ID_PREFIX);
-    test_create_ping_contract(
+    create_ping_contract(
         &ledger_client,
         &package_id,
         &application_id,
@@ -22,7 +22,7 @@ async fn test_get_active_contracts() -> TestResult {
         0,
     )
     .await?;
-    test_create_ping_contract(
+    create_ping_contract(
         &ledger_client,
         &package_id,
         &application_id,

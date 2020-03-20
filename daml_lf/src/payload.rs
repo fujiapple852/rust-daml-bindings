@@ -1,8 +1,8 @@
 use crate::error::{DamlLfError, DamlLfResult};
 use crate::protobuf_autogen::daml_lf_1;
 use crate::protobuf_autogen::daml_lf_1::module::Name;
-use crate::protobuf_autogen::daml_lf_1_7::archive_payload::Sum;
-use crate::protobuf_autogen::daml_lf_1_7::ArchivePayload;
+use crate::protobuf_autogen::daml_lf_1_8::archive_payload::Sum;
+use crate::protobuf_autogen::daml_lf_1_8::ArchivePayload;
 use crate::{LanguageV1MinorVersion, LanguageVersion};
 use bytes::Bytes;
 use itertools::Itertools;

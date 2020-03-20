@@ -691,7 +691,7 @@ pub fn daml_codegen(attr: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let params: CodeGeneratorParameters =
         CodeGeneratorParameters::from_list(&args).unwrap_or_else(|e| panic!(e.to_string()));
     let archive = DarFile::from_file(&params.dar_file)
-        .unwrap_or_else(|_| panic!("failed to load Dar file from {}", &params.dar_file));
+        .unwrap_or_else(|e| panic!("failed to load Dar file from {}, error was: {}", &params.dar_file, e.to_string()));
     let filters: Vec<_> = params.module_filter_regex.iter().map(String::as_str).collect();
     let render_method = match &params.mode {
         Some(name) if name.to_ascii_lowercase() == "intermediate" => RenderMethod::Intermediate,

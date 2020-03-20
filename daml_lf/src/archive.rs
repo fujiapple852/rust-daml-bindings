@@ -1,4 +1,4 @@
-use crate::protobuf_autogen::daml_lf_1_7::Archive;
+use crate::protobuf_autogen::daml_lf_1_8::Archive;
 use crate::DamlLfArchivePayload;
 use crate::DamlLfResult;
 use bytes::Bytes;
