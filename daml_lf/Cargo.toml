@@ -1,10 +1,12 @@
 [package]
 name = "daml_lf"
-description = "API for working with DAML-LF data"
 version = "0.1.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
-readme = "README.md"
-keywords = ["daml", "api", "damllf"]
+description = "API for working with DAML-LF data"
+repository = "https://github.com/fujiapple852/rust-daml-bindings"
+license = "Apache-2.0"
+keywords = ["daml", "api", "ledger"]
+categories = ["development-tools"]
 edition = "2018"
 build = "build.rs"
 

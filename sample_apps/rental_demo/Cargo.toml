@@ -2,6 +2,11 @@
 name = "rental_demo"
 version = "0.1.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
+description = "Rental demo application"
+repository = "https://github.com/fujiapple852/rust-daml-bindings"
+license = "Apache-2.0"
+keywords = ["daml", "api", "ledger"]
+categories = ["development-tools"]
 edition = "2018"
 build = "build.rs"
 

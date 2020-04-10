@@ -1,9 +1,12 @@
 [package]
 name = "daml"
-description = "A smart contract language for building distributed applications on a safe, privacy-aware runtime"
 version = "0.1.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
+description = "A smart contract language for building distributed applications on a safe, privacy-aware runtime"
+repository = "https://github.com/fujiapple852/rust-daml-bindings"
+license = "Apache-2.0"
 keywords = ["daml", "api", "ledger"]
+categories = ["development-tools"]
 edition = "2018"
 
 [dependencies]
