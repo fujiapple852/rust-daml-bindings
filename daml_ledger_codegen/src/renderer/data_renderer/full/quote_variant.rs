@@ -3,12 +3,12 @@ use proc_macro2::TokenStream;
 
 use quote::quote;
 
-use crate::element::{DamlField, DamlType, DamlTypeVar, DamlVariant};
 use crate::renderer::data_renderer::full::{
     quote_deserialize_generic_trait_bounds, quote_generic_param_list, quote_serialize_generic_trait_bounds,
 };
 use crate::renderer::type_renderer::quote_type;
 use crate::renderer::{is_supported_type, normalize_generic_param, quote_escaped_ident, quote_ident};
+use daml_lf::element::{DamlField, DamlType, DamlTypeVar, DamlVariant};
 
 /// Generate the variant `enum` and the `DamlDeserializeFrom` and `DamlDeserializeFrom` impls.
 pub fn quote_daml_variant(variant: &DamlVariant<'_>) -> TokenStream {

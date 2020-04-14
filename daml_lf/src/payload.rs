@@ -1,9 +1,10 @@
+use crate::element::DamlPackage;
 use crate::error::{DamlLfError, DamlLfResult};
 use crate::protobuf_autogen::daml_lf_1;
 use crate::protobuf_autogen::daml_lf_1::module::Name;
 use crate::protobuf_autogen::daml_lf_1_8::archive_payload::Sum;
 use crate::protobuf_autogen::daml_lf_1_8::ArchivePayload;
-use crate::{LanguageV1MinorVersion, LanguageVersion};
+use crate::{convert, LanguageV1MinorVersion, LanguageVersion};
 use bytes::Bytes;
 use itertools::Itertools;
 use prost::Message;
@@ -67,13 +68,23 @@ impl DamlLfArchivePayload {
     pub fn from_bytes(payload_buffer: impl Into<Bytes>) -> DamlLfResult<Self> {
         let payload: ArchivePayload = ArchivePayload::decode(payload_buffer.into())?;
         match payload.sum {
-            Some(Sum::DamlLf0(_)) => Err(DamlLfError::UnsupportedVersion),
+            Some(Sum::DamlLf0(_)) => Err(DamlLfError::new_unsupported_version(LanguageVersion::LV0.to_string())),
             Some(Sum::DamlLf1(p)) => Ok(Self::new(
                 LanguageVersion::new_v1(LanguageV1MinorVersion::try_from(payload.minor.as_str())?),
                 DamlLfPackage::V1(p),
             )),
-            _ => Err(DamlLfError::UnknownVersion),
+            _ => Err(DamlLfError::new_unknown_version("none")),
         }
+    }
+
+    /// Convert a [`DamlLfArchivePayload`] to a [`DamlPackage`] and map function `f` over it.
+    ///
+    /// TODO document this with example
+    pub fn apply<R, F>(self, f: F) -> DamlLfResult<R>
+    where
+        F: FnMut(&DamlPackage<'_>) -> R,
+    {
+        convert::apply_payload(self, f)
     }
 
     /// Returns true if the `package` within this `DamlLfArchivePayload` contains `module`, flase otherwise.

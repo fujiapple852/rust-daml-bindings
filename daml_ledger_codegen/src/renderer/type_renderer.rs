@@ -5,9 +5,9 @@ use proc_macro2::TokenStream;
 
 use quote::quote;
 
-use crate::element::{DamlAbsoluteDataRef, DamlDataRef, DamlNonLocalDataRef, DamlType};
 use crate::renderer::renderer_utils::quote_escaped_ident;
 use crate::renderer::{normalize_generic_param, quote_ident};
+use daml_lf::element::{DamlAbsoluteDataRef, DamlDataRef, DamlNonLocalDataRef, DamlType};
 
 #[allow(clippy::match_same_arms)]
 pub fn quote_type(daml_type: &DamlType<'_>) -> TokenStream {

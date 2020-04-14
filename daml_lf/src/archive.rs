@@ -1,6 +1,7 @@
+use crate::element::DamlPackage;
 use crate::protobuf_autogen::daml_lf_1_8::Archive;
-use crate::DamlLfArchivePayload;
 use crate::DamlLfResult;
+use crate::{convert, DamlLfArchivePayload};
 use bytes::Bytes;
 use prost::Message;
 use std::ffi::OsStr;
@@ -151,6 +152,16 @@ impl DamlLfArchive {
         dalf_file.read_to_end(&mut buffer)?;
         let archive_name_stem = dalf_path.as_ref().file_stem().and_then(OsStr::to_str).unwrap_or(DEFAULT_ARCHIVE_NAME);
         Ok(Self::from_bytes_named(archive_name_stem, buffer)?)
+    }
+
+    /// Convert a [`DamlLfArchive`] to a [`DamlPackage`] and map function `f` over it.
+    ///
+    /// TODO document this with example
+    pub fn apply<R, F>(&self, f: F) -> DamlLfResult<R>
+    where
+        F: FnMut(&DamlPackage<'_>) -> R,
+    {
+        convert::apply_dalf(self, f)
     }
 
     /// The name of this archive.

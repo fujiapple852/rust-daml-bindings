@@ -1,4 +1,4 @@
-use crate::element::{DamlDataRef, DamlType, DamlVar};
+use daml_lf::element::{DamlDataRef, DamlType, DamlVar};
 use heck::SnakeCase;
 use itertools::Itertools;
 use proc_macro2::{Ident, Span, TokenStream};

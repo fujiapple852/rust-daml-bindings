@@ -1,9 +1,9 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::element::DamlArchive;
 use crate::generator::{ModuleMatcher, RenderMethod};
 use crate::renderer::quote_package;
+use daml_lf::element::DamlArchive;
 
 pub fn quote_archive(
     archive: &DamlArchive<'_>,

@@ -1,9 +1,10 @@
 use crate::DamlLfError;
+use serde::Serialize;
 use std::convert::TryFrom;
 use std::fmt::{Display, Error, Formatter};
 
 /// DAML Ledger Fragment language version.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize)]
 pub enum LanguageVersion {
     LV0,
     LV1(LanguageV1MinorVersion),
@@ -133,7 +134,7 @@ impl LanguageFeatureVersion {
 }
 
 /// DAML Ledger Fragment language V1 minor version.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize)]
 pub enum LanguageV1MinorVersion {
     V0,
     V1,
@@ -176,7 +177,7 @@ impl TryFrom<&str> for LanguageV1MinorVersion {
             "6" => Ok(LanguageV1MinorVersion::V6),
             "7" => Ok(LanguageV1MinorVersion::V7),
             "8" => Ok(LanguageV1MinorVersion::V8),
-            _ => Err(DamlLfError::UnknownVersion),
+            _ => Err(DamlLfError::new_unknown_version(minor_version)),
         }
     }
 }

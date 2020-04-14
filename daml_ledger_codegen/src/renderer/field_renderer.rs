@@ -2,9 +2,9 @@ use proc_macro2::TokenStream;
 
 use quote::quote;
 
-use crate::element::DamlField;
 use crate::renderer::quote_escaped_ident;
 use crate::renderer::type_renderer::quote_type;
+use daml_lf::element::DamlField;
 
 pub fn quote_fields(field: &[&DamlField<'_>]) -> TokenStream {
     let all_fields_tokens: Vec<_> = field.iter().map(|&field| quote_field(field)).collect();

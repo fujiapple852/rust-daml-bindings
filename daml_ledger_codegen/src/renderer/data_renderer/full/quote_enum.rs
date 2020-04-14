@@ -3,11 +3,11 @@ use proc_macro2::TokenStream;
 
 use quote::quote;
 
-use crate::element::{DamlEnum, DamlTypeVar};
 use crate::renderer::data_renderer::full::{
     quote_deserialize_generic_trait_bounds, quote_generic_param_list, quote_serialize_generic_trait_bounds,
 };
 use crate::renderer::quote_escaped_ident;
+use daml_lf::element::{DamlEnum, DamlTypeVar};
 
 /// Generate the `enum` and the `From` and `TryFrom` impls.
 pub fn quote_daml_enum(daml_enum: &DamlEnum<'_>) -> TokenStream {

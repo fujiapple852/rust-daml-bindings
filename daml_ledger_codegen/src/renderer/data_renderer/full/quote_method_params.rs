@@ -1,6 +1,6 @@
-use crate::element::DamlField;
 use crate::renderer::quote_escaped_ident;
 use crate::renderer::type_renderer::quote_type;
+use daml_lf::element::DamlField;
 use proc_macro2::TokenStream;
 use quote::quote;
 

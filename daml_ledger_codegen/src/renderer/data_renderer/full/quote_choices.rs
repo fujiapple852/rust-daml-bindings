@@ -2,12 +2,12 @@ use proc_macro2::TokenStream;
 
 use quote::quote;
 
-use crate::element::{DamlChoice, DamlField, DamlType};
 use crate::renderer::data_renderer::full::quote_contract_struct::quote_contract_id_struct_name;
 use crate::renderer::data_renderer::full::quote_method_arguments;
 use crate::renderer::is_supported_type;
 use crate::renderer::renderer_utils::quote_escaped_ident;
 use crate::renderer::type_renderer::quote_type;
+use daml_lf::element::{DamlChoice, DamlField, DamlType};
 use heck::SnakeCase;
 
 pub fn quote_choice(name: &str, items: &[DamlChoice<'_>]) -> TokenStream {
