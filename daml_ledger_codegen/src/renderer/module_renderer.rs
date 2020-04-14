@@ -3,10 +3,10 @@ use proc_macro2::TokenStream;
 
 use quote::quote;
 
-use crate::element::DamlModule;
 use crate::generator::ModuleMatcher;
 use crate::generator::RenderMethod;
 use crate::renderer::{quote_all_data, quote_escaped_ident, to_module_path};
+use daml_lf::element::DamlModule;
 
 pub fn quote_module_tree(
     name: &str,

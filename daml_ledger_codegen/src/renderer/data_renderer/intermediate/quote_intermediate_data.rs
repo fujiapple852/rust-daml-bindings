@@ -1,7 +1,7 @@
-use crate::element::{DamlChoice, DamlEnum, DamlField, DamlRecord, DamlTemplate, DamlType, DamlVariant};
 use crate::renderer::field_renderer::quote_fields;
 use crate::renderer::type_renderer::quote_type;
 use crate::renderer::{is_supported_type, quote_escaped_ident, to_module_path};
+use daml_lf::element::{DamlChoice, DamlEnum, DamlField, DamlRecord, DamlTemplate, DamlType, DamlVariant};
 use heck::SnakeCase;
 use proc_macro2::TokenStream;
 use quote::quote;

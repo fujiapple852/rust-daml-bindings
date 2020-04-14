@@ -1,84 +1,87 @@
-use crate::error::DamlLfError::{DarParseError, IOError};
-use std::error;
-use std::fmt;
-use zip::result::ZipError;
+use thiserror::Error;
 
 /// Represents `DAML-LF` specific errors.
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum DamlLfError {
-    DamlLfParseError(prost::DecodeError),
+    #[error("failed to parse DAML LF")]
+    DamlLfParseError(#[from] prost::DecodeError),
+    #[error("failed to parse dar file")]
     DarParseError(String),
-    StdError(Box<dyn std::error::Error>),
-    IOError(std::io::Error),
-    UnknownVersion,
-    UnsupportedVersion,
-    Other(String),
+    #[error("failed to convert DAML LF")]
+    DamlLfConvertError(#[from] DamlLfConvertError),
+    #[error("io error")]
+    IOError(#[from] std::io::Error),
+    #[error("unknown DAML LF version {0}")]
+    UnknownVersion(String),
+    #[error("unsupported DAML LF version {0}")]
+    UnsupportedVersion(String),
 }
 
 impl DamlLfError {
     pub fn new_dar_parse_error(error: impl Into<String>) -> Self {
         DamlLfError::DarParseError(error.into())
     }
-}
 
-impl fmt::Display for DamlLfError {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            DamlLfError::Other(e) => write!(fmt, "Other: {}", e),
-            DamlLfError::DamlLfParseError(e) => write!(fmt, "ParseError: {}", (e as &prost::DecodeError)),
-            DamlLfError::DarParseError(e) => write!(fmt, "DarParseError: {}", e),
-            DamlLfError::IOError(e) => write!(fmt, "IOError: {}", (e as &std::io::Error)),
-            DamlLfError::StdError(e) => write!(fmt, "StdError: {}", (e as &Box<dyn std::error::Error>)),
-            DamlLfError::UnknownVersion => write!(fmt, "unknown DAML-LF version"),
-            DamlLfError::UnsupportedVersion => write!(fmt, "unsupported DAML-LF version"),
-        }
+    pub fn new_unknown_version(version: impl Into<String>) -> Self {
+        DamlLfError::UnknownVersion(version.into())
     }
-}
 
-impl error::Error for DamlLfError {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        match self {
-            DamlLfError::DamlLfParseError(e) => Some(e),
-            DamlLfError::IOError(e) => Some(e),
-            _ => None,
-        }
-    }
-}
-
-impl From<prost::DecodeError> for DamlLfError {
-    fn from(e: prost::DecodeError) -> Self {
-        DamlLfError::DamlLfParseError(e)
-    }
-}
-
-impl From<&str> for DamlLfError {
-    fn from(e: &str) -> Self {
-        DamlLfError::Other(e.to_owned())
-    }
-}
-
-impl From<Box<dyn std::error::Error>> for DamlLfError {
-    fn from(e: Box<dyn std::error::Error>) -> Self {
-        DamlLfError::StdError(e)
-    }
-}
-
-impl From<std::io::Error> for DamlLfError {
-    fn from(e: std::io::Error) -> Self {
-        IOError(e)
+    pub fn new_unsupported_version(version: impl Into<String>) -> Self {
+        DamlLfError::UnsupportedVersion(version.into())
     }
 }
 
 impl From<yaml_rust::scanner::ScanError> for DamlLfError {
     fn from(e: yaml_rust::scanner::ScanError) -> Self {
-        DarParseError(e.to_string())
+        DamlLfError::DarParseError(e.to_string())
     }
 }
 
-impl From<ZipError> for DamlLfError {
-    fn from(e: ZipError) -> Self {
-        DarParseError(e.to_string())
+impl From<zip::result::ZipError> for DamlLfError {
+    fn from(e: zip::result::ZipError) -> Self {
+        DamlLfError::DarParseError(e.to_string())
     }
 }
 
-pub type DamlLfResult<T> = ::std::result::Result<T, DamlLfError>;
+pub type DamlLfResult<T> = Result<T, DamlLfError>;
+
+/// DAML code generator errors.
+#[derive(Debug, Error)]
+pub enum DamlLfConvertError {
+    /// A `DamlTypePayload::ContractId` contained more than one type argument.
+    #[error("unexpected contract id type arguments")]
+    UnexpectedContractIdTypeArguments,
+    /// A required optional field was None.
+    #[error("required field was not supplied")]
+    MissingRequiredField,
+    /// A DAML type not supported by the code generator was found.
+    #[error("the type {0} is not supported by the code generator")]
+    UnsupportedType(String),
+    /// A DAML choice was not a `DamlDataWrapper::Record`.
+    #[error("choice argument was not a record")]
+    UnexpectedChoiceData,
+    /// A feature supported by this archive version was not used.
+    #[error("DAML LF version {0} supports feature {1} but was not used (supported as of version {2})")]
+    SupportedFeatureUnused(String, String, String),
+    /// A feature not supported by this archive version was used.
+    #[error("DAML LF version {0} does not support feature {1} (requires version {2})")]
+    UnsupportedFeatureUsed(String, String, String),
+    /// An unexpected `DamlDataPayload` variant was found.
+    #[error("unexpected DamlDataPayload variant")]
+    UnexpectedData,
+    /// Expected a given `DamlTypePayload` but found a different `DamlTypePayload`
+    #[error("expected type {0} but found type {1}")]
+    UnexpectedType(String, String),
+    /// Failed to lookup a `DamlPackagePayload` by id.
+    #[error("failed to lookup a DamlPackagePayload with id {0}")]
+    UnknownPackage(String),
+    /// Failed to lookup a `DamlModulePayload` by id.
+    #[error("failed to lookup a DamlModulePayload with id {0}")]
+    UnknownModule(String),
+    /// Failed to lookup a `DamlDataPayload` by id.
+    #[error("failed to lookup a DamlDataPayload with id {0}")]
+    UnknownData(String),
+}
+
+/// DAML LF convert result.
+pub type DamlLfConvertResult<T> = Result<T, DamlLfConvertError>;

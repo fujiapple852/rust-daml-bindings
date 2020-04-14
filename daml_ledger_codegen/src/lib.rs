@@ -20,16 +20,10 @@
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 #![recursion_limit = "128"]
 
-extern crate proc_macro;
-
-/// Representation of DAML types.
-mod element;
-
-/// Converters from DAML types to Rust types.
-mod convert;
+mod error;
 
 /// Element renderers.
-mod renderer;
+pub mod renderer;
 
 /// Code generators for producing Rust implementations of DAML types.
 pub mod generator;

@@ -8,8 +8,8 @@ use self::intermediate::quote_daml_enum as quote_daml_enum_intermediate;
 use self::intermediate::quote_daml_record as quote_daml_record_intermediate;
 use self::intermediate::quote_daml_template as quote_daml_template_intermediate;
 use self::intermediate::quote_daml_variant as quote_daml_variant_intermediate;
-use crate::element::DamlData;
 use crate::generator::RenderMethod;
+use daml_lf::element::DamlData;
 
 use quote::quote;
 

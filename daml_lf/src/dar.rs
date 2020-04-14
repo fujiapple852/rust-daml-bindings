@@ -1,4 +1,6 @@
 use crate::archive::DamlLfArchive;
+use crate::convert;
+use crate::element::DamlArchive;
 use crate::error::{DamlLfError, DamlLfResult};
 use crate::manifest::DarManifest;
 use crate::DEFAULT_ARCHIVE_NAME;
@@ -94,6 +96,16 @@ impl DarFile {
         let dalf_main = Self::parse_dalf_from_archive(&mut zip_archive, manifest.dalf_main())?;
         let dalf_dependencies = Self::parse_dalfs_from_archive(&mut zip_archive, manifest.dalf_dependencies())?;
         Ok(Self::new(manifest, dalf_main, dalf_dependencies))
+    }
+
+    /// Convert a [`DarFile`] to a [`DamlArchive`] and map function `f` over it.
+    ///
+    /// TODO document this with example
+    pub fn apply<R, F>(&self, f: F) -> DamlLfResult<R>
+    where
+        F: FnMut(&DamlArchive<'_>) -> R,
+    {
+        convert::apply_dar(self, f)
     }
 
     /// The `manifest` information contained within this `DarFile`.

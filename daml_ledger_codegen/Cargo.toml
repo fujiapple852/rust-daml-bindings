@@ -11,7 +11,6 @@ edition = "2018"
 
 [dependencies]
 daml_lf = { path = "../daml_lf" }
-syn = { version = "1.0", features = ["full"] }
 quote = "1.0"
 proc-macro2 = "1.0"
 itertools = "0.9"

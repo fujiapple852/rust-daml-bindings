@@ -1,4 +1,4 @@
-use crate::element::DamlTypeVar;
+use daml_lf::element::DamlTypeVar;
 use proc_macro2::TokenStream;
 
 use crate::renderer::{normalize_generic_param, quote_ident};

@@ -1,4 +1,4 @@
-use crate::convert::error::{DamlCodeGenError, DamlCodeGenResult};
+use crate::error::{DamlCodeGenError, DamlCodeGenResult};
 use regex::Regex;
 
 pub struct ModuleMatcher {

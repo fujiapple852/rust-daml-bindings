@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 
 use quote::quote;
 
-use crate::element::DamlTemplate;
+use daml_lf::element::DamlTemplate;
 
 use crate::renderer::data_renderer::full::quote_contract_struct::{
     quote_contract_struct_and_impl, quote_contract_struct_name,

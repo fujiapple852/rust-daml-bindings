@@ -209,9 +209,11 @@
 //! #    pub receiver: DamlParty,
 //! #    pub count: DamlInt64,
 //! # }
+//! # fn main() -> DamlResult<()> {
 //! # let created_event = DamlCreatedEvent::new("", "", DamlIdentifier::new("", "", ""), None, DamlRecord::new(vec![], None::<DamlIdentifier>), vec![], vec![], vec![], "");
 //! let ping_contract: PingContract = created_event.try_into()?;
 //! # Ok::<(), DamlError>(())
+//! }
 //! ```
 //!
 //! Note that the [`DamlCreatedEvent`] returned by the DAML ledger is converted into a `PingContract` rather than a
@@ -226,6 +228,7 @@
 //! #    pub receiver: DamlParty,
 //! #    pub count: DamlInt64,
 //! # }
+//! # fn main() -> DamlResult<()> {
 //! # let created_event = DamlCreatedEvent::new("", "", DamlIdentifier::new("", "", ""), None, DamlRecord::new(vec![], None::<DamlIdentifier>), vec![], vec![], vec![], "");
 //! # let ping_contract: PingContract = created_event.try_into()?;
 //! assert_eq!("Alice", ping_contract.data().sender);
@@ -233,6 +236,7 @@
 //! assert_eq!(0, ping_contract.data().count);
 //! assert_eq!("#0:0", ping_contract.id().contract_id);
 //! # Ok::<(), DamlError>(())
+//! # }
 //! ```
 //! > **_NOTE:_**  The contract id may be refactored to use a separate type in future.
 //!
@@ -253,10 +257,12 @@
 //! #     #[ResetCount]
 //! #     fn reset_count(&self, new_count: DamlInt64) {}
 //! # }
+//! # fn main() -> DamlResult<()> {
 //! # let created_event = DamlCreatedEvent::new("", "", DamlIdentifier::new("", "", ""), None, DamlRecord::new(vec![], None::<DamlIdentifier>), vec![], vec![], vec![], "");
 //! # let ping_contract: PingContract = created_event.try_into()?;
 //! let exercise_command = ping_contract.id().reset_count_command(5);
 //! # Ok::<(), DamlError>(())
+//! }
 //! ```
 //!
 //! The generated [`DamlExerciseCommand`] can then be submitted to the DAML ledger via the [`DamlCommandService`] or
@@ -352,6 +358,7 @@
 //! - mention support for variant, enum, etc
 //! - limitations / not handled (recursive types, function params, vars)
 //! - usage from build.rs
+//! - generics
 //!
 //! [`DamlTemplate`]: ../daml_ledger_derive/attr.DamlTemplate.html
 //! [`DamlChoices`]: ../daml_ledger_derive/attr.DamlChoices.html
@@ -388,9 +395,9 @@
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 
-use daml_ledger_codegen::generator::attribute_code_generator::*;
-use daml_ledger_codegen::generator::{generate_tokens, RenderMethod};
-use daml_lf::DarFile;
+mod convert;
+mod generator;
+
 use darling::FromMeta;
 use syn::{parse_macro_input, AttributeArgs, DeriveInput, ItemImpl};
 
@@ -457,7 +464,7 @@ pub fn DamlTemplate(attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
     let template_info: DamlTemplateInfo = DamlTemplateInfo::from_list(&parse_macro_input!(attr as AttributeArgs))
         .unwrap_or_else(|e| panic!(e.to_string()));
     let input: DeriveInput = parse_macro_input!(input as DeriveInput);
-    generate_template(input, template_info.package_id, template_info.module_name)
+    generator::generate_template(input, template_info.package_id, template_info.module_name)
 }
 
 /// Custom attribute for modelling DAML choices.
@@ -534,7 +541,7 @@ pub fn DamlTemplate(attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 #[proc_macro_attribute]
 pub fn DamlChoices(_attr: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input: ItemImpl = parse_macro_input!(input as ItemImpl);
-    generate_choices(input)
+    generator::generate_choices(input)
 }
 
 /// Custom attribute for modelling DAML data structures.
@@ -579,7 +586,7 @@ pub fn DamlChoices(_attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 #[proc_macro_attribute]
 pub fn DamlData(_attr: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input: DeriveInput = parse_macro_input!(input as DeriveInput);
-    generate_data_struct(input)
+    generator::generate_data_struct(input)
 }
 
 /// Custom attribute for modelling DAML variants.
@@ -637,7 +644,7 @@ pub fn DamlData(_attr: proc_macro::TokenStream, input: proc_macro::TokenStream) 
 #[proc_macro_attribute]
 pub fn DamlVariant(_attr: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input: DeriveInput = parse_macro_input!(input as DeriveInput);
-    generate_data_variant(input)
+    generator::generate_data_variant(input)
 }
 
 /// Custom attribute for modelling DAML enums.
@@ -681,26 +688,14 @@ pub fn DamlVariant(_attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 #[proc_macro_attribute]
 pub fn DamlEnum(_attr: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input: DeriveInput = parse_macro_input!(input as DeriveInput);
-    generate_data_enum(input)
+    generator::generate_data_enum(input)
 }
 
-/// TODO
+/// TODO document this
 #[proc_macro]
 pub fn daml_codegen(attr: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let args = parse_macro_input!(attr as AttributeArgs);
-    let params: CodeGeneratorParameters =
-        CodeGeneratorParameters::from_list(&args).unwrap_or_else(|e| panic!(e.to_string()));
-    let archive = DarFile::from_file(&params.dar_file)
-        .unwrap_or_else(|e| panic!("failed to load Dar file from {}, error was: {}", &params.dar_file, e.to_string()));
-    let filters: Vec<_> = params.module_filter_regex.iter().map(String::as_str).collect();
-    let render_method = match &params.mode {
-        Some(name) if name.to_ascii_lowercase() == "intermediate" => RenderMethod::Intermediate,
-        Some(name) if name.to_ascii_lowercase() == "full" => RenderMethod::Full,
-        Some(name) => panic!(format!("unknown mode: {}, expected Intermediate or Full", name)),
-        _ => RenderMethod::Full,
-    };
-    let expanded = generate_tokens(&archive, filters.as_slice(), &render_method).expect("failed to generate DAML code");
-    proc_macro::TokenStream::from(expanded)
+    generator::generate_tokens(args)
 }
 
 #[doc(hidden)]

@@ -2,7 +2,6 @@ use proc_macro2::TokenStream;
 
 use quote::quote;
 
-use crate::element::{DamlField, DamlRecord, DamlType, DamlTypeVar};
 use crate::renderer::data_renderer::full::{
     quote_deserialize_generic_trait_bounds, quote_generic_param_list, quote_method_arguments,
     quote_serialize_generic_trait_bounds,
@@ -11,6 +10,7 @@ use crate::renderer::type_renderer::quote_type;
 use crate::renderer::{
     is_supported_type, make_ignored_ident, normalize_generic_param, quote_escaped_ident, quote_ident,
 };
+use daml_lf::element::{DamlField, DamlRecord, DamlType, DamlTypeVar};
 
 /// Generate the `Foo` struct and methods.
 pub fn quote_daml_record(daml_record: &DamlRecord<'_>) -> TokenStream {
