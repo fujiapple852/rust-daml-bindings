@@ -1,4 +1,4 @@
-sdk-version: 0.13.55
+sdk-version: 0.13.56-snapshot.20200411.3905.0.f050da78
 name: TestingTypes
 source: daml/LibraryModules.daml
 parties:
@@ -7,6 +7,14 @@ parties:
 version: 1.0.0
 exposed-modules:
   - DA.Shape
+  - DA.VariantExamples
+  - DA.GenericTypes
+  - DA.Nested
+  - DA.RentDemo
+  - DA.PingPong
+  - DA.Vehicle
+  - DA.MyVar
+  - LibraryModules
 dependencies:
   - daml-prim
   - daml-stdlib

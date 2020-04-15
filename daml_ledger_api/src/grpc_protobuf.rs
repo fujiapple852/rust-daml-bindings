@@ -4,12 +4,12 @@ pub mod com {
         pub mod ledger {
             pub mod api {
                 pub mod v1 {
-                    include!(concat!(env!("OUT_DIR"), "/com.digitalasset.ledger.api.v1.rs"));
+                    include!(concat!(env!("OUT_DIR"), "/com.daml.ledger.api.v1.rs"));
                     pub mod testing {
-                        include!(concat!(env!("OUT_DIR"), "/com.digitalasset.ledger.api.v1.testing.rs"));
+                        include!(concat!(env!("OUT_DIR"), "/com.daml.ledger.api.v1.testing.rs"));
                     }
                     pub mod admin {
-                        include!(concat!(env!("OUT_DIR"), "/com.digitalasset.ledger.api.v1.admin.rs"));
+                        include!(concat!(env!("OUT_DIR"), "/com.daml.ledger.api.v1.admin.rs"));
                     }
                 }
             }

@@ -1,15 +1,15 @@
-// Copyright (c) 2020 The DAML Authors. All rights reserved.
+// Copyright (c) 2020 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
 
-package com.digitalasset.ledger.api.v1.admin;
+package com.daml.ledger.api.v1.admin;
 
 import "google/protobuf/timestamp.proto";
 
 option java_outer_classname = "PackageManagementServiceOuterClass";
-option java_package = "com.digitalasset.ledger.api.v1.admin";
-option csharp_namespace = "Com.DigitalAsset.Ledger.Api.V1.Admin";
+option java_package = "com.daml.ledger.api.v1.admin";
+option csharp_namespace = "Com.Daml.Ledger.Api.V1.Admin";
 
 // Status: experimental interface, will change before it is deemed production
 // ready

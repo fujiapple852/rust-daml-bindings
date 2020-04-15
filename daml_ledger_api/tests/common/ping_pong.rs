@@ -1,15 +1,12 @@
-use chrono::DateTime;
-use chrono::Utc;
 use daml_ledger_api::data::command::{
     DamlCommand, DamlCreateAndExerciseCommand, DamlCreateCommand, DamlExerciseCommand,
 };
 use daml_ledger_api::data::value::{DamlRecord, DamlRecordBuilder, DamlValue};
-use daml_ledger_api::data::DamlIdentifier;
 use daml_ledger_api::data::DamlResult;
+use daml_ledger_api::data::{DamlIdentifier, DamlMinLedgerTime};
 use daml_ledger_api::{DamlCommandFactory, DamlLedgerClientBuilder};
 use daml_ledger_api::{DamlLedgerClient, DamlSandboxTokenBuilder};
 use std::error::Error;
-use std::ops::Add;
 use std::time::Duration;
 use uuid::Uuid;
 
@@ -24,12 +21,11 @@ pub const SUBMISSION_ID_PREFIX: &str = "cmd";
 pub const WORKFLOW_ID_PREFIX: &str = "wf";
 pub const APPLICATION_ID_PREFIX: &str = "app";
 pub const ERR_STR: &str = "error";
-pub const EPOCH: &str = "1970-01-01T00:00:00Z";
-pub const STATIC_SANDBOX_URI: &str = "https://localhost:8081";
-pub const WALLCLOCK_SANDBOX_URI: &str = "https://localhost:8080";
+pub const STATIC_SANDBOX_URI: &str = "https://127.0.0.1:8081";
+pub const WALLCLOCK_SANDBOX_URI: &str = "https://127.0.0.1:8080";
 pub const TOKEN_VALIDITY_SECS: i64 = 60;
 pub const CONNECT_TIMEOUT_MS: u64 = 20000;
-pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/certs/ec256.key";
+pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/certs/es256.key";
 
 lazy_static! {
     pub static ref STATIC_SANDBOX_LOCK: parking_lot::Mutex<()> = parking_lot::Mutex::new(());
@@ -53,15 +49,12 @@ pub fn create_test_ping_record(sender: &str, receiver: &str, count: i64) -> Daml
 }
 
 pub fn create_test_command_factory(workflow_id: &str, application_id: &str, sending_party: &str) -> DamlCommandFactory {
-    let ledger_effective_time: DateTime<Utc> = EPOCH.parse::<DateTime<Utc>>().expect("invalid datetime");
-    let maximum_record_time = ledger_effective_time.add(chrono::Duration::seconds(30));
     DamlCommandFactory::new(
         workflow_id,
         application_id,
         sending_party,
-        ledger_effective_time,
-        maximum_record_time,
         None,
+        DamlMinLedgerTime::Relative(Duration::from_millis(0)),
     )
 }
 

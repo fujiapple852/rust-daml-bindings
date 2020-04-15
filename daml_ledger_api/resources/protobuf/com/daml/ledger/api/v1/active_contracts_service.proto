@@ -1,18 +1,18 @@
-// Copyright (c) 2020 The DAML Authors. All rights reserved.
+// Copyright (c) 2020 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
 
-package com.digitalasset.ledger.api.v1;
+package com.daml.ledger.api.v1;
 
-import "com/digitalasset/ledger/api/v1/event.proto";
-import "com/digitalasset/ledger/api/v1/transaction_filter.proto";
-import "com/digitalasset/ledger/api/v1/trace_context.proto";
+import "com/daml/ledger/api/v1/event.proto";
+import "com/daml/ledger/api/v1/transaction_filter.proto";
+import "com/daml/ledger/api/v1/trace_context.proto";
 
 
 option java_outer_classname = "ActiveContractsServiceOuterClass";
-option java_package = "com.digitalasset.ledger.api.v1";
-option csharp_namespace = "Com.DigitalAsset.Ledger.Api.V1";
+option java_package = "com.daml.ledger.api.v1";
+option csharp_namespace = "Com.Daml.Ledger.Api.V1";
 
 // Allows clients to initialize themselves according to a fairly recent state of the ledger without reading through all transactions that were committed since the ledger's creation.
 service ActiveContractsService {

@@ -35,7 +35,7 @@ mod command_factory;
 pub use command_factory::DamlCommandFactory;
 
 mod executor;
-pub use executor::{CommandExecutor, DamlLedgerTimeMode, DamlSimpleExecutor, DamlSimpleExecutorBuilder, Executor};
+pub use executor::{CommandExecutor, DamlSimpleExecutor, DamlSimpleExecutorBuilder, Executor};
 
 mod grpc_protobuf;
 mod util;

@@ -14,7 +14,7 @@ pub const SANDBOX_URI: &str = "http://localhost:8081";
 pub const ALICE_PARTY: &str = "Alice";
 pub const BOB_PARTY: &str = "Bob";
 pub const TOKEN_VALIDITY_SECS: i64 = 60;
-pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/certs/ec256.key";
+pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/certs/es256.key";
 
 lazy_static! {
     pub static ref SANDBOX_LOCK: Mutex<()> = Mutex::new(());

@@ -5,34 +5,34 @@ inspect:
 	daml damlc inspect-dar .daml/dist/*
 
 run-wallclock:
-	nohup daml sandbox --address localhost --port 8080 -w --ledgerid sandbox-wallclock --contract-id-seeding=weak .daml/dist/* >sandbox_wallclock.log 2>&1 &
+	nohup daml sandbox --address localhost --port 8080 --wall-clock-time --ledgerid sandbox-wallclock --contract-id-seeding=testing-weak .daml/dist/* >sandbox_wallclock.log 2>&1 &
 
 run-static:
-	nohup daml sandbox --address localhost --port 8081 --ledgerid sandbox-static --contract-id-seeding=weak .daml/dist/* >sandbox_static.log 2>&1 &
+	nohup daml sandbox --address localhost  --port 8081 --static-time --ledgerid sandbox-static --contract-id-seeding=testing-weak .daml/dist/* >sandbox_static.log 2>&1 &
 
 run-wallclock-hs256-unsafe:
-	nohup daml sandbox --address localhost --port 8080 -w --ledgerid sandbox-wallclock --auth-jwt-hs256-unsafe testsecret --contract-id-seeding=weak .daml/dist/* >sandbox_wallclock.log 2>&1 &
+	nohup daml sandbox --address localhost --port 8080 --wall-clock-time --ledgerid sandbox-wallclock --auth-jwt-hs256-unsafe testsecret --contract-id-seeding=testing-weak .daml/dist/* >sandbox_wallclock.log 2>&1 &
 
 run-static-hs256-unsafe:
-	nohup daml sandbox --address localhost --port 8081 --ledgerid sandbox-static --auth-jwt-hs256-unsafe testsecret --contract-id-seeding=weak .daml/dist/* >sandbox_static.log 2>&1 &
+	nohup daml sandbox --address localhost --port 8081 --static-time --ledgerid sandbox-static --auth-jwt-hs256-unsafe testsecret --contract-id-seeding=testing-weak .daml/dist/* >sandbox_static.log 2>&1 &
 
 run-wallclock-rs256:
-	nohup daml sandbox --address localhost --port 8080 -w --ledgerid sandbox-wallclock --auth-jwt-rs256-crt certs/rs256.cert --contract-id-seeding=weak .daml/dist/* >sandbox_wallclock.log 2>&1 &
+	nohup daml sandbox --address localhost --port 8080 --wall-clock-time --ledgerid sandbox-wallclock --auth-jwt-rs256-crt certs/rs256.cert --contract-id-seeding=testing-weak .daml/dist/* >sandbox_wallclock.log 2>&1 &
 
 run-static-rs256:
-	nohup daml sandbox --address localhost --port 8081 --ledgerid sandbox-static --auth-jwt-rs256-crt certs/rs256.cert --contract-id-seeding=weak .daml/dist/* >sandbox_static.log 2>&1 &
+	nohup daml sandbox --address localhost --port 8081 --static-time --ledgerid sandbox-static --auth-jwt-rs256-crt certs/rs256.cert --contract-id-seeding=testing-weak .daml/dist/* >sandbox_static.log 2>&1 &
 
-run-wallclock-ec256:
-	nohup daml sandbox --address localhost --port 8080 -w --ledgerid sandbox-wallclock --auth-jwt-ec256-crt certs/ec256.cert --contract-id-seeding=weak .daml/dist/* >sandbox_wallclock.log 2>&1 &
+run-wallclock-es256:
+	nohup daml sandbox --address localhost --port 8080 --wall-clock-time --ledgerid sandbox-wallclock --auth-jwt-es256-crt certs/es256.cert --contract-id-seeding=testing-weak .daml/dist/* >sandbox_wallclock.log 2>&1 &
 
-run-static-ec256:
-	nohup daml sandbox --address localhost --port 8081 --ledgerid sandbox-static --auth-jwt-ec256-crt certs/ec256.cert --contract-id-seeding=weak .daml/dist/* >sandbox_static.log 2>&1 &
+run-static-es256:
+	nohup daml sandbox --address localhost --port 8081 --static-time --ledgerid sandbox-static --auth-jwt-es256-crt certs/es256.cert --contract-id-seeding=testing-weak .daml/dist/* >sandbox_static.log 2>&1 &
 
 run-wallclock-db:
-	nohup daml sandbox --address localhost --port 8080 --ledgerid sandbox-wallclock -w --jdbcurl "jdbc:postgresql://localhost:54320/wallclock_sandbox?user=postgres" .daml/dist/* &
+	nohup daml sandbox --address localhost --port 8080 --wall-clock-time --ledgerid sandbox-wallclock --jdbcurl "jdbc:postgresql://localhost:54320/wallclock_sandbox?user=postgres" .daml/dist/* &
 
 run-static-db:
-	nohup daml sandbox --address localhost --port 8081 --ledgerid sandbox-static --jdbcurl "jdbc:postgresql://localhost:54320/static_sandbox?user=postgres" .daml/dist/* &
+	nohup daml sandbox --address localhost --port 8081 --static-time --ledgerid sandbox-static --jdbcurl "jdbc:postgresql://localhost:54320/static_sandbox?user=postgres" .daml/dist/* &
 
 run-navigator-wallclock:
 	daml navigator server localhost 8080
@@ -48,7 +48,7 @@ run-hs256: build run-wallclock-hs256-unsafe run-static-hs256-unsafe
 
 run-rs256: build gen-certs run-wallclock-rs256 run-static-rs256
 
-run-ec256: build gen-certs run-wallclock-ec256 run-static-ec256
+run-es256: build gen-certs run-wallclock-es256 run-static-es256
 
 run-only: run-wallclock run-static
 

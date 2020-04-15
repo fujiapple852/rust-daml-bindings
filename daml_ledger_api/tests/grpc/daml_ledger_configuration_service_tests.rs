@@ -11,7 +11,6 @@ async fn test_get_ledger_configuration() -> TestResult {
     let config_stream = ledger_client.ledger_configuration_service().get_ledger_configuration().await?;
     let all_config = config_stream.take(1).try_collect::<Vec<DamlLedgerConfiguration>>().await?;
     let config = all_config.first().ok_or(ERR_STR)?;
-    assert_eq!(&Duration::new(2, 0), config.min_ttl());
-    assert_eq!(&Duration::new(30, 0), config.max_ttl());
+    assert_eq!(&Duration::new(86400, 0), config.max_deduplication_time());
     Ok(())
 }

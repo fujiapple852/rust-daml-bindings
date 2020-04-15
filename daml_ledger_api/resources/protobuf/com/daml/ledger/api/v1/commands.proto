@@ -1,19 +1,19 @@
-// Copyright (c) 2020 The DAML Authors. All rights reserved.
+// Copyright (c) 2020 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
 
-package com.digitalasset.ledger.api.v1;
+package com.daml.ledger.api.v1;
 
-import "com/digitalasset/ledger/api/v1/value.proto";
+import "com/daml/ledger/api/v1/value.proto";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
 
 option java_outer_classname = "CommandsOuterClass";
-option java_package = "com.digitalasset.ledger.api.v1";
-option csharp_namespace = "Com.DigitalAsset.Ledger.Api.V1";
+option java_package = "com.daml.ledger.api.v1";
+option csharp_namespace = "Com.Daml.Ledger.Api.V1";
 
 // A composite command that groups multiple commands together.
 message Commands {
@@ -47,13 +47,8 @@ message Commands {
   // Required
   string party = 5;
 
-  // MUST be an approximation of the wall clock time on the ledger server.
-  // Required
-  google.protobuf.Timestamp ledger_effective_time = 6;
-
-  // The deadline for observing this command in the completion stream before it can be considered to have timed out.
-  // Required
-  google.protobuf.Timestamp maximum_record_time = 7;
+  reserved 6; // was ledger_effective_time
+  reserved 7; // was maximum_record_time
 
   // Individual elements of this atomic command. Must be non-empty.
   // Required
@@ -63,6 +58,19 @@ message Commands {
   // Duplicate commands submitted before the end of this window return an ALREADY_EXISTS error.
   // Optional
   google.protobuf.Duration deduplication_time = 9;
+
+  // Lower bound for the ledger time assigned to the resulting transaction.
+  // Note: The ledger time of a transaction is assigned as part of command interpretation.
+  // Use this property if you expect that command interpretation will take a considerate amount of time, such that by
+  // the time the resulting transaction is sequenced, its assigned ledger time is not valid anymore.
+  // Must not be set at the same time as min_ledger_time_rel.
+  // Optional
+  google.protobuf.Timestamp min_ledger_time_abs = 10;
+
+  // Same as min_ledger_time_abs, but specified as a duration, starting from the time the command is received by the server.
+  // Must not be set at the same time as min_ledger_time_abs.
+  // Optional
+  google.protobuf.Duration min_ledger_time_rel = 11;
 }
 
 // A command can either create a new contract or exercise a choice on an existing contract.

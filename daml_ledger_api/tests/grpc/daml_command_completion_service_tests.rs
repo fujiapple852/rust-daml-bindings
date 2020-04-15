@@ -14,6 +14,6 @@ async fn test_completion_end_after_single_create_command() -> TestResult {
     let workflow_id = create_test_uuid(WORKFLOW_ID_PREFIX);
     create_ping_contract(&ledger_client, &package_id, &application_id, &workflow_id, &command_id, 0).await?;
     let completion_offset = ledger_client.command_completion_service().get_completion_end().await?;
-    assert_eq!(DamlLedgerOffset::Absolute(2), completion_offset);
+    assert!(matches!(completion_offset, DamlLedgerOffset::Absolute(_)));
     Ok(())
 }

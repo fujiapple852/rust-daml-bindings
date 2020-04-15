@@ -43,7 +43,7 @@ async fn test_command_submission_and_completion() -> TestResult {
         .await?;
     let completion = completions.first().ok_or(ERR_STR)?;
     assert_eq!(&command_id, completion.command_id());
-    assert_eq!("1", completion.transaction_id());
+    assert!(!completion.transaction_id().is_empty());
     assert_eq!(0, completion.status().code());
     Ok(())
 }

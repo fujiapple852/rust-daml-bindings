@@ -1,17 +1,17 @@
-// Copyright (c) 2020 The DAML Authors. All rights reserved.
+// Copyright (c) 2020 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
 
-package com.digitalasset.ledger.api.v1;
+package com.daml.ledger.api.v1;
 
-import "com/digitalasset/ledger/api/v1/trace_context.proto";
+import "com/daml/ledger/api/v1/trace_context.proto";
 import "google/rpc/status.proto";
 
 
 option java_outer_classname = "CompletionOuterClass";
-option java_package = "com.digitalasset.ledger.api.v1";
-option csharp_namespace = "Com.DigitalAsset.Ledger.Api.V1";
+option java_package = "com.daml.ledger.api.v1";
+option csharp_namespace = "Com.Daml.Ledger.Api.V1";
 
 // A completion represents the status of a submitted command on the ledger: it can be successful or failed.
 message Completion {
