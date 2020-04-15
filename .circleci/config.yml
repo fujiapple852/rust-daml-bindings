@@ -3,9 +3,9 @@ version: 2
 jobs:
   build:
     docker:
-      - image: fujiapple852/rust-daml:1.42-0_13_55-v1
+      - image: fujiapple/rust-daml:1.42-1_0_0-v1
         auth:
-          username: fujiapple852
+          username: fujiapple
           password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
