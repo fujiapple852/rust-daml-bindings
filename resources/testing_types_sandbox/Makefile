@@ -1,58 +1,26 @@
+DAML_LF_VERSION = 1.8
+
+SANDBOX_HOST = 127.0.0.1
+WALLCLOCK_PORT = 8080
+STATIC_PORT = 8081
+
 build:
-	daml build --target 1.8
+	daml build --target ${DAML_LF_VERSION}
 
 inspect:
 	daml damlc inspect-dar .daml/dist/*
 
 run-wallclock:
-	nohup daml sandbox --address localhost --port 8080 --wall-clock-time --ledgerid sandbox-wallclock --contract-id-seeding=testing-weak .daml/dist/* >sandbox_wallclock.log 2>&1 &
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_PORT} -m wallclock -a es256
 
 run-static:
-	nohup daml sandbox --address localhost  --port 8081 --static-time --ledgerid sandbox-static --contract-id-seeding=testing-weak .daml/dist/* >sandbox_static.log 2>&1 &
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${STATIC_PORT} -m static -a es256
 
-run-wallclock-hs256-unsafe:
-	nohup daml sandbox --address localhost --port 8080 --wall-clock-time --ledgerid sandbox-wallclock --auth-jwt-hs256-unsafe testsecret --contract-id-seeding=testing-weak .daml/dist/* >sandbox_wallclock.log 2>&1 &
+run-all: build gen-certs run-wallclock run-static
 
-run-static-hs256-unsafe:
-	nohup daml sandbox --address localhost --port 8081 --static-time --ledgerid sandbox-static --auth-jwt-hs256-unsafe testsecret --contract-id-seeding=testing-weak .daml/dist/* >sandbox_static.log 2>&1 &
+run: kill run-all
 
-run-wallclock-rs256:
-	nohup daml sandbox --address localhost --port 8080 --wall-clock-time --ledgerid sandbox-wallclock --auth-jwt-rs256-crt certs/rs256.cert --contract-id-seeding=testing-weak .daml/dist/* >sandbox_wallclock.log 2>&1 &
-
-run-static-rs256:
-	nohup daml sandbox --address localhost --port 8081 --static-time --ledgerid sandbox-static --auth-jwt-rs256-crt certs/rs256.cert --contract-id-seeding=testing-weak .daml/dist/* >sandbox_static.log 2>&1 &
-
-run-wallclock-es256:
-	nohup daml sandbox --address localhost --port 8080 --wall-clock-time --ledgerid sandbox-wallclock --auth-jwt-es256-crt certs/es256.cert --contract-id-seeding=testing-weak .daml/dist/* >sandbox_wallclock.log 2>&1 &
-
-run-static-es256:
-	nohup daml sandbox --address localhost --port 8081 --static-time --ledgerid sandbox-static --auth-jwt-es256-crt certs/es256.cert --contract-id-seeding=testing-weak .daml/dist/* >sandbox_static.log 2>&1 &
-
-run-wallclock-db:
-	nohup daml sandbox --address localhost --port 8080 --wall-clock-time --ledgerid sandbox-wallclock --jdbcurl "jdbc:postgresql://localhost:54320/wallclock_sandbox?user=postgres" .daml/dist/* &
-
-run-static-db:
-	nohup daml sandbox --address localhost --port 8081 --static-time --ledgerid sandbox-static --jdbcurl "jdbc:postgresql://localhost:54320/static_sandbox?user=postgres" .daml/dist/* &
-
-run-navigator-wallclock:
-	daml navigator server localhost 8080
-
-run-navigator-static:
-	daml navigator server localhost 8081
-
-run: build run-wallclock run-static
-
-run-db: build run-wallclock-db run-static-db
-
-run-hs256: build run-wallclock-hs256-unsafe run-static-hs256-unsafe
-
-run-rs256: build gen-certs run-wallclock-rs256 run-static-rs256
-
-run-es256: build gen-certs run-wallclock-es256 run-static-es256
-
-run-only: run-wallclock run-static
-
-restart: kill run-only
+run-ci: run-all
 
 kill:
 	jps | grep daml-sdk | cut -d" " -f 1 | xargs kill

@@ -10,18 +10,23 @@ use std::sync::Mutex;
 
 pub type TestResult = ::std::result::Result<(), Box<dyn Error>>;
 
-pub const SANDBOX_URI: &str = "http://localhost:8081";
+pub const SANDBOX_URI: &str = "http://127.0.0.1:8081";
 pub const ALICE_PARTY: &str = "Alice";
 pub const BOB_PARTY: &str = "Bob";
 pub const TOKEN_VALIDITY_SECS: i64 = 60;
-pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/certs/es256.key";
+pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/.auth_certs/es256.key";
+// pub const SERVER_CA_CERT_PATH: &str = "../resources/testing_types_sandbox/.tls_certs/ca.cert";
 
 lazy_static! {
     pub static ref SANDBOX_LOCK: Mutex<()> = Mutex::new(());
 }
 
 pub async fn new_static_sandbox() -> DamlResult<DamlLedgerClient> {
-    let client = DamlLedgerClientBuilder::uri(SANDBOX_URI).with_auth(make_ec256_token()?).connect().await?;
+    let client = DamlLedgerClientBuilder::uri(SANDBOX_URI)
+        // .with_tls(std::fs::read_to_string(SERVER_CA_CERT_PATH)?) // TODO re-enable when CI issue resolved
+        .with_auth(make_ec256_token()?)
+        .connect()
+        .await?;
     client.reset_and_wait().await
 }
 
