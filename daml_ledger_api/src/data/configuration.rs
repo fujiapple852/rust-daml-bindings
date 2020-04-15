@@ -7,24 +7,18 @@ use std::time::Duration;
 /// DAML ledger configuration information.
 #[derive(Debug, Eq, PartialEq, Default)]
 pub struct DamlLedgerConfiguration {
-    pub min_ttl: Duration,
-    pub max_ttl: Duration,
+    pub max_deduplication_time: Duration,
 }
 
 impl DamlLedgerConfiguration {
-    pub fn new(min_ttl: Duration, max_ttl: Duration) -> Self {
+    pub fn new(max_deduplication_time: Duration) -> Self {
         Self {
-            min_ttl,
-            max_ttl,
+            max_deduplication_time,
         }
     }
 
-    pub fn min_ttl(&self) -> &Duration {
-        &self.min_ttl
-    }
-
-    pub fn max_ttl(&self) -> &Duration {
-        &self.max_ttl
+    pub fn max_deduplication_time(&self) -> &Duration {
+        &self.max_deduplication_time
     }
 }
 
@@ -32,8 +26,7 @@ impl TryFrom<LedgerConfiguration> for DamlLedgerConfiguration {
     type Error = DamlError;
 
     fn try_from(response: LedgerConfiguration) -> DamlResult<Self> {
-        let min: prost_types::Duration = response.min_ttl.req()?;
-        let max: prost_types::Duration = response.max_ttl.req()?;
-        Ok(Self::new(from_grpc_duration(&min), from_grpc_duration(&max)))
+        let max_deduplication_time: prost_types::Duration = response.max_deduplication_time.req()?;
+        Ok(Self::new(from_grpc_duration(&max_deduplication_time)))
     }
 }

@@ -1,6 +1,6 @@
-NAMESPACE = fujiapple852
+NAMESPACE = fujiapple
 REPOSITORY = rust-daml
-TAG = 1.42-0_13_55-v1
+TAG = 1.42-1_0_0-v1
 .PHONY: build push
 build:
 	docker build --network host -t ${NAMESPACE}/${REPOSITORY}:${TAG} -t ${NAMESPACE}/${REPOSITORY}:latest .

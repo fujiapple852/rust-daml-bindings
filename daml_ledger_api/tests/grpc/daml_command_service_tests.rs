@@ -28,7 +28,7 @@ async fn test_submit_and_wait_for_transaction_id() -> TestResult {
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
     let transaction_id = ledger_client.command_service().submit_and_wait_for_transaction_id(commands).await?;
-    assert_eq!("1", transaction_id);
+    assert!(!transaction_id.is_empty());
     Ok(())
 }
 
@@ -55,8 +55,8 @@ async fn test_submit_and_wait_for_transaction_tree() -> TestResult {
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
     let transaction = ledger_client.command_service().submit_and_wait_for_transaction_tree(commands).await?;
-    match &transaction.events_by_id()["#1:0"] {
-        DamlTreeEvent::Created(e) => {
+    match transaction.events_by_id().values().collect::<Vec<_>>().as_slice() {
+        [DamlTreeEvent::Created(e)] => {
             assert_eq!("Ping", e.template_id().entity_name());
         },
         _ => panic!(),
@@ -70,7 +70,7 @@ async fn test_completion_end_after_no_commands() -> TestResult {
     let _lock = STATIC_SANDBOX_LOCK.lock();
     let ledger_client = new_static_sandbox().await?;
     let completion_offset = ledger_client.command_completion_service().get_completion_end().await?;
-    assert_eq!(DamlLedgerOffset::Absolute(1), completion_offset);
+    assert!(matches!(completion_offset, DamlLedgerOffset::Absolute(_)));
     Ok(())
 }
 

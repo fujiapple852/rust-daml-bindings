@@ -13,7 +13,7 @@ The status of the feature set:
 - [X] Fully async API (via `async`/`await`, `std::futures` & `futures` [0.3.x](https://docs.rs/futures/0.3.1/futures/))
 - [X] Full suite of Sandbox integration tests
 - [X] Macros to create and extract DAML values
-- [X] Support for parsing DAML LF (versions `1.6` and `1.7`)
+- [X] Support for parsing DAML LF (versions `1.6`, `1.7` & `1.8`)
 - [X] Code Generator (generate Rust types from DAML LF) 
 - [X] Custom attributes for automatic Rust<>DAML conversions
 - [X] Sample applications
@@ -30,7 +30,7 @@ protocols buffers.
 This crate is guaranteed to compile on stable Rust 1.42 and up.
 
 # Supported DAML Version
-These bindings support `DAML-LF` versions `1.6` & `1.7` and has been tested against DAML SDKs up to `0.13.46`.
+These bindings support `DAML-LF` versions `1.6`, `1.7` & `1.8` and has been tested against DAML SDKs up to `1.0.0`.
 
 ## Crates
 The project provides the following crates:

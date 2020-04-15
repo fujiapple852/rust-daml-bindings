@@ -14,8 +14,8 @@ async fn test_list_known_packages() -> TestResult {
 async fn test_upload_dar_file() -> TestResult {
     let _lock = WALLCLOCK_SANDBOX_LOCK.lock();
     let ledger_client = new_wallclock_sandbox().await?;
-    let dar_file_path = "../resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_0_13_36-lf_1_7.dar";
-    let package_id = "ca1406c52d48b19fccbdb6996815cfbcad39d517a102f809db04f8257b4a6197";
+    let dar_file_path = "../resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_0_0-lf_1_8.dar";
+    let package_id = "6c314cb04bcb26cb62aa6ebf0f8ed4bdc3cbf709847be908c9920df5574daacc";
     let mut dar_file = std::fs::File::open(dar_file_path)?;
     let mut buffer = Vec::new();
     dar_file.read_to_end(&mut buffer)?;

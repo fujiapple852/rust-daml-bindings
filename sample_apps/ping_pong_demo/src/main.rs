@@ -2,9 +2,6 @@
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 
-use chrono::Duration;
-use chrono::{DateTime, Utc};
-
 use daml_ledger_api::data::command::{DamlCommand, DamlCreateCommand, DamlExerciseCommand};
 use daml_ledger_api::data::event::{DamlCreatedEvent, DamlEvent};
 use daml_ledger_api::data::filter::DamlTransactionFilter;
@@ -22,7 +19,6 @@ use futures::stream::StreamExt;
 use futures::try_join;
 use log::info;
 use std::convert::TryInto;
-use std::ops::Add;
 
 const PINGPONG_MODULE_NAME: &str = "DA.PingPong";
 const PING_ENTITY_NAME: &str = "Ping";
@@ -33,14 +29,14 @@ const PARTY_ALICE: &str = "Alice";
 const PARTY_BOB: &str = "Bob";
 const CHOICE_RESPOND_PING: &str = "RespondPing";
 const CHOICE_RESPOND_PONG: &str = "RespondPong";
-const TRANSACTION_WINDOW_SECS: i64 = 30;
 const TOKEN_VALIDITY_SECS: i64 = 60;
-const TOKEN_KEY_PATH: &str = "resources/testing_types_sandbox/certs/ec256.key";
+const SERVER_CA_CERT_PATH: &str = "resources/testing_types_sandbox/.tls_certs/ca.cert";
+const TOKEN_KEY_PATH: &str = "resources/testing_types_sandbox/.auth_certs/es256.key";
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     log4rs::init_file("sample_apps/ping_pong_demo/log4rs.yml", log4rs::file::Deserializers::default())?;
-    let ledger_client = create_connection("http://localhost:8080").await?;
+    let ledger_client = create_connection("https://localhost:8080").await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     send_initial_ping(&ledger_client, &package_id, PARTY_ALICE).await?;
     let bob_fut = process_ping_pong(&ledger_client, package_id.clone(), PARTY_BOB.to_owned());
@@ -50,8 +46,13 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn create_connection(uri: &str) -> DamlResult<DamlLedgerClient> {
-    let ledger_client =
-        DamlLedgerClientBuilder::uri(uri).with_auth(create_ec256_token()?).connect().await?.reset_and_wait().await?;
+    let ledger_client = DamlLedgerClientBuilder::uri(uri)
+        .with_tls(std::fs::read_to_string(SERVER_CA_CERT_PATH)?)
+        .with_auth(create_ec256_token()?)
+        .connect()
+        .await?
+        .reset_and_wait()
+        .await?;
     Ok(ledger_client)
 }
 
@@ -134,16 +135,7 @@ async fn exercise_choice(
 }
 
 fn create_command_factory(workflow_id: &str, application_id: &str, sending_party: &str) -> DamlCommandFactory {
-    let ledger_effective_time: DateTime<Utc> = Utc::now();
-    let maximum_record_time = ledger_effective_time.add(Duration::seconds(TRANSACTION_WINDOW_SECS));
-    DamlCommandFactory::new(
-        workflow_id,
-        application_id,
-        sending_party,
-        ledger_effective_time,
-        maximum_record_time,
-        None,
-    )
+    DamlCommandFactory::new(workflow_id, application_id, sending_party, None, None)
 }
 
 fn response(entity_name: &str) -> &str {

@@ -3,9 +3,9 @@ version: 2
 jobs:
   build:
     docker:
-      - image: fujiapple852/rust-daml:1.42-0_13_55-v1
+      - image: fujiapple/rust-daml:1.42-1_0_0-v1
         auth:
-          username: fujiapple852
+          username: fujiapple
           password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
@@ -23,7 +23,7 @@ jobs:
           command: cargo build --all --all-targets
       - run:
           name: Start sandbox
-          command: cd resources/testing_types_sandbox && make run-ec256 && sleep 10
+          command: cd resources/testing_types_sandbox && make run-ci && sleep 10
       - run:
           name: Test all targets
           command: cargo test --workspace --all-targets

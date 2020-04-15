@@ -1,3 +1,4 @@
 .daml
 .interfaces
-certs
+.tls_certs
+.auth_certs

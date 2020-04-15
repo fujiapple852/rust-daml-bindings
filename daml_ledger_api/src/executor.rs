@@ -1,27 +1,19 @@
 use crate::data::command::{DamlCommand, DamlCreateCommand, DamlExerciseCommand};
 use crate::data::event::{DamlCreatedEvent, DamlTreeEvent};
 use crate::data::value::DamlValue;
-use crate::data::{DamlError, DamlResult, DamlTransaction, DamlTransactionTree};
+use crate::data::{DamlError, DamlMinLedgerTime, DamlResult, DamlTransaction, DamlTransactionTree};
 use crate::util::Required;
 use crate::{DamlCommandFactory, DamlLedgerClient};
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
-use std::ops::Add;
 use std::time::Duration;
-
-pub enum DamlLedgerTimeMode {
-    Static,
-    Wallclock,
-}
 
 pub struct DamlSimpleExecutorBuilder<'a> {
     ledger_client: &'a DamlLedgerClient,
     acting_party: &'a str,
-    time_mode: Option<&'a DamlLedgerTimeMode>,
     workflow_id: Option<&'a str>,
     application_id: Option<&'a str>,
-    submission_window_secs: Option<i64>,
     deduplication_time: Option<Duration>,
+    min_ledger_time: Option<DamlMinLedgerTime>,
 }
 
 impl<'a> DamlSimpleExecutorBuilder<'a> {
@@ -29,18 +21,10 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
         Self {
             ledger_client,
             acting_party,
-            time_mode: None,
             workflow_id: None,
             application_id: None,
-            submission_window_secs: None,
             deduplication_time: None,
-        }
-    }
-
-    pub fn time_mode(self, time_mode: &'a DamlLedgerTimeMode) -> Self {
-        Self {
-            time_mode: Some(time_mode),
-            ..self
+            min_ledger_time: None,
         }
     }
 
@@ -58,16 +42,16 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
         }
     }
 
-    pub fn submission_window_secs(self, submission_window_secs: i64) -> Self {
+    pub fn deduplication_time(self, deduplication_time: Duration) -> Self {
         Self {
-            submission_window_secs: Some(submission_window_secs),
+            deduplication_time: Some(deduplication_time),
             ..self
         }
     }
 
-    pub fn deduplication_time(self, deduplication_time: Duration) -> Self {
+    pub fn min_ledger_time(self, min_ledger_time: DamlMinLedgerTime) -> Self {
         Self {
-            deduplication_time: Some(deduplication_time),
+            min_ledger_time: Some(min_ledger_time),
             ..self
         }
     }
@@ -76,11 +60,10 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
         DamlSimpleExecutor::new(
             self.ledger_client,
             self.acting_party,
-            self.time_mode.unwrap_or(&DamlLedgerTimeMode::Static),
             self.workflow_id.unwrap_or("default-workflow"),
             self.application_id.unwrap_or("default-application"),
-            self.submission_window_secs.unwrap_or(30),
             self.deduplication_time,
+            self.min_ledger_time,
         )
     }
 }
@@ -109,31 +92,13 @@ impl<'a> DamlSimpleExecutor<'a> {
     pub fn new(
         ledger_client: &'a DamlLedgerClient,
         acting_party: &str,
-        time_mode: &DamlLedgerTimeMode,
         workflow_id: &str,
         application_id: &str,
-        submission_window_secs: i64,
         deduplication_time: Option<Duration>,
+        min_ledger_time: Option<DamlMinLedgerTime>,
     ) -> Self {
-        let (ledger_effective_time, maximum_record_time) = match time_mode {
-            DamlLedgerTimeMode::Static => {
-                let ledger_effective_time: DateTime<Utc> =
-                    "1970-01-01T00:00:00Z".parse::<DateTime<Utc>>().expect("invalid datetime");
-                let maximum_record_time = ledger_effective_time.add(chrono::Duration::seconds(submission_window_secs));
-                (ledger_effective_time, maximum_record_time)
-            },
-            _ => panic!("Wallclock time not yet supported"),
-        };
-
-        let command_factory = DamlCommandFactory::new(
-            workflow_id,
-            application_id,
-            acting_party,
-            ledger_effective_time,
-            maximum_record_time,
-            deduplication_time,
-        );
-
+        let command_factory =
+            DamlCommandFactory::new(workflow_id, application_id, acting_party, deduplication_time, min_ledger_time);
         Self {
             ledger_client,
             command_factory,

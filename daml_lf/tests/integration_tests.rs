@@ -74,6 +74,13 @@ pub fn test_daml_lf_1_8() -> DamlLfResult<()> {
 }
 
 #[test]
+pub fn test_daml_sdk_1_0_0() -> DamlLfResult<()> {
+    let dar = DarFile::from_file("test_resources/TestingTypes-1_0_0-sdk_1_0_0-lf_1_8.dar")?;
+    assert_eq!(LanguageVersion::V1_8, *dar.main().payload().language_version());
+    Ok(())
+}
+
+#[test]
 fn test_apply_dar() -> DamlLfResult<()> {
     let dar = DarFile::from_file("test_resources/TestingTypes-1_0_0-sdk_0_13_55-lf_1_8.dar")?;
     let name = dar.apply(|archive| archive.name.to_owned())?;

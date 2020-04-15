@@ -55,7 +55,7 @@ pub mod command {
 }
 
 mod commands;
-pub use self::commands::DamlCommands;
+pub use self::commands::{DamlCommands, DamlMinLedgerTime};
 
 mod error;
 pub use self::error::DamlError;

@@ -2,7 +2,6 @@ use crate::data::command::DamlCommand;
 use crate::data::{DamlError, DamlResult};
 use crate::grpc_protobuf::com::digitalasset::ledger::api::v1::{Command, Commands};
 use crate::util;
-use crate::util::to_grpc_duration;
 use chrono::DateTime;
 use chrono::Utc;
 use std::convert::TryFrom;
@@ -15,10 +14,9 @@ pub struct DamlCommands {
     pub application_id: String,
     pub command_id: String,
     pub party: String,
-    pub ledger_effective_time: DateTime<Utc>,
-    pub maximum_record_time: DateTime<Utc>,
     pub commands: Vec<DamlCommand>,
     pub deduplication_time: Option<Duration>,
+    pub min_ledger_time: Option<DamlMinLedgerTime>,
 }
 
 impl DamlCommands {
@@ -28,20 +26,18 @@ impl DamlCommands {
         application_id: impl Into<String>,
         command_id: impl Into<String>,
         party: impl Into<String>,
-        ledger_effective_time: impl Into<DateTime<Utc>>,
-        maximum_record_time: impl Into<DateTime<Utc>>,
         commands: impl Into<Vec<DamlCommand>>,
         deduplication_time: impl Into<Option<Duration>>,
+        min_ledger_time: impl Into<Option<DamlMinLedgerTime>>,
     ) -> Self {
         Self {
             workflow_id: workflow_id.into(),
             application_id: application_id.into(),
             command_id: command_id.into(),
             party: party.into(),
-            ledger_effective_time: ledger_effective_time.into(),
-            maximum_record_time: maximum_record_time.into(),
             commands: commands.into(),
             deduplication_time: deduplication_time.into(),
+            min_ledger_time: min_ledger_time.into(),
         }
     }
 
@@ -61,20 +57,16 @@ impl DamlCommands {
         &self.party
     }
 
-    pub fn ledger_effective_time(&self) -> &DateTime<Utc> {
-        &self.ledger_effective_time
-    }
-
-    pub fn maximum_record_time(&self) -> &DateTime<Utc> {
-        &self.maximum_record_time
-    }
-
     pub fn commands(&self) -> &[DamlCommand] {
         &self.commands
     }
 
     pub fn deduplication_time(&self) -> &Option<Duration> {
         &self.deduplication_time
+    }
+
+    pub fn min_ledger_time(&self) -> &Option<DamlMinLedgerTime> {
+        &self.min_ledger_time
     }
 }
 
@@ -90,10 +82,22 @@ impl TryFrom<DamlCommands> for Commands {
             application_id: daml_commands.application_id,
             command_id: daml_commands.command_id,
             party: daml_commands.party,
-            ledger_effective_time: Some(util::to_grpc_timestamp(daml_commands.ledger_effective_time)?),
-            maximum_record_time: Some(util::to_grpc_timestamp(daml_commands.maximum_record_time)?),
             commands: daml_commands.commands.into_iter().map(Command::from).collect(),
-            deduplication_time: daml_commands.deduplication_time.as_ref().map(to_grpc_duration).transpose()?,
+            deduplication_time: daml_commands.deduplication_time.as_ref().map(util::to_grpc_duration).transpose()?,
+            min_ledger_time_abs: match daml_commands.min_ledger_time {
+                Some(DamlMinLedgerTime::Absolute(timestamp)) => Some(util::to_grpc_timestamp(timestamp)?),
+                _ => None,
+            },
+            min_ledger_time_rel: match daml_commands.min_ledger_time {
+                Some(DamlMinLedgerTime::Relative(duration)) => Some(util::to_grpc_duration(&duration)?),
+                _ => None,
+            },
         })
     }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum DamlMinLedgerTime {
+    Absolute(DateTime<Utc>),
+    Relative(Duration),
 }
