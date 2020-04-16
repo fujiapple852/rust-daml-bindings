@@ -2,7 +2,7 @@ use daml::prelude::*;
 
 include!("autogen/rental_0_0_1.rs");
 
-use daml_ledger_api::{DamlLedgerClientBuilder, DamlSimpleExecutorBuilder};
+use daml::api::{DamlLedgerClientBuilder, DamlSimpleExecutorBuilder};
 use rental::da::rental::*;
 
 #[tokio::main]

@@ -10,9 +10,7 @@ categories = ["development-tools"]
 edition = "2018"
 
 [dependencies]
-daml_ledger_api = { path = "../../daml_ledger_api", features = ["testing"] }
-daml_ledger_macro = { path = "../../daml_ledger_macro" }
-daml_ledger_util = { path = "../../daml_ledger_util" }
+daml = { path = "../../daml", features = [ "api", "sandbox", "util", "macros" ] }
 tokio = { version = "0.2", features = [ "macros" ] }
 futures = "0.3"
 chrono = "0.4"

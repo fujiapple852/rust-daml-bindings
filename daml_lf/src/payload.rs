@@ -57,11 +57,11 @@ impl DamlLfArchivePayload {
     /// # }
     /// ```
     /// [`get_package`]:
-    /// ../daml_ledger_api/service/daml_package_service/struct.DamlPackageService.html#method.get_package
+    /// ../daml_api/service/daml_package_service/struct.DamlPackageService.html#method.get_package
     /// [`get_package_sync`]:
-    /// ../daml_ledger_api/service/daml_package_service/struct.DamlPackageService.html#method.get_package_sync
-    /// [`payload()`]: ../../doc/daml_ledger_api/data/package/struct.DamlPackage.html#method.payload
-    /// [`DamlPackage`]: ../../doc/daml_ledger_api/data/package/struct.DamlPackage.html
+    /// ../daml_api/service/daml_package_service/struct.DamlPackageService.html#method.get_package_sync
+    /// [`payload()`]: ../../doc/daml_api/data/package/struct.DamlPackage.html#method.payload
+    /// [`DamlPackage`]: ../../doc/daml_api/data/package/struct.DamlPackage.html
     /// [`UnsupportedVersion`]: DamlLfError::UnsupportedVersion
     /// [`DamlLfParseError`]: DamlLfError::DamlLfParseError
     /// [`UnknownVersion`]: DamlLfError::UnknownVersion
