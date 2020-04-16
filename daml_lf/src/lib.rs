@@ -29,9 +29,9 @@ mod archive;
 mod convert;
 mod dar;
 mod error;
+mod lf_protobuf;
 mod manifest;
 mod payload;
-mod protobuf_autogen;
 mod version;
 
 /// Representation of DAML types.

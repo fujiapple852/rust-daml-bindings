@@ -1,6 +1,6 @@
 use crate::convert::util::Required;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
-use crate::protobuf_autogen::daml_lf_1::{
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::{
     def_data_type, def_template, field_with_type, module, module_ref, r#type, template_choice, type_con_name,
     type_var_with_kind,
 };

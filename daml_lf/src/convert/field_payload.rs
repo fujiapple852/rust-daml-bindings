@@ -3,7 +3,7 @@ use crate::convert::type_payload::DamlTypePayload;
 use crate::convert::util::Required;
 use crate::convert::wrapper::PayloadElementWrapper;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
-use crate::protobuf_autogen::daml_lf_1::FieldWithType;
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::FieldWithType;
 use std::convert::TryFrom;
 
 ///
