@@ -1,5 +1,5 @@
 use anyhow::Result;
-use daml_lf::DarFile;
+use daml::lf::DarFile;
 
 pub(crate) fn json(dar_path: &str, package_opt: Option<&str>, module_opt: Option<&str>) -> Result<()> {
     let dar = DarFile::from_file(dar_path)?;

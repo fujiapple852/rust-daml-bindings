@@ -1,10 +1,10 @@
 use anyhow::Result;
 
-use daml_lf::element::{
+use daml::lf::element::{
     DamlArchive, DamlChoice, DamlElementVisitor, DamlEnum, DamlModule, DamlPackage, DamlRecord, DamlTemplate,
     DamlVariant, DamlVisitableElement,
 };
-use daml_lf::DarFile;
+use daml::lf::DarFile;
 use ptree::print_config::UTF_CHARS_BOLD;
 use ptree::{print_tree_with, Color, PrintConfig, Style, TreeBuilder};
 

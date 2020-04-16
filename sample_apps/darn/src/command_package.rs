@@ -1,5 +1,5 @@
 use anyhow::Result;
-use daml_lf::DarFile;
+use daml::lf::DarFile;
 use itertools::Itertools;
 use prettytable::format;
 use prettytable::{color, Attr, Cell, Row, Table};

@@ -76,21 +76,17 @@ async fn main() -> Result<()> {
                 ),
         )
         .subcommand(
-            SubCommand::with_name("list").about("list packages on a DAML ledger").arg(
-                Arg::with_name("uri")
-                    .short("s")
-                    .long("uri")
-                    .takes_value(true)
-                    .required(true)
-                    .help("DAML ledger server uri (e.g. https://127.0.0.1:1234)")
-            )
-            .arg(
-                Arg::with_name("key")
-                    .short("k")
-                    .long("key")
-                    .takes_value(true)
-                    .help("DAML ledger server key"),
-            ),
+            SubCommand::with_name("list")
+                .about("list packages on a DAML ledger")
+                .arg(
+                    Arg::with_name("uri")
+                        .short("s")
+                        .long("uri")
+                        .takes_value(true)
+                        .required(true)
+                        .help("DAML ledger server uri (e.g. https://127.0.0.1:1234)"),
+                )
+                .arg(Arg::with_name("key").short("k").long("key").takes_value(true).help("DAML ledger server key")),
         )
         .get_matches();
 
@@ -100,7 +96,6 @@ async fn main() -> Result<()> {
     // ledger - download / upload?
     // sandbox token gen
     // raw - spit our raw LF proto
-
 
     if let Some(inspect_matches) = matches.subcommand_matches("package") {
         let dar_path = inspect_matches.value_of("dar").unwrap();

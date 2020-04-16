@@ -1,5 +1,5 @@
 use anyhow::Result;
-use daml_ledger_api::DamlLedgerClientBuilder;
+use daml::api::DamlLedgerClientBuilder;
 use std::io::Read;
 
 pub(crate) async fn upload(dar_path: &str, uri: &str) -> Result<()> {

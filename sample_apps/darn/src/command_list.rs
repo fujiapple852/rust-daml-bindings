@@ -1,14 +1,14 @@
 use anyhow::Result;
-use daml_ledger_api::{DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
-use daml_lf::{DamlLfArchive, DamlLfArchivePayload, DamlLfHashFunction, DarFile, DarManifest};
+use daml::api::{DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
+use daml::lf::{DamlLfArchive, DamlLfArchivePayload, DamlLfHashFunction, DarFile, DarManifest};
+use futures::stream::FuturesUnordered;
+use futures::TryStreamExt;
 use prettytable::format;
 use prettytable::{color, Attr, Cell, Row, Table};
 use std::collections::HashMap;
-use uuid::Uuid;
 use std::sync::Arc;
-use futures::stream::FuturesUnordered;
-use futures::{TryStreamExt};
 use tokio::task::JoinHandle;
+use uuid::Uuid;
 
 const UNKNOWN_LF_ARCHIVE_PREFIX: &str = "__LF_ARCHIVE_NAME";
 
@@ -42,18 +42,27 @@ pub(crate) async fn list(uri: &str, token_key_path: Option<&str>) -> Result<()> 
             tokio::spawn(async move {
                 let package = ledger_client.package_service().get_package(pid).await?;
                 let archive = DamlLfArchivePayload::from_bytes(package.payload)?;
-                let main = DamlLfArchive::new(format!("{}-{}", UNKNOWN_LF_ARCHIVE_PREFIX, Uuid::new_v4()), archive, DamlLfHashFunction::SHA256, package.hash);
+                let main = DamlLfArchive::new(
+                    format!("{}-{}", UNKNOWN_LF_ARCHIVE_PREFIX, Uuid::new_v4()),
+                    archive,
+                    DamlLfHashFunction::SHA256,
+                    package.hash,
+                );
                 Ok(main)
             })
         })
         .collect();
-    let all_archives: Vec<DamlLfArchive> = handles.try_collect::<Vec<Result<DamlLfArchive>>>().await?.into_iter().collect::<Result<Vec<DamlLfArchive>>>()?;
+    let all_archives: Vec<DamlLfArchive> = handles
+        .try_collect::<Vec<Result<DamlLfArchive>>>()
+        .await?
+        .into_iter()
+        .collect::<Result<Vec<DamlLfArchive>>>()?;
 
     trait SplitInto<T>: Sized {
         fn split_first_into(self) -> Option<(T, Self)>;
     }
 
-    impl <T> SplitInto<T> for Vec<T> {
+    impl<T> SplitInto<T> for Vec<T> {
         fn split_first_into(mut self) -> Option<(T, Self)> {
             if self.is_empty() {
                 None
@@ -85,10 +94,8 @@ pub(crate) async fn list(uri: &str, token_key_path: Option<&str>) -> Result<()> 
             .collect::<Vec<_>>()
     })?;
 
-    let foo: HashMap<String, PackageDisplayInfo> = extracted_package_details
-        .into_iter()
-        .map(|disp| (disp.package_id.clone(), disp))
-        .collect();
+    let foo: HashMap<String, PackageDisplayInfo> =
+        extracted_package_details.into_iter().map(|disp| (disp.package_id.clone(), disp)).collect();
 
     for package_details in &packages {
         let package_id = package_details.package_id.as_str();
@@ -157,7 +164,7 @@ trait TrySwapRemove<T>: Sized {
     fn try_swap_remove(&mut self, index: usize) -> Option<T>;
 }
 
-impl <T> TrySwapRemove<T> for Vec<T> {
+impl<T> TrySwapRemove<T> for Vec<T> {
     fn try_swap_remove(&mut self, index: usize) -> Option<T> {
         if index < self.len() {
             Some(self.swap_remove(0))
