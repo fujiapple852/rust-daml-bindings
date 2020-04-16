@@ -35,16 +35,15 @@ These bindings support `DAML-LF` versions `1.6`, `1.7` & `1.8` and has been test
 ## Crates
 The project provides the following crates:
 
-| crate               | description                                 | status      |
-|---------------------|---------------------------------------------|-------------|
-| daml                | DAML prelude & common entry point           | alpha       |
-| daml_ledger_api     | Basic DAML Ledger API binding in Rust       | alpha       |
-| daml_ledger_codegen | Rust codegen for DAML archives              | alpha       |
-| daml_ledger_derive  | Custom attributes for Rust<>DAML conversion | alpha       |
-| daml_ledger_ffi     | FFI wrapper for C-style integration         | not started |
-| daml_ledger_macro   | Macros to create and extract DAML value     | alpha       |
-| daml_ledger_util    | Utilities to aid working with DAML ledgers  | alpha       |
-| daml_lf             | Read Dar and Dalf files & bytes             | alpha       | 
+| crate        | description                                 | status      |
+|--------------|---------------------------------------------|-------------|
+| daml         | DAML prelude & common entry point           | alpha       |
+| daml_api     | Basic DAML Ledger API binding in Rust       | alpha       |
+| daml_codegen | Rust codegen for DAML archives              | alpha       |
+| daml_derive  | Custom attributes for Rust<>DAML conversion | alpha       |
+| daml_macro   | Macros to create and extract DAML value     | alpha       |
+| daml_util    | Utilities to aid working with DAML ledgers  | alpha       |
+| daml_lf      | Read Dar and Dalf files & bytes             | alpha       | 
 
 ## Build
 Standard Cargo debug/release build steps:
@@ -54,21 +53,21 @@ $ cd rust-daml-bindings
 $ cargo build
 ```
 
-The build will trigger the generation of the GRPC protobuf code which is included by `daml_ledger_api/src/grpc_protobuf.rs`.  The protobuf source files are read from `daml_ledger_client/resources/protobuf`.  Note that if you need to rebuild these 
+The build will trigger the generation of the GRPC protobuf code which is included by `daml_api/src/grpc_protobuf.rs`.  The protobuf source files are read from `daml_api/resources/protobuf`.  Note that if you need to rebuild these 
 Rust source files you can do so by touching `build.rs` and rerunning the cargo build.
 
 ## Features
-The API has a `testing` feature flag to control whether the testing-only GRPC services (`TimeService` & `ResetService`) are 
+The API has a `sandbox` feature flag to control whether the testing-only GRPC services (`TimeService` & `ResetService`) are 
 built or not.  The feature is disabled by default and must be enabled for integration tests.
 
 ```
-daml_ledger_api = { version = "0.1", features = [ "testing" ] }
+daml_api = { version = "0.1", features = [ "sandbox" ] }
 ```
 
 The `admin` feature flag can be enabled to include the package and party management services.
 
 ```
-daml_ledger_api = { version = "0.1", features = [ "admin" ] }
+daml_api = { version = "0.1", features = [ "admin" ] }
 ```
 
 ## Run the Integration Tests
@@ -141,7 +140,7 @@ $ cd rust-daml-bindings
 $ cargo test --doc --workspace
 ```
 
-The generated docs can be accessed from `target/doc/daml_ledger_api/index.html`
+The generated docs can be accessed from `target/doc/daml_api/index.html`
 
 ## Library Upgrade
 To check for outdated dependencies with [cargo outdated](https://github.com/kbknapp/cargo-outdated):

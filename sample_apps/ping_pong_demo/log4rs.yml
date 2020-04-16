@@ -26,5 +26,5 @@ root:
     - stdout
     - logfile
 loggers:
-  daml_ledger_api:
+  daml_api:
     level: off

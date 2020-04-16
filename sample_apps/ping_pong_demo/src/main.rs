@@ -2,19 +2,19 @@
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 
-use daml_ledger_api::data::command::{DamlCommand, DamlCreateCommand, DamlExerciseCommand};
-use daml_ledger_api::data::event::{DamlCreatedEvent, DamlEvent};
-use daml_ledger_api::data::filter::DamlTransactionFilter;
-use daml_ledger_api::data::offset::{DamlLedgerOffset, DamlLedgerOffsetBoundary, DamlLedgerOffsetType};
-use daml_ledger_api::data::value::{DamlRecord, DamlValue};
-use daml_ledger_api::data::DamlIdentifier;
-use daml_ledger_api::data::DamlResult;
-use daml_ledger_api::{DamlCommandFactory, DamlLedgerClient, DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
+use daml::api::data::command::{DamlCommand, DamlCreateCommand, DamlExerciseCommand};
+use daml::api::data::event::{DamlCreatedEvent, DamlEvent};
+use daml::api::data::filter::DamlTransactionFilter;
+use daml::api::data::offset::{DamlLedgerOffset, DamlLedgerOffsetBoundary, DamlLedgerOffsetType};
+use daml::api::data::value::{DamlRecord, DamlValue};
+use daml::api::data::DamlIdentifier;
+use daml::api::data::DamlResult;
+use daml::api::{DamlCommandFactory, DamlLedgerClient, DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
 
-use daml_ledger_api::data::DamlTransaction;
-use daml_ledger_api::service::DamlVerbosity;
-use daml_ledger_macro::{daml_path, daml_value};
-use daml_ledger_util::package::find_module_package_id;
+use daml::api::data::DamlTransaction;
+use daml::api::service::DamlVerbosity;
+use daml::macros::{daml_path, daml_value};
+use daml::util::package::find_module_package_id;
 use futures::stream::StreamExt;
 use futures::try_join;
 use log::info;
@@ -30,7 +30,7 @@ const PARTY_BOB: &str = "Bob";
 const CHOICE_RESPOND_PING: &str = "RespondPing";
 const CHOICE_RESPOND_PONG: &str = "RespondPong";
 const TOKEN_VALIDITY_SECS: i64 = 60;
-const SERVER_CA_CERT_PATH: &str = "resources/testing_types_sandbox/.tls_certs/ca.cert";
+// const SERVER_CA_CERT_PATH: &str = "resources/testing_types_sandbox/.tls_certs/ca.cert";
 const TOKEN_KEY_PATH: &str = "resources/testing_types_sandbox/.auth_certs/es256.key";
 
 #[tokio::main]
@@ -47,7 +47,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
 async fn create_connection(uri: &str) -> DamlResult<DamlLedgerClient> {
     let ledger_client = DamlLedgerClientBuilder::uri(uri)
-        .with_tls(std::fs::read_to_string(SERVER_CA_CERT_PATH)?)
+        // .with_tls(std::fs::read_to_string(SERVER_CA_CERT_PATH)?)
         .with_auth(create_ec256_token()?)
         .connect()
         .await?
