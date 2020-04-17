@@ -177,9 +177,9 @@ impl DamlValue {
         }
     }
 
-    pub fn try_text(&self) -> DamlResult<&str> {
+    pub fn try_text(&self) -> DamlResult<&DamlText> {
         match self {
-            DamlValue::Text(s) => Ok(&s[..]),
+            DamlValue::Text(s) => Ok(s),
             _ => Err(self.make_unexpected_type_error("Text")),
         }
     }
@@ -198,20 +198,16 @@ impl DamlValue {
         }
     }
 
-    pub fn try_party(&self) -> DamlResult<&str> {
+    pub fn try_party(&self) -> DamlResult<&DamlParty> {
         match self {
-            DamlValue::Party(DamlParty {
-                party: s,
-            }) => Ok(&s[..]),
+            DamlValue::Party(party) => Ok(party),
             _ => Err(self.make_unexpected_type_error("Party")),
         }
     }
 
-    pub fn try_contract_id(&self) -> DamlResult<&str> {
+    pub fn try_contract_id(&self) -> DamlResult<&DamlContractId> {
         match self {
-            DamlValue::ContractId(DamlContractId {
-                contract_id: s,
-            }) => Ok(&s[..]),
+            DamlValue::ContractId(contract_id) => Ok(contract_id),
             _ => Err(self.make_unexpected_type_error("ContractId")),
         }
     }
@@ -358,17 +354,18 @@ impl DamlValue {
     /// # use daml_api::data::value::{DamlRecord, DamlValue, DamlRecordField};
     /// # use daml_api::data::{DamlResult, DamlError};
     /// # use daml_api::data::DamlIdentifier;
+    /// # use daml_api::primitive_types::{DamlParty, DamlText};
     /// # fn main() -> DamlResult<()> {
     /// let fields: Vec<DamlRecordField> = vec![DamlRecordField::new(Some("party"), DamlValue::new_party("Alice"))];
     /// let record: DamlRecord = DamlRecord::new(fields, None::<DamlIdentifier>);
     /// let record_value: DamlValue = DamlValue::new_record(record);
     /// let text_value: DamlValue = DamlValue::new_text("test");
     ///
-    /// fn my_party_extractor(rec: &DamlRecord) -> DamlResult<&str> {
+    /// fn my_party_extractor(rec: &DamlRecord) -> DamlResult<&DamlParty> {
     ///     rec.field("party")?.try_party()
     /// }
     ///
-    /// fn my_text_extractor(rec: &DamlRecord) -> DamlResult<&str> {
+    /// fn my_text_extractor(rec: &DamlRecord) -> DamlResult<&DamlText> {
     ///     rec.field("party")?.try_text()
     /// }
     ///
@@ -681,50 +678,38 @@ impl TryFrom<Value> for DamlValue {
     type Error = DamlError;
 
     fn try_from(value: Value) -> Result<Self, Self::Error> {
-        match value.sum {
-            Some(sum) => {
-                let convert = |sum| {
-                    Ok(match sum {
-                        Sum::Record(v) => DamlValue::Record(v.try_into()?),
-                        Sum::Variant(v) => DamlValue::Variant((*v).try_into()?),
-                        Sum::Enum(e) => DamlValue::Enum(e.into()),
-                        Sum::ContractId(v) => DamlValue::ContractId(DamlContractId::new(v)),
-                        Sum::List(v) => DamlValue::List(
-                            v.elements.into_iter().map(TryInto::try_into).collect::<DamlResult<Vec<_>>>()?,
-                        ),
-                        Sum::Int64(v) => DamlValue::Int64(v),
-                        Sum::Numeric(v) => DamlValue::Numeric(DamlNumeric::from_str(&v)?),
-                        Sum::Text(v) => DamlValue::Text(v),
-                        Sum::Timestamp(v) => DamlValue::Timestamp(util::datetime_from_micros(v)?),
-                        Sum::Party(v) => DamlValue::Party(DamlParty::new(v)),
-                        Sum::Bool(v) => DamlValue::Bool(v),
-                        Sum::Unit(_) => DamlValue::Unit,
-                        Sum::Date(v) => DamlValue::Date(util::date_from_days(v)?),
-                        Sum::Optional(v) =>
-                            DamlValue::Optional(v.value.map(|v| DamlValue::try_from(*v)).transpose()?.map(Box::new)),
-                        Sum::Map(v) => DamlValue::Map(
-                            v.entries
-                                .into_iter()
-                                .map(|v| Ok((v.key, v.value.req().and_then(DamlValue::try_from)?)))
-                                .collect::<DamlResult<HashMap<_, _>>>()?,
-                        ),
-                        Sum::GenMap(v) => DamlValue::GenMap(
-                            v.entries
-                                .into_iter()
-                                .map(|v| {
-                                    Ok((
-                                        v.key.req().and_then(DamlValue::try_from)?,
-                                        v.value.req().and_then(DamlValue::try_from)?,
-                                    ))
-                                })
-                                .collect::<DamlResult<HashMap<_, _>>>()?,
-                        ),
+        Ok(match value.sum.req()? {
+            Sum::Record(v) => DamlValue::Record(v.try_into()?),
+            Sum::Variant(v) => DamlValue::Variant((*v).try_into()?),
+            Sum::Enum(e) => DamlValue::Enum(e.into()),
+            Sum::ContractId(v) => DamlValue::ContractId(DamlContractId::new(v)),
+            Sum::List(v) =>
+                DamlValue::List(v.elements.into_iter().map(TryInto::try_into).collect::<DamlResult<Vec<_>>>()?),
+            Sum::Int64(v) => DamlValue::Int64(v),
+            Sum::Numeric(v) => DamlValue::Numeric(DamlNumeric::from_str(&v)?),
+            Sum::Text(v) => DamlValue::Text(v),
+            Sum::Timestamp(v) => DamlValue::Timestamp(util::datetime_from_micros(v)?),
+            Sum::Party(v) => DamlValue::Party(DamlParty::new(v)),
+            Sum::Bool(v) => DamlValue::Bool(v),
+            Sum::Unit(_) => DamlValue::Unit,
+            Sum::Date(v) => DamlValue::Date(util::date_from_days(v)?),
+            Sum::Optional(v) =>
+                DamlValue::Optional(v.value.map(|v| DamlValue::try_from(*v)).transpose()?.map(Box::new)),
+            Sum::Map(v) => DamlValue::Map(
+                v.entries
+                    .into_iter()
+                    .map(|v| Ok((v.key, v.value.req().and_then(DamlValue::try_from)?)))
+                    .collect::<DamlResult<HashMap<_, _>>>()?,
+            ),
+            Sum::GenMap(v) => DamlValue::GenMap(
+                v.entries
+                    .into_iter()
+                    .map(|v| {
+                        Ok((v.key.req().and_then(DamlValue::try_from)?, v.value.req().and_then(DamlValue::try_from)?))
                     })
-                };
-                convert(sum)
-            },
-            None => Err(DamlError::new_failed_conversion("GRPC Value was None")),
-        }
+                    .collect::<DamlResult<HashMap<_, _>>>()?,
+            ),
+        })
     }
 }
 

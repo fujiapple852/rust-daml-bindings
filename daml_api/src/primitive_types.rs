@@ -1,5 +1,6 @@
 use bigdecimal::BigDecimal;
 use chrono::{Date, DateTime, Utc};
+use serde::export::Formatter;
 use std::collections::HashMap;
 
 /// Type alias for a DAML `Int`.
@@ -62,13 +63,19 @@ impl From<String> for DamlParty {
     }
 }
 
-impl PartialEq<DamlParty> for &str {
-    fn eq(&self, other: &DamlParty) -> bool {
-        self == &other.party
+impl PartialEq<&DamlParty> for &str {
+    fn eq(&self, other: &&DamlParty) -> bool {
+        *self == other.party
     }
 }
 
-impl PartialEq<DamlParty> for String {
+impl PartialEq<&str> for &DamlParty {
+    fn eq(&self, other: &&str) -> bool {
+        self.party == *other
+    }
+}
+
+impl PartialEq<DamlParty> for &str {
     fn eq(&self, other: &DamlParty) -> bool {
         self == &other.party
     }
@@ -80,9 +87,9 @@ impl PartialEq<&str> for DamlParty {
     }
 }
 
-impl PartialEq<String> for DamlParty {
-    fn eq(&self, other: &String) -> bool {
-        &self.party == other
+impl std::fmt::Display for DamlParty {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.party.fmt(f)
     }
 }
 
@@ -116,13 +123,19 @@ impl From<String> for DamlContractId {
     }
 }
 
-impl PartialEq<DamlContractId> for &str {
-    fn eq(&self, other: &DamlContractId) -> bool {
-        self == &other.contract_id
+impl PartialEq<&DamlContractId> for &str {
+    fn eq(&self, other: &&DamlContractId) -> bool {
+        *self == other.contract_id
     }
 }
 
-impl PartialEq<DamlContractId> for String {
+impl PartialEq<&str> for &DamlContractId {
+    fn eq(&self, other: &&str) -> bool {
+        self.contract_id == *other
+    }
+}
+
+impl PartialEq<DamlContractId> for &str {
     fn eq(&self, other: &DamlContractId) -> bool {
         self == &other.contract_id
     }
@@ -134,8 +147,8 @@ impl PartialEq<&str> for DamlContractId {
     }
 }
 
-impl PartialEq<String> for DamlContractId {
-    fn eq(&self, other: &String) -> bool {
-        &self.contract_id == other
+impl std::fmt::Display for DamlContractId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.contract_id.fmt(f)
     }
 }

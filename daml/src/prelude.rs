@@ -14,10 +14,3 @@ pub use daml_derive::DamlData;
 pub use daml_derive::DamlEnum;
 pub use daml_derive::DamlTemplate;
 pub use daml_derive::DamlVariant;
-
-#[doc(hidden)]
-pub use std::collections::HashMap;
-#[doc(hidden)]
-pub use std::convert::{TryFrom, TryInto};
-#[doc(hidden)]
-pub use std::marker::PhantomData;

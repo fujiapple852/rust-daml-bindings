@@ -3,6 +3,8 @@ use crate::common::test_utils::*;
 use daml::api::data::event::DamlEvent;
 use daml::api::DamlSimpleExecutorBuilder;
 use daml::prelude::*;
+use std::collections::HashMap;
+use std::convert::TryInto;
 
 #[test]
 pub fn test_round_trip() -> TestResult {

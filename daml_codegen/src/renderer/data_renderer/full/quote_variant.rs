@@ -170,7 +170,7 @@ fn quote_unused_phantom_params(params: &[DamlTypeVar<'_>], variants: &[&DamlFiel
             } else {
                 Some({
                     let param_tokens = quote_ident(normalize_generic_param(p.var).to_uppercase());
-                    quote!( PhantomData < #param_tokens > )
+                    quote!( std::marker::PhantomData < #param_tokens > )
                 })
             }
         })

@@ -67,10 +67,10 @@ fn quote_contract_struct_impl_try_from(struct_name: &str) -> TokenStream {
     let contract_struct_name_tokens = quote_contract_struct_name(struct_name);
     let contract_id_struct_name_tokens = quote_contract_id_struct_name(struct_name);
     quote!(
-        impl TryFrom<DamlCreatedEvent> for #contract_struct_name_tokens {
+        impl std::convert::TryFrom<DamlCreatedEvent> for #contract_struct_name_tokens {
 
             type Error = DamlError;
-            fn try_from(event: DamlCreatedEvent) -> std::result::Result<Self, <#contract_struct_name_tokens as TryFrom<DamlCreatedEvent>>::Error> {
+            fn try_from(event: DamlCreatedEvent) -> std::result::Result<Self, <#contract_struct_name_tokens as std::convert::TryFrom<DamlCreatedEvent>>::Error> {
                 let contract_id = event.contract_id().to_owned();
                 let record: DamlRecord = event.take_create_arguments();
                 Ok(Self {
@@ -97,9 +97,9 @@ fn quote_contract_id_struct(struct_name: &str) -> TokenStream {
 fn quote_contract_id_struct_impl_try_from(struct_name: &str) -> TokenStream {
     let contract_id_struct_name_tokens = quote_contract_id_struct_name(struct_name);
     quote!(
-        impl TryFrom<DamlContractId> for #contract_id_struct_name_tokens {
+        impl std::convert::TryFrom<DamlContractId> for #contract_id_struct_name_tokens {
             type Error = DamlError;
-            fn try_from(contract_id: DamlContractId) -> std::result::Result<Self, <#contract_id_struct_name_tokens as TryFrom<DamlContractId>>::Error> {
+            fn try_from(contract_id: DamlContractId) -> std::result::Result<Self, <#contract_id_struct_name_tokens as std::convert::TryFrom<DamlContractId>>::Error> {
                 Ok(Self {
                     contract_id,
                 })
