@@ -2,19 +2,22 @@
 #![allow(unused)]
 use anyhow::Result;
 use daml::api::{DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
+use daml::lf::element::{
+    DamlAbsoluteDataRef, DamlArchive, DamlChoice, DamlDataRef, DamlElementVisitor, DamlLocalDataRef,
+    DamlNonLocalDataRef, DamlVisitableElement,
+};
 use daml::lf::{DamlLfArchive, DamlLfArchivePayload, DamlLfHashFunction, DarFile, DarManifest};
+use daml::prelude::{DamlError, DamlResult};
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
+use itertools::all;
 use prettytable::format;
 use prettytable::{color, Attr, Cell, Row, Table};
 use std::collections::{HashMap, HashSet};
+use std::iter::{once, FromIterator};
 use std::sync::Arc;
 use tokio::task::JoinHandle;
 use uuid::Uuid;
-use daml::lf::element::{DamlVisitableElement, DamlElementVisitor, DamlNonLocalDataRef, DamlDataRef, DamlLocalDataRef, DamlAbsoluteDataRef, DamlChoice, DamlArchive};
-use daml::prelude::{DamlError, DamlResult};
-use itertools::all;
-use std::iter::FromIterator;
 
 const UNKNOWN_LF_ARCHIVE_PREFIX: &str = "__LF_ARCHIVE_NAME";
 
@@ -90,8 +93,6 @@ pub(crate) async fn list(uri: &str, token_key_path: Option<&str>) -> Result<()> 
     //
     //
 
-    //
-    //
     // let foo: HashMap<String, PackageDisplayInfo> =
     //     extracted_package_details.into_iter().map(|disp| (disp.package_id.clone(), disp)).collect();
     //
@@ -114,9 +115,6 @@ pub(crate) async fn list(uri: &str, token_key_path: Option<&str>) -> Result<()> 
     Ok(())
 }
 
-
-
-
 #[derive(Debug, Default, Eq, PartialEq, Hash, Clone)]
 struct PackageInfo {
     package_id: String,
@@ -130,16 +128,29 @@ struct PackageDependencyVisitor {
 
 impl DamlElementVisitor for PackageDependencyVisitor {
     fn pre_visit_non_local_data_ref(&mut self, non_local_data_ref: &DamlNonLocalDataRef<'_>) {
-        self.refs.insert(PackageInfo { package_id: non_local_data_ref.target_package_id.to_owned(), package_name: non_local_data_ref.target_package_name.to_owned() });
+        self.refs.insert(PackageInfo {
+            package_id: non_local_data_ref.target_package_id.to_owned(),
+            package_name: non_local_data_ref.target_package_name.to_owned(),
+        });
     }
+
     fn pre_visit_absolute_data_ref(&mut self, absolute_data_ref: &DamlAbsoluteDataRef<'_>) {
-        self.refs.insert(PackageInfo { package_id: absolute_data_ref.package_id.to_owned(), package_name: absolute_data_ref.package_name.to_owned() });
+        self.refs.insert(PackageInfo {
+            package_id: absolute_data_ref.package_id.to_owned(),
+            package_name: absolute_data_ref.package_name.to_owned(),
+        });
     }
 }
 
 fn extract_package_dependencies(archive: &DamlArchive, package_info: PackageInfo) -> DamlResult<HashSet<PackageInfo>> {
-    let package = archive.packages.values().find(|&p| p.package_id == package_info.package_id).ok_or_else(|| DamlError::Other("TODO".to_owned()))?;
-    let mut visitor = PackageDependencyVisitor { refs: Default::default() };
+    let package = archive
+        .packages
+        .values()
+        .find(|&p| p.package_id == package_info.package_id)
+        .ok_or_else(|| DamlError::Other("TODO".to_owned()))?;
+    let mut visitor = PackageDependencyVisitor {
+        refs: Default::default(),
+    };
     package.accept(&mut visitor);
     visitor.refs.into_iter().fold(Ok(HashSet::from_iter(vec![package_info].into_iter())), |mut all_refs, name| {
         match all_refs {
@@ -161,45 +172,55 @@ fn assemble_dar(main: DamlLfArchive, dependencies: Vec<DamlLfArchive>) -> DarFil
     DarFile::new(manifest, main, dependencies)
 }
 
-// TODO need a HashMap here so we can lookup name by id
-// fn rename_package(mut package: DamlLfArchive, info: &HashSet<PackageInfo>) -> DamlLfArchive {
-//     package.name = info.get(&package.hash).as_ref().to_string();
-//     package
-// }
-
 fn build_dar(mut all_archives: Vec<DamlLfArchive>) -> Result<()> {
-
+    // 1: extract an arbitrary package and build temp DarFile with all packages
     let (first, rest) = all_archives.try_swap_remove(0).map(|i| (i, all_archives)).unwrap();
-
-
-    // 2: build temp DarFile with all packages
     let everything_dar = assemble_dar(first, rest);
 
-    // 4: determine all dependencies of the main package
+    // 2: determine all dependencies of the stdlib package
+    // TODO our package does not seem to reference stdlib so we just have to add our real main package to the dependency
+    // list, somehow...
     let dependencies: HashSet<PackageInfo> = everything_dar.apply(|arc| {
-        let stdlib = arc.packages.values().find_map(|a| if a.name == "daml-stdlib" {Some(PackageInfo { package_id: a.package_id.to_owned(), package_name: a.name.to_owned() })} else {None}).unwrap();
+        let stdlib = arc
+            .packages
+            .values()
+            .find_map(|a| {
+                if a.name == "daml-stdlib" {
+                    Some(PackageInfo {
+                        package_id: a.package_id.to_owned(),
+                        package_name: a.name.to_owned(),
+                    })
+                } else {
+                    None
+                }
+            })
+            .unwrap();
         extract_package_dependencies(arc, stdlib)
     })??;
 
-    // 5: we have to rename each DamlLfArchive with the name we have just extracted from the package
+    // 3: we have to filter and rename each DamlLfArchive with the name we have just extracted from the package
+    let dep_map: HashMap<String, String> = dependencies.into_iter().map(|d| (d.package_id, d.package_name)).collect();
+    let renamed: Vec<DamlLfArchive> = once(everything_dar.main)
+        .chain(everything_dar.dependencies)
+        .filter_map(|mut a| {
+            dep_map.get_key_value(&a.hash).map(|(k, v)| {
+                a.name = v.clone();
+                a
+            })
+        })
+        .collect();
 
+    // 4: we can extract the "main" package by name and build the final Dar
 
-    dbg!(dependencies);
+    // 5: write out the zip file, somehow
+
+    for x in renamed {
+        dbg!(x.name, x.hash);
+    }
+
+    // dbg!(dep_map);
     Ok(())
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 struct PackageDisplayInfo {
     name: String,
