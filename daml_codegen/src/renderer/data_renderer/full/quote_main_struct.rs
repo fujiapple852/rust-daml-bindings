@@ -191,14 +191,14 @@ fn quote_decl_unused_phantom_params(params: &[DamlTypeVar<'_>], struct_fields: &
     quote_unused_phantom_params(params, struct_fields, |param| {
         let name_tokens = quote_escaped_ident(make_ignored_ident(param.var));
         let param_tokens = quote_ident(normalize_generic_param(param.var).to_uppercase());
-        quote!( #name_tokens: PhantomData< #param_tokens >)
+        quote!( #name_tokens: std::marker::PhantomData< #param_tokens >)
     })
 }
 
 fn quote_init_unused_phantom_params(params: &[DamlTypeVar<'_>], struct_fields: &[&DamlField<'_>]) -> TokenStream {
     quote_unused_phantom_params(params, struct_fields, |param| {
         let name_tokens = quote_escaped_ident(make_ignored_ident(param.var));
-        quote!( #name_tokens: PhantomData )
+        quote!( #name_tokens: std::marker::PhantomData )
     })
 }
 

@@ -4,9 +4,9 @@ use crate::convert::wrapper::PayloadElementWrapper;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use std::convert::{TryFrom, TryInto};
 
-use crate::protobuf_autogen::daml_lf_1::r#type::{Con, Sum, Var};
-use crate::protobuf_autogen::daml_lf_1::{package_ref, PrimType};
-use crate::protobuf_autogen::daml_lf_1::{ModuleRef, PackageRef, Type, TypeConName};
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::r#type::{Con, Sum, Var};
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::{package_ref, PrimType};
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::{ModuleRef, PackageRef, Type, TypeConName};
 
 ///
 pub type DamlTypeWrapper<'a> = PayloadElementWrapper<'a, &'a DamlTypePayload<'a>>;

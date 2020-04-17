@@ -4,6 +4,7 @@ include!("autogen/rental_0_0_1.rs");
 
 use daml::api::{DamlLedgerClientBuilder, DamlSimpleExecutorBuilder};
 use rental::da::rental::*;
+use std::convert::TryFrom;
 
 #[tokio::main]
 async fn main() -> DamlResult<()> {
@@ -16,8 +17,7 @@ async fn main() -> DamlResult<()> {
     let proposal_event = alice_executor.execute_create(proposal_data.create_command()).await?;
     let proposal_contract = RentalProposalContract::try_from(proposal_event)?;
     let accept_result = bob_executor.execute_exercise(proposal_contract.id().accept_command("", 0)).await?;
-    let agreement_contract_id =
-        RentalAgreementContractId::try_from(DamlContractId::new(accept_result.try_contract_id()?.to_owned()))?;
+    let agreement_contract_id = RentalAgreementContractId::try_from(accept_result.try_contract_id()?.to_owned())?;
     println!("{:?}", &agreement_contract_id);
     Ok(())
 }

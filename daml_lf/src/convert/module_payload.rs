@@ -5,7 +5,7 @@ use crate::convert::package_payload::DamlPackagePayload;
 use crate::convert::util::Required;
 use crate::convert::wrapper::DamlPayloadDataWrapper;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
-use crate::protobuf_autogen::daml_lf_1::Module;
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::Module;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 

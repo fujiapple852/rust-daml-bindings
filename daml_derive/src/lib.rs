@@ -203,6 +203,7 @@
 //!
 //! ```no_run
 //! # use daml::prelude::*;
+//! # use std::convert::TryInto;
 //! # #[DamlTemplate(package_id = r"", module_name = "DA.PingPong")]
 //! # pub struct Ping {
 //! #    pub sender: DamlParty,
@@ -222,6 +223,7 @@
 //!
 //! ```no_run
 //! # use daml::prelude::*;
+//! # use std::convert::TryInto;
 //! # #[DamlTemplate(package_id = r"", module_name = "DA.PingPong")]
 //! # pub struct Ping {
 //! #    pub sender: DamlParty,
@@ -246,6 +248,7 @@
 //!
 //! ```no_run
 //! # use daml::prelude::*;
+//! # use std::convert::TryInto;
 //! # #[DamlTemplate(package_id = r"", module_name = "DA.PingPong")]
 //! # pub struct Ping {
 //! #    pub sender: DamlParty,
