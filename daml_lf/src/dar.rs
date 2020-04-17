@@ -101,6 +101,7 @@ impl DarFile {
     /// Convert a [`DarFile`] to a [`DamlArchive`] and map function `f` over it.
     ///
     /// TODO document this with example
+    /// TODO do we need _mut / _into variants?
     pub fn apply<R, F>(&self, f: F) -> DamlLfResult<R>
     where
         F: FnMut(&DamlArchive<'_>) -> R,

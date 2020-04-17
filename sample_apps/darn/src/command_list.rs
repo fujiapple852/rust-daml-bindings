@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+#![allow(unused)]
 use anyhow::Result;
 use daml::api::{DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
 use daml::lf::{DamlLfArchive, DamlLfArchivePayload, DamlLfHashFunction, DarFile, DarManifest};
@@ -5,10 +7,14 @@ use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
 use prettytable::format;
 use prettytable::{color, Attr, Cell, Row, Table};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use tokio::task::JoinHandle;
 use uuid::Uuid;
+use daml::lf::element::{DamlVisitableElement, DamlElementVisitor, DamlNonLocalDataRef, DamlDataRef, DamlLocalDataRef, DamlAbsoluteDataRef, DamlChoice, DamlArchive};
+use daml::prelude::{DamlError, DamlResult};
+use itertools::all;
+use std::iter::FromIterator;
 
 const UNKNOWN_LF_ARCHIVE_PREFIX: &str = "__LF_ARCHIVE_NAME";
 
@@ -52,69 +58,148 @@ pub(crate) async fn list(uri: &str, token_key_path: Option<&str>) -> Result<()> 
             })
         })
         .collect();
-    let all_archives: Vec<DamlLfArchive> = handles
+
+    let mut all_archives: Vec<DamlLfArchive> = handles
         .try_collect::<Vec<Result<DamlLfArchive>>>()
         .await?
         .into_iter()
         .collect::<Result<Vec<DamlLfArchive>>>()?;
 
-    trait SplitInto<T>: Sized {
-        fn split_first_into(self) -> Option<(T, Self)>;
-    }
+    build_dar(all_archives)?;
 
-    impl<T> SplitInto<T> for Vec<T> {
-        fn split_first_into(mut self) -> Option<(T, Self)> {
-            if self.is_empty() {
-                None
-            } else {
-                let head = self.swap_remove(0);
-                Some((head, self))
-            }
-        }
-    }
+    // // build a pseudo DarFile with all packages (pick one as main)
+    // // TODO some library function for this
+    // let manifest = DarManifest::new_implied("", vec!["".to_owned()]);
+    // let (first, rest) = all_archives.try_swap_remove(0).map(|i| (i, all_archives)).unwrap();
+    // let archive = DarFile::new(manifest, first, rest);
+    //
+    //
+    // let extracted_package_details = archive.apply(|arc| {
+    //     arc.packages
+    //         .iter()
+    //         .map(|(_, p)| {
+    //             PackageDisplayInfo::new(
+    //                 p.name.to_owned(),
+    //                 p.package_id.to_owned(),
+    //                 p.version.map(String::from),
+    //                 p.language_version.to_string(),
+    //             )
+    //         })
+    //         .collect::<Vec<_>>()
+    // })?;
+    //
+    //
 
-    // build a pseudo DarFile with all packages (pick one as main)
-    // TODO some library function for this
-    let manifest = DarManifest::new_implied("", vec!["".to_owned()]);
-    let (first, rest) = all_archives.split_first_into().unwrap();
-
-    let archive = DarFile::new(manifest, first, rest);
-
-    let extracted_package_details = archive.apply(|arc| {
-        arc.packages
-            .iter()
-            .map(|(_, p)| {
-                PackageDisplayInfo::new(
-                    p.name.to_owned(),
-                    p.package_id.to_owned(),
-                    p.version.map(String::from),
-                    p.language_version.to_string(),
-                )
-            })
-            .collect::<Vec<_>>()
-    })?;
-
-    let foo: HashMap<String, PackageDisplayInfo> =
-        extracted_package_details.into_iter().map(|disp| (disp.package_id.clone(), disp)).collect();
-
-    for package_details in &packages {
-        let package_id = package_details.package_id.as_str();
-        let desc = package_details.source_description.as_str();
-        let known_since = package_details.known_since.to_string();
-        let package_size = package_details.package_size.to_string();
-        let display_data = &foo[package_id];
-        let name = if display_data.name.starts_with(UNKNOWN_LF_ARCHIVE_PREFIX) {
-            "unknown"
-        } else {
-            &display_data.name
-        };
-        let version = display_data.version.as_ref().map(String::from).unwrap_or_else(|| "n/a".to_owned());
-        let language_version = &display_data.language_version;
-        table.add_row(row(&name, &version, package_id, &language_version, desc, &package_size, &known_since));
-    }
-    table.printstd();
+    //
+    //
+    // let foo: HashMap<String, PackageDisplayInfo> =
+    //     extracted_package_details.into_iter().map(|disp| (disp.package_id.clone(), disp)).collect();
+    //
+    // for package_details in &packages {
+    //     let package_id = package_details.package_id.as_str();
+    //     let desc = package_details.source_description.as_str();
+    //     let known_since = package_details.known_since.to_string();
+    //     let package_size = package_details.package_size.to_string();
+    //     let display_data = &foo[package_id];
+    //     let name = if display_data.name.starts_with(UNKNOWN_LF_ARCHIVE_PREFIX) {
+    //         "unknown"
+    //     } else {
+    //         &display_data.name
+    //     };
+    //     let version = display_data.version.as_ref().map(String::from).unwrap_or_else(|| "n/a".to_owned());
+    //     let language_version = &display_data.language_version;
+    //     table.add_row(row(&name, &version, package_id, &language_version, desc, &package_size, &known_since));
+    // }
+    // table.printstd();
     Ok(())
 }
+
+
+
+
+#[derive(Debug, Default, Eq, PartialEq, Hash, Clone)]
+struct PackageInfo {
+    package_id: String,
+    package_name: String,
+}
+
+#[derive(Default)]
+struct PackageDependencyVisitor {
+    refs: HashSet<PackageInfo>,
+}
+
+impl DamlElementVisitor for PackageDependencyVisitor {
+    fn pre_visit_non_local_data_ref(&mut self, non_local_data_ref: &DamlNonLocalDataRef<'_>) {
+        self.refs.insert(PackageInfo { package_id: non_local_data_ref.target_package_id.to_owned(), package_name: non_local_data_ref.target_package_name.to_owned() });
+    }
+    fn pre_visit_absolute_data_ref(&mut self, absolute_data_ref: &DamlAbsoluteDataRef<'_>) {
+        self.refs.insert(PackageInfo { package_id: absolute_data_ref.package_id.to_owned(), package_name: absolute_data_ref.package_name.to_owned() });
+    }
+}
+
+fn extract_package_dependencies(archive: &DamlArchive, package_info: PackageInfo) -> DamlResult<HashSet<PackageInfo>> {
+    let package = archive.packages.values().find(|&p| p.package_id == package_info.package_id).ok_or_else(|| DamlError::Other("TODO".to_owned()))?;
+    let mut visitor = PackageDependencyVisitor { refs: Default::default() };
+    package.accept(&mut visitor);
+    visitor.refs.into_iter().fold(Ok(HashSet::from_iter(vec![package_info].into_iter())), |mut all_refs, name| {
+        match all_refs {
+            Ok(mut r) => {
+                r.extend(extract_package_dependencies(archive, name)?);
+                Ok(r)
+            },
+            Err(e) => Err(e),
+        }
+    })
+}
+
+// 1: download all packages
+// 3: determine the main package by name
+// 5: build final DarFile with main + dependencies
+
+fn assemble_dar(main: DamlLfArchive, dependencies: Vec<DamlLfArchive>) -> DarFile {
+    let manifest = DarManifest::new_implied(main.name.clone(), dependencies.iter().map(|n| n.name.clone()).collect());
+    DarFile::new(manifest, main, dependencies)
+}
+
+// TODO need a HashMap here so we can lookup name by id
+// fn rename_package(mut package: DamlLfArchive, info: &HashSet<PackageInfo>) -> DamlLfArchive {
+//     package.name = info.get(&package.hash).as_ref().to_string();
+//     package
+// }
+
+fn build_dar(mut all_archives: Vec<DamlLfArchive>) -> Result<()> {
+
+    let (first, rest) = all_archives.try_swap_remove(0).map(|i| (i, all_archives)).unwrap();
+
+
+    // 2: build temp DarFile with all packages
+    let everything_dar = assemble_dar(first, rest);
+
+    // 4: determine all dependencies of the main package
+    let dependencies: HashSet<PackageInfo> = everything_dar.apply(|arc| {
+        let stdlib = arc.packages.values().find_map(|a| if a.name == "daml-stdlib" {Some(PackageInfo { package_id: a.package_id.to_owned(), package_name: a.name.to_owned() })} else {None}).unwrap();
+        extract_package_dependencies(arc, stdlib)
+    })??;
+
+    // 5: we have to rename each DamlLfArchive with the name we have just extracted from the package
+
+
+    dbg!(dependencies);
+    Ok(())
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 struct PackageDisplayInfo {
     name: String,
@@ -167,7 +252,7 @@ trait TrySwapRemove<T>: Sized {
 impl<T> TrySwapRemove<T> for Vec<T> {
     fn try_swap_remove(&mut self, index: usize) -> Option<T> {
         if index < self.len() {
-            Some(self.swap_remove(0))
+            Some(self.swap_remove(index))
         } else {
             None
         }

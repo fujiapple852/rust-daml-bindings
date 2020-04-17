@@ -139,6 +139,7 @@ impl<'a> DamlVisitableElement<'a> for DamlDataRef<'a> {
 #[derive(Debug, Serialize)]
 pub struct DamlLocalDataRef<'a> {
     pub data_name: &'a str,
+    pub package_id: &'a str,
     pub package_name: &'a str,
     pub module_path: Vec<&'a str>,
     pub type_arguments: Vec<DamlType<'a>>,
@@ -147,12 +148,14 @@ pub struct DamlLocalDataRef<'a> {
 impl<'a> DamlLocalDataRef<'a> {
     pub fn new(
         data_name: &'a str,
+        package_id: &'a str,
         package_name: &'a str,
         module_path: Vec<&'a str>,
         type_arguments: Vec<DamlType<'a>>,
     ) -> Self {
         Self {
             data_name,
+            package_id,
             package_name,
             module_path,
             type_arguments,
@@ -171,8 +174,10 @@ impl<'a> DamlVisitableElement<'a> for DamlLocalDataRef<'a> {
 #[derive(Debug, Serialize)]
 pub struct DamlNonLocalDataRef<'a> {
     pub data_name: &'a str,
+    pub source_package_id: &'a str,
     pub source_package_name: &'a str,
     pub source_module_path: Vec<&'a str>,
+    pub target_package_id: &'a str,
     pub target_package_name: &'a str,
     pub target_module_path: Vec<&'a str>,
     pub type_arguments: Vec<DamlType<'a>>,
@@ -181,16 +186,20 @@ pub struct DamlNonLocalDataRef<'a> {
 impl<'a> DamlNonLocalDataRef<'a> {
     pub fn new(
         data_name: &'a str,
+        source_package_id: &'a str,
         source_package_name: &'a str,
         source_module_path: Vec<&'a str>,
+        target_package_id: &'a str,
         target_package_name: &'a str,
         target_module_path: Vec<&'a str>,
         type_arguments: Vec<DamlType<'a>>,
     ) -> Self {
         Self {
             data_name,
+            source_package_id,
             source_package_name,
             source_module_path,
+            target_package_id,
             target_package_name,
             target_module_path,
             type_arguments,
@@ -209,6 +218,7 @@ impl<'a> DamlVisitableElement<'a> for DamlNonLocalDataRef<'a> {
 #[derive(Debug, Serialize)]
 pub struct DamlAbsoluteDataRef<'a> {
     pub data_name: &'a str,
+    pub package_id: &'a str,
     pub package_name: &'a str,
     pub module_path: Vec<&'a str>,
     pub type_arguments: Vec<DamlType<'a>>,
@@ -217,12 +227,14 @@ pub struct DamlAbsoluteDataRef<'a> {
 impl<'a> DamlAbsoluteDataRef<'a> {
     pub fn new(
         data_name: &'a str,
+        package_id: &'a str,
         package_name: &'a str,
         module_path: Vec<&'a str>,
         type_arguments: Vec<DamlType<'a>>,
     ) -> Self {
         Self {
             data_name,
+            package_id,
             package_name,
             module_path,
             type_arguments,

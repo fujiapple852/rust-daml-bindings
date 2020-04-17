@@ -80,12 +80,14 @@ impl<'a> From<&'a AttrType> for DamlType<'a> {
                     DamlType::DataRef(DamlDataRef::Local(DamlLocalDataRef::new(
                         data_name,
                         "",
+                        "",
                         to_vec_str(path),
                         type_arguments.iter().map(DamlType::from).collect(),
                     )))
                 } else {
                     DamlType::DataRef(DamlDataRef::Absolute(DamlAbsoluteDataRef::new(
                         data_name,
+                        "",
                         "",
                         to_vec_str(path),
                         type_arguments.iter().map(DamlType::from).collect(),

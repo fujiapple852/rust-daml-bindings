@@ -212,7 +212,9 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
             target_data: DamlDataWrapper<'a>,
         ) -> DamlLfConvertResult<DamlDataRef<'a>> {
             let resolver = daml_type.context.package;
+            let current_package_id = daml_type.context.package.package_id;
             let current_package_name = daml_type.context.package.name.as_str();
+            let target_package_id = target_data.context.package.package_id;
             let target_package_name = target_data.context.package.name.as_str();
             let current_module_path = daml_type.context.module.path.resolve(resolver)?;
             let target_module_path = data_ref.payload.module_path.resolve(resolver)?;
@@ -223,9 +225,10 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
                 .iter()
                 .map(|ty| DamlType::try_from(&data_ref.wrap(ty)))
                 .collect::<DamlLfConvertResult<_>>()?;
-            if target_package_name == current_package_name && target_module_path == current_module_path {
+            if target_package_id == current_package_id && target_module_path == current_module_path {
                 Ok(DamlDataRef::Local(DamlLocalDataRef::new(
                     data_name,
+                    target_package_id,
                     target_package_name,
                     target_module_path,
                     type_arguments,
@@ -233,8 +236,10 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
             } else {
                 Ok(DamlDataRef::NonLocal(DamlNonLocalDataRef::new(
                     data_name,
+                    current_package_id,
                     current_package_name,
                     current_module_path,
+                    target_package_id,
                     target_package_name,
                     target_module_path,
                     type_arguments,
