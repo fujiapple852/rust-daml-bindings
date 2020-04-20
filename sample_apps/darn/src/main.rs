@@ -1,6 +1,15 @@
+#![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
+#![allow(
+    clippy::module_name_repetitions,
+    clippy::use_self,
+    clippy::must_use_candidate,
+)]
+#![forbid(unsafe_code)]
+
 use anyhow::Result;
 use clap::{App, AppSettings, Arg, SubCommand};
 
+pub mod command_download;
 pub mod command_json;
 pub mod command_list;
 pub mod command_module;
@@ -8,6 +17,7 @@ pub mod command_outline;
 pub mod command_package;
 pub mod command_upload;
 pub mod error;
+pub mod package_common;
 
 #[tokio::main(core_threads = 4)]
 async fn main() -> Result<()> {
@@ -77,6 +87,25 @@ async fn main() -> Result<()> {
                 ),
         )
         .subcommand(
+            SubCommand::with_name("download")
+                .about("download a dar from a DAML ledger")
+                .arg(
+                    Arg::with_name("main-package")
+                        .help("The main package name (TODO id?) of the dar")
+                        .required(true)
+                        .index(1),
+                )
+                .arg(
+                    Arg::with_name("uri")
+                        .short("s")
+                        .long("uri")
+                        .takes_value(true)
+                        .required(true)
+                        .help("DAML ledger server uri (e.g. https://127.0.0.1:1234)"),
+                )
+                .arg(Arg::with_name("key").short("k").long("key").takes_value(true).help("DAML ledger server key")),
+        )
+        .subcommand(
             SubCommand::with_name("list")
                 .about("list packages on a DAML ledger")
                 .arg(
@@ -118,6 +147,12 @@ async fn main() -> Result<()> {
         let dar_path = inspect_matches.value_of("dar").unwrap();
         let uri = inspect_matches.value_of("uri").unwrap();
         command_upload::upload(dar_path, uri).await?;
+    }
+    if let Some(inspect_matches) = matches.subcommand_matches("download") {
+        let main_package = inspect_matches.value_of("main-package").unwrap();
+        let uri = inspect_matches.value_of("uri").unwrap();
+        let key = inspect_matches.value_of("key");
+        command_download::download(uri, key, main_package).await?;
     }
     if let Some(inspect_matches) = matches.subcommand_matches("list") {
         let uri = inspect_matches.value_of("uri").unwrap();

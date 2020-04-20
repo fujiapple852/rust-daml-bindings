@@ -5,7 +5,7 @@ authors = ["FujiApple <fujiapple852@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-daml = { path = "../../daml", features = [ "api", "sandbox", "lf" ] }
+daml = { path = "../../daml", features = [ "api", "sandbox", "lf", "util" ] }
 futures = "0.3"
 tokio = { version = "0.2", features = [ "rt-threaded", "macros" ] }
 log = "0.4"

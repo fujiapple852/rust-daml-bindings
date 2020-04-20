@@ -9,8 +9,6 @@ use ptree::print_config::UTF_CHARS_BOLD;
 use ptree::{print_tree_with, Color, PrintConfig, Style, TreeBuilder};
 
 pub(crate) fn outline(dar_path: &str, package_opt: Option<&str>, module_opt: Option<&str>) -> Result<()> {
-    let dar = DarFile::from_file(dar_path)?;
-
     struct ModuleTreeVisitor {
         tree: TreeBuilder,
     }
@@ -89,6 +87,8 @@ pub(crate) fn outline(dar_path: &str, package_opt: Option<&str>, module_opt: Opt
             self.tree.end_child();
         }
     }
+
+    let dar = DarFile::from_file(dar_path)?;
 
     let mut visitor = ModuleTreeVisitor {
         tree: TreeBuilder::new("root".to_owned()),
