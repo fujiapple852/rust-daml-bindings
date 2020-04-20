@@ -1,9 +1,5 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
-#![allow(
-    clippy::module_name_repetitions,
-    clippy::use_self,
-    clippy::must_use_candidate,
-)]
+#![allow(clippy::module_name_repetitions, clippy::use_self, clippy::must_use_candidate)]
 #![forbid(unsafe_code)]
 
 use anyhow::Result;

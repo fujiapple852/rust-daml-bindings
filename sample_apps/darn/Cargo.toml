@@ -18,3 +18,4 @@ itertools = "0.9"
 anyhow = "1.0"
 thiserror = "1.0"
 uuid = { version = "0.8", features = ["v4"] }
+zip = "0.5"

@@ -10,31 +10,46 @@ use uuid::Uuid;
 
 const UNKNOWN_LF_ARCHIVE_PREFIX: &str = "__LF_ARCHIVE_NAME";
 
-pub async fn get_all_packages(uri: &str, token_key_path: Option<&str>) -> Result<Vec<DamlLfArchive>> {
+pub struct PackageHolder {
+    pub raw: Vec<u8>,
+    pub parsed: DamlLfArchive,
+}
+
+impl PackageHolder {
+    pub fn new(raw: Vec<u8>, parsed: DamlLfArchive) -> Self {
+        Self {
+            raw,
+            parsed
+        }
+    }
+}
+
+pub async fn get_all_packages(uri: &str, token_key_path: Option<&str>) -> Result<Vec<PackageHolder>> {
     let ledger_client = Arc::new(match token_key_path {
         Some(key) => DamlLedgerClientBuilder::uri(uri).with_auth(make_ec256_token(key)?).connect().await?,
         None => DamlLedgerClientBuilder::uri(uri).connect().await?,
     });
     let packages = ledger_client.package_management_service().list_known_packages().await?;
-    let handles: FuturesUnordered<JoinHandle<Result<DamlLfArchive>>> = packages
+    let handles: FuturesUnordered<JoinHandle<Result<PackageHolder>>> = packages
         .iter()
         .map(|pd| {
             let ledger_client = ledger_client.clone();
             let pid = pd.package_id.clone();
             tokio::spawn(async move {
                 let package = ledger_client.package_service().get_package(pid).await?;
-                let archive = DamlLfArchivePayload::from_bytes(package.payload)?;
+
+                let archive = DamlLfArchivePayload::from_bytes(package.payload.clone())?;
                 let main = DamlLfArchive::new(
                     format!("{}-{}", UNKNOWN_LF_ARCHIVE_PREFIX, Uuid::new_v4()),
                     archive,
                     DamlLfHashFunction::SHA256,
                     package.hash,
                 );
-                Ok(main)
+                Ok(PackageHolder::new(package.payload, main))
             })
         })
         .collect();
-    handles.try_collect::<Vec<Result<DamlLfArchive>>>().await?.into_iter().collect::<Result<Vec<DamlLfArchive>>>()
+    handles.try_collect::<Vec<Result<PackageHolder>>>().await?.into_iter().collect::<Result<Vec<PackageHolder>>>()
 }
 
 fn make_ec256_token(token_key_path: &str) -> Result<String> {

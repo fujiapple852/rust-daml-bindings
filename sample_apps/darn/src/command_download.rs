@@ -8,12 +8,16 @@ use daml::lf::{DamlLfArchive, DarFile, DarManifest};
 use daml::util::archive::ExtendedPackageInfo;
 use std::collections::{HashMap, HashSet};
 use std::iter::{once, FromIterator};
+use std::path::Path;
+use std::io::Write;
 
 const DAML_STDLIB_PACKAGE_NAME: &str = "daml-stdlib";
 
 pub async fn download(uri: &str, token_key_path: Option<&str>, main_package_name: &str) -> Result<()> {
     let all_packages = get_all_packages(uri, token_key_path).await?;
-    let working_dar = make_working_dar(all_packages);
+    let (all_raw, all_parsed): (Vec<Vec<u8>>, Vec<DamlLfArchive>) = all_packages.into_iter().map(|i| (i.raw, i.parsed)).unzip();
+    let byte_map: HashMap<String, Vec<u8>> = all_raw.into_iter().zip(all_parsed.iter().map(|i| i.hash.clone())).map(|(bytes,hash)| (hash, bytes)).collect();
+    let working_dar = make_working_dar(all_parsed);
     let dependencies: HashSet<ExtendedPackageInfo> = working_dar.apply(|arc| {
         let stdlib = ExtendedPackageInfo::find_from_archive(arc, |p| p.name == DAML_STDLIB_PACKAGE_NAME)
             .ok_or_else(|| DarnError::unknown_package(DAML_STDLIB_PACKAGE_NAME))?;
@@ -42,10 +46,30 @@ pub async fn download(uri: &str, token_key_path: Option<&str>, main_package_name
         .collect();
 
     // 4: we can extract the "main" package by name and build the final Dar
-    let _final_dar = make_final_dar(renamed, &main_package_info.package_id);
+    let final_dar = make_final_dar(renamed, &main_package_info.package_id);
+
+    // write_to_file(&final_dar, "./tmp/test.dar", &byte_map)?;
+
+    let dar_file = std::fs::File::create("./tmp/test.dar")?;
+    let mut zip_writer = zip::ZipWriter::new(dar_file);
+    let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
+    zip_writer.start_file("testfile.txt", options)?;
+    zip_writer.write_all(byte_map.get(final_dar.main.hash.as_str()).unwrap())?;
+    zip_writer.finish()?;
 
     Ok(())
 }
+
+// /// Write this `DarFile` to the filesystem.
+// pub fn write_to_file(dar: &DarFile, path: impl AsRef<Path>, byte_map: &HashMap<&str, Vec<u8>>) -> DamlLfResult<()> {
+//     let dar_file = std::fs::File::create(path)?;
+//     let mut zip_writer = zip::ZipWriter::new(dar_file);
+//     let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
+//     zip_writer.start_file("testfile.txt", options)?;
+//     zip_writer.write(byte_map.get(&dar.main.hash))?;
+//     zip_writer.finish()?;
+//     Ok(())
+// }
 
 #[derive(Default)]
 struct PackageDependencyVisitor {
