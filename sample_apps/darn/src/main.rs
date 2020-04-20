@@ -7,6 +7,7 @@ pub mod command_module;
 pub mod command_outline;
 pub mod command_package;
 pub mod command_upload;
+pub mod error;
 
 #[tokio::main(core_threads = 4)]
 async fn main() -> Result<()> {

@@ -163,10 +163,6 @@ fn extract_package_dependencies(archive: &DamlArchive, package_info: PackageInfo
     })
 }
 
-// 1: download all packages
-// 3: determine the main package by name
-// 5: build final DarFile with main + dependencies
-
 fn assemble_dar(main: DamlLfArchive, dependencies: Vec<DamlLfArchive>) -> DarFile {
     let manifest = DarManifest::new_implied(main.name.clone(), dependencies.iter().map(|n| n.name.clone()).collect());
     DarFile::new(manifest, main, dependencies)
