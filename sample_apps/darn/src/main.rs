@@ -80,7 +80,8 @@ async fn main() -> Result<()> {
                         .takes_value(true)
                         .required(true)
                         .help("DAML ledger server uri (e.g. https://127.0.0.1:1234)"),
-                ),
+                )
+                .arg(Arg::with_name("key").short("k").long("key").takes_value(true).help("DAML ledger server key")),
         )
         .subcommand(
             SubCommand::with_name("download")
@@ -90,6 +91,14 @@ async fn main() -> Result<()> {
                         .help("The main package name (TODO id?) of the dar")
                         .required(true)
                         .index(1),
+                )
+                .arg(
+                    Arg::with_name("output-dir")
+                        .short("o")
+                        .long("output-dir")
+                        .takes_value(true)
+                        .required(true)
+                        .help("Dar output file"),
                 )
                 .arg(
                     Arg::with_name("uri")
@@ -142,13 +151,15 @@ async fn main() -> Result<()> {
     if let Some(inspect_matches) = matches.subcommand_matches("upload") {
         let dar_path = inspect_matches.value_of("dar").unwrap();
         let uri = inspect_matches.value_of("uri").unwrap();
-        command_upload::upload(dar_path, uri).await?;
+        let key = inspect_matches.value_of("key");
+        command_upload::upload(dar_path, uri, key).await?;
     }
     if let Some(inspect_matches) = matches.subcommand_matches("download") {
         let main_package = inspect_matches.value_of("main-package").unwrap();
+        let output_path = inspect_matches.value_of("output-dir").unwrap();
         let uri = inspect_matches.value_of("uri").unwrap();
         let key = inspect_matches.value_of("key");
-        command_download::download(uri, key, main_package).await?;
+        command_download::download(uri, output_path, key, main_package).await?;
     }
     if let Some(inspect_matches) = matches.subcommand_matches("list") {
         let uri = inspect_matches.value_of("uri").unwrap();

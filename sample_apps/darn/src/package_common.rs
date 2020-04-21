@@ -10,27 +10,13 @@ use uuid::Uuid;
 
 const UNKNOWN_LF_ARCHIVE_PREFIX: &str = "__LF_ARCHIVE_NAME";
 
-pub struct PackageHolder {
-    pub raw: Vec<u8>,
-    pub parsed: DamlLfArchive,
-}
-
-impl PackageHolder {
-    pub fn new(raw: Vec<u8>, parsed: DamlLfArchive) -> Self {
-        Self {
-            raw,
-            parsed
-        }
-    }
-}
-
-pub async fn get_all_packages(uri: &str, token_key_path: Option<&str>) -> Result<Vec<PackageHolder>> {
+pub async fn get_all_packages(uri: &str, token_key_path: Option<&str>) -> Result<Vec<DamlLfArchive>> {
     let ledger_client = Arc::new(match token_key_path {
         Some(key) => DamlLedgerClientBuilder::uri(uri).with_auth(make_ec256_token(key)?).connect().await?,
         None => DamlLedgerClientBuilder::uri(uri).connect().await?,
     });
     let packages = ledger_client.package_management_service().list_known_packages().await?;
-    let handles: FuturesUnordered<JoinHandle<Result<PackageHolder>>> = packages
+    let handles: FuturesUnordered<JoinHandle<Result<DamlLfArchive>>> = packages
         .iter()
         .map(|pd| {
             let ledger_client = ledger_client.clone();
@@ -45,14 +31,14 @@ pub async fn get_all_packages(uri: &str, token_key_path: Option<&str>) -> Result
                     DamlLfHashFunction::SHA256,
                     package.hash,
                 );
-                Ok(PackageHolder::new(package.payload, main))
+                Ok(main)
             })
         })
         .collect();
-    handles.try_collect::<Vec<Result<PackageHolder>>>().await?.into_iter().collect::<Result<Vec<PackageHolder>>>()
+    handles.try_collect::<Vec<Result<DamlLfArchive>>>().await?.into_iter().collect::<Result<Vec<DamlLfArchive>>>()
 }
 
-fn make_ec256_token(token_key_path: &str) -> Result<String> {
+pub fn make_ec256_token(token_key_path: &str) -> Result<String> {
     Ok(DamlSandboxTokenBuilder::new_with_duration_secs(30)
         .admin(true)
         .new_ec256_token(std::fs::read_to_string(token_key_path)?)?)

@@ -5,11 +5,15 @@ use thiserror::Error;
 pub enum DamlLfError {
     #[error("failed to parse DAML LF: {0}")]
     DamlLfParseError(#[from] prost::DecodeError),
+
+    #[error("failed to encode DAML LF: {0}")]
+    DamlLfEncodingError(#[from] prost::EncodeError),
+
     #[error("failed to parse dar file: {0}")]
     DarParseError(String),
     #[error("failed to convert DAML LF: {0}")]
     DamlLfConvertError(#[from] DamlLfConvertError),
-    #[error("io error")]
+    #[error("io error: {0}")]
     IOError(#[from] std::io::Error),
     #[error("unknown DAML LF version: {0}")]
     UnknownVersion(String),

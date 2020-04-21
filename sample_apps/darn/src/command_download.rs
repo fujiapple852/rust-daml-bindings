@@ -4,20 +4,16 @@ use anyhow::Result;
 use daml::lf::element::{
     DamlAbsoluteDataRef, DamlArchive, DamlElementVisitor, DamlNonLocalDataRef, DamlVisitableElement,
 };
-use daml::lf::{DamlLfArchive, DarFile, DarManifest};
+use daml::lf::{DamlLfArchive, DarEncryptionType, DarFile, DarManifest, DarManifestFormat, DarManifestVersion};
 use daml::util::archive::ExtendedPackageInfo;
 use std::collections::{HashMap, HashSet};
 use std::iter::{once, FromIterator};
-use std::path::Path;
-use std::io::Write;
 
 const DAML_STDLIB_PACKAGE_NAME: &str = "daml-stdlib";
 
-pub async fn download(uri: &str, token_key_path: Option<&str>, main_package_name: &str) -> Result<()> {
+pub async fn download(uri: &str, output_dir: &str, token_key_path: Option<&str>, main_package_name: &str) -> Result<()> {
     let all_packages = get_all_packages(uri, token_key_path).await?;
-    let (all_raw, all_parsed): (Vec<Vec<u8>>, Vec<DamlLfArchive>) = all_packages.into_iter().map(|i| (i.raw, i.parsed)).unzip();
-    let byte_map: HashMap<String, Vec<u8>> = all_raw.into_iter().zip(all_parsed.iter().map(|i| i.hash.clone())).map(|(bytes,hash)| (hash, bytes)).collect();
-    let working_dar = make_working_dar(all_parsed);
+    let working_dar = make_working_dar(all_packages);
     let dependencies: HashSet<ExtendedPackageInfo> = working_dar.apply(|arc| {
         let stdlib = ExtendedPackageInfo::find_from_archive(arc, |p| p.name == DAML_STDLIB_PACKAGE_NAME)
             .ok_or_else(|| DarnError::unknown_package(DAML_STDLIB_PACKAGE_NAME))?;
@@ -29,47 +25,32 @@ pub async fn download(uri: &str, token_key_path: Option<&str>, main_package_name
         .find(|p| p.package_name == main_package_name)
         .ok_or_else(|| DarnError::unknown_package(main_package_name))?;
 
-    let included_package: HashMap<&str, &str> =
-        once((main_package_info.package_id.as_str(), main_package_info.package_name.as_str()))
-            .chain(dependencies.iter().map(|d| (d.package_id.as_str(), d.package_name.as_str())))
+    let included_package: HashMap<&str, &ExtendedPackageInfo> =
+        once((main_package_info.package_id.as_str(), &main_package_info))
+            .chain(dependencies.iter().map(|p| (p.package_id.as_str(), p)))
             .collect();
 
     // 3: we have to filter and rename each DamlLfArchive with the name we have just extracted from the package
     let renamed: HashMap<&str, DamlLfArchive> = once(working_dar.main)
         .chain(working_dar.dependencies)
-        .filter_map(|mut a| {
-            included_package.get_key_value(a.hash.as_str()).map(|(&k, &v)| {
-                a.name = v.to_string();
-                (k, a)
+        .filter_map(|mut p| {
+            included_package.get_key_value(p.hash.as_str()).map(|(&id, &info)| {
+                if let Some(version) = &info.version {
+                    p.name = format!("{}-{}", info.package_name, version)
+                } else {
+                    p.name = info.package_name.to_string();
+                }
+                (id, p)
             })
         })
         .collect();
 
     // 4: we can extract the "main" package by name and build the final Dar
     let final_dar = make_final_dar(renamed, &main_package_info.package_id);
-
-    // write_to_file(&final_dar, "./tmp/test.dar", &byte_map)?;
-
-    let dar_file = std::fs::File::create("./tmp/test.dar")?;
-    let mut zip_writer = zip::ZipWriter::new(dar_file);
-    let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
-    zip_writer.start_file("testfile.txt", options)?;
-    zip_writer.write_all(byte_map.get(final_dar.main.hash.as_str()).unwrap())?;
-    zip_writer.finish()?;
-
+    let final_dar_name = format!("{}/{}.dar", output_dir, final_dar.main.name);
+    final_dar.write_to_file(final_dar_name)?;
     Ok(())
 }
-
-// /// Write this `DarFile` to the filesystem.
-// pub fn write_to_file(dar: &DarFile, path: impl AsRef<Path>, byte_map: &HashMap<&str, Vec<u8>>) -> DamlLfResult<()> {
-//     let dar_file = std::fs::File::create(path)?;
-//     let mut zip_writer = zip::ZipWriter::new(dar_file);
-//     let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
-//     zip_writer.start_file("testfile.txt", options)?;
-//     zip_writer.write(byte_map.get(&dar.main.hash))?;
-//     zip_writer.finish()?;
-//     Ok(())
-// }
 
 #[derive(Default)]
 struct PackageDependencyVisitor {
@@ -122,16 +103,25 @@ fn extract_package_dependencies(
 
 fn make_working_dar(mut all_packages: Vec<DamlLfArchive>) -> DarFile {
     let (first, rest) = all_packages.try_swap_remove(0).map(|i| (i, all_packages)).unwrap();
-    assemble_dar(first, rest)
+    let manifest = DarManifest::new_implied(first.name.clone(), rest.iter().map(|n| n.name.clone()).collect());
+    DarFile::new(manifest, first, rest)
 }
 
 fn make_final_dar(mut all_packages: HashMap<&str, DamlLfArchive>, package_id: &str) -> DarFile {
-    let main_package = all_packages.remove(package_id).unwrap();
-    assemble_dar(main_package, all_packages.into_iter().map(|(_, v)| v).collect())
-}
-
-fn assemble_dar(main: DamlLfArchive, dependencies: Vec<DamlLfArchive>) -> DarFile {
-    let manifest = DarManifest::new_implied(main.name.clone(), dependencies.iter().map(|n| n.name.clone()).collect());
+    let main = all_packages.remove(package_id).unwrap();
+    let dependencies: Vec<DamlLfArchive> = all_packages.into_iter().map(|(_, v)| v).collect();
+    let root_dir = format!("{}-{}", main.name, main.hash);
+    let main_location = format!("{}/{}-{}.dalf", root_dir, main.name, main.hash);
+    let dependency_locations =
+        dependencies.iter().map(|d| format!("{}/{}-{}.dalf", root_dir, d.name, d.hash)).collect();
+    let manifest = DarManifest::new(
+        DarManifestVersion::V1,
+        "darn",
+        main_location,
+        dependency_locations,
+        DarManifestFormat::DamlLf,
+        DarEncryptionType::NotEncrypted,
+    );
     DarFile::new(manifest, main, dependencies)
 }
 

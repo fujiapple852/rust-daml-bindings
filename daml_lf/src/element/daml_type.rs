@@ -184,6 +184,7 @@ pub struct DamlNonLocalDataRef<'a> {
 }
 
 impl<'a> DamlNonLocalDataRef<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         data_name: &'a str,
         source_package_id: &'a str,

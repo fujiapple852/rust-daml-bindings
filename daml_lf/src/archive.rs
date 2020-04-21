@@ -1,5 +1,5 @@
 use crate::element::DamlPackage;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1_8::Archive;
+use crate::lf_protobuf::com::digitalasset::daml_lf_1_8::{Archive, HashFunction};
 use crate::DamlLfResult;
 use crate::{convert, DamlLfArchivePayload};
 use bytes::Bytes;
@@ -114,6 +114,21 @@ impl DamlLfArchive {
         let archive_name = name.into();
         let sanitized_name = archive_name.rfind(&archive.hash).map_or(&archive_name[..], |i| &archive_name[..i - 1]);
         Ok(Self::new(sanitized_name, payload, DamlLfHashFunction::SHA256, archive.hash))
+    }
+
+    /// Serialize this archive to a protobuf binary representation.
+    ///
+    /// TODO document
+    pub fn into_bytes(self) -> DamlLfResult<Vec<u8>> {
+        let payload_bytes = self.payload.into_bytes()?;
+        let archive: Archive = Archive {
+            hash_function: HashFunction::Sha256 as i32,
+            payload: payload_bytes,
+            hash: self.hash,
+        };
+        let mut buf = Vec::with_capacity(archive.encoded_len());
+        archive.encode(&mut buf)?;
+        Ok(buf)
     }
 
     /// Read and parse an archive from a `dalf` file.

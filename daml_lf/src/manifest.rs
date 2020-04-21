@@ -1,5 +1,8 @@
 use crate::error::{DamlLfError, DamlLfResult};
+use itertools::Itertools;
+use serde::export::Formatter;
 use std::convert::Into;
+use std::fmt::Display;
 use yaml_rust::YamlLoader;
 
 const MANIFEST_VERSION_KEY: &str = "Manifest-Version";
@@ -19,6 +22,14 @@ pub enum DarManifestVersion {
     V1,
 }
 
+impl Display for DarManifestVersion {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DarManifestVersion::V1 | DarManifestVersion::Unknown => VERSION_1_VALUE.fmt(f),
+        }
+    }
+}
+
 /// The format of the archives in a dar file.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum DarManifestFormat {
@@ -26,11 +37,27 @@ pub enum DarManifestFormat {
     DamlLf,
 }
 
+impl Display for DarManifestFormat {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DarManifestFormat::DamlLf | DarManifestFormat::Unknown => DAML_LF_VALUE.fmt(f),
+        }
+    }
+}
+
 /// The encryption type of the archives in a dar file.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum DarEncryptionType {
     Unknown,
     NotEncrypted,
+}
+
+impl Display for DarEncryptionType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DarEncryptionType::NotEncrypted | DarEncryptionType::Unknown => NON_ENCRYPTED_VALUE.fmt(f),
+        }
+    }
 }
 
 /// Represents a manifest file found inside `dar` files.
@@ -178,6 +205,26 @@ impl DarManifest {
         }?;
 
         Ok(Self::new(manifest_version, created_by, dalf_main, dalf_dependencies, format, encryption))
+    }
+
+    /// Render this `DarManifest`
+    pub fn render(&self) -> String {
+        let dalfs = self.dalf_dependencies.iter().join(", ");
+        format!(
+            "{}: {}\n{}: {}\n{}: {}\n{}: {}\n{}: {}\n{}: {}\n",
+            MANIFEST_VERSION_KEY,
+            self.version(),
+            CREATED_BY_KEY,
+            self.created_by(),
+            DALF_MAIN_KEY,
+            self.dalf_main(),
+            DALFS_KEY,
+            dalfs,
+            FORMAT_KEY,
+            self.format,
+            ENCRYPTION_KEY,
+            self.encryption
+        )
     }
 
     /// The version of the manifest.

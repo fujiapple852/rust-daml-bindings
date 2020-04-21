@@ -6,9 +6,10 @@ use crate::manifest::DarManifest;
 use crate::DEFAULT_ARCHIVE_NAME;
 use std::ffi::OsStr;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
-use zip::ZipArchive;
+use zip::write::FileOptions;
+use zip::{CompressionMethod, ZipArchive, ZipWriter};
 
 const MANIFEST_FILE_PATH: &str = "META-INF/MANIFEST.MF";
 const DALF_FILE_EXTENSION: &str = "dalf";
@@ -98,6 +99,29 @@ impl DarFile {
         Ok(Self::new(manifest, dalf_main, dalf_dependencies))
     }
 
+    /// Write this `DarFile` to a `dar` file.
+    ///
+    /// TODO document
+    ///
+    /// Note that this method does not consume self and therefore clones the entire `DarFile` such that it can be
+    /// converted into protobuf format for serialization.
+    pub fn write_to_file(&self, path: impl AsRef<Path>) -> DamlLfResult<()> {
+        path.as_ref().parent().map(std::fs::create_dir_all).transpose()?;
+        let dar_file = std::fs::File::create(path)?;
+        let mut zip_writer = zip::ZipWriter::new(dar_file);
+        let options = FileOptions::default().compression_method(CompressionMethod::Deflated);
+        zip_writer.set_comment("");
+        Self::write_manifest_to_archive(&mut zip_writer, &self.manifest, MANIFEST_FILE_PATH, options)?;
+        Self::write_dalf_to_archive(&mut zip_writer, self.main.clone(), self.manifest.dalf_main(), options)?;
+        for (dependency, location) in
+            self.dependencies.clone().into_iter().zip(self.manifest.dalf_dependencies().iter().map(AsRef::as_ref))
+        {
+            Self::write_dalf_to_archive(&mut zip_writer, dependency, location, options)?;
+        }
+        zip_writer.finish()?;
+        Ok(())
+    }
+
     /// Convert a [`DarFile`] to a [`DamlArchive`] and map function `f` over it.
     ///
     /// TODO document this with example
@@ -178,6 +202,30 @@ impl DarFile {
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         DarManifest::parse(&contents)
+    }
+
+    fn write_dalf_to_archive(
+        zip_writer: &mut ZipWriter<File>,
+        archive: DamlLfArchive,
+        location: &str,
+        options: FileOptions,
+    ) -> DamlLfResult<()> {
+        let archive_bytes = archive.into_bytes()?;
+        zip_writer.start_file(location, options)?;
+        zip_writer.write_all(archive_bytes.as_slice())?;
+        Ok(())
+    }
+
+    fn write_manifest_to_archive(
+        zip_writer: &mut ZipWriter<File>,
+        manifest: &DarManifest,
+        location: &str,
+        options: FileOptions,
+    ) -> DamlLfResult<()> {
+        let manifest_rendered = manifest.render();
+        zip_writer.start_file(location, options)?;
+        zip_writer.write_all(manifest_rendered.as_bytes())?;
+        Ok(())
     }
 }
 
