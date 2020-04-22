@@ -209,22 +209,15 @@ impl DarManifest {
 
     /// Render this `DarManifest`
     pub fn render(&self) -> String {
-        let dalfs = self.dalf_dependencies.iter().join(", ");
-        format!(
-            "{}: {}\n{}: {}\n{}: {}\n{}: {}\n{}: {}\n{}: {}\n",
-            MANIFEST_VERSION_KEY,
-            self.version(),
-            CREATED_BY_KEY,
-            self.created_by(),
-            DALF_MAIN_KEY,
-            self.dalf_main(),
-            DALFS_KEY,
-            dalfs,
-            FORMAT_KEY,
-            self.format,
-            ENCRYPTION_KEY,
-            self.encryption
-        )
+        vec![
+            make_manifest_entry(MANIFEST_VERSION_KEY, self.version().to_string()),
+            make_manifest_entry(CREATED_BY_KEY, self.created_by()),
+            make_manifest_entry(DALF_MAIN_KEY, self.dalf_main()),
+            make_manifest_entry(DALFS_KEY, self.dalf_dependencies().iter().join(", ")),
+            make_manifest_entry(FORMAT_KEY, self.format().to_string()),
+            make_manifest_entry(ENCRYPTION_KEY, self.encryption().to_string()),
+        ]
+        .join("\n")
     }
 
     /// The version of the manifest.
@@ -262,11 +255,45 @@ fn strip_string(s: impl AsRef<str>) -> String {
     s.as_ref().chars().filter(|&c| !char::is_whitespace(c)).collect()
 }
 
+fn make_manifest_entry(key: impl AsRef<str>, value: impl AsRef<str>) -> String {
+    split_manifest_string(format!("{}: {}", key.as_ref(), value.as_ref()))
+}
+
+// see https://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html#JAR_Manifest
+// TODO split Jar manifest handling to a utility module or crate
+fn split_manifest_string(s: impl AsRef<str>) -> String {
+    let split_lines: Vec<String> =
+        s.as_ref().as_bytes().chunks(71).map(String::from_utf8_lossy).map(String::from).collect();
+    match split_lines.as_slice() {
+        [] => "".to_owned(),
+        [head] => head.to_owned(),
+        [head, tail @ ..] => {
+            let new_tail: String = tail.iter().map(|s| format!(" {}", s)).join("\n");
+            format!("{}\n{}", head, new_tail)
+        },
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::error::{DamlLfError, DamlLfResult};
     use crate::manifest::*;
     use trim_margin::MarginTrimmable;
+
+    #[test]
+    fn test_split_manifest_line() {
+        let long = "Main-Dalf: \
+                    TestingTypes-1.0.0-6c314cb04bcb26cb62aa6ebf0f8ed4bdc3cbf709847be908c9920df5574daacc/\
+                    TestingTypes-1.0.0-6c314cb04bcb26cb62aa6ebf0f8ed4bdc3cbf709847be908c9920df5574daacc.dalf";
+        let expected = "
+            |Main-Dalf: TestingTypes-1.0.0-6c314cb04bcb26cb62aa6ebf0f8ed4bdc3cbf7098
+            | 47be908c9920df5574daacc/TestingTypes-1.0.0-6c314cb04bcb26cb62aa6ebf0f8e
+            | d4bdc3cbf709847be908c9920df5574daacc.dalf"
+            .trim_margin()
+            .expect("invalid test string");
+        let split = split_manifest_string(long);
+        assert_eq!(split, expected);
+    }
 
     #[test]
     pub fn test_split_dalfs() -> DamlLfResult<()> {

@@ -1,22 +1,19 @@
 use anyhow::Result;
+use daml::api::data::package::DamlPackage;
 use daml::api::{DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
 
-use daml::lf::{DamlLfArchive, DamlLfArchivePayload, DamlLfHashFunction};
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
 use std::sync::Arc;
 use tokio::task::JoinHandle;
-use uuid::Uuid;
 
-const UNKNOWN_LF_ARCHIVE_PREFIX: &str = "__LF_ARCHIVE_NAME";
-
-pub async fn get_all_packages(uri: &str, token_key_path: Option<&str>) -> Result<Vec<DamlLfArchive>> {
+pub async fn get_all_packages(uri: &str, token_key_path: Option<&str>) -> Result<Vec<DamlPackage>> {
     let ledger_client = Arc::new(match token_key_path {
         Some(key) => DamlLedgerClientBuilder::uri(uri).with_auth(make_ec256_token(key)?).connect().await?,
         None => DamlLedgerClientBuilder::uri(uri).connect().await?,
     });
     let packages = ledger_client.package_management_service().list_known_packages().await?;
-    let handles: FuturesUnordered<JoinHandle<Result<DamlLfArchive>>> = packages
+    let handles: FuturesUnordered<JoinHandle<Result<DamlPackage>>> = packages
         .iter()
         .map(|pd| {
             let ledger_client = ledger_client.clone();
@@ -24,18 +21,11 @@ pub async fn get_all_packages(uri: &str, token_key_path: Option<&str>) -> Result
             tokio::spawn(async move {
                 let package = ledger_client.package_service().get_package(pid).await?;
 
-                let archive = DamlLfArchivePayload::from_bytes(package.payload.clone())?;
-                let main = DamlLfArchive::new(
-                    format!("{}-{}", UNKNOWN_LF_ARCHIVE_PREFIX, Uuid::new_v4()),
-                    archive,
-                    DamlLfHashFunction::SHA256,
-                    package.hash,
-                );
-                Ok(main)
+                Ok(package)
             })
         })
         .collect();
-    handles.try_collect::<Vec<Result<DamlLfArchive>>>().await?.into_iter().collect::<Result<Vec<DamlLfArchive>>>()
+    handles.try_collect::<Vec<Result<DamlPackage>>>().await?.into_iter().collect::<Result<Vec<DamlPackage>>>()
 }
 
 pub fn make_ec256_token(token_key_path: &str) -> Result<String> {

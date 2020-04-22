@@ -1,5 +1,5 @@
 use crate::element::DamlPackage;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1_8::{Archive, HashFunction};
+use crate::lf_protobuf::com::digitalasset::daml_lf_1_8::Archive;
 use crate::DamlLfResult;
 use crate::{convert, DamlLfArchivePayload};
 use bytes::Bytes;
@@ -119,16 +119,8 @@ impl DamlLfArchive {
     /// Serialize this archive to a protobuf binary representation.
     ///
     /// TODO document
-    pub fn into_bytes(self) -> DamlLfResult<Vec<u8>> {
-        let payload_bytes = self.payload.into_bytes()?;
-        let archive: Archive = Archive {
-            hash_function: HashFunction::Sha256 as i32,
-            payload: payload_bytes,
-            hash: self.hash,
-        };
-        let mut buf = Vec::with_capacity(archive.encoded_len());
-        archive.encode(&mut buf)?;
-        Ok(buf)
+    pub fn serialize(self) -> DamlLfResult<Vec<u8>> {
+        Self::serialize_with_payload(self.payload.serialize()?, self.hash, self.hash_function)
     }
 
     /// Read and parse an archive from a `dalf` file.
@@ -197,6 +189,25 @@ impl DamlLfArchive {
     /// The hash of this archive (aka "package id").
     pub fn hash(&self) -> &str {
         &self.hash
+    }
+
+    /// Serialize a DAML LF `Archive` with given payload and hash.
+    ///
+    /// Note this this does not validation that the supplied hash is correct for the given payload and hash function.
+    /// TODO this is a bit of a hack...
+    pub fn serialize_with_payload(
+        payload_bytes: Vec<u8>,
+        hash: String,
+        hash_function: DamlLfHashFunction,
+    ) -> DamlLfResult<Vec<u8>> {
+        let archive: Archive = Archive {
+            hash_function: hash_function as i32,
+            payload: payload_bytes,
+            hash,
+        };
+        let mut buf = Vec::with_capacity(archive.encoded_len());
+        archive.encode(&mut buf)?;
+        Ok(buf)
     }
 }
 

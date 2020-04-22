@@ -80,18 +80,17 @@ impl DamlLfArchivePayload {
     /// consume and serialize this `DamlLfArchivePayload` to a byte buffer.
     ///
     /// TODO documentation
-    pub fn into_bytes(self) -> DamlLfResult<Vec<u8>> {
+    pub fn serialize(self) -> DamlLfResult<Vec<u8>> {
         let payload = match self.package {
             DamlLfPackage::V1(p) => ArchivePayload {
-                minor: if let LanguageVersion::LV1(n) = self.language_version {
-                    n.to_string()
+                minor: if let LanguageVersion::LV1(lang) = self.language_version {
+                    lang.to_string()
                 } else {
-                    unreachable!()
+                    unreachable!() // TODO
                 },
                 sum: Some(Sum::DamlLf1(p)),
             },
         };
-        // let mut buf = BytesMut::with_capacity(payload.encoded_len());
         let mut buf = Vec::with_capacity(payload.encoded_len());
         payload.encode(&mut buf)?;
         Ok(buf)

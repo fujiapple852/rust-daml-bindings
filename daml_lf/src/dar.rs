@@ -115,6 +115,7 @@ impl DarFile {
         Self::write_dalf_to_archive(&mut zip_writer, self.main.clone(), self.manifest.dalf_main(), options)?;
         for (dependency, location) in
             self.dependencies.clone().into_iter().zip(self.manifest.dalf_dependencies().iter().map(AsRef::as_ref))
+        // TODO can we assume these line up?
         {
             Self::write_dalf_to_archive(&mut zip_writer, dependency, location, options)?;
         }
@@ -210,7 +211,7 @@ impl DarFile {
         location: &str,
         options: FileOptions,
     ) -> DamlLfResult<()> {
-        let archive_bytes = archive.into_bytes()?;
+        let archive_bytes = archive.serialize()?;
         zip_writer.start_file(location, options)?;
         zip_writer.write_all(archive_bytes.as_slice())?;
         Ok(())
