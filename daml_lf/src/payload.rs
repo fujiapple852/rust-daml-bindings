@@ -23,7 +23,7 @@ impl DamlLfArchivePayload {
     /// Create a `DamlLfArchivePayload` from an existing [`DamlLfPackage`] and `language_version`.
     ///
     /// [`DamlLfPackage`]: enum.DamlLfPackage.html
-    pub fn new(language_version: LanguageVersion, package: DamlLfPackage) -> Self {
+    pub const fn new(language_version: LanguageVersion, package: DamlLfPackage) -> Self {
         Self {
             language_version,
             package,
@@ -138,12 +138,12 @@ impl DamlLfArchivePayload {
     }
 
     /// The `language_version` version of this `payload`.
-    pub fn language_version(&self) -> &LanguageVersion {
+    pub const fn language_version(&self) -> &LanguageVersion {
         &self.language_version
     }
 
     /// The package embedded in this `payload`.
-    pub fn package(&self) -> &DamlLfPackage {
+    pub const fn package(&self) -> &DamlLfPackage {
         &self.package
     }
 

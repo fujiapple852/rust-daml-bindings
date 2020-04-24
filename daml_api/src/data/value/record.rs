@@ -25,11 +25,11 @@ impl DamlRecord {
         }
     }
 
-    pub fn record_id(&self) -> &Option<DamlIdentifier> {
+    pub const fn record_id(&self) -> &Option<DamlIdentifier> {
         &self.record_id
     }
 
-    pub fn fields(&self) -> &Vec<DamlRecordField> {
+    pub const fn fields(&self) -> &Vec<DamlRecordField> {
         &self.fields
     }
 

@@ -61,11 +61,11 @@ impl DamlCommands {
         &self.commands
     }
 
-    pub fn deduplication_time(&self) -> &Option<Duration> {
+    pub const fn deduplication_time(&self) -> &Option<Duration> {
         &self.deduplication_time
     }
 
-    pub fn min_ledger_time(&self) -> &Option<DamlMinLedgerTime> {
+    pub const fn min_ledger_time(&self) -> &Option<DamlMinLedgerTime> {
         &self.min_ledger_time
     }
 }

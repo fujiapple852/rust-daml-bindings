@@ -55,7 +55,7 @@ impl DamlExercisedEvent {
         &self.contract_id
     }
 
-    pub fn template_id(&self) -> &DamlIdentifier {
+    pub const fn template_id(&self) -> &DamlIdentifier {
         &self.template_id
     }
 
@@ -63,7 +63,7 @@ impl DamlExercisedEvent {
         &self.choice
     }
 
-    pub fn choice_argument(&self) -> &DamlValue {
+    pub const fn choice_argument(&self) -> &DamlValue {
         &self.choice_argument
     }
 
@@ -71,7 +71,7 @@ impl DamlExercisedEvent {
         &self.acting_parties
     }
 
-    pub fn consuming(&self) -> bool {
+    pub const fn consuming(&self) -> bool {
         self.consuming
     }
 
@@ -83,7 +83,7 @@ impl DamlExercisedEvent {
         &self.child_event_ids
     }
 
-    pub fn exercise_result(&self) -> &DamlValue {
+    pub const fn exercise_result(&self) -> &DamlValue {
         &self.exercise_result
     }
 }

@@ -14,7 +14,7 @@ pub struct DamlArchive<'a> {
 }
 
 impl<'a> DamlArchive<'a> {
-    pub fn new(name: &'a str, packages: HashMap<&'a str, DamlPackage<'a>>) -> Self {
+    pub const fn new(name: &'a str, packages: HashMap<&'a str, DamlPackage<'a>>) -> Self {
         Self {
             name,
             packages,

@@ -1,6 +1,11 @@
-use crate::attribute::test_types::all_variant_types::*;
-use crate::attribute::test_types::variant_example::*;
-use crate::common::test_utils::*;
+use crate::attribute::test_types::all_variant_types::{
+    AllVariantTypes, AnonRecord, RecordArgument, VariantTemplate, VariantTemplateContract,
+};
+use crate::attribute::test_types::variant_example::{Circle, CircleTemplate, CircleTemplateContract, Color, RGBA};
+use crate::common::test_utils::{
+    new_static_sandbox, update_create_command_package_id_for_testing, update_exercise_command_package_id_for_testing,
+    TestResult, SANDBOX_LOCK,
+};
 use daml::api::data::command::DamlCommand;
 use daml::api::data::event::DamlEvent;
 use daml::api::{CommandExecutor, DamlSimpleExecutorBuilder};

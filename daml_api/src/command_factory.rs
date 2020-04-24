@@ -30,7 +30,7 @@ impl DamlCommandFactory {
         }
     }
 
-    pub fn workflow_id(&self) -> &String {
+    pub const fn workflow_id(&self) -> &String {
         &self.workflow_id
     }
 
@@ -42,11 +42,11 @@ impl DamlCommandFactory {
         &self.party
     }
 
-    pub fn deduplication_time(&self) -> &Option<Duration> {
+    pub const fn deduplication_time(&self) -> &Option<Duration> {
         &self.deduplication_time
     }
 
-    pub fn min_ledger_time(&self) -> &Option<DamlMinLedgerTime> {
+    pub const fn min_ledger_time(&self) -> &Option<DamlMinLedgerTime> {
         &self.min_ledger_time
     }
 

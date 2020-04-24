@@ -28,12 +28,12 @@ impl DamlCreateAndExerciseCommand {
     }
 
     /// The template of the contract the client wants to create.
-    pub fn template_id(&self) -> &DamlIdentifier {
+    pub const fn template_id(&self) -> &DamlIdentifier {
         &self.template_id
     }
 
     /// The arguments required for creating a contract from this template.
-    pub fn create_arguments(&self) -> &DamlRecord {
+    pub const fn create_arguments(&self) -> &DamlRecord {
         &self.create_arguments
     }
 
@@ -45,7 +45,7 @@ impl DamlCreateAndExerciseCommand {
     }
 
     /// The argument for this choice.
-    pub fn choice_argument(&self) -> &DamlValue {
+    pub const fn choice_argument(&self) -> &DamlValue {
         &self.choice_argument
     }
 }

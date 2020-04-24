@@ -53,7 +53,7 @@ impl DamlTransaction {
         &self.workflow_id
     }
 
-    pub fn effective_at(&self) -> &DateTime<Utc> {
+    pub const fn effective_at(&self) -> &DateTime<Utc> {
         &self.effective_at
     }
 
@@ -69,7 +69,7 @@ impl DamlTransaction {
         &self.offset
     }
 
-    pub fn trace_context(&self) -> &Option<DamlTraceContext> {
+    pub const fn trace_context(&self) -> &Option<DamlTraceContext> {
         &self.trace_context
     }
 }

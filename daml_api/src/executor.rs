@@ -17,7 +17,7 @@ pub struct DamlSimpleExecutorBuilder<'a> {
 }
 
 impl<'a> DamlSimpleExecutorBuilder<'a> {
-    pub fn new(ledger_client: &'a DamlLedgerClient, acting_party: &'a str) -> Self {
+    pub const fn new(ledger_client: &'a DamlLedgerClient, acting_party: &'a str) -> Self {
         Self {
             ledger_client,
             acting_party,

@@ -26,7 +26,7 @@ impl DamlPackage {
         }
     }
 
-    pub fn payload(&self) -> &Vec<u8> {
+    pub const fn payload(&self) -> &Vec<u8> {
         &self.payload
     }
 
@@ -34,7 +34,7 @@ impl DamlPackage {
         &self.hash
     }
 
-    pub fn hash_function(&self) -> &DamlHashFunction {
+    pub const fn hash_function(&self) -> &DamlHashFunction {
         &self.hash_function
     }
 }
@@ -105,12 +105,12 @@ impl DamlPackageDetails {
     }
 
     /// Size of the package in bytes.
-    pub fn package_size(&self) -> u64 {
+    pub const fn package_size(&self) -> u64 {
         self.package_size
     }
 
     /// Indicates since when the package is known to the backing participant.
-    pub fn known_since(&self) -> &DateTime<Utc> {
+    pub const fn known_since(&self) -> &DateTime<Utc> {
         &self.known_since
     }
 

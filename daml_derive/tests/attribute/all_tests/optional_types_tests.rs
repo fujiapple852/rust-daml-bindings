@@ -1,4 +1,4 @@
-use crate::attribute::test_types::all_optional_types::*;
+use crate::attribute::test_types::all_optional_types::{DataWithOptional, MyData};
 use crate::common::test_utils::TestResult;
 use daml::api::data::value::DamlValue;
 use daml::prelude::{DamlDeserializeInto, DamlParty, DamlSerializeInto};

@@ -28,7 +28,7 @@ impl DamlPartyDetails {
     }
 
     /// true if party is hosted by the backing participant.
-    pub fn is_local(&self) -> bool {
+    pub const fn is_local(&self) -> bool {
         self.is_local
     }
 }

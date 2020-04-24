@@ -184,7 +184,7 @@ impl TryFrom<&str> for LanguageV1MinorVersion {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{LanguageV1MinorVersion, LanguageVersion};
 
     #[test]
     fn test_minor_version_ordering() {

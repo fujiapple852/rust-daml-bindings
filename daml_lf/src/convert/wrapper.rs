@@ -11,7 +11,7 @@ pub struct PayloadElementWrapper<'a, P> {
 
 impl<'a, P> PayloadElementWrapper<'a, P> {
     /// Create a new `PayloadElementWrapper<Q>` for an existing `DamlPayloadDataWrapper`.
-    pub fn with_data<Q: 'a>(context: DamlPayloadDataWrapper<'a>, q: Q) -> PayloadElementWrapper<'a, Q> {
+    pub const fn with_data<Q: 'a>(context: DamlPayloadDataWrapper<'a>, q: Q) -> PayloadElementWrapper<'a, Q> {
         PayloadElementWrapper {
             context,
             payload: q,

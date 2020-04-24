@@ -27,17 +27,17 @@ impl DamlTimeModel {
     /// The expected average latency of a transaction, i.e., the average time
     /// from submitting the transaction to a [`WriteService`] and the transaction
     /// being assigned a record time.
-    pub fn avg_transaction_latency(&self) -> &Duration {
+    pub const fn avg_transaction_latency(&self) -> &Duration {
         &self.avg_transaction_latency
     }
 
     /// The minimum skew between ledger time and record time: `lt_TX` >= `rt_TX` - minSkew
-    pub fn min_skew(&self) -> &Duration {
+    pub const fn min_skew(&self) -> &Duration {
         &self.min_skew
     }
 
     /// The maximum skew between ledger time and record time: `lt_TX` <= `rt_TX` + maxSkew
-    pub fn max_skew(&self) -> &Duration {
+    pub const fn max_skew(&self) -> &Duration {
         &self.max_skew
     }
 }

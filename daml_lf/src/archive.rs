@@ -170,12 +170,12 @@ impl DamlLfArchive {
     }
 
     /// The payload (aka "package") contained within this archive.
-    pub fn payload(&self) -> &DamlLfArchivePayload {
+    pub const fn payload(&self) -> &DamlLfArchivePayload {
         &self.payload
     }
 
     /// The hashing function used to generate this archives `hash`.
-    pub fn hash_function(&self) -> &DamlLfHashFunction {
+    pub const fn hash_function(&self) -> &DamlLfHashFunction {
         &self.hash_function
     }
 

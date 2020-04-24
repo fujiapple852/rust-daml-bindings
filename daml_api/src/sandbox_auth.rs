@@ -211,7 +211,7 @@ struct DamlSandboxAuthDetails {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{DamlResult, DamlSandboxAuthDetails, DamlSandboxAuthToken, DamlSandboxTokenBuilder};
     use jsonwebtoken::{encode, EncodingKey, Header};
 
     #[test]

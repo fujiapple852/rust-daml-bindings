@@ -23,7 +23,7 @@ impl DamlCompletionResponse {
         }
     }
 
-    pub fn checkpoint(&self) -> &Option<DamlCheckpoint> {
+    pub const fn checkpoint(&self) -> &Option<DamlCheckpoint> {
         &self.checkpoint
     }
 
@@ -57,11 +57,11 @@ impl DamlCheckpoint {
         }
     }
 
-    pub fn record_time(&self) -> &DateTime<Utc> {
+    pub const fn record_time(&self) -> &DateTime<Utc> {
         &self.record_time
     }
 
-    pub fn offset(&self) -> &DamlLedgerOffset {
+    pub const fn offset(&self) -> &DamlLedgerOffset {
         &self.offset
     }
 }
@@ -103,7 +103,7 @@ impl DamlCompletion {
         &self.command_id
     }
 
-    pub fn status(&self) -> &DamlStatus {
+    pub const fn status(&self) -> &DamlStatus {
         &self.status
     }
 
@@ -111,7 +111,7 @@ impl DamlCompletion {
         &self.transaction_id
     }
 
-    pub fn trace_context(&self) -> &Option<DamlTraceContext> {
+    pub const fn trace_context(&self) -> &Option<DamlTraceContext> {
         &self.trace_context
     }
 }
@@ -147,7 +147,7 @@ impl DamlStatus {
         }
     }
 
-    pub fn code(&self) -> i32 {
+    pub const fn code(&self) -> i32 {
         self.code
     }
 

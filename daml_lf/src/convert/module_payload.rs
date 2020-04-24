@@ -18,7 +18,7 @@ pub struct DamlModuleWrapper<'a> {
 }
 
 impl<'a> DamlModuleWrapper<'a> {
-    pub fn with_data(self, data: &'a DamlDataPayload<'_>) -> DamlPayloadDataWrapper<'a> {
+    pub const fn with_data(self, data: &'a DamlDataPayload<'_>) -> DamlPayloadDataWrapper<'a> {
         DamlPayloadDataWrapper {
             archive: self.archive,
             package: self.package,

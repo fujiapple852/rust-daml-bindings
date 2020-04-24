@@ -181,7 +181,7 @@ impl DarManifest {
     }
 
     /// The version of the manifest.
-    pub fn version(&self) -> DarManifestVersion {
+    pub const fn version(&self) -> DarManifestVersion {
         self.version
     }
 
@@ -196,17 +196,17 @@ impl DarManifest {
     }
 
     /// A list of names of the `dalf_dependencies` `dalf` archives within the `dar` file containing this manifest file.
-    pub fn dalf_dependencies(&self) -> &Vec<String> {
+    pub const fn dalf_dependencies(&self) -> &Vec<String> {
         &self.dalf_dependencies
     }
 
     /// The format of the `dar` which contains this manifest file.
-    pub fn format(&self) -> DarManifestFormat {
+    pub const fn format(&self) -> DarManifestFormat {
         self.format
     }
 
     /// The encryption type of the `dar` which contains this manifest file.
-    pub fn encryption(&self) -> DarEncryptionType {
+    pub const fn encryption(&self) -> DarEncryptionType {
         self.encryption
     }
 }
@@ -218,7 +218,7 @@ fn strip_string(s: impl AsRef<str>) -> String {
 #[cfg(test)]
 mod test {
     use crate::error::{DamlLfError, DamlLfResult};
-    use crate::manifest::*;
+    use crate::manifest::{DarEncryptionType, DarManifest, DarManifestFormat, DarManifestVersion};
     use trim_margin::MarginTrimmable;
 
     #[test]

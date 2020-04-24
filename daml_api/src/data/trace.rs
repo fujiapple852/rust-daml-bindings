@@ -11,7 +11,7 @@ pub struct DamlTraceContext {
 }
 
 impl DamlTraceContext {
-    pub fn new(trace_id_high: u64, trace_id: u64, span_id: u64, parent_span_id: u64, sampled: bool) -> Self {
+    pub const fn new(trace_id_high: u64, trace_id: u64, span_id: u64, parent_span_id: u64, sampled: bool) -> Self {
         Self {
             trace_id_high,
             trace_id,
@@ -21,23 +21,23 @@ impl DamlTraceContext {
         }
     }
 
-    pub fn trace_id_high(&self) -> u64 {
+    pub const fn trace_id_high(&self) -> u64 {
         self.trace_id_high
     }
 
-    pub fn trace_id(&self) -> u64 {
+    pub const fn trace_id(&self) -> u64 {
         self.trace_id
     }
 
-    pub fn span_id(&self) -> u64 {
+    pub const fn span_id(&self) -> u64 {
         self.span_id
     }
 
-    pub fn parent_span_id(&self) -> u64 {
+    pub const fn parent_span_id(&self) -> u64 {
         self.parent_span_id
     }
 
-    pub fn sampled(&self) -> bool {
+    pub const fn sampled(&self) -> bool {
         self.sampled
     }
 }

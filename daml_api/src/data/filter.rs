@@ -37,7 +37,7 @@ pub struct DamlTransactionFilter {
 }
 
 impl DamlTransactionFilter {
-    pub fn filters_by_party(&self) -> &HashMap<String, DamlFilters> {
+    pub const fn filters_by_party(&self) -> &HashMap<String, DamlFilters> {
         &self.filters_by_party
     }
 }

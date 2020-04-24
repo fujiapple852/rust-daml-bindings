@@ -35,7 +35,7 @@ impl DamlArchivedEvent {
         &self.contract_id
     }
 
-    pub fn template_id(&self) -> &DamlIdentifier {
+    pub const fn template_id(&self) -> &DamlIdentifier {
         &self.template_id
     }
 

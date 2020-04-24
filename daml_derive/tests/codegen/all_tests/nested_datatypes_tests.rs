@@ -17,7 +17,7 @@ daml_codegen!(
 
 #[tokio::test]
 pub async fn test() -> TestResult {
-    use testing_types::da::nested::*;
+    use testing_types::da::nested::{MyNestedData, NestedTemplate, NestedTemplateContract};
     let _lock = SANDBOX_LOCK.lock()?;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();

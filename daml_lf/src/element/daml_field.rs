@@ -10,7 +10,7 @@ pub struct DamlField<'a> {
 }
 
 impl<'a> DamlField<'a> {
-    pub fn new(name: &'a str, ty: DamlType<'a>) -> Self {
+    pub const fn new(name: &'a str, ty: DamlType<'a>) -> Self {
         Self {
             name,
             ty,

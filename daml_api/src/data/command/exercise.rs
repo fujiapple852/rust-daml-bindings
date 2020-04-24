@@ -28,7 +28,7 @@ impl DamlExerciseCommand {
     }
 
     /// The template of contract the client wants to exercise.
-    pub fn template_id(&self) -> &DamlIdentifier {
+    pub const fn template_id(&self) -> &DamlIdentifier {
         &self.template_id
     }
 
@@ -47,7 +47,7 @@ impl DamlExerciseCommand {
     }
 
     /// The argument for this choice.
-    pub fn choice_argument(&self) -> &DamlValue {
+    pub const fn choice_argument(&self) -> &DamlValue {
         &self.choice_argument
     }
 }

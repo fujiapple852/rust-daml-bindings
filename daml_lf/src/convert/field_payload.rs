@@ -16,7 +16,7 @@ pub struct DamlFieldPayload<'a> {
 }
 
 impl<'a> DamlFieldPayload<'a> {
-    pub fn new(name: InternableString<'a>, ty: DamlTypePayload<'a>) -> Self {
+    pub const fn new(name: InternableString<'a>, ty: DamlTypePayload<'a>) -> Self {
         Self {
             name,
             ty,

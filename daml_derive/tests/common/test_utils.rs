@@ -1,5 +1,3 @@
-#![warn(clippy::all, clippy::pedantic)]
-
 use daml::api::data::command::DamlCreateCommand;
 use daml::api::data::DamlResult;
 use daml::api::{DamlLedgerClient, DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
