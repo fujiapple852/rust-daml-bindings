@@ -132,8 +132,8 @@ impl<'a> TryFrom<&'a DamlLfArchive> for DamlPackagePayload<'a> {
                 let modules = package
                     .modules
                     .iter()
-                    .flat_map(DamlModulePayload::try_from)
-                    .map(|m| Ok((m.path.resolve(&self_resolver)?.join("."), m)))
+                    .map(DamlModulePayload::try_from)
+                    .map(|mr| mr.and_then(|m| Ok((m.path.resolve(&self_resolver)?.join("."), m))))
                     .collect::<DamlLfConvertResult<_>>()?;
                 Self {
                     name,

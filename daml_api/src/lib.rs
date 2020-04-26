@@ -11,7 +11,6 @@
     clippy::must_use_candidate,
     clippy::missing_errors_doc,
     clippy::missing_const_for_fn,
-    clippy::future_not_send,
     clippy::used_underscore_binding
 )]
 #![forbid(unsafe_code)]

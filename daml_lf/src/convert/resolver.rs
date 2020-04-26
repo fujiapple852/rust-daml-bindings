@@ -16,6 +16,7 @@ pub fn resolve_data_ref<'a>(data_ref: DamlDataRefWrapper<'a>) -> DamlLfConvertRe
     let source_resolver = data_ref.context.package;
     let source_data_type_name = data_ref.payload.data_name.resolve(source_resolver)?;
     let target_package_id = data_ref.payload.package_ref.resolve(source_resolver)?;
+    let target_module_path = data_ref.payload.module_path.resolve(source_resolver)?.join(".");
 
     // Extract the target package from the parent archive
     let target_package: &DamlPackagePayload<'a> = data_ref
@@ -26,8 +27,8 @@ pub fn resolve_data_ref<'a>(data_ref: DamlDataRefWrapper<'a>) -> DamlLfConvertRe
 
     // Extract the target module from the target package
     let target_module = target_package
-        .module_by_name(&data_ref.payload.module_path.resolve(source_resolver)?.join("."))
-        .ok_or_else(|| DamlLfConvertError::UnknownModule(data_ref.payload.module_path.to_string()))?;
+        .module_by_name(&target_module_path)
+        .ok_or_else(|| DamlLfConvertError::UnknownModule(target_module_path))?;
 
     // Find the target data from the target module
     let data_types_iter =

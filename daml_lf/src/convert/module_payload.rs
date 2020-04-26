@@ -49,8 +49,8 @@ impl<'a> TryFrom<&'a Module> for DamlModulePayload<'a> {
         let templates = module
             .templates
             .iter()
-            .flat_map(DamlTemplatePayload::try_from)
-            .map(|t| Ok((t.name, t)))
+            .map(DamlTemplatePayload::try_from)
+            .map(|tr| tr.map(|t| (t.name, t)))
             .collect::<DamlLfConvertResult<_>>()?;
         let data_types =
             module.data_types.iter().map(DamlDataPayload::try_from).collect::<DamlLfConvertResult<Vec<_>>>()?;
