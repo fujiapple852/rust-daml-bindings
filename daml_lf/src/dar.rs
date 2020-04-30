@@ -135,17 +135,17 @@ impl DarFile {
     }
 
     /// The `manifest` information contained within this `DarFile`.
-    pub fn manifest(&self) -> &DarManifest {
+    pub const fn manifest(&self) -> &DarManifest {
         &self.manifest
     }
 
     /// The `main` [`DamlLfArchive`] contained within this `DarFile`.
-    pub fn main(&self) -> &DamlLfArchive {
+    pub const fn main(&self) -> &DamlLfArchive {
         &self.main
     }
 
     /// A collection of `dependencies` [`DamlLfArchive`] contained within this `DarFile`.
-    pub fn dependencies(&self) -> &Vec<DamlLfArchive> {
+    pub const fn dependencies(&self) -> &Vec<DamlLfArchive> {
         &self.dependencies
     }
 

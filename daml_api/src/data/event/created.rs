@@ -60,17 +60,17 @@ impl DamlCreatedEvent {
     }
 
     /// The template of the created contract.
-    pub fn template_id(&self) -> &DamlIdentifier {
+    pub const fn template_id(&self) -> &DamlIdentifier {
         &self.template_id
     }
 
     /// The key of the created contract, if defined.
-    pub fn contract_key(&self) -> &Option<DamlValue> {
+    pub const fn contract_key(&self) -> &Option<DamlValue> {
         &self.contract_key
     }
 
     /// The arguments that have been used to create the contract.
-    pub fn create_arguments(&self) -> &DamlRecord {
+    pub const fn create_arguments(&self) -> &DamlRecord {
         &self.create_arguments
     }
 

@@ -28,12 +28,12 @@ impl DamlExerciseByKeyCommand {
     }
 
     /// The template of contract the client wants to exercise.
-    pub fn template_id(&self) -> &DamlIdentifier {
+    pub const fn template_id(&self) -> &DamlIdentifier {
         &self.template_id
     }
 
     /// The key of the contract the client wants to exercise upon.
-    pub fn contract_key(&self) -> &DamlValue {
+    pub const fn contract_key(&self) -> &DamlValue {
         &self.contract_key
     }
 
@@ -45,7 +45,7 @@ impl DamlExerciseByKeyCommand {
     }
 
     /// The argument for this choice.
-    pub fn choice_argument(&self) -> &DamlValue {
+    pub const fn choice_argument(&self) -> &DamlValue {
         &self.choice_argument
     }
 }

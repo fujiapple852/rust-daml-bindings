@@ -21,7 +21,7 @@ impl DamlVariant {
         }
     }
 
-    pub fn variant_id(&self) -> &Option<DamlIdentifier> {
+    pub const fn variant_id(&self) -> &Option<DamlIdentifier> {
         &self.variant_id
     }
 
@@ -29,7 +29,7 @@ impl DamlVariant {
         &self.constructor
     }
 
-    pub fn value(&self) -> &DamlValue {
+    pub const fn value(&self) -> &DamlValue {
         &self.value
     }
 
@@ -78,7 +78,7 @@ impl DamlEnum {
     /// Omitted from the transaction stream when verbose streaming is not enabled.
     ///
     /// Optional when submitting commands.
-    pub fn enum_id(&self) -> &Option<DamlIdentifier> {
+    pub const fn enum_id(&self) -> &Option<DamlIdentifier> {
         &self.enum_id
     }
 

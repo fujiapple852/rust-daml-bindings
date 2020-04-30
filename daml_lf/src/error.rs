@@ -62,7 +62,7 @@ pub enum DamlLfConvertError {
     #[error("required field was not supplied")]
     MissingRequiredField,
     /// A DAML type not supported by the code generator was found.
-    #[error("the type {0} is not supported by the code generator")]
+    #[error("the type {0} is not currently supported")]
     UnsupportedType(String),
     /// A DAML choice was not a `DamlDataWrapper::Record`.
     #[error("choice argument was not a record")]

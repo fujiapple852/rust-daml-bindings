@@ -1,5 +1,8 @@
-use crate::attribute::test_types::pingpong::*;
-use crate::common::test_utils::*;
+use crate::attribute::test_types::pingpong::{Ping, PingContract, UserData};
+use crate::common::test_utils::{
+    new_static_sandbox, update_create_command_package_id_for_testing, update_exercise_command_package_id_for_testing,
+    TestResult, SANDBOX_LOCK,
+};
 use daml::api::data::command::DamlCommand;
 use daml::api::data::event::DamlEvent;
 use daml::api::data::value::{DamlRecord, DamlValue};

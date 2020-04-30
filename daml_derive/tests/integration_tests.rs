@@ -1,4 +1,5 @@
 #![warn(clippy::all, clippy::pedantic)]
+#![allow(clippy::used_underscore_binding)]
 
 #[macro_use]
 extern crate lazy_static;

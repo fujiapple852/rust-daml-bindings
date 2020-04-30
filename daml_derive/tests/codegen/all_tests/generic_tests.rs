@@ -14,7 +14,7 @@ daml_codegen!(
 
 #[test]
 fn test_generic_local_roundtrip() -> TestResult {
-    use testing_types::da::generic_types::*;
+    use testing_types::da::generic_types::{ConcreteDataRecord, GenericDataRecord};
     let conc = ConcreteDataRecord::new(GenericDataRecord::new(Some(vec![0]), vec!["".to_string()], 1));
     let value = DamlValue::serialize_from(conc.clone());
     let conc_again: ConcreteDataRecord = value.deserialize_into()?;
@@ -24,7 +24,7 @@ fn test_generic_local_roundtrip() -> TestResult {
 
 #[test]
 fn test_partial_generic_local_roundtrip() -> TestResult {
-    use testing_types::da::generic_types::*;
+    use testing_types::da::generic_types::{GenericDataRecord, PartialConcreteDataRecord};
     let conc = PartialConcreteDataRecord::<DamlText>::new(GenericDataRecord::new(Some(vec![0]), "".to_string(), 1));
     let value = DamlValue::serialize_from(conc.clone());
     let conc_again: PartialConcreteDataRecord<DamlText> = value.deserialize_into()?;
@@ -34,7 +34,7 @@ fn test_partial_generic_local_roundtrip() -> TestResult {
 
 #[test]
 fn test_recursive_generic_record_local_roundtrip() -> TestResult {
-    use testing_types::da::generic_types::*;
+    use testing_types::da::generic_types::{GenericWrapperRecord, PatternRecord};
     let pattern = PatternRecord::new(GenericWrapperRecord::new(PatternRecord::new(Some(GenericWrapperRecord::new(
         PatternRecord::new(None),
     )))));
@@ -46,7 +46,7 @@ fn test_recursive_generic_record_local_roundtrip() -> TestResult {
 
 #[test]
 fn test_recursive_generic_variant_local_roundtrip() -> TestResult {
-    use testing_types::da::generic_types::*;
+    use testing_types::da::generic_types::{GenericWrapperRecord, PatternVariant};
     let pattern = PatternVariant::PStart(GenericWrapperRecord::new(PatternVariant::PEnd));
     let value = DamlValue::serialize_from(pattern.clone());
     let pattern_again = value.deserialize_into()?;
@@ -56,7 +56,10 @@ fn test_recursive_generic_variant_local_roundtrip() -> TestResult {
 
 #[tokio::test]
 async fn test_create_contract_with_generic() -> TestResult {
-    use testing_types::da::generic_types::*;
+    use testing_types::da::generic_types::{
+        ConcreteDataRecord, GenericDataRecord, GenericWrapperRecord, PatternVariant, TemplateWithGeneric,
+        TemplateWithGenericContract,
+    };
     let _lock = SANDBOX_LOCK.lock()?;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();

@@ -1,6 +1,8 @@
 use crate::data::value::DamlValue;
 use crate::data::DamlResult;
-use crate::primitive_types::*;
+use crate::primitive_types::{
+    DamlBool, DamlContractId, DamlDate, DamlInt64, DamlNumeric, DamlParty, DamlText, DamlTimestamp, DamlUnit,
+};
 use std::collections::HashMap;
 
 /// Marker trait for types which can be serialized to a [`DamlValue`].

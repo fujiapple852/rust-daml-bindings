@@ -11,13 +11,13 @@ pub struct DamlLedgerConfiguration {
 }
 
 impl DamlLedgerConfiguration {
-    pub fn new(max_deduplication_time: Duration) -> Self {
+    pub const fn new(max_deduplication_time: Duration) -> Self {
         Self {
             max_deduplication_time,
         }
     }
 
-    pub fn max_deduplication_time(&self) -> &Duration {
+    pub const fn max_deduplication_time(&self) -> &Duration {
         &self.max_deduplication_time
     }
 }

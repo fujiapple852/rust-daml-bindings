@@ -14,7 +14,7 @@ pub struct DamlPackage<'a> {
 }
 
 impl<'a> DamlPackage<'a> {
-    pub fn new(
+    pub const fn new(
         name: &'a str,
         package_id: &'a str,
         version: Option<&'a str>,

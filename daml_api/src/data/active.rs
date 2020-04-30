@@ -39,7 +39,7 @@ impl DamlActiveContracts {
         &self.active_contracts
     }
 
-    pub fn trace_context(&self) -> &Option<DamlTraceContext> {
+    pub const fn trace_context(&self) -> &Option<DamlTraceContext> {
         &self.trace_context
     }
 }

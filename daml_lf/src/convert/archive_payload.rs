@@ -13,13 +13,13 @@ pub struct DamlArchiveWrapper<'a> {
 }
 
 impl<'a> DamlArchiveWrapper<'a> {
-    pub fn new(archive: &'a DamlArchivePayload<'_>) -> Self {
+    pub const fn new(archive: &'a DamlArchivePayload<'_>) -> Self {
         Self {
             archive,
         }
     }
 
-    pub fn with_package(self, package: &'a DamlPackagePayload<'_>) -> DamlPackageWrapper<'a> {
+    pub const fn with_package(self, package: &'a DamlPackagePayload<'_>) -> DamlPackageWrapper<'a> {
         DamlPackageWrapper {
             archive: self.archive,
             package,

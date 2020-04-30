@@ -1,4 +1,6 @@
-use crate::attribute::test_types::recursive_types::*;
+use crate::attribute::test_types::recursive_types::{
+    BoxedOuterType, ConcreteData, GenericData, GenericVariant, InnerType, ListItem, MyList, OuterType,
+};
 use crate::common::test_utils::TestResult;
 use daml::api::data::value::DamlValue;
 use daml::prelude::{DamlDeserializeInto, DamlSerializeInto};

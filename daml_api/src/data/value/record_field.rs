@@ -19,11 +19,11 @@ impl DamlRecordField {
         }
     }
 
-    pub fn label(&self) -> &Option<String> {
+    pub const fn label(&self) -> &Option<String> {
         &self.label
     }
 
-    pub fn value(&self) -> &DamlValue {
+    pub const fn value(&self) -> &DamlValue {
         &self.value
     }
 }

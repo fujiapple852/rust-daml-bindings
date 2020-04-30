@@ -15,7 +15,7 @@ pub struct DamlPackageWrapper<'a> {
 }
 
 impl<'a> DamlPackageWrapper<'a> {
-    pub fn with_module(self, module: &'a DamlModulePayload<'_>) -> DamlModuleWrapper<'a> {
+    pub const fn with_module(self, module: &'a DamlModulePayload<'_>) -> DamlModuleWrapper<'a> {
         DamlModuleWrapper {
             archive: self.archive,
             package: self.package,
@@ -78,7 +78,7 @@ impl<'a> TryFrom<&'a DamlLfArchive> for DamlPackagePayload<'a> {
         }
 
         impl<'a> SelfResolver<'a> {
-            pub fn new(
+            pub const fn new(
                 language_version: LanguageVersion,
                 package_id: &'a str,
                 interned_strings: &'a [String],
@@ -132,8 +132,8 @@ impl<'a> TryFrom<&'a DamlLfArchive> for DamlPackagePayload<'a> {
                 let modules = package
                     .modules
                     .iter()
-                    .flat_map(DamlModulePayload::try_from)
-                    .map(|m| Ok((m.path.resolve(&self_resolver)?.join("."), m)))
+                    .map(DamlModulePayload::try_from)
+                    .map(|mr| mr.and_then(|m| Ok((m.path.resolve(&self_resolver)?.join("."), m))))
                     .collect::<DamlLfConvertResult<_>>()?;
                 Self {
                     name,

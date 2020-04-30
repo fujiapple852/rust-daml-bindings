@@ -9,7 +9,7 @@ pub struct DamlTypeVar<'a> {
 }
 
 impl<'a> DamlTypeVar<'a> {
-    pub fn new(var: &'a str, kind: DamlKind) -> Self {
+    pub const fn new(var: &'a str, kind: DamlKind) -> Self {
         Self {
             var,
             kind,

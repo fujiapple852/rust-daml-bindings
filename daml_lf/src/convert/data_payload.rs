@@ -156,7 +156,7 @@ pub struct DamlChoicePayload<'a> {
 }
 
 impl<'a> DamlChoicePayload<'a> {
-    pub fn new(
+    pub const fn new(
         name: InternableString<'a>,
         argument_type: DamlTypePayload<'a>,
         return_type: DamlTypePayload<'a>,

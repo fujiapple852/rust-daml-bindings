@@ -86,7 +86,7 @@ impl DamlValue {
         DamlValue::Bool(value)
     }
 
-    pub fn new_unit() -> Self {
+    pub const fn new_unit() -> Self {
         DamlValue::Unit
     }
 
@@ -839,7 +839,7 @@ impl Ord for DamlValue {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{DamlValue, Hash, HashMap, Hasher};
     use std::collections::hash_map::DefaultHasher;
 
     #[test]

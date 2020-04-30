@@ -1,4 +1,4 @@
-use crate::common::ping_pong::*;
+use crate::common::ping_pong::{new_wallclock_sandbox, TestResult, PINGPONG_MODULE_NAME, WALLCLOCK_SANDBOX_LOCK};
 
 use daml::util::package::find_module_package_id;
 use daml_api::data::package::{DamlHashFunction, DamlPackageStatus};

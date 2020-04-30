@@ -128,7 +128,7 @@ impl DamlLedgerClient {
     }
 
     /// Return the current configuration.
-    pub fn channel_config(&self) -> &ChannelConfig {
+    pub const fn channel_config(&self) -> &ChannelConfig {
         &self.config
     }
 
@@ -136,55 +136,55 @@ impl DamlLedgerClient {
         &self.ledger_identity
     }
 
-    pub fn ledger_identity_service(&self) -> &DamlLedgerIdentityService {
+    pub const fn ledger_identity_service(&self) -> &DamlLedgerIdentityService {
         &self.ledger_identity_service
     }
 
-    pub fn ledger_configuration_service(&self) -> &DamlLedgerConfigurationService {
+    pub const fn ledger_configuration_service(&self) -> &DamlLedgerConfigurationService {
         &self.ledger_configuration_service
     }
 
-    pub fn package_service(&self) -> &DamlPackageService {
+    pub const fn package_service(&self) -> &DamlPackageService {
         &self.package_service
     }
 
-    pub fn command_submission_service(&self) -> &DamlCommandSubmissionService {
+    pub const fn command_submission_service(&self) -> &DamlCommandSubmissionService {
         &self.command_submission_service
     }
 
-    pub fn command_completion_service(&self) -> &DamlCommandCompletionService {
+    pub const fn command_completion_service(&self) -> &DamlCommandCompletionService {
         &self.command_completion_service
     }
 
-    pub fn command_service(&self) -> &DamlCommandService {
+    pub const fn command_service(&self) -> &DamlCommandService {
         &self.command_service
     }
 
-    pub fn transaction_service(&self) -> &DamlTransactionService {
+    pub const fn transaction_service(&self) -> &DamlTransactionService {
         &self.transaction_service
     }
 
-    pub fn active_contract_service(&self) -> &DamlActiveContractsService {
+    pub const fn active_contract_service(&self) -> &DamlActiveContractsService {
         &self.active_contract_service
     }
 
     #[cfg(feature = "admin")]
-    pub fn package_management_service(&self) -> &DamlPackageManagementService {
+    pub const fn package_management_service(&self) -> &DamlPackageManagementService {
         &self.package_management_service
     }
 
     #[cfg(feature = "admin")]
-    pub fn party_management_service(&self) -> &DamlPartyManagementService {
+    pub const fn party_management_service(&self) -> &DamlPartyManagementService {
         &self.party_management_service
     }
 
     #[cfg(feature = "admin")]
-    pub fn config_management_service(&self) -> &DamlConfigManagementService {
+    pub const fn config_management_service(&self) -> &DamlConfigManagementService {
         &self.config_management_service
     }
 
     #[cfg(feature = "sandbox")]
-    pub fn time_service(&self) -> &DamlTimeService {
+    pub const fn time_service(&self) -> &DamlTimeService {
         &self.time_service
     }
 
@@ -240,10 +240,10 @@ impl DamlLedgerClient {
     ) -> DamlResult<String> {
         let start = Instant::now();
         let mut ledger_identity: DamlResult<String> = ledger_identity_service.get_ledger_identity().await;
-        if let e @ Err(DamlError::GRPCPermissionError(_)) = ledger_identity {
-            return e;
-        }
         while let Err(e) = ledger_identity {
+            if let DamlError::GRPCPermissionError(_) = e {
+                return Err(e);
+            }
             if start.elapsed() > *timeout {
                 return Err(DamlError::new_timeout_error(e));
             }

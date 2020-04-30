@@ -58,7 +58,7 @@ impl error::Error for DamlError {}
 impl From<tonic::Status> for DamlError {
     fn from(e: tonic::Status) -> Self {
         match e.code() {
-            tonic::Code::PermissionDenied => DamlError::GRPCPermissionError(e),
+            tonic::Code::Unauthenticated => DamlError::GRPCPermissionError(e),
             _ => DamlError::GRPCStatusError(e),
         }
     }

@@ -58,11 +58,11 @@ impl DamlTransactionTree {
         &self.workflow_id
     }
 
-    pub fn effective_at(&self) -> &DateTime<Utc> {
+    pub const fn effective_at(&self) -> &DateTime<Utc> {
         &self.effective_at
     }
 
-    pub fn events_by_id(&self) -> &HashMap<String, DamlTreeEvent> {
+    pub const fn events_by_id(&self) -> &HashMap<String, DamlTreeEvent> {
         &self.events_by_id
     }
 
@@ -78,7 +78,7 @@ impl DamlTransactionTree {
         &self.offset
     }
 
-    pub fn trace_context(&self) -> &Option<DamlTraceContext> {
+    pub const fn trace_context(&self) -> &Option<DamlTraceContext> {
         &self.trace_context
     }
 }

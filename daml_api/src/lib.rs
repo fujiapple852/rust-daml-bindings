@@ -10,7 +10,8 @@
     clippy::use_self,
     clippy::must_use_candidate,
     clippy::missing_errors_doc,
-    clippy::missing_const_for_fn
+    clippy::missing_const_for_fn,
+    clippy::used_underscore_binding
 )]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]

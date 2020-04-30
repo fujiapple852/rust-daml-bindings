@@ -19,7 +19,7 @@ pub struct DamlConfigManagementService {
 }
 
 impl DamlConfigManagementService {
-    pub fn new(channel: Channel, auth_token: Option<String>) -> Self {
+    pub const fn new(channel: Channel, auth_token: Option<String>) -> Self {
         Self {
             channel,
             auth_token,

@@ -1,4 +1,4 @@
-use crate::attribute::test_types::all_map_types::*;
+use crate::attribute::test_types::all_map_types::{DataWithMap, MyRecord};
 use crate::common::test_utils::TestResult;
 use daml::prelude::*;
 use std::collections::HashMap;
