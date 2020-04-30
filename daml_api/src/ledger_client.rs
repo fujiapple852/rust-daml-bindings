@@ -240,10 +240,10 @@ impl DamlLedgerClient {
     ) -> DamlResult<String> {
         let start = Instant::now();
         let mut ledger_identity: DamlResult<String> = ledger_identity_service.get_ledger_identity().await;
-        if let e @ Err(DamlError::GRPCPermissionError(_)) = ledger_identity {
-            return e;
-        }
         while let Err(e) = ledger_identity {
+            if let DamlError::GRPCPermissionError(_) = e {
+                return Err(e);
+            }
             if start.elapsed() > *timeout {
                 return Err(DamlError::new_timeout_error(e));
             }
