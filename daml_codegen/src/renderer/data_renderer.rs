@@ -11,6 +11,7 @@ use self::intermediate::quote_daml_variant as quote_daml_variant_intermediate;
 use crate::generator::RenderMethod;
 use daml_lf::element::DamlData;
 
+use crate::renderer::RenderContext;
 use quote::quote;
 
 pub mod full {
@@ -38,26 +39,30 @@ mod intermediate {
     pub use quote_intermediate_data::*;
 }
 
-pub fn quote_all_data(all_data: &[&DamlData<'_>], render_method: &RenderMethod) -> TokenStream {
-    let all_data_tokens: Vec<_> = all_data.iter().map(|&dt| quote_data(dt, render_method)).collect();
+pub fn quote_all_data(
+    ctx: &RenderContext<'_>,
+    all_data: &[&DamlData<'_>],
+    render_method: &RenderMethod,
+) -> TokenStream {
+    let all_data_tokens: Vec<_> = all_data.iter().map(|&dt| quote_data(ctx, dt, render_method)).collect();
     quote!(
         #( #all_data_tokens )*
     )
 }
 
-pub fn quote_data(data_type: &DamlData<'_>, render_method: &RenderMethod) -> TokenStream {
+pub fn quote_data(ctx: &RenderContext<'_>, data_type: &DamlData<'_>, render_method: &RenderMethod) -> TokenStream {
     match render_method {
         RenderMethod::Full => match data_type {
-            DamlData::Template(template) => quote_daml_template_full(template),
-            DamlData::Record(record) => quote_daml_record_full(record),
-            DamlData::Variant(variant) => quote_daml_variant_full(variant),
-            DamlData::Enum(data_enum) => quote_daml_enum_full(data_enum),
+            DamlData::Template(template) => quote_daml_template_full(ctx, template),
+            DamlData::Record(record) => quote_daml_record_full(ctx, record),
+            DamlData::Variant(variant) => quote_daml_variant_full(ctx, variant),
+            DamlData::Enum(data_enum) => quote_daml_enum_full(ctx, data_enum),
         },
         RenderMethod::Intermediate => match data_type {
-            DamlData::Template(template) => quote_daml_template_intermediate(template),
-            DamlData::Record(record) => quote_daml_record_intermediate(record),
-            DamlData::Variant(variant) => quote_daml_variant_intermediate(variant),
-            DamlData::Enum(data_enum) => quote_daml_enum_intermediate(data_enum),
+            DamlData::Template(template) => quote_daml_template_intermediate(ctx, template),
+            DamlData::Record(record) => quote_daml_record_intermediate(ctx, record),
+            DamlData::Variant(variant) => quote_daml_variant_intermediate(ctx, variant),
+            DamlData::Enum(data_enum) => quote_daml_enum_intermediate(ctx, data_enum),
         },
     }
 }

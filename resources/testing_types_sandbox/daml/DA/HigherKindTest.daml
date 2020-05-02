@@ -1,0 +1,12 @@
+module DA.HigherKindTest where
+
+-- The Rust codegen will omit the `hktField` field as `HigherKindedData` has a type param `xxx` of kind * -> *
+data DataWithHigherKindField = DataWithHigherKindField with 
+    simpleField: MyData Text
+    hktField: HigherKindedData MyData
+
+-- xxx has kind: * -> * and will be included
+data HigherKindedData xxx = HigherKindedData with some_field: xxx ()
+
+-- MyData has kind: * and will be included
+data MyData yyy = MyData with another_field: yyy deriving (Eq, Show)

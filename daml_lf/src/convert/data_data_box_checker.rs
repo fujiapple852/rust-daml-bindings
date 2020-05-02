@@ -61,7 +61,7 @@ impl<'a> DamlDataBoxChecker<'a> {
             },
             DamlTypePayload::ContractId(_)
             | DamlTypePayload::Int64
-            | DamlTypePayload::Numeric
+            | DamlTypePayload::Numeric(_)
             | DamlTypePayload::Text
             | DamlTypePayload::Timestamp
             | DamlTypePayload::Party
@@ -75,7 +75,8 @@ impl<'a> DamlDataBoxChecker<'a> {
             | DamlTypePayload::Var(_)
             | DamlTypePayload::Arrow
             | DamlTypePayload::Any
-            | DamlTypePayload::TypeRep => false,
+            | DamlTypePayload::TypeRep
+            | DamlTypePayload::Nat(_) => false,
         })
     }
 

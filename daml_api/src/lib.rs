@@ -29,6 +29,9 @@ pub mod primitive_types;
 /// Serialize & Deserialize DAML types.
 pub mod serialize;
 
+/// Nat types for specifying DAML Numeric types.
+pub mod nat;
+
 mod ledger_client;
 pub use ledger_client::{DamlLedgerClient, DamlLedgerClientBuilder};
 

@@ -15,7 +15,7 @@ pub type DamlTypeWrapper<'a> = PayloadElementWrapper<'a, &'a DamlTypePayload<'a>
 pub enum DamlTypePayload<'a> {
     ContractId(Option<DamlDataRefPayload<'a>>),
     Int64,
-    Numeric,
+    Numeric(Box<DamlTypePayload<'a>>),
     Text,
     Timestamp,
     Party,
@@ -32,6 +32,7 @@ pub enum DamlTypePayload<'a> {
     Arrow,
     Any,
     TypeRep,
+    Nat(u8),
 }
 
 impl<'a> DamlTypePayload<'a> {
@@ -39,7 +40,7 @@ impl<'a> DamlTypePayload<'a> {
         match self {
             DamlTypePayload::ContractId(_) => "ContractId",
             DamlTypePayload::Int64 => "Int64",
-            DamlTypePayload::Numeric => "Numeric",
+            DamlTypePayload::Numeric(_) => "Numeric",
             DamlTypePayload::Text => "Text",
             DamlTypePayload::Timestamp => "Timestamp",
             DamlTypePayload::Party => "Party",
@@ -56,9 +57,13 @@ impl<'a> DamlTypePayload<'a> {
             DamlTypePayload::Arrow => "Arrow",
             DamlTypePayload::Any => "Any",
             DamlTypePayload::TypeRep => "TypeRep",
+            DamlTypePayload::Nat(_) => "Nat",
         }
     }
 }
+
+/// The nat value to use for legacy Decimal types.
+pub const LEGACY_DECIMAL_NAT: u8 = 10;
 
 impl<'a> TryFrom<&'a Type> for DamlTypePayload<'a> {
     type Error = DamlLfConvertError;
@@ -69,7 +74,9 @@ impl<'a> TryFrom<&'a Type> for DamlTypePayload<'a> {
                 PrimType::Unit => Ok(DamlTypePayload::Unit),
                 PrimType::Bool => Ok(DamlTypePayload::Bool),
                 PrimType::Int64 => Ok(DamlTypePayload::Int64),
-                PrimType::Numeric | PrimType::Decimal => Ok(DamlTypePayload::Numeric),
+                PrimType::Numeric =>
+                    Ok(DamlTypePayload::Numeric(Box::new(DamlTypePayload::try_from(prim.args.first().req()?)?))),
+                PrimType::Decimal => Ok(DamlTypePayload::Numeric(Box::new(DamlTypePayload::Nat(LEGACY_DECIMAL_NAT)))),
                 PrimType::Text => Ok(DamlTypePayload::Text),
                 PrimType::Timestamp => Ok(DamlTypePayload::Timestamp),
                 PrimType::Party => Ok(DamlTypePayload::Party),
@@ -95,10 +102,16 @@ impl<'a> TryFrom<&'a Type> for DamlTypePayload<'a> {
             },
             Sum::Con(con) => Ok(DamlTypePayload::DataRef(DamlDataRefPayload::try_from(con)?)),
             Sum::Var(var) => Ok(DamlTypePayload::Var(DamlVarPayload::try_from(var)?)),
+            Sum::Nat(n) =>
+                if *n >= 0 && *n <= 37 {
+                    #[allow(clippy::cast_possible_truncation)]
+                    Ok(DamlTypePayload::Nat(*n as u8))
+                } else {
+                    Err(DamlLfConvertError::NatOutOfRange(*n))
+                },
             Sum::Fun(_) => Err(DamlLfConvertError::UnsupportedType("Fun".to_owned())),
             Sum::Forall(_) => Err(DamlLfConvertError::UnsupportedType("Forall".to_owned())),
             Sum::Struct(_) => Err(DamlLfConvertError::UnsupportedType("Struct".to_owned())),
-            Sum::Nat(_) => Err(DamlLfConvertError::UnsupportedType("Nat".to_owned())),
             Sum::Syn(_) => Err(DamlLfConvertError::UnsupportedType("Syn".to_owned())),
         }
     }

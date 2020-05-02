@@ -62,7 +62,7 @@
 //! # pub struct MyData {}
 //! let int: DamlInt64;
 //! let party: DamlParty;
-//! let opt_numeric: DamlOptional<DamlNumeric>;
+//! let opt_numeric: DamlOptional<DamlNumeric10>;
 //! let list_of_int: DamlList<DamlInt64>;
 //! let list_of_opt_int: DamlList<DamlOptional<DamlInt64>>;
 //! let list_of_opt_map_party: DamlList<DamlOptional<DamlTextMap<DamlParty>>>;

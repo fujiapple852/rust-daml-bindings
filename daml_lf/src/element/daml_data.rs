@@ -20,6 +20,24 @@ impl<'a> DamlData<'a> {
             DamlData::Enum(data_enum) => data_enum.name,
         }
     }
+
+    pub fn fields(&self) -> &[DamlField<'_>] {
+        match self {
+            DamlData::Record(record) => &record.fields,
+            DamlData::Template(template) => &template.fields,
+            DamlData::Variant(variant) => &variant.fields,
+            DamlData::Enum(_) => &[],
+        }
+    }
+
+    pub fn type_arguments(&self) -> &[DamlTypeVar<'_>] {
+        match self {
+            DamlData::Record(record) => &record.type_arguments,
+            DamlData::Template(_) => &[],
+            DamlData::Variant(variant) => &variant.type_arguments,
+            DamlData::Enum(data_enum) => &data_enum.type_arguments,
+        }
+    }
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlData<'a> {

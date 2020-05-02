@@ -1,20 +1,17 @@
-use std::iter;
-
-use heck::SnakeCase;
-use proc_macro2::TokenStream;
-
-use quote::quote;
-
 use crate::renderer::renderer_utils::quote_escaped_ident;
 use crate::renderer::{normalize_generic_param, quote_ident};
 use daml_lf::element::{DamlAbsoluteDataRef, DamlDataRef, DamlNonLocalDataRef, DamlType};
+use heck::SnakeCase;
+use proc_macro2::TokenStream;
+use quote::quote;
+use std::iter;
 
 #[allow(clippy::match_same_arms)]
 pub fn quote_type(daml_type: &DamlType<'_>) -> TokenStream {
     match daml_type {
-        DamlType::List(nested) | DamlType::TextMap(nested) | DamlType::Optional(nested) => {
+        DamlType::List(inner) | DamlType::TextMap(inner) | DamlType::Optional(inner) | DamlType::Numeric(inner) => {
             let prim_name_tokens = quote_escaped_ident(daml_type.name());
-            let prim_param_tokens = quote_type(nested);
+            let prim_param_tokens = quote_type(inner);
             quote!(
                 #prim_name_tokens<#prim_param_tokens>
             )
@@ -30,7 +27,16 @@ pub fn quote_type(daml_type: &DamlType<'_>) -> TokenStream {
             let var_tokens = quote_ident(normalize_generic_param(var.var).to_uppercase());
             quote!(#var_tokens)
         },
-        _ => quote_escaped_ident(daml_type.name()),
+        DamlType::Nat(n) => quote_ident(format!("{}{}", daml_type.name(), n)),
+        DamlType::Int64
+        | DamlType::Text
+        | DamlType::Timestamp
+        | DamlType::Party
+        | DamlType::Bool
+        | DamlType::Unit
+        | DamlType::Date => quote_escaped_ident(daml_type.name()),
+        DamlType::Update | DamlType::Scenario | DamlType::Arrow | DamlType::Any | DamlType::TypeRep =>
+            panic!(format!("cannot render unsupported type: {}", daml_type.name())),
     }
 }
 

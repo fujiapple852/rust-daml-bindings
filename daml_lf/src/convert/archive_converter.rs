@@ -206,51 +206,16 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
     type Error = DamlLfConvertError;
 
     fn try_from(daml_type: &DamlTypeWrapper<'a>) -> Result<Self, Self::Error> {
-        fn make_data_ref<'a>(
-            daml_type: &DamlTypeWrapper<'a>,
-            data_ref: DamlDataRefWrapper<'a>,
-            target_data: DamlDataWrapper<'a>,
-        ) -> DamlLfConvertResult<DamlDataRef<'a>> {
-            let resolver = daml_type.context.package;
-            let current_package_name = daml_type.context.package.name.as_str();
-            let target_package_name = target_data.context.package.name.as_str();
-            let current_module_path = daml_type.context.module.path.resolve(resolver)?;
-            let target_module_path = data_ref.payload.module_path.resolve(resolver)?;
-            let data_name = data_ref.payload.data_name.resolve_last(data_ref.context.package)?;
-            let type_arguments: Vec<_> = data_ref
-                .payload
-                .type_arguments
-                .iter()
-                .map(|ty| DamlType::try_from(&data_ref.wrap(ty)))
-                .collect::<DamlLfConvertResult<_>>()?;
-            if target_package_name == current_package_name && target_module_path == current_module_path {
-                Ok(DamlDataRef::Local(DamlLocalDataRef::new(
-                    data_name,
-                    target_package_name,
-                    target_module_path,
-                    type_arguments,
-                )))
-            } else {
-                Ok(DamlDataRef::NonLocal(DamlNonLocalDataRef::new(
-                    data_name,
-                    current_package_name,
-                    current_module_path,
-                    target_package_name,
-                    target_module_path,
-                    type_arguments,
-                )))
-            }
-        }
-
         Ok(match daml_type.payload {
             DamlTypePayload::ContractId(Some(data_ref)) => {
                 let data_ref_wrapper = daml_type.wrap(data_ref);
                 let target_data_wrapper = resolve_data_ref(data_ref_wrapper)?;
-                DamlType::ContractId(Some(make_data_ref(daml_type, data_ref_wrapper, target_data_wrapper)?))
+                DamlType::ContractId(Some(make_data_ref(data_ref_wrapper, target_data_wrapper)?))
             },
             DamlTypePayload::ContractId(None) => DamlType::ContractId(None),
             DamlTypePayload::Int64 => DamlType::Int64,
-            DamlTypePayload::Numeric => DamlType::Numeric,
+            DamlTypePayload::Numeric(inner_type) =>
+                DamlType::Numeric(Box::new(DamlType::try_from(&daml_type.wrap(inner_type.as_ref()))?)),
             DamlTypePayload::Text => DamlType::Text,
             DamlTypePayload::Timestamp => DamlType::Timestamp,
             DamlTypePayload::Party => DamlType::Party,
@@ -268,7 +233,7 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
             DamlTypePayload::DataRef(data_ref) => {
                 let data_ref_wrapper = daml_type.wrap(data_ref);
                 let target_data_wrapper = resolve_data_ref(data_ref_wrapper)?;
-                let data_ref = make_data_ref(daml_type, data_ref_wrapper, target_data_wrapper)?;
+                let data_ref = make_data_ref(data_ref_wrapper, target_data_wrapper)?;
                 if DamlDataBoxChecker::should_box(enriched_data(daml_type.context), target_data_wrapper)? {
                     DamlType::BoxedDataRef(data_ref)
                 } else {
@@ -279,6 +244,7 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
             DamlTypePayload::Arrow => DamlType::Arrow,
             DamlTypePayload::Any => DamlType::Any,
             DamlTypePayload::TypeRep => DamlType::TypeRep,
+            DamlTypePayload::Nat(n) => DamlType::Nat(*n),
         })
     }
 }
@@ -326,4 +292,39 @@ impl From<&DamlKindPayload> for DamlKind {
 
 fn enriched_data(context: DamlPayloadDataWrapper<'_>) -> DamlDataWrapper<'_> {
     DamlDataWrapper::with_data(context, DamlDataEnrichedPayload::from_data_wrapper(context))
+}
+
+fn make_data_ref<'a>(
+    data_ref: DamlDataRefWrapper<'a>,
+    target_data: DamlDataWrapper<'a>,
+) -> DamlLfConvertResult<DamlDataRef<'a>> {
+    let resolver = data_ref.context.package;
+    let current_package_name = data_ref.context.package.name.as_str();
+    let target_package_name = target_data.context.package.name.as_str();
+    let current_module_path = data_ref.context.module.path.resolve(resolver)?;
+    let target_module_path = data_ref.payload.module_path.resolve(resolver)?;
+    let data_name = data_ref.payload.data_name.resolve_last(data_ref.context.package)?;
+    let type_arguments: Vec<_> = data_ref
+        .payload
+        .type_arguments
+        .iter()
+        .map(|ty| DamlType::try_from(&data_ref.wrap(ty)))
+        .collect::<DamlLfConvertResult<_>>()?;
+    if target_package_name == current_package_name && target_module_path == current_module_path {
+        Ok(DamlDataRef::Local(DamlLocalDataRef::new(
+            data_name,
+            target_package_name,
+            target_module_path,
+            type_arguments,
+        )))
+    } else {
+        Ok(DamlDataRef::NonLocal(DamlNonLocalDataRef::new(
+            data_name,
+            current_package_name,
+            current_module_path,
+            target_package_name,
+            target_module_path,
+            type_arguments,
+        )))
+    }
 }

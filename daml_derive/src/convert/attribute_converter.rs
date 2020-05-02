@@ -59,6 +59,9 @@ impl<'a> From<&'a AttrField> for DamlField<'a> {
     }
 }
 
+/// The default nat value for `AttrType::Numeric`
+pub const DEFAULT_NAT: u8 = 10;
+
 #[allow(clippy::fallible_impl_from)]
 impl<'a> From<&'a AttrType> for DamlType<'a> {
     fn from(attr_type: &'a AttrType) -> Self {
@@ -66,7 +69,7 @@ impl<'a> From<&'a AttrType> for DamlType<'a> {
             AttrType::Unit => DamlType::Unit,
             AttrType::ContractId(_) => DamlType::ContractId(None),
             AttrType::Int64 => DamlType::Int64,
-            AttrType::Numeric => DamlType::Numeric,
+            AttrType::Numeric => DamlType::Numeric(Box::new(DamlType::Nat(DEFAULT_NAT))),
             AttrType::Text => DamlType::Text,
             AttrType::Timestamp => DamlType::Timestamp,
             AttrType::Party => DamlType::Party,

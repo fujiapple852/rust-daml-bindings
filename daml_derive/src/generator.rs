@@ -8,6 +8,7 @@ use daml_codegen::renderer::full::{
     quote_choice, quote_daml_enum, quote_daml_record, quote_daml_template, quote_daml_variant,
 };
 use daml_codegen::renderer::quote_archive;
+use daml_codegen::renderer::RenderContext;
 use daml_lf::element::{DamlChoice, DamlEnum, DamlRecord, DamlTemplate, DamlVariant};
 use daml_lf::DarFile;
 use darling::FromMeta;
@@ -44,7 +45,8 @@ pub fn generate_template(input: DeriveInput, package_id: String, module_name: St
         }) => {
             let template: AttrTemplate = extract_template(struct_name, package_id, module_name, fields_named);
             let daml_template = DamlTemplate::from(&template);
-            let expanded = quote_daml_template(&daml_template);
+            let ctx = RenderContext::default();
+            let expanded = quote_daml_template(&ctx, &daml_template);
             proc_macro::TokenStream::from(expanded)
         },
         _ => panic!("the DamlTemplate attribute may only be applied to a named struct type"),
@@ -55,7 +57,8 @@ pub fn generate_choices(input: ItemImpl) -> proc_macro::TokenStream {
     let struct_name = data_type_string_from_type(input.self_ty.as_ref());
     let all_choices: Vec<AttrChoice> = extract_all_choices(&input.items);
     let all_daml_choices: Vec<DamlChoice<'_>> = all_choices.iter().map(DamlChoice::from).collect();
-    let all_choice_methods_tokens = quote_choice(&struct_name, &all_daml_choices);
+    let ctx = RenderContext::default();
+    let all_choice_methods_tokens = quote_choice(&ctx, &struct_name, &all_daml_choices);
     proc_macro::TokenStream::from(all_choice_methods_tokens)
 }
 
@@ -66,7 +69,8 @@ pub fn generate_data_struct(input: DeriveInput) -> proc_macro::TokenStream {
             Fields::Named(fields_named) => {
                 let record: AttrRecord = extract_record(struct_name, fields_named, &input.generics);
                 let daml_record = DamlRecord::from(&record);
-                quote_daml_record(&daml_record)
+                let ctx = RenderContext::default();
+                quote_daml_record(&ctx, &daml_record)
             },
             Fields::Unnamed(_) => panic!("tuple struct not supported"),
             Fields::Unit => panic!("unit struct not supported"),
@@ -85,7 +89,8 @@ pub fn generate_data_variant(input: DeriveInput) -> proc_macro::TokenStream {
         Data::Enum(data_enum) => {
             let variant: AttrVariant = extract_variant(variant_name, &data_enum, &input.generics);
             let daml_variant = DamlVariant::from(&variant);
-            quote_daml_variant(&daml_variant)
+            let ctx = RenderContext::default();
+            quote_daml_variant(&ctx, &daml_variant)
         },
         _ => panic!("the DamlVariant attribute may only be applied to enum types"),
     };
@@ -101,7 +106,8 @@ pub fn generate_data_enum(input: DeriveInput) -> proc_macro::TokenStream {
         Data::Enum(data_enum) => {
             let enum_variants = extract_enum(enum_name, &data_enum, &input.generics);
             let daml_enum = DamlEnum::from(&enum_variants);
-            quote_daml_enum(&daml_enum)
+            let ctx = RenderContext::default();
+            quote_daml_enum(&ctx, &daml_enum)
         },
         _ => panic!("the DamlEnum attribute may only be applied to enum types"),
     };

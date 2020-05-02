@@ -1,0 +1,5 @@
+daml 1.2
+module DA.NumericTest where
+
+newtype MyNumeric abc = MyNumeric with value : Numeric abc deriving (Eq, Show)
+data Foo = Foo with min_numeric: MyNumeric 0; max_numeric: MyNumeric 37; local_numeric: Numeric 15; legacy: Decimal
