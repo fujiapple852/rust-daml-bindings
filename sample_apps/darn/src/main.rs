@@ -1,5 +1,5 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
-#![allow(clippy::module_name_repetitions, clippy::use_self, clippy::must_use_candidate, clippy::missing_errors_doc)]
+#![allow(clippy::module_name_repetitions, clippy::use_self, clippy::must_use_candidate, clippy::missing_errors_doc, clippy::cast_sign_loss)]
 #![forbid(unsafe_code)]
 
 use anyhow::Result;
