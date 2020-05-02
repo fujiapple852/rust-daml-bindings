@@ -4,14 +4,14 @@ use quote::quote;
 
 use crate::renderer::data_renderer::full::quote_contract_struct::quote_contract_id_struct_name;
 use crate::renderer::data_renderer::full::quote_method_arguments;
-use crate::renderer::is_supported_type;
 use crate::renderer::renderer_utils::quote_escaped_ident;
 use crate::renderer::type_renderer::quote_type;
+use crate::renderer::{IsRenderable, RenderContext};
 use daml_lf::element::{DamlChoice, DamlField, DamlType};
 use heck::SnakeCase;
 
-pub fn quote_choice(name: &str, items: &[DamlChoice<'_>]) -> TokenStream {
-    let all_choice_methods_tokens = quote_all_choice_methods(name, items);
+pub fn quote_choice(ctx: &RenderContext<'_>, name: &str, items: &[DamlChoice<'_>]) -> TokenStream {
+    let all_choice_methods_tokens = quote_all_choice_methods(ctx, name, items);
     let contract_struct_name_tokens = quote_contract_id_struct_name(name);
     quote!(
         impl #contract_struct_name_tokens {
@@ -21,21 +21,22 @@ pub fn quote_choice(name: &str, items: &[DamlChoice<'_>]) -> TokenStream {
 }
 
 /// Generate all choice methods within the parent `impl` block.
-fn quote_all_choice_methods(struct_name: &str, items: &[DamlChoice<'_>]) -> TokenStream {
-    let all_choice_methods: Vec<_> = items.iter().map(|choice| quote_choice_method(struct_name, choice)).collect();
+fn quote_all_choice_methods(ctx: &RenderContext<'_>, struct_name: &str, items: &[DamlChoice<'_>]) -> TokenStream {
+    let all_choice_methods: Vec<_> = items.iter().map(|choice| quote_choice_method(ctx, struct_name, choice)).collect();
     quote!(
         #( #all_choice_methods )*
     )
 }
 
 /// Generate the `pub fn foo(&self, ...)` choice method.
-fn quote_choice_method(struct_name: &str, choice: &DamlChoice<'_>) -> TokenStream {
+fn quote_choice_method(ctx: &RenderContext<'_>, struct_name: &str, choice: &DamlChoice<'_>) -> TokenStream {
     let choice_name = &choice.name;
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let method_name_command_tokens = quote_command_method_name(&choice.name.to_snake_case());
     let _method_name_tokens = quote_escaped_ident(&choice.name.to_snake_case());
     let choice_argument_tokens = quote_method_arguments(&choice.fields.iter().collect::<Vec<_>>());
-    let supported_fields: Vec<_> = choice.fields.iter().filter(|&field| is_supported_type(&field.ty)).collect();
+    let supported_fields: Vec<_> =
+        choice.fields.iter().filter(|&field| IsRenderable::new(ctx).check_type(&field.ty)).collect();
     let all_choice_fields = quote_all_choice_fields(&supported_fields);
     quote!(
         pub fn #method_name_command_tokens(&self, #choice_argument_tokens) -> DamlExerciseCommand {

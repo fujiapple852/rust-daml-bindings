@@ -19,7 +19,7 @@ pub enum Color {
 
 #[DamlData]
 pub struct Circle {
-    pub radius: DamlNumeric,
+    pub radius: DamlNumeric10,
     pub color: Color,
 }
 

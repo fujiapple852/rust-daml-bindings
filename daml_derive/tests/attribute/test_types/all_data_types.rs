@@ -10,7 +10,7 @@ pub struct MyData {
 pub struct AllDataTypes {
     pub my_contract_id: DamlContractId,
     pub my_int: DamlInt64,
-    pub my_numeric: DamlNumeric,
+    pub my_numeric: DamlNumeric10,
     pub my_text: DamlText,
     pub my_timestamp: DamlTimestamp,
     pub my_party: DamlParty,
@@ -23,7 +23,7 @@ pub struct AllDataTypes {
 pub struct AllListDataTypes {
     pub my_contract_ids: DamlList<DamlContractId>,
     pub my_ints: DamlList<DamlInt64>,
-    pub my_numerics: DamlList<DamlNumeric>,
+    pub my_numerics: DamlList<DamlNumeric10>,
     pub my_texts: DamlList<DamlText>,
     pub my_timestamps: DamlList<DamlTimestamp>,
     pub my_parties: DamlList<DamlParty>,
@@ -38,7 +38,7 @@ impl AllListDataTypes {
     pub fn func_with_all_scalar_list_params(
         my_contract_ids: DamlList<DamlContractId>,
         my_ints: DamlList<DamlInt64>,
-        my_numerics: DamlList<DamlNumeric>,
+        my_numerics: DamlList<DamlNumeric10>,
         my_texts: DamlList<DamlText>,
         my_timestamps: DamlList<DamlTimestamp>,
         my_parties: DamlList<DamlParty>,

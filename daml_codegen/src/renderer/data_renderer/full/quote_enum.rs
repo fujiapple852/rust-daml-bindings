@@ -4,13 +4,13 @@ use proc_macro2::TokenStream;
 use quote::quote;
 
 use crate::renderer::data_renderer::full::{
-    quote_deserialize_generic_trait_bounds, quote_generic_param_list, quote_serialize_generic_trait_bounds,
+    quote_bounded_params, quote_deserialize_where, quote_serialize_where, quote_unbounded_params,
 };
-use crate::renderer::quote_escaped_ident;
+use crate::renderer::{quote_escaped_ident, RenderContext};
 use daml_lf::element::{DamlEnum, DamlTypeVar};
 
 /// Generate the `enum` and the `From` and `TryFrom` impls.
-pub fn quote_daml_enum(daml_enum: &DamlEnum<'_>) -> TokenStream {
+pub fn quote_daml_enum(_ctx: &RenderContext<'_>, daml_enum: &DamlEnum<'_>) -> TokenStream {
     let enum_tokens = quote_enum(daml_enum.name, daml_enum.constructors.as_slice(), &daml_enum.type_arguments);
     let serialize_impl_tokens =
         quote_serialize_trait_impl(daml_enum.name, daml_enum.constructors.as_slice(), &daml_enum.type_arguments);
@@ -26,15 +26,17 @@ pub fn quote_daml_enum(daml_enum: &DamlEnum<'_>) -> TokenStream {
 /// Generate `enum Foo {...}` enum.
 fn quote_enum(enum_name: &str, variants: &[&str], type_arguments: &[DamlTypeVar<'_>]) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(enum_name);
-    let generic_param_tokens = quote_generic_param_list(type_arguments);
+    let bounded_param_tokens = quote_bounded_params(type_arguments);
+    let unbounded_param_tokens = quote_unbounded_params(type_arguments);
+
     let body_tokens = quote_enum_body(variants);
     quote!(
         #[derive(Eq, PartialEq, Clone, Debug)]
-        pub enum #enum_name_tokens #generic_param_tokens {
+        pub enum #enum_name_tokens #bounded_param_tokens {
             #body_tokens
         }
-        impl #generic_param_tokens DamlDeserializableType for #enum_name_tokens #generic_param_tokens {}
-        impl #generic_param_tokens DamlSerializableType for #enum_name_tokens #generic_param_tokens {}
+        impl #bounded_param_tokens DamlDeserializableType for #enum_name_tokens #unbounded_param_tokens {}
+        impl #bounded_param_tokens DamlSerializableType for #enum_name_tokens #unbounded_param_tokens {}
     )
 }
 
@@ -57,13 +59,13 @@ fn quote_serialize_trait_impl(
     type_arguments: &[DamlTypeVar<'_>],
 ) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(enum_name);
-    let generic_param_tokens = quote_generic_param_list(type_arguments);
-    let generic_trail_bounds_tokens = quote_serialize_generic_trait_bounds(type_arguments);
+    let unbounded_param_tokens = quote_unbounded_params(type_arguments);
+    let serialize_where_tokens = quote_serialize_where(type_arguments);
     let all_match_arms: Vec<_> =
         enum_variants.iter().map(|enum_variant| quote_from_trait_match_arm(enum_name, enum_variant)).collect();
     quote! {
-        impl #generic_param_tokens DamlSerializeFrom<#enum_name_tokens #generic_param_tokens> for DamlValue #generic_trail_bounds_tokens {
-            fn serialize_from(value: #enum_name_tokens #generic_param_tokens) -> Self {
+        impl #unbounded_param_tokens DamlSerializeFrom<#enum_name_tokens #unbounded_param_tokens> for DamlValue #serialize_where_tokens {
+            fn serialize_from(value: #enum_name_tokens #unbounded_param_tokens) -> Self {
                 match value {
                     #( #all_match_arms ),*
                 }
@@ -79,13 +81,13 @@ fn quote_deserialize_trait_impl(
     type_arguments: &[DamlTypeVar<'_>],
 ) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(enum_name);
-    let generic_param_tokens = quote_generic_param_list(type_arguments);
-    let generic_trail_bounds_tokens = quote_deserialize_generic_trait_bounds(type_arguments);
+    let unbounded_param_tokens = quote_unbounded_params(type_arguments);
+    let deserialize_where_tokens = quote_deserialize_where(type_arguments);
     let all_match_arms: Vec<_> =
         enum_variants.iter().map(|enum_variant| quote_try_from_trait_match_arm(enum_name, enum_variant)).collect();
     let all_enum_variant_types_string = enum_variants.iter().join(", ");
     quote!(
-        impl #generic_param_tokens DamlDeserializeFrom for #enum_name_tokens #generic_param_tokens #generic_trail_bounds_tokens {
+        impl #unbounded_param_tokens DamlDeserializeFrom for #enum_name_tokens #unbounded_param_tokens #deserialize_where_tokens {
             fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
                 let enum_variant = value.try_take_enum()?;
                 match enum_variant.constructor() {

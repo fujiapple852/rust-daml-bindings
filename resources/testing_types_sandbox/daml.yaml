@@ -1,4 +1,4 @@
-sdk-version: 1.0.0
+sdk-version: 1.0.1
 name: TestingTypes
 source: daml/LibraryModules.daml
 parties:
@@ -14,6 +14,8 @@ exposed-modules:
   - DA.PingPong
   - DA.Vehicle
   - DA.MyVar
+  - DA.NumericTest
+  - DA.HigherKindTest
   - LibraryModules
 dependencies:
   - daml-prim

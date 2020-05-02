@@ -5,10 +5,11 @@ use quote::quote;
 
 use crate::generator::ModuleMatcher;
 use crate::generator::RenderMethod;
-use crate::renderer::{quote_all_data, quote_escaped_ident, to_module_path};
+use crate::renderer::{quote_all_data, quote_escaped_ident, to_module_path, RenderContext};
 use daml_lf::element::DamlModule;
 
 pub fn quote_module_tree(
+    ctx: &RenderContext<'_>,
     name: &str,
     module: &DamlModule<'_>,
     module_matcher: &ModuleMatcher,
@@ -18,14 +19,14 @@ pub fn quote_module_tree(
     let all_children: Vec<_> = module
         .child_modules
         .values()
-        .map(|child| quote_module_tree(child.name(), child, module_matcher, render_method))
+        .map(|child| quote_module_tree(ctx, child.name(), child, module_matcher, render_method))
         .collect();
     let all_empty_children = all_children.iter().all(TokenStream::is_empty);
     if !is_included_module && all_empty_children {
         quote!()
     } else {
         let module_tokens = if is_included_module {
-            quote_all_data(module.data_types.values().collect::<Vec<_>>().as_slice(), render_method)
+            quote_all_data(ctx, module.data_types.values().collect::<Vec<_>>().as_slice(), render_method)
         } else {
             quote!()
         };

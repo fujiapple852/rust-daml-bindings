@@ -9,8 +9,10 @@ use crate::util::Required;
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 
+use crate::nat::Nat;
 use crate::primitive_types::{
-    DamlBool, DamlContractId, DamlDate, DamlInt64, DamlNumeric, DamlParty, DamlText, DamlTimestamp, DamlUnit,
+    DamlBool, DamlContractId, DamlDate, DamlFixedNumeric, DamlInt64, DamlNumeric, DamlParty, DamlText, DamlTimestamp,
+    DamlUnit,
 };
 use crate::serialize::{
     DamlDeserializableType, DamlDeserializeFrom, DamlDeserializeInto, DamlSerializableType, DamlSerializeFrom,
@@ -489,9 +491,12 @@ impl DamlSerializeFrom<DamlContractId> for DamlValue {
     }
 }
 
-impl DamlSerializeFrom<DamlNumeric> for DamlValue {
-    fn serialize_from(numeric: DamlNumeric) -> DamlValue {
-        Self::new_numeric(numeric)
+impl<T> DamlSerializeFrom<DamlFixedNumeric<T>> for DamlValue
+where
+    T: DamlSerializableType + Nat,
+{
+    fn serialize_from(numeric: DamlFixedNumeric<T>) -> DamlValue {
+        Self::new_numeric(numeric.value)
     }
 }
 
@@ -598,10 +603,13 @@ impl DamlDeserializeFrom for DamlContractId {
     }
 }
 
-impl DamlDeserializeFrom for DamlNumeric {
+impl<T> DamlDeserializeFrom for DamlFixedNumeric<T>
+where
+    T: DamlDeserializableType + Nat,
+{
     fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
         match value {
-            DamlValue::Numeric(numeric) => Ok(numeric),
+            DamlValue::Numeric(numeric) => Ok(DamlFixedNumeric::new(numeric)),
             _ => Err(value.make_unexpected_type_error("Numeric")),
         }
     }

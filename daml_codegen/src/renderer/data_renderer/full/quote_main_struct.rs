@@ -3,23 +3,28 @@ use proc_macro2::TokenStream;
 use quote::quote;
 
 use crate::renderer::data_renderer::full::{
-    quote_deserialize_generic_trait_bounds, quote_generic_param_list, quote_method_arguments,
-    quote_serialize_generic_trait_bounds,
+    quote_bounded_params, quote_deserialize_where, quote_method_arguments, quote_serialize_where,
+    quote_unbounded_params,
 };
+use crate::renderer::render_context::RenderContext;
 use crate::renderer::type_renderer::quote_type;
-use crate::renderer::{
-    is_supported_type, make_ignored_ident, normalize_generic_param, quote_escaped_ident, quote_ident,
-};
+use crate::renderer::{make_ignored_ident, normalize_generic_param, quote_escaped_ident, quote_ident, IsRenderable};
 use daml_lf::element::{DamlField, DamlRecord, DamlType, DamlTypeVar};
 
 /// Generate the `Foo` struct and methods.
-pub fn quote_daml_record(daml_record: &DamlRecord<'_>) -> TokenStream {
-    quote_daml_record_and_impl(daml_record.name, &daml_record.fields, &daml_record.type_arguments)
+pub fn quote_daml_record(ctx: &RenderContext<'_>, daml_record: &DamlRecord<'_>) -> TokenStream {
+    quote_daml_record_and_impl(ctx, daml_record.name, &daml_record.fields, &daml_record.type_arguments)
 }
 
 /// Generate the `Foo` struct and methods.
-pub fn quote_daml_record_and_impl(name: &str, fields: &[DamlField<'_>], params: &[DamlTypeVar<'_>]) -> TokenStream {
-    let supported_fields: Vec<_> = fields.iter().filter(|&field| is_supported_type(&field.ty)).collect();
+pub fn quote_daml_record_and_impl(
+    ctx: &RenderContext<'_>,
+    name: &str,
+    fields: &[DamlField<'_>],
+    params: &[DamlTypeVar<'_>],
+) -> TokenStream {
+    let supported_fields: Vec<_> =
+        fields.iter().filter(|&field| IsRenderable::new(ctx).check_type(&field.ty)).collect();
     let struct_tokens = quote_struct(name, &supported_fields, params);
     let new_method_tokens = quote_new_method(name, &supported_fields, params);
     let serialize_trait_impl_tokens = quote_serialize_trait_impl(name, &supported_fields, params);
@@ -35,17 +40,18 @@ pub fn quote_daml_record_and_impl(name: &str, fields: &[DamlField<'_>], params: 
 /// Generate `struct Foo {...}` struct.
 fn quote_struct(struct_name: &str, struct_fields: &[&DamlField<'_>], params: &[DamlTypeVar<'_>]) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
-    let generic_param_tokens = quote_generic_param_list(params);
+    let bounded_param_tokens = quote_bounded_params(params);
+    let unbounded_param_tokens = quote_unbounded_params(params);
     let body_tokens = quote_struct_body(struct_fields);
     let phantom_tokens = quote_decl_unused_phantom_params(params, struct_fields);
     quote!(
         #[derive(Eq, PartialEq, Clone, Debug)]
-        pub struct #struct_name_tokens #generic_param_tokens {
+        pub struct #struct_name_tokens #bounded_param_tokens {
             #body_tokens
             #phantom_tokens
         }
-        impl #generic_param_tokens DamlDeserializableType for #struct_name_tokens #generic_param_tokens {}
-        impl #generic_param_tokens DamlSerializableType for #struct_name_tokens #generic_param_tokens {}
+        impl #bounded_param_tokens DamlDeserializableType for #struct_name_tokens #unbounded_param_tokens {}
+        impl #bounded_param_tokens DamlSerializableType for #struct_name_tokens #unbounded_param_tokens {}
     )
 }
 
@@ -54,10 +60,11 @@ fn quote_new_method(struct_name: &str, struct_fields: &[&DamlField<'_>], params:
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let method_arguments_tokens = quote_method_arguments(struct_fields);
     let method_body_tokens = quote_new_method_init(struct_fields);
-    let generic_param_tokens = quote_generic_param_list(params);
+    let bounded_param_tokens = quote_bounded_params(params);
+    let unbounded_param_tokens = quote_unbounded_params(params);
     let method_phantom_tokens = quote_init_unused_phantom_params(params, struct_fields);
     quote! {
-        impl #generic_param_tokens #struct_name_tokens #generic_param_tokens {
+        impl #bounded_param_tokens #struct_name_tokens #unbounded_param_tokens {
             pub fn new( #method_arguments_tokens ) -> Self {
                 Self {
                     #method_body_tokens
@@ -75,12 +82,12 @@ fn quote_serialize_trait_impl(
     params: &[DamlTypeVar<'_>],
 ) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
-    let generic_param_tokens = quote_generic_param_list(params);
-    let generic_trail_bounds_tokens = quote_serialize_generic_trait_bounds(params);
+    let unbounded_param_tokens = quote_unbounded_params(params);
+    let serialize_where_tokens = quote_serialize_where(params);
     let body_tokens = quote_serialize_impl_body(struct_fields);
     quote!(
-        impl #generic_param_tokens DamlSerializeFrom<#struct_name_tokens #generic_param_tokens> for DamlValue #generic_trail_bounds_tokens {
-            fn serialize_from(value: #struct_name_tokens #generic_param_tokens) -> Self {
+        impl #unbounded_param_tokens DamlSerializeFrom<#struct_name_tokens #unbounded_param_tokens> for DamlValue #serialize_where_tokens {
+            fn serialize_from(value: #struct_name_tokens #unbounded_param_tokens) -> Self {
                 #body_tokens
             }
         }
@@ -94,11 +101,11 @@ fn quote_deserialize_trait_impl(
     params: &[DamlTypeVar<'_>],
 ) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
-    let generic_param_tokens = quote_generic_param_list(params);
-    let generic_trail_bounds_tokens = quote_deserialize_generic_trait_bounds(params);
+    let unbounded_param_tokens = quote_unbounded_params(params);
+    let deserialize_where_tokens = quote_deserialize_where(params);
     let body_tokens = quote_deserialize_trait_impl_body(struct_fields);
     quote!(
-        impl #generic_param_tokens DamlDeserializeFrom for #struct_name_tokens #generic_param_tokens #generic_trail_bounds_tokens {
+        impl #unbounded_param_tokens DamlDeserializeFrom for #struct_name_tokens #unbounded_param_tokens #deserialize_where_tokens {
             fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
                 #body_tokens
             }

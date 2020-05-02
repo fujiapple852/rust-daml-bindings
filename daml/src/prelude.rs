@@ -5,6 +5,7 @@ pub use daml_api::data::value::{DamlEnum, DamlRecord, DamlRecordField, DamlValue
 pub use daml_api::data::DamlError;
 pub use daml_api::data::DamlIdentifier;
 pub use daml_api::data::DamlResult;
+pub use daml_api::nat::*;
 pub use daml_api::primitive_types::*;
 pub use daml_api::serialize::{DamlDeserializableType, DamlDeserializeFrom, DamlDeserializeInto};
 pub use daml_api::serialize::{DamlSerializableType, DamlSerializeFrom, DamlSerializeInto};

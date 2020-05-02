@@ -7,7 +7,7 @@ use serde::Serialize;
 pub enum DamlType<'a> {
     ContractId(Option<DamlDataRef<'a>>),
     Int64,
-    Numeric,
+    Numeric(Box<DamlType<'a>>),
     Text,
     Timestamp,
     Party,
@@ -15,16 +15,17 @@ pub enum DamlType<'a> {
     Unit,
     Date,
     List(Box<DamlType<'a>>),
-    Update,
-    Scenario,
     TextMap(Box<DamlType<'a>>),
     Optional(Box<DamlType<'a>>),
     DataRef(DamlDataRef<'a>),
     BoxedDataRef(DamlDataRef<'a>),
     Var(DamlVar<'a>),
+    Nat(u8),
     Arrow,
     Any,
     TypeRep,
+    Update,
+    Scenario,
 }
 
 impl<'a> DamlType<'a> {
@@ -32,7 +33,7 @@ impl<'a> DamlType<'a> {
         match self {
             DamlType::ContractId(_) => "DamlContractId",
             DamlType::Int64 => "DamlInt64",
-            DamlType::Numeric => "DamlNumeric",
+            DamlType::Numeric(_) => "DamlFixedNumeric",
             DamlType::Text => "DamlText",
             DamlType::Timestamp => "DamlTimestamp",
             DamlType::Party => "DamlParty",
@@ -50,6 +51,7 @@ impl<'a> DamlType<'a> {
             DamlType::Arrow => "None (Arrow)",
             DamlType::Any => "None (Any)",
             DamlType::TypeRep => "None (TypeRep)",
+            DamlType::Nat(_) => "Nat",
         }
     }
 
@@ -68,14 +70,13 @@ impl<'a> DamlType<'a> {
                 var,
                 ..
             }) => var == type_var,
-            DamlType::List(inner) | DamlType::TextMap(inner) | DamlType::Optional(inner) =>
+            DamlType::List(inner) | DamlType::TextMap(inner) | DamlType::Optional(inner) | DamlType::Numeric(inner) =>
                 inner.contains_type_var(type_var),
             DamlType::ContractId(data_ref) =>
                 data_ref.as_ref().map_or(false, |dr| data_ref_contains_type_var(dr, type_var)),
             DamlType::DataRef(data_ref) | DamlType::BoxedDataRef(data_ref) =>
                 data_ref_contains_type_var(data_ref, type_var),
             DamlType::Int64
-            | DamlType::Numeric
             | DamlType::Text
             | DamlType::Timestamp
             | DamlType::Party
@@ -86,7 +87,8 @@ impl<'a> DamlType<'a> {
             | DamlType::Scenario
             | DamlType::Arrow
             | DamlType::Any
-            | DamlType::TypeRep => false,
+            | DamlType::TypeRep
+            | DamlType::Nat(_) => false,
         }
     }
 }
@@ -96,11 +98,11 @@ impl<'a> DamlVisitableElement<'a> for DamlType<'a> {
         visitor.pre_visit_type(self);
         match self {
             DamlType::Var(var) => var.accept(visitor),
-            DamlType::List(inner) | DamlType::TextMap(inner) | DamlType::Optional(inner) => inner.accept(visitor),
+            DamlType::List(inner) | DamlType::TextMap(inner) | DamlType::Optional(inner) | DamlType::Numeric(inner) =>
+                inner.accept(visitor),
             DamlType::ContractId(data_ref) => data_ref.as_ref().map_or_else(|| {}, |dr| dr.accept(visitor)),
             DamlType::DataRef(data_ref) | DamlType::BoxedDataRef(data_ref) => data_ref.accept(visitor),
             DamlType::Int64
-            | DamlType::Numeric
             | DamlType::Text
             | DamlType::Timestamp
             | DamlType::Party
@@ -111,7 +113,8 @@ impl<'a> DamlVisitableElement<'a> for DamlType<'a> {
             | DamlType::Scenario
             | DamlType::Arrow
             | DamlType::Any
-            | DamlType::TypeRep => {},
+            | DamlType::TypeRep
+            | DamlType::Nat(_) => {},
         }
         visitor.post_visit_type(self);
     }
@@ -122,6 +125,25 @@ pub enum DamlDataRef<'a> {
     Local(DamlLocalDataRef<'a>),
     NonLocal(DamlNonLocalDataRef<'a>),
     Absolute(DamlAbsoluteDataRef<'a>),
+}
+
+impl<'a> DamlDataRef<'a> {
+    pub fn reference_parts(&self) -> (&str, &[&str], &str) {
+        match self {
+            DamlDataRef::Local(local) => (local.package_name, &local.module_path, local.data_name),
+            DamlDataRef::NonLocal(non_local) =>
+                (non_local.target_package_name, &non_local.target_module_path, non_local.data_name),
+            DamlDataRef::Absolute(abs) => (abs.package_name, &abs.module_path, abs.data_name),
+        }
+    }
+
+    pub fn type_arguments(&self) -> &[DamlType<'_>] {
+        match self {
+            DamlDataRef::Local(local) => &local.type_arguments,
+            DamlDataRef::NonLocal(non_local) => &non_local.type_arguments,
+            DamlDataRef::Absolute(abs) => &abs.type_arguments,
+        }
+    }
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlDataRef<'a> {

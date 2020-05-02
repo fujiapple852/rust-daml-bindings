@@ -1,7 +1,8 @@
 use crate::data::value::DamlValue;
 use crate::data::DamlResult;
+use crate::nat::Nat;
 use crate::primitive_types::{
-    DamlBool, DamlContractId, DamlDate, DamlInt64, DamlNumeric, DamlParty, DamlText, DamlTimestamp, DamlUnit,
+    DamlBool, DamlContractId, DamlDate, DamlFixedNumeric, DamlInt64, DamlParty, DamlText, DamlTimestamp, DamlUnit,
 };
 use std::collections::HashMap;
 
@@ -14,9 +15,9 @@ impl DamlSerializableType for DamlInt64 {}
 impl DamlSerializableType for DamlText {}
 impl DamlSerializableType for DamlParty {}
 impl DamlSerializableType for DamlContractId {}
-impl DamlSerializableType for DamlNumeric {}
 impl DamlSerializableType for DamlTimestamp {}
 impl DamlSerializableType for DamlDate {}
+impl<T> DamlSerializableType for DamlFixedNumeric<T> where T: DamlSerializableType + Nat {}
 impl<T> DamlSerializableType for Box<T> where T: DamlSerializeInto<DamlValue> + DamlSerializableType {}
 impl<T> DamlSerializableType for Option<T> where T: DamlSerializeInto<DamlValue> + DamlSerializableType {}
 impl<T> DamlSerializableType for Vec<T> where T: DamlSerializeInto<DamlValue> + DamlSerializableType {}
@@ -76,9 +77,9 @@ impl DamlDeserializableType for DamlInt64 {}
 impl DamlDeserializableType for DamlText {}
 impl DamlDeserializableType for DamlParty {}
 impl DamlDeserializableType for DamlContractId {}
-impl DamlDeserializableType for DamlNumeric {}
 impl DamlDeserializableType for DamlTimestamp {}
 impl DamlDeserializableType for DamlDate {}
+impl<T> DamlDeserializableType for DamlFixedNumeric<T> where T: DamlDeserializableType + Nat {}
 impl<T> DamlDeserializableType for Box<T> where T: DamlDeserializeFrom + DamlDeserializableType {}
 impl<T> DamlDeserializableType for Option<T> where T: DamlDeserializeFrom + DamlDeserializableType {}
 impl<T> DamlDeserializableType for Vec<T> where T: DamlDeserializeFrom + DamlDeserializableType {}

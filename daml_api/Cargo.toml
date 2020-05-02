@@ -33,7 +33,7 @@ serde_json = "1.0"
 jsonwebtoken = "7"
 
 [dev-dependencies]
-daml = { path = "../daml", features = [ "util" ] }
+daml = { path = "../daml", features = [ "lf", "util" ] }
 tokio = { version = "0.2", features = [ "macros" ] }
 parking_lot = "0.10"
 

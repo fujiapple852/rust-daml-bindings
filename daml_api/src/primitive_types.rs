@@ -1,13 +1,19 @@
+use crate::data::DamlError;
+use crate::nat::{Nat, Nat10};
 use bigdecimal::BigDecimal;
 use chrono::{Date, DateTime, Utc};
-use serde::export::Formatter;
+use serde::export::{Formatter, PhantomData};
 use std::collections::HashMap;
+use std::str::FromStr;
 
 /// Type alias for a DAML `Int`.
 pub type DamlInt64 = i64;
 
 /// Type alias for a DAML `Numeric`.
 pub type DamlNumeric = BigDecimal;
+
+/// Type alias for a Daml `Numeric 10`
+pub type DamlNumeric10 = DamlFixedNumeric<Nat10>;
 
 /// Type alias for a DAML `Text`.
 pub type DamlText = String;
@@ -150,5 +156,36 @@ impl PartialEq<&str> for DamlContractId {
 impl std::fmt::Display for DamlContractId {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         self.contract_id.fmt(f)
+    }
+}
+
+/// A fixed precision numeric type.  Currently a simple wrapper around a `BigDecimal`.
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct DamlFixedNumeric<T: Nat> {
+    pub _phantom: PhantomData<T>,
+    pub value: BigDecimal,
+}
+
+impl<T: Nat> DamlFixedNumeric<T> {
+    pub fn new(value: BigDecimal) -> Self {
+        Self {
+            _phantom: PhantomData::<T>::default(),
+            value,
+        }
+    }
+}
+
+// TODO to make this a proper newtype what other methods do we want to add?
+impl<T: Nat> From<f64> for DamlFixedNumeric<T> {
+    fn from(f: f64) -> Self {
+        Self::new(f.into())
+    }
+}
+
+impl<T: Nat> FromStr for DamlFixedNumeric<T> {
+    type Err = DamlError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::new(FromStr::from_str(s)?))
     }
 }
