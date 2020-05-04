@@ -83,7 +83,7 @@ pub fn test_daml_sdk_1_0_0() -> DamlLfResult<()> {
 #[test]
 fn test_apply_dar() -> DamlLfResult<()> {
     let dar = DarFile::from_file("test_resources/TestingTypes-1_0_0-sdk_0_13_55-lf_1_8.dar")?;
-    let name = dar.apply(|archive| archive.name.to_owned())?;
+    let name = dar.apply(|archive| archive.name().to_owned())?;
     assert_eq!("TestingTypes-1.0.0", name);
     Ok(())
 }
@@ -95,7 +95,7 @@ fn test_apply_dalf() -> DamlLfResult<()> {
         .dependencies
         .first()
         .unwrap()
-        .apply(|package| (package.name.to_owned(), package.version.map(ToOwned::to_owned).unwrap()))?;
+        .apply(|package| (package.name().to_owned(), package.version().map(ToOwned::to_owned).unwrap()))?;
     assert_eq!("daml-prim", name);
     assert_eq!("0.0.0", version);
     Ok(())
@@ -105,7 +105,8 @@ fn test_apply_dalf() -> DamlLfResult<()> {
 fn test_apply_payload() -> DamlLfResult<()> {
     let mut dar = DarFile::from_file("test_resources/TestingTypes-1_0_0-sdk_0_13_55-lf_1_8.dar")?;
     let payload = dar.dependencies.swap_remove(0).payload;
-    let (name, version) = payload.apply(|package| (package.name.to_owned(), package.version.map(ToOwned::to_owned)))?;
+    let (name, version) =
+        payload.apply(|package| (package.name().to_owned(), package.version().map(ToOwned::to_owned)))?;
     assert_eq!("daml-prim", name);
     assert_eq!(Some("0.0.0".to_owned()), version);
     Ok(())
@@ -117,7 +118,7 @@ fn test_visitor() -> DamlLfResult<()> {
     pub struct GatherEnumsVisitor(HashSet<String>);
     impl DamlElementVisitor for GatherEnumsVisitor {
         fn pre_visit_enum<'a>(&mut self, data_enum: &'a DamlEnum<'a>) {
-            self.0.insert(data_enum.name.to_owned());
+            self.0.insert(data_enum.name().to_owned());
         }
     }
     let mut visitor = GatherEnumsVisitor::default();

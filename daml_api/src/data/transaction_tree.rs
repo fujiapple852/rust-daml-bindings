@@ -10,16 +10,16 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 
 /// A DAML ledger transaction tree.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlTransactionTree {
-    pub transaction_id: String,
-    pub command_id: String,
-    pub workflow_id: String,
-    pub effective_at: DateTime<Utc>,
-    pub offset: String,
-    pub events_by_id: HashMap<String, DamlTreeEvent>,
-    pub root_event_ids: Vec<String>,
-    pub trace_context: Option<DamlTraceContext>,
+    transaction_id: String,
+    command_id: String,
+    workflow_id: String,
+    effective_at: DateTime<Utc>,
+    offset: String,
+    events_by_id: HashMap<String, DamlTreeEvent>,
+    root_event_ids: Vec<String>,
+    trace_context: Option<DamlTraceContext>,
 }
 
 impl DamlTransactionTree {

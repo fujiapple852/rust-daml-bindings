@@ -14,9 +14,9 @@ async fn test_get_time_model() -> TestResult {
     let ledger_client = new_wallclock_sandbox().await?;
     let (configuration_generation, time_model) = ledger_client.config_management_service().get_time_model().await?;
     assert_eq!(0, configuration_generation);
-    assert_eq!(Duration::from_secs(0), time_model.avg_transaction_latency);
-    assert_eq!(Duration::from_secs(30), time_model.min_skew);
-    assert_eq!(Duration::from_secs(30), time_model.max_skew);
+    assert_eq!(Duration::from_secs(0), *time_model.avg_transaction_latency());
+    assert_eq!(Duration::from_secs(30), *time_model.min_skew());
+    assert_eq!(Duration::from_secs(30), *time_model.max_skew());
     Ok(())
 }
 
@@ -38,8 +38,8 @@ async fn test_set_time_model() -> TestResult {
     let (fetch_configuration_generation, fetch_time_model) =
         ledger_client.config_management_service().get_time_model().await?;
     assert_eq!(1, fetch_configuration_generation);
-    assert_eq!(Duration::from_secs(0), fetch_time_model.avg_transaction_latency);
-    assert_eq!(Duration::from_secs(30), fetch_time_model.min_skew);
-    assert_eq!(Duration::from_secs(30), fetch_time_model.max_skew);
+    assert_eq!(Duration::from_secs(0), *fetch_time_model.avg_transaction_latency());
+    assert_eq!(Duration::from_secs(30), *fetch_time_model.min_skew());
+    assert_eq!(Duration::from_secs(30), *fetch_time_model.max_skew());
     Ok(())
 }

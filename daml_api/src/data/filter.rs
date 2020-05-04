@@ -2,9 +2,9 @@ use crate::data::identifier::DamlIdentifier;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{Filters, InclusiveFilters, TransactionFilter};
 use std::collections::hash_map::HashMap;
 
-#[derive(Debug, Eq, PartialEq, Default)]
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct DamlFilters {
-    pub template_ids: Vec<DamlIdentifier>,
+    template_ids: Vec<DamlIdentifier>,
 }
 
 impl DamlFilters {
@@ -31,7 +31,7 @@ impl From<DamlFilters> for Filters {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Default)]
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct DamlTransactionFilter {
     filters_by_party: HashMap<String, DamlFilters>,
 }

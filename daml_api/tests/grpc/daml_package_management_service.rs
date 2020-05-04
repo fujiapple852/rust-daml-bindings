@@ -2,6 +2,7 @@ use crate::common::ping_pong::{
     create_test_uuid, new_wallclock_sandbox, TestResult, SUBMISSION_ID_PREFIX, WALLCLOCK_SANDBOX_LOCK,
 };
 use daml::lf::DarFile;
+use daml_api::data::package::DamlPackageDetails;
 use std::io::Read;
 
 #[tokio::test]
@@ -27,7 +28,7 @@ async fn test_upload_dar_file() -> TestResult {
         .upload_dar_file(buffer, Some(create_test_uuid(SUBMISSION_ID_PREFIX)))
         .await?;
     let known_packages = ledger_client.package_management_service().list_known_packages().await?;
-    let found = known_packages.into_iter().map(|p| p.package_id).find(|id| id == &main_package_id);
+    let found = known_packages.iter().map(DamlPackageDetails::package_id).find(|&id| id == main_package_id);
     assert!(found.is_some());
     Ok(())
 }

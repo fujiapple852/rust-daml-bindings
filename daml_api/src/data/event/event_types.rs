@@ -5,7 +5,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::{Event, TreeEvent};
 use std::convert::TryFrom;
 
 /// A DAML ledger event.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum DamlEvent {
     Created(Box<DamlCreatedEvent>),
     Archived(Box<DamlArchivedEvent>),
@@ -58,7 +58,7 @@ impl TryFrom<Event> for DamlEvent {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum DamlTreeEvent {
     Created(DamlCreatedEvent),
     Exercised(DamlExercisedEvent),

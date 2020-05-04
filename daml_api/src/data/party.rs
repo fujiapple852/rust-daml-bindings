@@ -1,11 +1,11 @@
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::PartyDetails;
 
 /// The details of a DAML party.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlPartyDetails {
-    pub party: String,
-    pub display_name: String,
-    pub is_local: bool,
+    party: String,
+    display_name: String,
+    is_local: bool,
 }
 
 impl DamlPartyDetails {

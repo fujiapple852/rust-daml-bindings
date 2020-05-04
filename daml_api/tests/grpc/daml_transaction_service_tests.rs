@@ -56,7 +56,7 @@ async fn test_get_transaction_trees() -> TestResult {
         &application_id,
         &workflow_id,
         &create_test_uuid(COMMAND_ID_PREFIX),
-        &ping_created_event.contract_id,
+        ping_created_event.contract_id(),
     )
     .await?;
     let exercised_transactions: Vec<DamlTransactionTree> =
@@ -141,7 +141,7 @@ async fn test_get_transaction_by_id() -> TestResult {
     create_ping_contract(&ledger_client, &package_id, &application_id, &workflow_id, &command_id, 0).await?;
     let expected_transaction_id = extract_first_transaction_id(&ledger_client).await?;
     let transaction =
-        ledger_client.transaction_service().get_transaction_by_id(&expected_transaction_id, parties).await?;
+        ledger_client.transaction_service().get_transaction_by_id(expected_transaction_id, parties).await?;
     let event = match transaction.events_by_id().values().collect::<Vec<_>>().as_slice() {
         [DamlTreeEvent::Created(evt)] => evt,
         _ => panic!(),
@@ -208,7 +208,7 @@ async fn test_get_flat_transaction_by_id() -> TestResult {
     let expected_transaction_id = extract_first_transaction_id(&ledger_client).await?;
 
     let transaction =
-        ledger_client.transaction_service().get_flat_transaction_by_id(&expected_transaction_id, parties).await?;
+        ledger_client.transaction_service().get_flat_transaction_by_id(expected_transaction_id, parties).await?;
     let event = match &transaction.events() {
         [DamlEvent::Created(e)] => e,
         _ => panic!(),
@@ -257,11 +257,11 @@ async fn extract_first_created_event(ledger_client: &DamlLedgerClient) -> DamlRe
 }
 
 async fn extract_first_created_event_id(ledger_client: &DamlLedgerClient) -> DamlResult<String> {
-    let mut first_tx = extract_first_created_event(ledger_client).await?;
-    if first_tx.events.len() == 1 {
-        let first_event = first_tx.events.swap_remove(0);
+    let first_tx = extract_first_created_event(ledger_client).await?;
+    if first_tx.events().len() == 1 {
+        let first_event = first_tx.take_events().swap_remove(0);
         match first_event {
-            DamlEvent::Created(evt) => Ok(evt.event_id.to_owned()),
+            DamlEvent::Created(evt) => Ok(evt.event_id().to_owned()),
             _ => Err(DamlError::Other("expected Created event".to_string())),
         }
     } else {
@@ -270,5 +270,5 @@ async fn extract_first_created_event_id(ledger_client: &DamlLedgerClient) -> Dam
 }
 
 async fn extract_first_transaction_id(ledger_client: &DamlLedgerClient) -> DamlResult<String> {
-    Ok(extract_first_created_event(ledger_client).await?.transaction_id)
+    Ok(extract_first_created_event(ledger_client).await?.transaction_id().to_owned())
 }

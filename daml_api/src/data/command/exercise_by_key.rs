@@ -4,12 +4,12 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::command::Command;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::ExerciseByKeyCommand;
 
 /// Exercise a choice on an existing contract specified by its key.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlExerciseByKeyCommand {
-    pub template_id: DamlIdentifier,
-    pub contract_key: DamlValue,
-    pub choice: String,
-    pub choice_argument: DamlValue,
+    template_id: DamlIdentifier,
+    contract_key: DamlValue,
+    choice: String,
+    choice_argument: DamlValue,
 }
 
 impl DamlExerciseByKeyCommand {

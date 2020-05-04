@@ -1,7 +1,7 @@
 use daml::api::data::command::DamlCreateCommand;
 use daml::api::data::DamlResult;
 use daml::api::{DamlLedgerClient, DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
-use daml::prelude::DamlExerciseCommand;
+use daml::prelude::{DamlExerciseCommand, DamlIdentifier};
 use daml::util::package::find_module_package_id;
 use std::error::Error;
 use std::sync::Mutex;
@@ -30,20 +30,33 @@ pub async fn new_static_sandbox() -> DamlResult<DamlLedgerClient> {
 
 pub async fn update_exercise_command_package_id_for_testing(
     ledger_client: &DamlLedgerClient,
-    mut exercise_command: DamlExerciseCommand,
+    exercise_command: DamlExerciseCommand,
 ) -> std::result::Result<DamlExerciseCommand, Box<dyn Error>> {
-    exercise_command.template_id.package_id =
-        find_module_package_id(ledger_client, exercise_command.template_id().module_name()).await?;
-    Ok(exercise_command)
+    let new_template_id = find_and_replace_package_id(ledger_client, exercise_command.template_id()).await?;
+    let modified_exercise_command = DamlExerciseCommand::new(
+        new_template_id,
+        exercise_command.contract_id(),
+        exercise_command.choice(),
+        exercise_command.choice_argument().clone(),
+    );
+    Ok(modified_exercise_command)
 }
 
 pub async fn update_create_command_package_id_for_testing(
     ledger_client: &DamlLedgerClient,
-    mut create_command: DamlCreateCommand,
+    create_command: DamlCreateCommand,
 ) -> std::result::Result<DamlCreateCommand, Box<dyn Error>> {
-    create_command.template_id.package_id =
-        find_module_package_id(ledger_client, create_command.template_id().module_name()).await?;
-    Ok(create_command)
+    let new_template_id = find_and_replace_package_id(ledger_client, create_command.template_id()).await?;
+    let modified_create_command = DamlCreateCommand::new(new_template_id, create_command.create_arguments().clone());
+    Ok(modified_create_command)
+}
+
+async fn find_and_replace_package_id(
+    ledger_client: &DamlLedgerClient,
+    template_id: &DamlIdentifier,
+) -> std::result::Result<DamlIdentifier, Box<dyn Error>> {
+    let module_package_id = find_module_package_id(ledger_client, template_id.module_name()).await?;
+    Ok(DamlIdentifier::new(module_package_id, template_id.module_name(), template_id.entity_name()))
 }
 
 fn make_ec256_token() -> DamlResult<String> {

@@ -11,11 +11,11 @@ use daml_lf::element::{DamlEnum, DamlTypeVar};
 
 /// Generate the `enum` and the `From` and `TryFrom` impls.
 pub fn quote_daml_enum(_ctx: &RenderContext<'_>, daml_enum: &DamlEnum<'_>) -> TokenStream {
-    let enum_tokens = quote_enum(daml_enum.name, daml_enum.constructors.as_slice(), &daml_enum.type_arguments);
+    let enum_tokens = quote_enum(daml_enum.name(), daml_enum.constructors(), daml_enum.type_arguments());
     let serialize_impl_tokens =
-        quote_serialize_trait_impl(daml_enum.name, daml_enum.constructors.as_slice(), &daml_enum.type_arguments);
+        quote_serialize_trait_impl(daml_enum.name(), daml_enum.constructors(), daml_enum.type_arguments());
     let deserialize_trait_impl_tokens =
-        quote_deserialize_trait_impl(daml_enum.name, daml_enum.constructors.as_slice(), &daml_enum.type_arguments);
+        quote_deserialize_trait_impl(daml_enum.name(), daml_enum.constructors(), daml_enum.type_arguments());
     quote!(
         #enum_tokens
         #serialize_impl_tokens

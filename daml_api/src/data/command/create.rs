@@ -4,10 +4,10 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::command::Command;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::CreateCommand;
 
 /// Create a new contract instance based on a template.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlCreateCommand {
-    pub template_id: DamlIdentifier,
-    pub create_arguments: DamlRecord,
+    template_id: DamlIdentifier,
+    create_arguments: DamlRecord,
 }
 
 /// Create a new contract instance based on a template.

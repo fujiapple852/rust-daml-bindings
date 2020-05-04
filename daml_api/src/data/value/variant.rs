@@ -7,9 +7,9 @@ use std::convert::TryFrom;
 /// A representation of a DAML variant field.
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Ord, PartialOrd)]
 pub struct DamlVariant {
-    pub variant_id: Option<DamlIdentifier>,
-    pub constructor: String,
-    pub value: Box<DamlValue>,
+    variant_id: Option<DamlIdentifier>,
+    constructor: String,
+    value: Box<DamlValue>,
 }
 
 impl DamlVariant {

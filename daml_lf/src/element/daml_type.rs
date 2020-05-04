@@ -3,7 +3,7 @@ use crate::element::DamlVisitableElement;
 use serde::Serialize;
 
 /// Representation of a DAML type.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub enum DamlType<'a> {
     ContractId(Option<DamlDataRef<'a>>),
     Int64,
@@ -120,7 +120,7 @@ impl<'a> DamlVisitableElement<'a> for DamlType<'a> {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub enum DamlDataRef<'a> {
     Local(DamlLocalDataRef<'a>),
     NonLocal(DamlNonLocalDataRef<'a>),
@@ -158,12 +158,12 @@ impl<'a> DamlVisitableElement<'a> for DamlDataRef<'a> {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct DamlLocalDataRef<'a> {
-    pub data_name: &'a str,
-    pub package_name: &'a str,
-    pub module_path: Vec<&'a str>,
-    pub type_arguments: Vec<DamlType<'a>>,
+    data_name: &'a str,
+    package_name: &'a str,
+    module_path: Vec<&'a str>,
+    type_arguments: Vec<DamlType<'a>>,
 }
 
 impl<'a> DamlLocalDataRef<'a> {
@@ -180,6 +180,22 @@ impl<'a> DamlLocalDataRef<'a> {
             type_arguments,
         }
     }
+
+    pub const fn data_name(&self) -> &str {
+        self.data_name
+    }
+
+    pub const fn package_name(&self) -> &str {
+        self.package_name
+    }
+
+    pub fn module_path(&self) -> &[&str] {
+        &self.module_path
+    }
+
+    pub fn type_arguments(&self) -> &[DamlType<'a>] {
+        &self.type_arguments
+    }
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlLocalDataRef<'a> {
@@ -190,14 +206,14 @@ impl<'a> DamlVisitableElement<'a> for DamlLocalDataRef<'a> {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct DamlNonLocalDataRef<'a> {
-    pub data_name: &'a str,
-    pub source_package_name: &'a str,
-    pub source_module_path: Vec<&'a str>,
-    pub target_package_name: &'a str,
-    pub target_module_path: Vec<&'a str>,
-    pub type_arguments: Vec<DamlType<'a>>,
+    data_name: &'a str,
+    source_package_name: &'a str,
+    source_module_path: Vec<&'a str>,
+    target_package_name: &'a str,
+    target_module_path: Vec<&'a str>,
+    type_arguments: Vec<DamlType<'a>>,
 }
 
 impl<'a> DamlNonLocalDataRef<'a> {
@@ -218,6 +234,30 @@ impl<'a> DamlNonLocalDataRef<'a> {
             type_arguments,
         }
     }
+
+    pub const fn data_name(&self) -> &str {
+        self.data_name
+    }
+
+    pub const fn source_package_name(&self) -> &str {
+        self.source_package_name
+    }
+
+    pub fn source_module_path(&self) -> &[&str] {
+        &self.source_module_path
+    }
+
+    pub const fn target_package_name(&self) -> &str {
+        self.target_package_name
+    }
+
+    pub fn target_module_path(&self) -> &[&str] {
+        &self.target_module_path
+    }
+
+    pub fn type_arguments(&self) -> &[DamlType<'a>] {
+        &self.type_arguments
+    }
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlNonLocalDataRef<'a> {
@@ -228,12 +268,12 @@ impl<'a> DamlVisitableElement<'a> for DamlNonLocalDataRef<'a> {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct DamlAbsoluteDataRef<'a> {
-    pub data_name: &'a str,
-    pub package_name: &'a str,
-    pub module_path: Vec<&'a str>,
-    pub type_arguments: Vec<DamlType<'a>>,
+    data_name: &'a str,
+    package_name: &'a str,
+    module_path: Vec<&'a str>,
+    type_arguments: Vec<DamlType<'a>>,
 }
 
 impl<'a> DamlAbsoluteDataRef<'a> {
@@ -250,6 +290,22 @@ impl<'a> DamlAbsoluteDataRef<'a> {
             type_arguments,
         }
     }
+
+    pub const fn data_name(&self) -> &str {
+        self.data_name
+    }
+
+    pub const fn package_name(&self) -> &str {
+        self.package_name
+    }
+
+    pub fn module_path(&self) -> &[&str] {
+        &self.module_path
+    }
+
+    pub fn type_arguments(&self) -> &[DamlType<'a>] {
+        &self.type_arguments
+    }
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlAbsoluteDataRef<'a> {
@@ -260,10 +316,10 @@ impl<'a> DamlVisitableElement<'a> for DamlAbsoluteDataRef<'a> {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct DamlVar<'a> {
-    pub var: &'a str,
-    pub type_arguments: Vec<DamlType<'a>>,
+    var: &'a str,
+    type_arguments: Vec<DamlType<'a>>,
 }
 
 impl<'a> DamlVar<'a> {
@@ -272,6 +328,14 @@ impl<'a> DamlVar<'a> {
             var,
             type_arguments,
         }
+    }
+
+    pub const fn var(&self) -> &str {
+        self.var
+    }
+
+    pub fn type_arguments(&self) -> &[DamlType<'a>] {
+        &self.type_arguments
     }
 }
 

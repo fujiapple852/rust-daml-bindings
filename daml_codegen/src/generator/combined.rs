@@ -16,7 +16,7 @@ pub fn generate_archive_combined(
 ) -> Result<(), io::Error> {
     let rendered = quote_archive(archive, module_matcher, render_method).to_string();
     fs::create_dir_all(output_path)?;
-    let generated_filename = format!("{}.rs", to_rust_identifier(archive.name));
+    let generated_filename = format!("{}.rs", to_rust_identifier(archive.name()));
     let target = PathBuf::from(output_path).join(generated_filename);
     let mut output_file = File::create(target)?;
     output_file.write_all(rendered.as_bytes())?;

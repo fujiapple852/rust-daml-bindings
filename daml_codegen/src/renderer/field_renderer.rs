@@ -14,8 +14,8 @@ pub fn quote_fields(field: &[&DamlField<'_>]) -> TokenStream {
 }
 
 fn quote_field(field: &DamlField<'_>) -> TokenStream {
-    let name_tokens = quote_escaped_ident(field.name);
-    let type_tokens = quote_type(&field.ty);
+    let name_tokens = quote_escaped_ident(field.name());
+    let type_tokens = quote_type(field.ty());
     quote!(
         #name_tokens: #type_tokens
     )

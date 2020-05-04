@@ -146,7 +146,7 @@ impl CommandExecutor for DamlSimpleExecutor<'_> {
             .find_map(|(id, e)| {
                 if id == root_event_id {
                     match e {
-                        DamlTreeEvent::Exercised(exercised_event) => Some(exercised_event.exercise_result),
+                        DamlTreeEvent::Exercised(exercised_event) => Some(exercised_event.take_exercise_result()),
                         _ => None,
                     }
                 } else {

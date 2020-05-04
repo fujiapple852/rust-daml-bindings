@@ -5,18 +5,18 @@ use crate::util::Required;
 use std::convert::TryFrom;
 
 /// An event which represents exercising of a choice on a contract on a DAML ledger.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlExercisedEvent {
-    pub event_id: String,
-    pub contract_id: String,
-    pub template_id: DamlIdentifier,
-    pub choice: String,
-    pub choice_argument: DamlValue,
-    pub acting_parties: Vec<String>,
-    pub consuming: bool,
-    pub witness_parties: Vec<String>,
-    pub child_event_ids: Vec<String>,
-    pub exercise_result: DamlValue,
+    event_id: String,
+    contract_id: String,
+    template_id: DamlIdentifier,
+    choice: String,
+    choice_argument: DamlValue,
+    acting_parties: Vec<String>,
+    consuming: bool,
+    witness_parties: Vec<String>,
+    child_event_ids: Vec<String>,
+    exercise_result: DamlValue,
 }
 
 impl DamlExercisedEvent {
@@ -85,6 +85,10 @@ impl DamlExercisedEvent {
 
     pub const fn exercise_result(&self) -> &DamlValue {
         &self.exercise_result
+    }
+
+    pub fn take_exercise_result(self) -> DamlValue {
+        self.exercise_result
     }
 }
 

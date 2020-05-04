@@ -17,19 +17,19 @@ use std::str::FromStr;
 // * a composite string containing <block-hash>-<block-height>-<event-id>; ordering
 // requires comparing numerical values of the second, then the third element.
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum DamlLedgerOffsetType {
     Unbounded,
     Bounded(DamlLedgerOffset),
 }
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub enum DamlLedgerOffset {
     Absolute(u64),
     Boundary(DamlLedgerOffsetBoundary),
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub enum DamlLedgerOffsetBoundary {
     Begin,
     End,

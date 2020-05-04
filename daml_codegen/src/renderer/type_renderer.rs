@@ -24,7 +24,7 @@ pub fn quote_type(daml_type: &DamlType<'_>) -> TokenStream {
             quote!(Box<#data_ref>)
         },
         DamlType::Var(var) => {
-            let var_tokens = quote_ident(normalize_generic_param(var.var).to_uppercase());
+            let var_tokens = quote_ident(normalize_generic_param(var.var()).to_uppercase());
             quote!(#var_tokens)
         },
         DamlType::Nat(n) => quote_ident(format!("{}{}", daml_type.name(), n)),
@@ -43,20 +43,20 @@ pub fn quote_type(daml_type: &DamlType<'_>) -> TokenStream {
 pub fn quote_data_ref(data_ref: &DamlDataRef<'_>) -> TokenStream {
     match data_ref {
         DamlDataRef::Local(local_data_ref) => {
-            let target_type_tokens = quote_escaped_ident(&local_data_ref.data_name);
-            let type_arguments_tokens = quote_generic_type_arguments(&local_data_ref.type_arguments);
+            let target_type_tokens = quote_escaped_ident(local_data_ref.data_name());
+            let type_arguments_tokens = quote_generic_type_arguments(local_data_ref.type_arguments());
             quote!(#target_type_tokens #type_arguments_tokens)
         },
         DamlDataRef::NonLocal(non_local_data_ref) => {
-            let target_type_tokens = quote_escaped_ident(&non_local_data_ref.data_name);
+            let target_type_tokens = quote_escaped_ident(non_local_data_ref.data_name());
             let target_path_tokens = quote_non_local_path(non_local_data_ref);
-            let type_arguments_tokens = quote_generic_type_arguments(&non_local_data_ref.type_arguments);
+            let type_arguments_tokens = quote_generic_type_arguments(non_local_data_ref.type_arguments());
             quote!(#target_path_tokens #target_type_tokens #type_arguments_tokens)
         },
         DamlDataRef::Absolute(abs_data_ref) => {
-            let target_type_tokens = quote_escaped_ident(&abs_data_ref.data_name);
+            let target_type_tokens = quote_escaped_ident(abs_data_ref.data_name());
             let target_path_tokens = quote_absolute_data_ref(abs_data_ref);
-            let type_arguments_tokens = quote_generic_type_arguments(&abs_data_ref.type_arguments);
+            let type_arguments_tokens = quote_generic_type_arguments(abs_data_ref.type_arguments());
             quote!(#target_path_tokens #target_type_tokens #type_arguments_tokens)
         },
     }
@@ -72,10 +72,10 @@ fn quote_generic_type_arguments(type_arguments: &[DamlType<'_>]) -> TokenStream 
 }
 
 fn quote_absolute_data_ref(abs_data_ref: &DamlAbsoluteDataRef<'_>) -> TokenStream {
-    let path: Vec<&str> = if abs_data_ref.package_name.is_empty() {
-        abs_data_ref.module_path.iter().map(AsRef::as_ref).collect()
+    let path: Vec<&str> = if abs_data_ref.package_name().is_empty() {
+        abs_data_ref.module_path().iter().map(AsRef::as_ref).collect()
     } else {
-        iter::once(abs_data_ref.package_name).chain(abs_data_ref.module_path.iter().map(AsRef::as_ref)).collect()
+        iter::once(abs_data_ref.package_name()).chain(abs_data_ref.module_path().iter().map(AsRef::as_ref)).collect()
     };
     let target_path_tokens: Vec<_> = path.into_iter().map(SnakeCase::to_snake_case).map(quote_escaped_ident).collect();
     quote!(
@@ -84,12 +84,12 @@ fn quote_absolute_data_ref(abs_data_ref: &DamlAbsoluteDataRef<'_>) -> TokenStrea
 }
 
 fn quote_non_local_path(data_ref: &DamlNonLocalDataRef<'_>) -> TokenStream {
-    let current_full_path: Vec<_> = iter::once(data_ref.source_package_name)
-        .chain(data_ref.source_module_path.iter().map(AsRef::as_ref))
+    let current_full_path: Vec<_> = iter::once(data_ref.source_package_name())
+        .chain(data_ref.source_module_path().iter().map(AsRef::as_ref))
         .map(SnakeCase::to_snake_case)
         .collect();
-    let target_full_path: Vec<_> = iter::once(data_ref.target_package_name)
-        .chain(data_ref.target_module_path.iter().map(AsRef::as_ref))
+    let target_full_path: Vec<_> = iter::once(data_ref.target_package_name())
+        .chain(data_ref.target_module_path().iter().map(AsRef::as_ref))
         .map(SnakeCase::to_snake_case)
         .collect();
     let common_prefix_length =

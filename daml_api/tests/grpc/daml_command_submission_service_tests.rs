@@ -42,7 +42,7 @@ async fn test_command_submission_and_completion() -> TestResult {
     let completions: Vec<DamlCompletion> = completion_stream
         .skip_while(is_skippable_completion)
         .take(1)
-        .map(|f: DamlResult<DamlCompletionResponse>| f.map(|mut r| r.completions.swap_remove(0)))
+        .map(|f: DamlResult<DamlCompletionResponse>| f.map(|resp| resp.take_completions().swap_remove(0)))
         .try_collect()
         .await?;
     let completion = completions.first().ok_or(ERR_STR)?;
