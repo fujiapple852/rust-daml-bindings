@@ -37,11 +37,19 @@ impl<'a> DamlModule<'a> {
         self.path.last().unwrap_or_else(|| &"root")
     }
 
-    /// Retrieve a child model by relative path or `None` if no such module exists.
-    pub fn child_module<'b: 'a>(&'a self, relative_path: &'b [&'b str]) -> Option<&'a DamlModule<'a>> {
+    /// Return the immediate child module `name` or `None` if no such module exists.
+    pub fn child_module(&self, name: &str) -> Option<&DamlModule<'_>> {
+        self.child_modules.get(name)
+    }
+
+    /// Retrieve a child `DamlModule` by relative path or `None` if no such module exists.
+    pub fn child_module_path<'b>(&'a self, relative_path: &'b [&'b str]) -> Option<&'a DamlModule<'a>> {
         match relative_path {
             [] => Some(self),
-            [head, tail @ ..] => self.child_modules.get(head).and_then(|m| m.child_module(tail)),
+            [head, tail @ ..] => match self.child_module(head) {
+                Some(m) => m.child_module_path(tail),
+                None => None,
+            },
         }
     }
 }
