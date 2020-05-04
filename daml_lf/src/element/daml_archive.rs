@@ -26,9 +26,9 @@ impl<'a> DamlArchive<'a> {
     /// not such data item exists.
     ///
     /// TODO document this
-    pub fn data_by_ref(&'a self, data_ref: &'a DamlDataRef<'a>) -> Option<&'a DamlData<'a>> {
+    pub fn data_by_ref<'b>(&'a self, data_ref: &'b DamlDataRef<'_>) -> Option<&'a DamlData<'a>> {
         let (package_name, module_path, data_name) = data_ref.reference_parts();
-        self.packages.get(package_name)?.root_module.child_module(module_path)?.data_types.get(data_name)
+        self.packages.get(package_name)?.root_module.child_module_path(module_path)?.data_types.get(data_name)
     }
 }
 

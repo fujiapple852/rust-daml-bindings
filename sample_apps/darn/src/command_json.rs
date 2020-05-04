@@ -11,7 +11,7 @@ pub(crate) fn json(dar_path: &str, package_opt: Option<&str>, module_opt: Option
             let module_search_path = search_module.split('.').collect::<Vec<_>>();
             let module = package
                 .root_module
-                .child_module(&module_search_path)
+                .child_module_path(&module_search_path)
                 .ok_or_else(|| DarnError::unknown_module(search_module, search_package))?;
             serde_json::to_string_pretty(module).map_err(|e| DarnError::other_error(e.to_string()))
         },

@@ -98,7 +98,7 @@ pub(crate) fn outline(dar_path: &str, package_opt: Option<&str>, module_opt: Opt
         (Some(search_package), Some(search_module)) => archive
             .packages
             .get(search_package)
-            .and_then(|p| p.root_module.child_module(&search_module.split('.').collect::<Vec<_>>()))
+            .and_then(|p| p.root_module.child_module_path(&search_module.split('.').collect::<Vec<_>>()))
             .iter()
             .for_each(|m| m.accept(&mut visitor)),
         (Some(search_package), None) =>
