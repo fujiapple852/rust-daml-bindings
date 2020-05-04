@@ -5,9 +5,9 @@ use std::convert::TryFrom;
 use std::time::Duration;
 
 /// DAML ledger configuration information.
-#[derive(Debug, Eq, PartialEq, Default)]
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct DamlLedgerConfiguration {
-    pub max_deduplication_time: Duration,
+    max_deduplication_time: Duration,
 }
 
 impl DamlLedgerConfiguration {

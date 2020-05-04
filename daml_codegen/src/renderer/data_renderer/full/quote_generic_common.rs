@@ -7,7 +7,7 @@ use quote::quote;
 /// Quote `<A, B, C>`
 pub fn quote_unbounded_params(params: &[DamlTypeVar<'_>]) -> TokenStream {
     quote_non_empty(params, |params| {
-        let all_params_tokens: Vec<_> = params.iter().map(|type_var| quote_var(type_var.var)).collect();
+        let all_params_tokens: Vec<_> = params.iter().map(|type_var| quote_var(type_var.var())).collect();
         quote!( < #( #all_params_tokens ),* > )
     })
 }
@@ -39,8 +39,8 @@ fn quote_where_clause(params: &[DamlTypeVar<'_>], bound_tokens: TokenStream) -> 
 }
 
 fn quote_type_var(type_var: &DamlTypeVar<'_>) -> TokenStream {
-    let var_tokens = quote_var(type_var.var);
-    if let DamlKind::Nat = type_var.kind {
+    let var_tokens = quote_var(type_var.var());
+    if let DamlKind::Nat = type_var.kind() {
         quote!(#var_tokens: Nat)
     } else {
         quote!(#var_tokens)
@@ -48,8 +48,8 @@ fn quote_type_var(type_var: &DamlTypeVar<'_>) -> TokenStream {
 }
 
 fn quote_type_var_with_bound(type_var: &DamlTypeVar<'_>, bound: &TokenStream) -> TokenStream {
-    let var_tokens = quote_var(type_var.var);
-    if let DamlKind::Nat = type_var.kind {
+    let var_tokens = quote_var(type_var.var());
+    if let DamlKind::Nat = type_var.kind() {
         quote!(#var_tokens: #bound + Nat)
     } else {
         quote!(#var_tokens: #bound)

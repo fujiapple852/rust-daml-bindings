@@ -106,25 +106,34 @@ fn make_dalf_path(root_dir: &str, info: &ExtendedPackageInfo) -> String {
     format!("{}/{}-{}.dalf", root_dir, info.package_name, info.package_id)
 }
 
+// TODO lots of cloning here
 fn make_final_packages(packages: Vec<DamlPackage>) -> Result<HashMap<String, Vec<u8>>> {
     packages
         .into_iter()
         .map(|d| {
-            Ok((d.hash.clone(), DamlLfArchive::serialize_with_payload(d.payload, d.hash, DamlLfHashFunction::SHA256)?))
+            Ok((
+                d.hash().to_owned(),
+                DamlLfArchive::serialize_with_payload(
+                    d.payload().to_owned(),
+                    d.hash().to_owned(),
+                    DamlLfHashFunction::SHA256,
+                )?,
+            ))
         })
         .collect::<Result<HashMap<_, _>>>()
 }
 
+// TODO lots of cloning here
 fn make_temp_packages(packages: &[DamlPackage]) -> Result<Vec<DamlLfArchive>> {
     packages
         .iter()
         .map(|p| {
-            let archive = DamlLfArchivePayload::from_bytes(p.payload.clone())?;
+            let archive = DamlLfArchivePayload::from_bytes(p.payload().to_owned())?;
             let main = DamlLfArchive::new(
-                format!("{}-{}", UNKNOWN_LF_ARCHIVE_PREFIX, &p.hash),
+                format!("{}-{}", UNKNOWN_LF_ARCHIVE_PREFIX, &p.hash()),
                 archive,
                 DamlLfHashFunction::SHA256,
-                p.hash.clone(),
+                p.hash().to_owned(),
             );
             Ok(main)
         })

@@ -37,16 +37,16 @@ impl ExtendedPackageInfo {
 
     /// Extract extended information about the packages in a `DamlArchive`.
     pub fn extract_from_archive(archive: &DamlArchive<'_>) -> Vec<Self> {
-        archive.packages.values().map(Self::extract_from_package).collect()
+        archive.packages().values().map(Self::extract_from_package).collect()
     }
 
     /// Extract extended information from a `DamlPackage`.
     pub fn extract_from_package(package: &DamlPackage<'_>) -> Self {
         Self::new(
-            package.package_id,
-            package.name,
-            package.version.map(ToOwned::to_owned),
-            package.language_version.to_string(),
+            package.package_id(),
+            package.name(),
+            package.version().map(ToOwned::to_owned),
+            package.language_version().to_string(),
         )
     }
 
@@ -55,7 +55,7 @@ impl ExtendedPackageInfo {
     where
         F: Fn(&DamlPackage<'_>) -> bool,
     {
-        archive.packages.values().find_map(|p| {
+        archive.packages().values().find_map(|p| {
             if f(p) {
                 Some(Self::extract_from_package(p))
             } else {

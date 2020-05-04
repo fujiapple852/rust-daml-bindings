@@ -3,10 +3,10 @@ use crate::element::visitor::DamlElementVisitor;
 use crate::element::DamlVisitableElement;
 use serde::Serialize;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct DamlField<'a> {
-    pub name: &'a str,
-    pub ty: DamlType<'a>,
+    name: &'a str,
+    ty: DamlType<'a>,
 }
 
 impl<'a> DamlField<'a> {
@@ -15,6 +15,14 @@ impl<'a> DamlField<'a> {
             name,
             ty,
         }
+    }
+
+    pub const fn name(&self) -> &str {
+        self.name
+    }
+
+    pub const fn ty(&self) -> &DamlType<'a> {
+        &self.ty
     }
 }
 

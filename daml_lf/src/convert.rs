@@ -39,7 +39,7 @@ where
     let archive_payload = DamlArchivePayload::from_single_package(package_payload);
     let archive_wrapper = DamlArchiveWrapper::new(&archive_payload);
     let archive = DamlArchive::try_from(archive_wrapper).map_err(DamlLfError::DamlLfConvertError)?;
-    Ok(f(archive.packages.values().next().req()?))
+    Ok(f(archive.packages().values().next().req()?))
 }
 
 /// Convert a [`DamlLfArchivePayload`] to a [`DamlPackage`] and map function `f` over it.
@@ -52,5 +52,5 @@ where
     let archive_payload = DamlArchivePayload::from_single_package(package_payload);
     let archive_wrapper = DamlArchiveWrapper::new(&archive_payload);
     let archive = DamlArchive::try_from(archive_wrapper).map_err(DamlLfError::DamlLfConvertError)?;
-    Ok(f(archive.packages.values().next().req()?))
+    Ok(f(archive.packages().values().next().req()?))
 }

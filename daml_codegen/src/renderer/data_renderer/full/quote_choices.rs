@@ -30,13 +30,13 @@ fn quote_all_choice_methods(ctx: &RenderContext<'_>, struct_name: &str, items: &
 
 /// Generate the `pub fn foo(&self, ...)` choice method.
 fn quote_choice_method(ctx: &RenderContext<'_>, struct_name: &str, choice: &DamlChoice<'_>) -> TokenStream {
-    let choice_name = &choice.name;
+    let choice_name = &choice.name();
     let struct_name_tokens = quote_escaped_ident(struct_name);
-    let method_name_command_tokens = quote_command_method_name(&choice.name.to_snake_case());
-    let _method_name_tokens = quote_escaped_ident(&choice.name.to_snake_case());
-    let choice_argument_tokens = quote_method_arguments(&choice.fields.iter().collect::<Vec<_>>());
+    let method_name_command_tokens = quote_command_method_name(&choice.name().to_snake_case());
+    let _method_name_tokens = quote_escaped_ident(&choice.name().to_snake_case());
+    let choice_argument_tokens = quote_method_arguments(&choice.fields().iter().collect::<Vec<_>>());
     let supported_fields: Vec<_> =
-        choice.fields.iter().filter(|&field| IsRenderable::new(ctx).check_type(&field.ty)).collect();
+        choice.fields().iter().filter(|&field| IsRenderable::new(ctx).check_type(field.ty())).collect();
     let all_choice_fields = quote_all_choice_fields(&supported_fields);
     quote!(
         pub fn #method_name_command_tokens(&self, #choice_argument_tokens) -> DamlExerciseCommand {
@@ -70,15 +70,7 @@ fn quote_all_choice_fields(supported_fields: &[&DamlField<'_>]) -> TokenStream {
 
 /// Generate all choice fields.
 fn quote_declare_all_choice_fields(choice_parameters: &[&DamlField<'_>]) -> TokenStream {
-    choice_parameters
-        .iter()
-        .map(
-            |DamlField {
-                 name,
-                 ty,
-             }| quote_declare_choice_field(name, ty),
-        )
-        .collect()
+    choice_parameters.iter().map(|&field| quote_declare_choice_field(field.name(), field.ty())).collect()
 }
 
 /// Generate a choice field.

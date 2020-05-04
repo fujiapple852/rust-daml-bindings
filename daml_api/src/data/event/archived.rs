@@ -4,12 +4,12 @@ use crate::util::Required;
 use std::convert::TryFrom;
 
 /// An event which represents archiving a contract on a DAML ledger.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlArchivedEvent {
-    pub event_id: String,
-    pub contract_id: String,
-    pub template_id: DamlIdentifier,
-    pub witness_parties: Vec<String>,
+    event_id: String,
+    contract_id: String,
+    template_id: DamlIdentifier,
+    witness_parties: Vec<String>,
 }
 
 impl DamlArchivedEvent {

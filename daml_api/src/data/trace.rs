@@ -1,13 +1,13 @@
 use crate::grpc_protobuf::com::daml::ledger::api::v1::TraceContext;
 
 /// Ledger tracing information.
-#[derive(Debug, Eq, PartialEq, Default)]
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct DamlTraceContext {
-    pub trace_id_high: u64,
-    pub trace_id: u64,
-    pub span_id: u64,
-    pub parent_span_id: u64,
-    pub sampled: bool,
+    trace_id_high: u64,
+    trace_id: u64,
+    span_id: u64,
+    parent_span_id: u64,
+    sampled: bool,
 }
 
 impl DamlTraceContext {

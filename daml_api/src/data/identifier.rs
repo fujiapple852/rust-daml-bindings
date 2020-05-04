@@ -3,9 +3,9 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::Identifier;
 /// Unique identifier of an entity on a DAML ledger.
 #[derive(Debug, PartialEq, Eq, Default, Clone, Hash, Ord, PartialOrd)]
 pub struct DamlIdentifier {
-    pub package_id: String,
-    pub module_name: String,
-    pub entity_name: String,
+    package_id: String,
+    module_name: String,
+    entity_name: String,
 }
 
 impl DamlIdentifier {

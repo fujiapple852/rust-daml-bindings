@@ -3,7 +3,7 @@ use crate::element::visitor::DamlElementVisitor;
 use crate::element::{DamlType, DamlTypeVar, DamlVisitableElement};
 use serde::Serialize;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub enum DamlData<'a> {
     Template(DamlTemplate<'a>),
     Record(DamlRecord<'a>),
@@ -53,13 +53,13 @@ impl<'a> DamlVisitableElement<'a> for DamlData<'a> {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct DamlTemplate<'a> {
-    pub name: &'a str,
-    pub package_id: &'a str,
-    pub module_path: Vec<&'a str>,
-    pub fields: Vec<DamlField<'a>>,
-    pub choices: Vec<DamlChoice<'a>>,
+    name: &'a str,
+    package_id: &'a str,
+    module_path: Vec<&'a str>,
+    fields: Vec<DamlField<'a>>,
+    choices: Vec<DamlChoice<'a>>,
 }
 
 impl<'a> DamlTemplate<'a> {
@@ -78,6 +78,26 @@ impl<'a> DamlTemplate<'a> {
             choices,
         }
     }
+
+    pub const fn name(&self) -> &str {
+        self.name
+    }
+
+    pub const fn package_id(&self) -> &str {
+        self.package_id
+    }
+
+    pub fn module_path(&self) -> &[&str] {
+        &self.module_path
+    }
+
+    pub fn fields(&self) -> &[DamlField<'a>] {
+        &self.fields
+    }
+
+    pub fn choices(&self) -> &[DamlChoice<'a>] {
+        &self.choices
+    }
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlTemplate<'a> {
@@ -89,11 +109,11 @@ impl<'a> DamlVisitableElement<'a> for DamlTemplate<'a> {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct DamlChoice<'a> {
-    pub name: &'a str,
-    pub fields: Vec<DamlField<'a>>,
-    pub return_type: DamlType<'a>,
+    name: &'a str,
+    fields: Vec<DamlField<'a>>,
+    return_type: DamlType<'a>,
 }
 
 impl<'a> DamlChoice<'a> {
@@ -103,6 +123,18 @@ impl<'a> DamlChoice<'a> {
             fields,
             return_type,
         }
+    }
+
+    pub const fn name(&self) -> &str {
+        self.name
+    }
+
+    pub fn fields(&self) -> &[DamlField<'a>] {
+        &self.fields
+    }
+
+    pub const fn return_type(&self) -> &DamlType<'a> {
+        &self.return_type
     }
 }
 
@@ -115,11 +147,11 @@ impl<'a> DamlVisitableElement<'a> for DamlChoice<'a> {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct DamlRecord<'a> {
-    pub name: &'a str,
-    pub fields: Vec<DamlField<'a>>,
-    pub type_arguments: Vec<DamlTypeVar<'a>>,
+    name: &'a str,
+    fields: Vec<DamlField<'a>>,
+    type_arguments: Vec<DamlTypeVar<'a>>,
 }
 
 impl<'a> DamlRecord<'a> {
@@ -129,6 +161,18 @@ impl<'a> DamlRecord<'a> {
             fields,
             type_arguments,
         }
+    }
+
+    pub const fn name(&self) -> &str {
+        self.name
+    }
+
+    pub fn fields(&self) -> &[DamlField<'a>] {
+        &self.fields
+    }
+
+    pub fn type_arguments(&self) -> &[DamlTypeVar<'a>] {
+        &self.type_arguments
     }
 }
 
@@ -141,11 +185,11 @@ impl<'a> DamlVisitableElement<'a> for DamlRecord<'a> {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct DamlVariant<'a> {
-    pub name: &'a str,
-    pub fields: Vec<DamlField<'a>>,
-    pub type_arguments: Vec<DamlTypeVar<'a>>,
+    name: &'a str,
+    fields: Vec<DamlField<'a>>,
+    type_arguments: Vec<DamlTypeVar<'a>>,
 }
 
 impl<'a> DamlVariant<'a> {
@@ -155,6 +199,18 @@ impl<'a> DamlVariant<'a> {
             fields,
             type_arguments,
         }
+    }
+
+    pub const fn name(&self) -> &str {
+        self.name
+    }
+
+    pub fn fields(&self) -> &[DamlField<'a>] {
+        &self.fields
+    }
+
+    pub fn type_arguments(&self) -> &[DamlTypeVar<'a>] {
+        &self.type_arguments
     }
 }
 
@@ -167,11 +223,11 @@ impl<'a> DamlVisitableElement<'a> for DamlVariant<'a> {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct DamlEnum<'a> {
-    pub name: &'a str,
-    pub constructors: Vec<&'a str>,
-    pub type_arguments: Vec<DamlTypeVar<'a>>,
+    name: &'a str,
+    constructors: Vec<&'a str>,
+    type_arguments: Vec<DamlTypeVar<'a>>,
 }
 
 impl<'a> DamlEnum<'a> {
@@ -181,6 +237,18 @@ impl<'a> DamlEnum<'a> {
             constructors,
             type_arguments,
         }
+    }
+
+    pub const fn name(&self) -> &str {
+        self.name
+    }
+
+    pub fn constructors(&self) -> &[&str] {
+        &self.constructors
+    }
+
+    pub fn type_arguments(&self) -> &[DamlTypeVar<'a>] {
+        &self.type_arguments
     }
 }
 

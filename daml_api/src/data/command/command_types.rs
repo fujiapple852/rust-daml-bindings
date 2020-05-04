@@ -5,7 +5,7 @@ use crate::data::command::DamlCreateAndExerciseCommand;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::Command;
 
 /// A DAML ledger command.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum DamlCommand {
     Create(DamlCreateCommand),
     Exercise(DamlExerciseCommand),

@@ -9,10 +9,10 @@ use chrono::DateTime;
 use chrono::Utc;
 use std::convert::TryFrom;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlCompletionResponse {
-    pub checkpoint: Option<DamlCheckpoint>,
-    pub completions: Vec<DamlCompletion>,
+    checkpoint: Option<DamlCheckpoint>,
+    completions: Vec<DamlCompletion>,
 }
 
 impl DamlCompletionResponse {
@@ -30,6 +30,10 @@ impl DamlCompletionResponse {
     pub fn completions(&self) -> &[DamlCompletion] {
         &self.completions
     }
+
+    pub fn take_completions(self) -> Vec<DamlCompletion> {
+        self.completions
+    }
 }
 
 impl TryFrom<CompletionStreamResponse> for DamlCompletionResponse {
@@ -43,7 +47,7 @@ impl TryFrom<CompletionStreamResponse> for DamlCompletionResponse {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlCheckpoint {
     record_time: DateTime<Utc>,
     offset: DamlLedgerOffset,
@@ -76,12 +80,12 @@ impl TryFrom<Checkpoint> for DamlCheckpoint {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Default)]
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct DamlCompletion {
-    pub command_id: String,
-    pub status: DamlStatus,
-    pub transaction_id: String,
-    pub trace_context: Option<DamlTraceContext>,
+    command_id: String,
+    status: DamlStatus,
+    transaction_id: String,
+    trace_context: Option<DamlTraceContext>,
 }
 
 impl DamlCompletion {
@@ -133,10 +137,10 @@ impl TryFrom<Completion> for DamlCompletion {
 }
 
 // TODO there is a `details` field here
-#[derive(Debug, Eq, PartialEq, Default)]
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct DamlStatus {
-    pub code: i32,
-    pub message: String,
+    code: i32,
+    message: String,
 }
 
 impl DamlStatus {

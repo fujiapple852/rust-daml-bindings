@@ -11,8 +11,11 @@ pub fn quote_archive(
     render_method: &RenderMethod,
 ) -> TokenStream {
     let ctx = RenderContext::with_archive(archive);
-    let all_packages: Vec<_> =
-        archive.packages.values().map(|package| quote_package(&ctx, package, module_matcher, render_method)).collect();
+    let all_packages: Vec<_> = archive
+        .packages()
+        .values()
+        .map(|package| quote_package(&ctx, package, module_matcher, render_method))
+        .collect();
     quote!(
         #(
             #[allow(clippy::all, warnings)]

@@ -6,8 +6,8 @@ use std::convert::{TryFrom, TryInto};
 /// A representation of the fields on a DAML `template` or `data` construct.
 #[derive(Debug, PartialEq, Eq, Default, Clone, Hash, Ord, PartialOrd)]
 pub struct DamlRecord {
-    pub record_id: Option<DamlIdentifier>,
-    pub fields: Vec<DamlRecordField>,
+    record_id: Option<DamlIdentifier>,
+    fields: Vec<DamlRecordField>,
 }
 
 impl DamlRecord {

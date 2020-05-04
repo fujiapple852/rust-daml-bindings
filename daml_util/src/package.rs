@@ -27,6 +27,7 @@ async fn get_package_payload<'a>(
     package_id: &'a str,
 ) -> DamlResult<(&'a str, DamlLfArchivePayload)> {
     let package = ledger_client.package_service().get_package(package_id).await?;
-    let archive = DamlLfArchivePayload::from_bytes(package.payload).map_err(|e| DamlError::Other(e.to_string()))?;
+    let archive =
+        DamlLfArchivePayload::from_bytes(package.take_payload()).map_err(|e| DamlError::Other(e.to_string()))?;
     Ok((package_id, archive))
 }

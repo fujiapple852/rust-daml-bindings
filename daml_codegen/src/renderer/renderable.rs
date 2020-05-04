@@ -1,5 +1,5 @@
 use crate::renderer::RenderContext;
-use daml_lf::element::{DamlArchive, DamlDataRef, DamlKind, DamlType, DamlVar};
+use daml_lf::element::{DamlArchive, DamlDataRef, DamlKind, DamlType};
 
 /// Determine if a type is supported by the code generator.
 ///
@@ -40,10 +40,7 @@ impl<'a> IsRenderable<'a> {
             DamlType::List(inner) | DamlType::TextMap(inner) | DamlType::Optional(inner) => self.check_type(inner),
             DamlType::ContractId(data_ref) => data_ref.as_ref().map_or(true, |dr| self.check_data_ref(dr)),
             DamlType::DataRef(data_ref) | DamlType::BoxedDataRef(data_ref) => self.check_data_ref(data_ref),
-            DamlType::Var(DamlVar {
-                type_arguments,
-                ..
-            }) => type_arguments.iter().all(|ty| self.check_type(ty)),
+            DamlType::Var(var) => var.type_arguments().iter().all(|ty| self.check_type(ty)),
             DamlType::Arrow | DamlType::Update | DamlType::Scenario | DamlType::Any | DamlType::TypeRep => false,
         }
     }
@@ -54,7 +51,7 @@ impl<'a> IsRenderable<'a> {
 
     fn check_target_data(&self, data_ref: &DamlDataRef<'_>) -> bool {
         self.archive.data_by_ref(data_ref).map_or(true, |data| {
-            !data.type_arguments().iter().any(|type_var| matches!(type_var.kind, DamlKind::Arrow(_)))
+            !data.type_arguments().iter().any(|type_var| matches!(type_var.kind(), DamlKind::Arrow(_)))
         })
     }
 

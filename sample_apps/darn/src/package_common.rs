@@ -17,7 +17,7 @@ pub async fn get_all_packages(uri: &str, token_key_path: Option<&str>) -> Result
         .iter()
         .map(|pd| {
             let ledger_client = ledger_client.clone();
-            let pid = pd.package_id.clone();
+            let pid = pd.package_id().to_owned();
             tokio::spawn(async move {
                 let package = ledger_client.package_service().get_package(pid).await?;
 

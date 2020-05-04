@@ -15,9 +15,9 @@ pub fn quote_module_tree(
     module_matcher: &ModuleMatcher,
     render_method: &RenderMethod,
 ) -> TokenStream {
-    let is_included_module = module_matcher.matches(&to_module_path(module.path.as_slice()));
+    let is_included_module = module_matcher.matches(&to_module_path(module.path()));
     let all_children: Vec<_> = module
-        .child_modules
+        .child_modules()
         .values()
         .map(|child| quote_module_tree(ctx, child.name(), child, module_matcher, render_method))
         .collect();
@@ -26,7 +26,7 @@ pub fn quote_module_tree(
         quote!()
     } else {
         let module_tokens = if is_included_module {
-            quote_all_data(ctx, module.data_types.values().collect::<Vec<_>>().as_slice(), render_method)
+            quote_all_data(ctx, module.data_types().values().collect::<Vec<_>>().as_slice(), render_method)
         } else {
             quote!()
         };

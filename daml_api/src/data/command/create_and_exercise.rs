@@ -4,12 +4,12 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::command::Command;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::CreateAndExerciseCommand;
 
 /// Create a contract and exercise a choice on it in the same transaction.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlCreateAndExerciseCommand {
-    pub template_id: DamlIdentifier,
-    pub create_arguments: DamlRecord,
-    pub choice: String,
-    pub choice_argument: DamlValue,
+    template_id: DamlIdentifier,
+    create_arguments: DamlRecord,
+    choice: String,
+    choice_argument: DamlValue,
 }
 
 impl DamlCreateAndExerciseCommand {

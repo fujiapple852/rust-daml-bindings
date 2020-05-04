@@ -66,12 +66,12 @@ impl<'a> TryFrom<DamlPackageWrapper<'a>> for DamlPackage<'a> {
             if let Some(&child_mod_name) = remaining_path.first() {
                 let child_mod_path = &full_path[..=full_path.len() - remaining_path.len()];
                 let entry = node
-                    .child_modules
+                    .child_modules_mut()
                     .entry(child_mod_name)
                     .or_insert_with(|| DamlModule::new(child_mod_path.to_vec()));
                 add_module_to_tree(entry, data_types, full_path, &remaining_path[1..])
             } else {
-                node.data_types = data_types.into_iter().map(|dt| (dt.name(), dt)).collect();
+                node.set_data_types(data_types.into_iter().map(|dt| (dt.name(), dt)).collect());
             }
         }
         Ok(DamlPackage::new(

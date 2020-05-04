@@ -7,9 +7,9 @@ use std::time::Duration;
 /// The ledger time model.
 #[derive(Debug, PartialEq, Eq, Default, Clone, Hash)]
 pub struct DamlTimeModel {
-    pub avg_transaction_latency: Duration,
-    pub min_skew: Duration,
-    pub max_skew: Duration,
+    avg_transaction_latency: Duration,
+    min_skew: Duration,
+    max_skew: Duration,
 }
 impl DamlTimeModel {
     pub fn new(

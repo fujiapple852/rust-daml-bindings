@@ -8,15 +8,15 @@ use std::convert::TryFrom;
 use std::time::Duration;
 
 /// A list of DAML commands.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlCommands {
-    pub workflow_id: String,
-    pub application_id: String,
-    pub command_id: String,
-    pub party: String,
-    pub commands: Vec<DamlCommand>,
-    pub deduplication_time: Option<Duration>,
-    pub min_ledger_time: Option<DamlMinLedgerTime>,
+    workflow_id: String,
+    application_id: String,
+    command_id: String,
+    party: String,
+    commands: Vec<DamlCommand>,
+    deduplication_time: Option<Duration>,
+    min_ledger_time: Option<DamlMinLedgerTime>,
 }
 
 impl DamlCommands {

@@ -9,15 +9,15 @@ use chrono::Utc;
 use std::convert::TryFrom;
 
 /// A DAML ledger transaction.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlTransaction {
-    pub transaction_id: String,
-    pub command_id: String,
-    pub workflow_id: String,
-    pub effective_at: DateTime<Utc>,
-    pub events: Vec<DamlEvent>,
-    pub offset: String,
-    pub trace_context: Option<DamlTraceContext>,
+    transaction_id: String,
+    command_id: String,
+    workflow_id: String,
+    effective_at: DateTime<Utc>,
+    events: Vec<DamlEvent>,
+    offset: String,
+    trace_context: Option<DamlTraceContext>,
 }
 
 impl DamlTransaction {

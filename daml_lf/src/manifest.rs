@@ -277,7 +277,9 @@ fn split_manifest_string(s: impl AsRef<str>) -> String {
 #[cfg(test)]
 mod test {
     use crate::error::{DamlLfError, DamlLfResult};
-    use crate::manifest::{DarEncryptionType, DarManifest, DarManifestFormat, DarManifestVersion, split_manifest_string};
+    use crate::manifest::{
+        split_manifest_string, DarEncryptionType, DarManifest, DarManifestFormat, DarManifestVersion,
+    };
     use trim_margin::MarginTrimmable;
 
     #[test]

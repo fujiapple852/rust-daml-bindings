@@ -19,7 +19,7 @@ pub fn generate_archive_separate(
     render_method: &RenderMethod,
 ) -> Result<(), Error> {
     let ctx = RenderContext::with_archive(archive);
-    for package in archive.packages.values() {
+    for package in archive.packages().values() {
         generate_package_source(&ctx, package, output_path, module_matcher, render_method)?
     }
     Ok(())
@@ -33,12 +33,12 @@ fn generate_package_source(
     render_method: &RenderMethod,
 ) -> Result<(), Error> {
     let root_modules: Vec<_> =
-        package.root_module.child_modules.values().filter(|&m| is_interesting_module(m, module_matcher)).collect();
+        package.root_module().child_modules().values().filter(|&m| is_interesting_module(m, module_matcher)).collect();
     let module_decl = root_modules.iter().map(|m| make_pub_mod_declaration(m.name())).join("\n");
     let package_body = format!("{}\n{}", DISABLE_WARNINGS, module_decl);
-    let mut package_file = create_file(&PathBuf::from(output_path), &make_package_filename(package.name))?;
+    let mut package_file = create_file(&PathBuf::from(output_path), &make_package_filename(package.name()))?;
     package_file.write_all(package_body.as_bytes())?;
-    let package_dir_path = PathBuf::from(output_path).join(&to_rust_identifier(package.name));
+    let package_dir_path = PathBuf::from(output_path).join(&to_rust_identifier(package.name()));
     for module in root_modules {
         generate_module_source(ctx, module, &package_dir_path, module_matcher, render_method)?;
     }
@@ -53,11 +53,11 @@ fn generate_module_source(
     render_method: &RenderMethod,
 ) -> Result<(), Error> {
     let sub_modules: Vec<_> =
-        module.child_modules.values().filter(|&m| is_interesting_module(m, module_matcher)).collect();
+        module.child_modules().values().filter(|&m| is_interesting_module(m, module_matcher)).collect();
     let sub_module_decl: String = sub_modules.iter().map(|&m| make_pub_mod_declaration(m.name())).join("\n");
     let module_types_text = quote_module_data_types(ctx, module, render_method);
     let module_body = format!("{}\n{}{}", USE_DAML_PRELUDE, sub_module_decl, module_types_text);
-    let module_dir_path = module.path[..module.path.len() - 1].iter().map(to_rust_identifier).join("/");
+    let module_dir_path = module.path()[..module.path().len() - 1].iter().map(to_rust_identifier).join("/");
     let package_module_dir_path = PathBuf::from(package_dir_path).join(module_dir_path);
     let mut module_file = create_file(&package_module_dir_path, &make_module_filename(module.name()))?;
     module_file.write_all(module_body.as_bytes())?;
@@ -68,12 +68,12 @@ fn generate_module_source(
 }
 
 fn is_interesting_module(module: &DamlModule<'_>, module_matcher: &ModuleMatcher) -> bool {
-    (!module.data_types.is_empty() && module_matcher.matches(&to_module_path(module.path.as_slice())))
-        || module.child_modules.values().any(|m| is_interesting_module(m, module_matcher))
+    (!module.data_types().is_empty() && module_matcher.matches(&to_module_path(module.path())))
+        || module.child_modules().values().any(|m| is_interesting_module(m, module_matcher))
 }
 
 fn quote_module_data_types(ctx: &RenderContext<'_>, module: &DamlModule<'_>, render_method: &RenderMethod) -> String {
-    quote_all_data(ctx, module.data_types.values().collect::<Vec<_>>().as_slice(), render_method).to_string()
+    quote_all_data(ctx, module.data_types().values().collect::<Vec<_>>().as_slice(), render_method).to_string()
 }
 
 fn create_file(base_dir: &PathBuf, filename: &str) -> io::Result<File> {

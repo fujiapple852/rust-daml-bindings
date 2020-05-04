@@ -4,12 +4,12 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::GetActiveContractsResponse
 use std::convert::TryFrom;
 
 /// A set of active contracts on a DAML ledger.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlActiveContracts {
-    pub offset: String,
-    pub workflow_id: String,
-    pub active_contracts: Vec<DamlCreatedEvent>,
-    pub trace_context: Option<DamlTraceContext>,
+    offset: String,
+    workflow_id: String,
+    active_contracts: Vec<DamlCreatedEvent>,
+    trace_context: Option<DamlTraceContext>,
 }
 
 impl DamlActiveContracts {

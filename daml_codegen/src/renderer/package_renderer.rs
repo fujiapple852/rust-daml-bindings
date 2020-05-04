@@ -11,5 +11,5 @@ pub fn quote_package(
     module_matcher: &ModuleMatcher,
     render_method: &RenderMethod,
 ) -> TokenStream {
-    quote_module_tree(ctx, package.name, &package.root_module, module_matcher, render_method)
+    quote_module_tree(ctx, package.name(), package.root_module(), module_matcher, render_method)
 }

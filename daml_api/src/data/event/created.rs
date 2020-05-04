@@ -5,17 +5,17 @@ use crate::util::Required;
 use std::convert::TryFrom;
 
 /// An event which represents creating a contract on a DAML ledger.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlCreatedEvent {
-    pub event_id: String,
-    pub contract_id: String,
-    pub template_id: DamlIdentifier,
-    pub contract_key: Option<DamlValue>,
-    pub create_arguments: DamlRecord,
-    pub witness_parties: Vec<String>,
-    pub signatories: Vec<String>,
-    pub observers: Vec<String>,
-    pub agreement_text: String,
+    event_id: String,
+    contract_id: String,
+    template_id: DamlIdentifier,
+    contract_key: Option<DamlValue>,
+    create_arguments: DamlRecord,
+    witness_parties: Vec<String>,
+    signatories: Vec<String>,
+    observers: Vec<String>,
+    agreement_text: String,
 }
 
 /// Records that a contract has been created, and choices may now be exercised on it.

@@ -6,11 +6,11 @@ use crate::util::Required;
 use chrono::{DateTime, Utc};
 use std::convert::TryFrom;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlPackage {
-    pub payload: Vec<u8>,
-    pub hash: String,
-    pub hash_function: DamlHashFunction,
+    payload: Vec<u8>,
+    hash: String,
+    hash_function: DamlHashFunction,
 }
 
 impl DamlPackage {
@@ -26,8 +26,12 @@ impl DamlPackage {
         }
     }
 
-    pub const fn payload(&self) -> &Vec<u8> {
+    pub fn payload(&self) -> &[u8] {
         &self.payload
+    }
+
+    pub fn take_payload(self) -> Vec<u8> {
+        self.payload
     }
 
     pub fn hash(&self) -> &str {
@@ -47,7 +51,7 @@ impl TryFrom<GetPackageResponse> for DamlPackage {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum DamlPackageStatus {
     Unknown,
     Registered,
@@ -62,7 +66,7 @@ impl From<PackageStatus> for DamlPackageStatus {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum DamlHashFunction {
     SHA256,
 }
@@ -76,12 +80,12 @@ impl From<HashFunction> for DamlHashFunction {
 }
 
 /// Detailed information about a DAML `dar` package.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlPackageDetails {
-    pub package_id: String,
-    pub package_size: u64,
-    pub known_since: DateTime<Utc>,
-    pub source_description: String,
+    package_id: String,
+    package_size: u64,
+    known_since: DateTime<Utc>,
+    source_description: String,
 }
 
 impl DamlPackageDetails {

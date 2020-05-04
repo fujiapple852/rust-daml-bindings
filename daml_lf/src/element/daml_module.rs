@@ -7,13 +7,13 @@ use crate::element::DamlVisitableElement;
 use itertools::Itertools;
 use serde::Serialize;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct DamlModule<'a> {
-    pub path: Vec<&'a str>,
+    path: Vec<&'a str>,
     #[serde(serialize_with = "serialize::serialize_map")]
-    pub child_modules: HashMap<&'a str, DamlModule<'a>>,
+    child_modules: HashMap<&'a str, DamlModule<'a>>,
     #[serde(serialize_with = "serialize::serialize_map")]
-    pub data_types: HashMap<&'a str, DamlData<'a>>,
+    data_types: HashMap<&'a str, DamlData<'a>>,
 }
 
 impl<'a> DamlModule<'a> {
@@ -27,6 +27,26 @@ impl<'a> DamlModule<'a> {
 
     pub fn new_root() -> Self {
         Self::new(vec![])
+    }
+
+    pub fn path(&self) -> &[&str] {
+        &self.path
+    }
+
+    pub fn child_modules(&self) -> &HashMap<&'a str, DamlModule<'a>> {
+        &self.child_modules
+    }
+
+    pub fn child_modules_mut(&mut self) -> &mut HashMap<&'a str, DamlModule<'a>> {
+        &mut self.child_modules
+    }
+
+    pub fn data_types(&self) -> &HashMap<&'a str, DamlData<'a>> {
+        &self.data_types
+    }
+
+    pub fn set_data_types(&mut self, data_types: HashMap<&'a str, DamlData<'a>>) {
+        self.data_types = data_types;
     }
 
     pub fn is_root(&self) -> bool {
