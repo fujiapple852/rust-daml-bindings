@@ -7,15 +7,15 @@ use crate::lf_protobuf::com::digitalasset::daml_lf_1::{Kind, TypeVarWithKind};
 use std::convert::TryFrom;
 
 ///
-pub type DamlTypeVarWrapper<'a> = PayloadElementWrapper<'a, &'a DamlTypeVarPayload<'a>>;
+pub type DamlTypeVarWithKindWrapper<'a> = PayloadElementWrapper<'a, &'a DamlTypeVarWithKindPayload<'a>>;
 
 #[derive(Debug)]
-pub struct DamlTypeVarPayload<'a> {
+pub struct DamlTypeVarWithKindPayload<'a> {
     pub var: InternableString<'a>,
     pub kind: DamlKindPayload,
 }
 
-impl<'a> TryFrom<&'a TypeVarWithKind> for DamlTypeVarPayload<'a> {
+impl<'a> TryFrom<&'a TypeVarWithKind> for DamlTypeVarWithKindPayload<'a> {
     type Error = DamlLfConvertError;
 
     fn try_from(typevar: &'a TypeVarWithKind) -> DamlLfConvertResult<Self> {

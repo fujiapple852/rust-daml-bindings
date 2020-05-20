@@ -1,8 +1,11 @@
 use crate::convert::util::Required;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::expr::{
+    enum_con, rec_proj, rec_upd, struct_proj, struct_upd, variant_con,
+};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::{
-    def_data_type, def_template, field_with_type, module, module_ref, r#type, template_choice, type_con_name,
-    type_var_with_kind,
+    case_alt, def_data_type, def_template, def_type_syn, field_with_expr, field_with_type, module, module_ref, r#type,
+    template_choice, type_con_name, type_syn_name, type_var_with_kind, update, var_with_type,
 };
 use crate::{LanguageFeatureVersion, LanguageVersion};
 use std::fmt;
@@ -73,6 +76,20 @@ pub enum InternableDottedName<'a> {
 }
 
 impl<'a> InternableDottedName<'a> {
+    /// Create an `InternableDottedName` implied from the supplied values.
+    ///
+    /// If the `literal` slice is non-empty then a `LiteralDottedName` variant is returned, otherwise
+    /// `InternedDottedName` is returned.  The chosen variant will be validated at resolution time by
+    /// `InternableDottedName::resolve()` or `InternableDottedName::resolve_last()` which will report an error if the
+    /// wrong variant was implied.
+    pub fn new_implied(interned: i32, literal: &'a [String]) -> Self {
+        if literal.is_empty() {
+            InternableDottedName::InternedDottedName(interned)
+        } else {
+            InternableDottedName::LiteralDottedName(literal)
+        }
+    }
+
     pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> DamlLfConvertResult<Vec<&'a str>> {
         Ok(match *self {
             InternableDottedName::LiteralDottedName(dn) => {
@@ -145,84 +162,59 @@ impl<'a> fmt::Display for InternableDottedName<'a> {
     }
 }
 
-impl<'a> From<&'a field_with_type::Field> for InternableString<'a> {
-    fn from(field: &'a field_with_type::Field) -> Self {
-        match field {
-            field_with_type::Field::FieldStr(s) => InternableString::LiteralString(s.as_str()),
-            &field_with_type::Field::FieldInternedStr(i) => InternableString::InternedString(i),
+/// Make an `<'a> From<thing> for InternableString<'a>` conversion impl.
+macro_rules! make_from_internable {
+    ($intern:ident $(:: $intern_path:ident)*, $lit_id:ident, $int_id:ident) => {
+        impl<'a> From<&'a $intern $(:: $intern_path)*> for InternableString<'a> {
+            fn from(field: &'a $intern $(:: $intern_path)*) -> Self {
+                match field {
+                    $intern $(:: $intern_path)* :: $lit_id(s) => InternableString::LiteralString(s.as_str()),
+                    &$intern $(:: $intern_path)* :: $int_id(i) => InternableString::InternedString(i),
+                }
+            }
         }
-    }
+    };
 }
 
-impl<'a> From<&'a template_choice::Name> for InternableString<'a> {
-    fn from(name: &'a template_choice::Name) -> Self {
-        match name {
-            template_choice::Name::NameStr(s) => InternableString::LiteralString(s.as_str()),
-            &template_choice::Name::NameInternedStr(i) => InternableString::InternedString(i),
+/// Make an `<'a> From<thing> for InternableDottedName<'a>` conversion impl.
+macro_rules! make_from_internable_dotted {
+    ($intern:ident $(:: $intern_path:ident)*, $lit_id:ident, $int_id:ident) => {
+        impl<'a> From<&'a $intern $(:: $intern_path)*> for InternableDottedName<'a> {
+            fn from(field: &'a $intern $(:: $intern_path)*) -> Self {
+                match field {
+                    $intern $(:: $intern_path)* :: $lit_id(dn) => InternableDottedName::LiteralDottedName(dn.segments.as_slice()),
+                    &$intern $(:: $intern_path)* :: $int_id(i) => InternableDottedName::InternedDottedName(i),
+                }
+            }
         }
-    }
+    };
 }
 
-impl<'a> From<&'a type_var_with_kind::Var> for InternableString<'a> {
-    fn from(name: &'a type_var_with_kind::Var) -> Self {
-        match name {
-            type_var_with_kind::Var::VarStr(s) => InternableString::LiteralString(s.as_str()),
-            &type_var_with_kind::Var::VarInternedStr(i) => InternableString::InternedString(i),
-        }
-    }
-}
-
-impl<'a> From<&'a r#type::var::Var> for InternableString<'a> {
-    fn from(name: &'a r#type::var::Var) -> Self {
-        match name {
-            r#type::var::Var::VarStr(s) => InternableString::LiteralString(s.as_str()),
-            &r#type::var::Var::VarInternedStr(i) => InternableString::InternedString(i),
-        }
-    }
-}
-
-impl<'a> From<&'a def_data_type::Name> for InternableDottedName<'a> {
-    fn from(name: &'a def_data_type::Name) -> Self {
-        match name {
-            def_data_type::Name::NameDname(dn) => InternableDottedName::LiteralDottedName(dn.segments.as_slice()),
-            &def_data_type::Name::NameInternedDname(i) => InternableDottedName::InternedDottedName(i),
-        }
-    }
-}
-
-impl<'a> From<&'a def_template::Tycon> for InternableDottedName<'a> {
-    fn from(ty_con: &'a def_template::Tycon) -> Self {
-        match ty_con {
-            def_template::Tycon::TyconDname(dn) => InternableDottedName::LiteralDottedName(dn.segments.as_slice()),
-            &def_template::Tycon::TyconInternedDname(i) => InternableDottedName::InternedDottedName(i),
-        }
-    }
-}
-
-impl<'a> From<&'a module::Name> for InternableDottedName<'a> {
-    fn from(name: &'a module::Name) -> Self {
-        match name {
-            module::Name::NameDname(dn) => InternableDottedName::LiteralDottedName(dn.segments.as_slice()),
-            &module::Name::NameInternedDname(i) => InternableDottedName::InternedDottedName(i),
-        }
-    }
-}
-
-impl<'a> From<&'a module_ref::ModuleName> for InternableDottedName<'a> {
-    fn from(name: &'a module_ref::ModuleName) -> Self {
-        match name {
-            module_ref::ModuleName::ModuleNameDname(dn) =>
-                InternableDottedName::LiteralDottedName(dn.segments.as_slice()),
-            &module_ref::ModuleName::ModuleNameInternedDname(i) => InternableDottedName::InternedDottedName(i),
-        }
-    }
-}
-
-impl<'a> From<&'a type_con_name::Name> for InternableDottedName<'a> {
-    fn from(name: &'a type_con_name::Name) -> Self {
-        match name {
-            type_con_name::Name::NameDname(dn) => InternableDottedName::LiteralDottedName(dn.segments.as_slice()),
-            &type_con_name::Name::NameInternedDname(i) => InternableDottedName::InternedDottedName(i),
-        }
-    }
-}
+make_from_internable!(field_with_type::Field, FieldStr, FieldInternedStr);
+make_from_internable!(template_choice::Name, NameStr, NameInternedStr);
+make_from_internable!(template_choice::SelfBinder, SelfBinderStr, SelfBinderInternedStr);
+make_from_internable!(type_var_with_kind::Var, VarStr, VarInternedStr);
+make_from_internable!(r#type::var::Var, VarStr, VarInternedStr);
+make_from_internable!(field_with_expr::Field, FieldStr, FieldInternedStr);
+make_from_internable!(variant_con::VariantCon, VariantConStr, VariantConInternedStr);
+make_from_internable!(enum_con::EnumCon, EnumConStr, EnumConInternedStr);
+make_from_internable!(rec_proj::Field, FieldStr, FieldInternedStr);
+make_from_internable!(struct_proj::Field, FieldStr, FieldInternedStr);
+make_from_internable!(rec_upd::Field, FieldStr, FieldInternedStr);
+make_from_internable!(update::exercise::Choice, ChoiceStr, ChoiceInternedStr);
+make_from_internable!(struct_upd::Field, FieldStr, FieldInternedStr);
+make_from_internable!(var_with_type::Var, VarStr, VarInternedStr);
+make_from_internable!(case_alt::variant::Variant, VariantStr, VariantInternedStr);
+make_from_internable!(case_alt::variant::Binder, BinderStr, BinderInternedStr);
+make_from_internable!(case_alt::r#enum::Constructor, ConstructorStr, ConstructorInternedStr);
+make_from_internable!(case_alt::cons::VarHead, VarHeadStr, VarHeadInternedStr);
+make_from_internable!(case_alt::cons::VarTail, VarTailStr, VarTailInternedStr);
+make_from_internable!(case_alt::optional_some::VarBody, VarBodyStr, VarBodyInternedStr);
+make_from_internable!(def_template::Param, ParamStr, ParamInternedStr);
+make_from_internable_dotted!(def_data_type::Name, NameDname, NameInternedDname);
+make_from_internable_dotted!(def_template::Tycon, TyconDname, TyconInternedDname);
+make_from_internable_dotted!(module::Name, NameDname, NameInternedDname);
+make_from_internable_dotted!(module_ref::ModuleName, ModuleNameDname, ModuleNameInternedDname);
+make_from_internable_dotted!(type_con_name::Name, NameDname, NameInternedDname);
+make_from_internable_dotted!(type_syn_name::Name, NameDname, NameInternedDname);
+make_from_internable_dotted!(def_type_syn::Name, NameDname, NameInternedDname);

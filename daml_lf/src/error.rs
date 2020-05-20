@@ -81,9 +81,18 @@ pub enum DamlLfConvertError {
     /// Failed to lookup a `DamlDataPayload` by id.
     #[error("failed to lookup a DamlDataPayload with id {0}")]
     UnknownData(String),
+    /// Unknown PrimCon enum variant.
+    #[error("unknown PrimCon enum variant {0}")]
+    UnknownPrimCon(i32),
+    /// Unknown BuiltinFunction enum variant.
+    #[error("unknown BuiltinFunction enum variant {0}")]
+    UnknownBuiltinFunction(i32),
     /// Nat out of range (0..37 inclusive).
     #[error("Nat {0} out of range (0..37 inclusive)")]
     NatOutOfRange(i64),
+    /// Internal error.
+    #[error("Internal error: {0}")]
+    InternalError(String),
 }
 
 /// DAML LF convert result.

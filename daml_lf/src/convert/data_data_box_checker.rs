@@ -1,7 +1,7 @@
 use crate::convert::data_payload::{DamlDataEnrichedPayload, DamlDataWrapper};
 use crate::convert::field_payload::DamlFieldWrapper;
 use crate::convert::interned::InternableDottedName;
-use crate::convert::resolver::resolve_data_ref;
+use crate::convert::resolver::{resolve_syn, resolve_tycon};
 use crate::convert::type_payload::{DamlTypePayload, DamlTypeWrapper};
 use crate::error::DamlLfConvertResult;
 use std::collections::HashSet;
@@ -19,7 +19,7 @@ impl<'a> DamlDataBoxChecker<'a> {
     /// references to `parent_data`.
     ///
     /// Note that type arguments to `DamlTypePayload::List` & `DamlTypePayload::TextMap` are not searched as these
-    /// container types are boxed already.
+    /// container types are heap allocated already.
     pub fn should_box(parent_data: DamlDataWrapper<'a>, child_data: DamlDataWrapper<'a>) -> DamlLfConvertResult<bool> {
         Self::new(parent_data).check_data(child_data)
     }
@@ -52,13 +52,22 @@ impl<'a> DamlDataBoxChecker<'a> {
 
     fn check_type(&mut self, daml_type: DamlTypeWrapper<'a>) -> DamlLfConvertResult<bool> {
         Ok(match daml_type.payload {
-            DamlTypePayload::Optional(nested) => self.check_type(daml_type.wrap(nested.as_ref()))?,
-            DamlTypePayload::DataRef(data_ref) => {
-                let data = resolve_data_ref(daml_type.wrap(data_ref))?;
+            DamlTypePayload::Optional(args) => self.check_types(args.iter().map(|arg| daml_type.wrap(arg)))?,
+            DamlTypePayload::TyCon(tycon) => {
+                let data = resolve_tycon(daml_type.wrap(tycon))?;
                 data.payload == self.search_data.payload
                     || self.memoized_visit_data(data)?
-                    || self.check_types(data_ref.type_arguments.iter().map(|ty| daml_type.wrap(ty)))?
+                    || self.check_types(tycon.type_arguments.iter().map(|ty| daml_type.wrap(ty)))?
             },
+            DamlTypePayload::Syn(syn) => {
+                let data = resolve_syn(daml_type.wrap(syn))?;
+                data.payload == self.search_data.payload
+                    || self.memoized_visit_data(data)?
+                    || self.check_types(syn.args.iter().map(|arg| daml_type.wrap(arg)))?
+            },
+            DamlTypePayload::Forall(forall) => self.check_type(daml_type.wrap(forall.body.as_ref()))?,
+            DamlTypePayload::Struct(tuple) =>
+                self.check_types(tuple.fields.iter().map(|field| daml_type.wrap(&field.ty)))?,
             DamlTypePayload::ContractId(_)
             | DamlTypePayload::Int64
             | DamlTypePayload::Numeric(_)

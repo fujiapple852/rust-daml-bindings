@@ -12,6 +12,6 @@ pub use archive_renderer::*;
 pub use data_renderer::*;
 pub use module_renderer::*;
 pub use package_renderer::*;
-pub use render_context::RenderContext;
+pub use render_context::{RenderContext, RenderFilterMode, RenderMode};
 pub use renderable::IsRenderable;
 pub use renderer_utils::*;

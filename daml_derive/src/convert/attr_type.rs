@@ -16,7 +16,7 @@ pub enum AttrType {
     List(Box<AttrType>),
     TextMap(Box<AttrType>),
     Optional(Box<AttrType>),
-    DataRef(String, Vec<String>, Vec<AttrType>),
+    TyCon(String, Vec<String>, Vec<AttrType>),
 }
 
 impl AttrType {
@@ -50,7 +50,7 @@ pub fn data_type_string_from_path(path: &Path) -> String {
         ))
     }
     match daml_type_from_path(path) {
-        AttrType::DataRef(data, ..) => data,
+        AttrType::TyCon(data, ..) => data,
         _ => panic!("expected a single type"),
     }
 }
@@ -75,7 +75,7 @@ fn daml_type_from_segments(segments: &[&PathSegment]) -> AttrType {
         ("Box", &[ty]) => {
             let nested = AttrType::from_type(ty);
             match nested {
-                AttrType::DataRef(..) => AttrType::Box(Box::new(nested)),
+                AttrType::TyCon(..) => AttrType::Box(Box::new(nested)),
                 _ => panic!("Box may only be applied to data types"),
             }
         },
@@ -84,7 +84,7 @@ fn daml_type_from_segments(segments: &[&PathSegment]) -> AttrType {
         ("DamlOptional", &[ty]) => AttrType::Optional(Box::new(AttrType::from_type(ty))),
         ("DamlContractId", &[ty]) => AttrType::ContractId(Box::new(AttrType::from_type(ty))),
         ("DamlContractId", _) => AttrType::ContractId(Box::new(AttrType::Unit)),
-        (data_name, type_arguments) => AttrType::DataRef(
+        (data_name, type_arguments) => AttrType::TyCon(
             data_name.to_owned(),
             path,
             type_arguments.iter().map(|&arg| AttrType::from_type(arg)).collect(),

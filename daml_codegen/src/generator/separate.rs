@@ -1,6 +1,6 @@
 use crate::generator::module_matcher::ModuleMatcher;
 use crate::generator::RenderMethod;
-use crate::renderer::{quote_all_data, to_module_path, to_rust_identifier, RenderContext};
+use crate::renderer::{quote_all_data, to_module_path, to_rust_identifier, RenderContext, RenderFilterMode};
 use daml_lf::element::{DamlArchive, DamlModule, DamlPackage};
 use itertools::Itertools;
 use std::fs::File;
@@ -18,7 +18,7 @@ pub fn generate_archive_separate(
     module_matcher: &ModuleMatcher,
     render_method: &RenderMethod,
 ) -> Result<(), Error> {
-    let ctx = RenderContext::with_archive(archive);
+    let ctx = RenderContext::with_archive(archive, RenderFilterMode::default());
     for package in archive.packages().values() {
         generate_package_source(&ctx, package, output_path, module_matcher, render_method)?
     }

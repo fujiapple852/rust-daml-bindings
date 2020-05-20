@@ -12,6 +12,13 @@ mod typevar_payload;
 mod util;
 mod wrapper;
 
+#[cfg(feature = "full")]
+mod defvalue_payload;
+#[cfg(feature = "full")]
+mod expr_converter;
+#[cfg(feature = "full")]
+mod expr_payload;
+
 use crate::convert::archive_payload::{DamlArchivePayload, DamlArchiveWrapper};
 use crate::convert::package_payload::DamlPackagePayload;
 use crate::convert::util::Required;
@@ -47,7 +54,7 @@ pub fn apply_payload<R, F>(payload: DamlLfArchivePayload, mut f: F) -> DamlLfRes
 where
     F: FnMut(&DamlPackage<'_>) -> R,
 {
-    let dalf = DamlLfArchive::new("", payload, DamlLfHashFunction::SHA256, "");
+    let dalf = DamlLfArchive::new("unnamed", payload, DamlLfHashFunction::SHA256, "");
     let package_payload = DamlPackagePayload::try_from(&dalf).map_err(DamlLfError::DamlLfConvertError)?;
     let archive_payload = DamlArchivePayload::from_single_package(package_payload);
     let archive_wrapper = DamlArchiveWrapper::new(&archive_payload);

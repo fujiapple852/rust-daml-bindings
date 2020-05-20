@@ -1,27 +1,53 @@
+use crate::convert::archive_payload::DamlArchivePayload;
 use crate::convert::data_payload::{DamlDataEnrichedPayload, DamlDataWrapper};
+use crate::convert::interned::{InternableDottedName, PackageInternedResolver};
 use crate::convert::package_payload::DamlPackagePayload;
-use crate::convert::type_payload::DamlDataRefWrapper;
-use crate::convert::wrapper::DamlPayloadDataWrapper;
+use crate::convert::type_payload::{DamlPackageRefPayload, DamlSynWrapper, DamlTyConWrapper};
+use crate::convert::wrapper::{DamlPayloadParentContext, DamlPayloadParentContextType};
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 
-/// Resolve a `DamlDataRefWrapper` to a `DamlDataWrapper`.
+/// Resolve a `DamlTyConWrapper` to a `DamlDataWrapper`.
 ///
-/// A `DamlDataRefPayload` "refers to" a `DamlDataPayload` which may live any `DamlModulePayload` of any
+/// A `DamlTyConPayload` "refers to" a `DamlDataPayload` which may live any `DamlModulePayload` of any
 /// `DamlPackagePayload` in the current `DamlArchivePayload`.
 ///
 /// This function attempts to find and return a `DamlDataWrapper` from the parent `DamlArchivePayload` which
-/// matches the package, module & data name specified in the supplied `DamlDataRefWrapper` and returns a
+/// matches the package, module & data name specified in the supplied `DamlTyConWrapper` and returns a
 /// `DamlCodeGenError` if no such entry exists.
-pub fn resolve_data_ref<'a>(data_ref: DamlDataRefWrapper<'a>) -> DamlLfConvertResult<DamlDataWrapper<'_>> {
-    let source_resolver = data_ref.context.package;
-    let source_data_type_name = data_ref.payload.data_name.resolve(source_resolver)?;
-    let target_package_id = data_ref.payload.package_ref.resolve(source_resolver)?;
-    let target_module_path = data_ref.payload.module_path.resolve(source_resolver)?.join(".");
+pub fn resolve_tycon(tycon: DamlTyConWrapper<'_>) -> DamlLfConvertResult<DamlDataWrapper<'_>> {
+    resolve(
+        tycon.context.package,
+        tycon.context.archive,
+        &tycon.payload.package_ref,
+        tycon.payload.module_path,
+        tycon.payload.data_name,
+    )
+}
+
+/// Resolve a `DamlSynWrapper` to a `DamlDataWrapper`.
+pub fn resolve_syn(tycon: DamlSynWrapper<'_>) -> DamlLfConvertResult<DamlDataWrapper<'_>> {
+    resolve(
+        tycon.context.package,
+        tycon.context.archive,
+        &tycon.payload.tysyn.package_ref,
+        tycon.payload.tysyn.module_path,
+        tycon.payload.tysyn.data_name,
+    )
+}
+
+fn resolve<'a, R: PackageInternedResolver>(
+    intern_resolver: &R,
+    archive: &'a DamlArchivePayload<'a>,
+    package_ref: &'a DamlPackageRefPayload<'a>,
+    module_path: InternableDottedName<'a>,
+    data_name: InternableDottedName<'a>,
+) -> DamlLfConvertResult<DamlDataWrapper<'a>> {
+    let source_data_type_name = data_name.resolve(intern_resolver)?;
+    let target_package_id = package_ref.resolve(intern_resolver)?;
+    let target_module_path = module_path.resolve(intern_resolver)?.join(".");
 
     // Extract the target package from the parent archive
-    let target_package: &DamlPackagePayload<'a> = data_ref
-        .context
-        .archive
+    let target_package: &DamlPackagePayload<'_> = archive
         .package_by_id(target_package_id)
         .ok_or_else(|| DamlLfConvertError::UnknownPackage(target_package_id.to_owned()))?;
 
@@ -45,11 +71,11 @@ pub fn resolve_data_ref<'a>(data_ref: DamlDataRefWrapper<'a>) -> DamlLfConvertRe
     .ok_or_else(|| DamlLfConvertError::UnknownData(source_data_type_name.join(".")))?;
 
     // Return the target data wrapped in the target package and module context
-    let target_data = DamlPayloadDataWrapper {
-        archive: data_ref.context.archive,
+    let target_data = DamlPayloadParentContext {
+        archive,
         package: target_package,
         module: target_module,
-        data: target_data_type,
+        parent: DamlPayloadParentContextType::Data(target_data_type),
     };
-    Ok(DamlDataWrapper::with_data(target_data, DamlDataEnrichedPayload::from_data_wrapper(target_data)))
+    Ok(DamlDataWrapper::with_data(target_data, DamlDataEnrichedPayload::from_data_wrapper(target_data)?))
 }

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::element::daml_package::DamlPackage;
 use crate::element::visitor::{DamlElementVisitor, DamlVisitableElement};
-use crate::element::{serialize, DamlData, DamlDataRef};
+use crate::element::{serialize, DamlData, DamlTyCon};
 use itertools::Itertools;
 use serde::Serialize;
 
@@ -30,12 +30,12 @@ impl<'a> DamlArchive<'a> {
         &self.packages
     }
 
-    /// Retrieve a `DamlData` contained within this `DamlArchive` referred to by the supplied `DamlDataRef` or `None` if
+    /// Retrieve a `DamlData` contained within this `DamlArchive` referred to by the supplied `DamlTyCon` or `None` if
     /// not such data item exists.
     ///
     /// TODO document this
-    pub fn data_by_ref<'b>(&'a self, data_ref: &'b DamlDataRef<'_>) -> Option<&'a DamlData<'a>> {
-        let (package_name, module_path, data_name) = data_ref.reference_parts();
+    pub fn data_by_tycon<'b>(&'a self, tycon: &'b DamlTyCon<'_>) -> Option<&'a DamlData<'a>> {
+        let (package_name, module_path, data_name) = tycon.tycon().reference_parts();
         self.packages.get(package_name)?.root_module().child_module_path(module_path)?.data_types().get(data_name)
     }
 }

@@ -8,7 +8,7 @@ use crate::renderer::data_renderer::full::{
 };
 use crate::renderer::type_renderer::quote_type;
 use crate::renderer::{normalize_generic_param, quote_escaped_ident, quote_ident, IsRenderable, RenderContext};
-use daml_lf::element::{DamlField, DamlType, DamlTypeVar, DamlVariant};
+use daml_lf::element::{DamlField, DamlType, DamlTypeVarWithKind, DamlVariant};
 
 /// Generate the variant `enum` and the `DamlDeserializeFrom` and `DamlDeserializeFrom` impls.
 pub fn quote_daml_variant(ctx: &RenderContext<'_>, variant: &DamlVariant<'_>) -> TokenStream {
@@ -27,7 +27,7 @@ pub fn quote_daml_variant(ctx: &RenderContext<'_>, variant: &DamlVariant<'_>) ->
 }
 
 /// Generate `enum Foo {...}` variant.
-fn quote_variant(variant_name: &str, variants: &[&DamlField<'_>], params: &[DamlTypeVar<'_>]) -> TokenStream {
+fn quote_variant(variant_name: &str, variants: &[&DamlField<'_>], params: &[DamlTypeVarWithKind<'_>]) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(variant_name);
     let bounded_param_tokens = quote_bounded_params(params);
     let unbounded_param_tokens = quote_unbounded_params(params);
@@ -65,7 +65,7 @@ fn quote_variant_body(variants: &[&DamlField<'_>]) -> TokenStream {
 fn quote_serialize_trait_impl(
     variant_name: &str,
     variants: &[&DamlField<'_>],
-    params: &[DamlTypeVar<'_>],
+    params: &[DamlTypeVarWithKind<'_>],
 ) -> TokenStream {
     let variant_name_tokens = quote_escaped_ident(variant_name);
     let unbounded_param_tokens = quote_unbounded_params(params);
@@ -88,7 +88,7 @@ fn quote_serialize_trait_impl(
 fn quote_deserialize_trait_impl(
     variant_name: &str,
     match_arms: &[&DamlField<'_>],
-    params: &[DamlTypeVar<'_>],
+    params: &[DamlTypeVarWithKind<'_>],
 ) -> TokenStream {
     let variant_name_tokens = quote_escaped_ident(variant_name);
     let unbounded_param_tokens = quote_unbounded_params(params);
@@ -150,7 +150,7 @@ fn quote_try_from_trait_match_arm(variant_name: &str, variant: &DamlField<'_>) -
     }
 }
 
-fn quote_unused_phantom_params(params: &[DamlTypeVar<'_>], variants: &[&DamlField<'_>]) -> TokenStream {
+fn quote_unused_phantom_params(params: &[DamlTypeVarWithKind<'_>], variants: &[&DamlField<'_>]) -> TokenStream {
     let unused_params: Vec<_> = params
         .iter()
         .filter_map(|p| {

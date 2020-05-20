@@ -2,6 +2,8 @@ daml 1.2
 
 module DA.Vehicle where
 
+import DA.Date
+
 data SimpleColor = Red | Green | Blue
   deriving (Eq, Show)
     
@@ -11,6 +13,8 @@ template Car
     driver : Party
     make : Text 
     color : SimpleColor
+    reg_year : Date
+    purchase_time : Time
   where
     signatory owner
   
@@ -18,13 +22,25 @@ template Car
       Repaint : ContractId Car
         with new_color : SimpleColor
         do
-          create this with color = new_color
-          
+          create this with color = new_color; reg_year = foo $ date 2991 Jan 1; purchase_time = bar $ datetime 1979 Jan 23 01 23 45
+
+runFoo : () -> Date
+runFoo _ = foo $ date 2019 Jan 1
+
+foo : Date -> Date
+foo d = d
+
+runBar : () -> Time
+runBar _ = bar $ datetime 2020 Feb 02 01 23 45
+
+bar : Time -> Time
+bar t = t
+
 test = scenario do
   owner <- getParty "Alice"
   driver <- getParty "Bob"
   cid <- submit owner do
-    create Car with owner; driver; make = "Ford"; color = Red
+    create Car with owner; driver; make = "Ford"; color = Red; reg_year = date 2020 Jan 1; purchase_time = datetime 2020 Feb 02 01 23 45
   submit owner do
     exercise cid Repaint with new_color = Blue
     
