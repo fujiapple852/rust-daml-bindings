@@ -13,6 +13,8 @@ pub struct Car {
     pub driver: DamlParty,
     pub make: DamlText,
     pub color: SimpleColor,
+    pub reg_year: DamlDate,
+    pub purchase_time: DamlTimestamp,
 }
 
 #[DamlChoices]

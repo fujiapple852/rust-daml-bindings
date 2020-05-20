@@ -2,13 +2,14 @@ use crate::element::visitor::DamlElementVisitor;
 use crate::element::DamlVisitableElement;
 use serde::Serialize;
 
+/// DOCME
 #[derive(Debug, Serialize, Clone)]
-pub struct DamlTypeVar<'a> {
+pub struct DamlTypeVarWithKind<'a> {
     var: &'a str,
     kind: DamlKind,
 }
 
-impl<'a> DamlTypeVar<'a> {
+impl<'a> DamlTypeVarWithKind<'a> {
     pub const fn new(var: &'a str, kind: DamlKind) -> Self {
         Self {
             var,
@@ -25,7 +26,7 @@ impl<'a> DamlTypeVar<'a> {
     }
 }
 
-impl<'a> DamlVisitableElement<'a> for DamlTypeVar<'a> {
+impl<'a> DamlVisitableElement<'a> for DamlTypeVarWithKind<'a> {
     fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
         visitor.pre_visit_type_var(self);
         self.kind.accept(visitor);
@@ -33,6 +34,7 @@ impl<'a> DamlVisitableElement<'a> for DamlTypeVar<'a> {
     }
 }
 
+/// DOCME
 #[derive(Debug, Serialize, Clone)]
 pub enum DamlKind {
     Star,
@@ -50,6 +52,7 @@ impl DamlVisitableElement<'_> for DamlKind {
     }
 }
 
+/// DOCME
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlArrow {
     params: Vec<DamlKind>,

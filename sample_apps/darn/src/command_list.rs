@@ -1,12 +1,10 @@
 #![allow(unused_imports)]
 #![allow(unused)]
+
 use crate::package_common::get_all_packages;
 use anyhow::Result;
 use daml::api::{DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
-use daml::lf::element::{
-    DamlAbsoluteDataRef, DamlArchive, DamlChoice, DamlDataRef, DamlElementVisitor, DamlLocalDataRef,
-    DamlNonLocalDataRef, DamlVisitableElement,
-};
+use daml::lf::element::{DamlArchive, DamlChoice, DamlElementVisitor, DamlVisitableElement};
 use daml::lf::{DamlLfArchive, DamlLfArchivePayload, DamlLfHashFunction, DarFile, DarManifest};
 use daml::prelude::{DamlError, DamlResult};
 use futures::stream::FuturesUnordered;

@@ -1,27 +1,26 @@
 use crate::convert::{AttrChoice, AttrEnum, AttrField, AttrRecord, AttrTemplate, AttrType, AttrVariant};
 use daml_lf::element::{
-    DamlAbsoluteDataRef, DamlChoice, DamlDataRef, DamlEnum, DamlField, DamlKind, DamlLocalDataRef, DamlRecord,
-    DamlTemplate, DamlType, DamlTypeVar, DamlVariant,
+    DamlAbsoluteTyCon, DamlChoice, DamlEnum, DamlField, DamlKind, DamlLocalTyCon, DamlRecord, DamlTemplate, DamlTyCon,
+    DamlTyConName, DamlType, DamlTypeVarWithKind, DamlVariant,
 };
 
 impl<'a> From<&'a AttrRecord> for DamlRecord<'a> {
     fn from(attr_record: &'a AttrRecord) -> Self {
         let fields: Vec<_> = attr_record.fields.iter().map(DamlField::from).collect();
         let type_arguments: Vec<_> =
-            attr_record.type_arguments.iter().map(|arg| DamlTypeVar::new(arg, DamlKind::Star)).collect();
-        DamlRecord::new(&attr_record.name, fields, type_arguments)
+            attr_record.type_arguments.iter().map(|arg| DamlTypeVarWithKind::new(arg, DamlKind::Star)).collect();
+        DamlRecord::new(&attr_record.name, fields, type_arguments, true)
     }
 }
 
 impl<'a> From<&'a AttrTemplate> for DamlTemplate<'a> {
     fn from(attr_template: &'a AttrTemplate) -> Self {
         let fields: Vec<DamlField<'_>> = attr_template.fields.iter().map(DamlField::from).collect();
-        DamlTemplate::new(
+        DamlTemplate::new_with_defaults(
             &attr_template.name,
             &attr_template.package_id,
             to_vec_str(&attr_template.module_path),
             fields,
-            vec![],
         )
     }
 }
@@ -40,16 +39,16 @@ impl<'a> From<&'a AttrVariant> for DamlVariant<'a> {
     fn from(attr_variant: &'a AttrVariant) -> Self {
         let variant_fields = attr_variant.fields.iter().map(DamlField::from).collect();
         let type_arguments: Vec<_> =
-            attr_variant.type_arguments.iter().map(|arg| DamlTypeVar::new(arg, DamlKind::Star)).collect();
-        DamlVariant::new(&attr_variant.name, variant_fields, type_arguments)
+            attr_variant.type_arguments.iter().map(|arg| DamlTypeVarWithKind::new(arg, DamlKind::Star)).collect();
+        DamlVariant::new(&attr_variant.name, variant_fields, type_arguments, true)
     }
 }
 
 impl<'a> From<&'a AttrEnum> for DamlEnum<'a> {
     fn from(attr_enum: &'a AttrEnum) -> Self {
         let type_arguments: Vec<_> =
-            attr_enum.type_arguments.iter().map(|arg| DamlTypeVar::new(arg, DamlKind::Star)).collect();
-        DamlEnum::new(&attr_enum.name, to_vec_str(&attr_enum.fields), type_arguments)
+            attr_enum.type_arguments.iter().map(|arg| DamlTypeVarWithKind::new(arg, DamlKind::Star)).collect();
+        DamlEnum::new(&attr_enum.name, to_vec_str(&attr_enum.fields), type_arguments, true)
     }
 }
 
@@ -75,32 +74,26 @@ impl<'a> From<&'a AttrType> for DamlType<'a> {
             AttrType::Party => DamlType::Party,
             AttrType::Bool => DamlType::Bool,
             AttrType::Date => DamlType::Date,
-            AttrType::List(nested) => DamlType::List(Box::new(DamlType::from(nested.as_ref()))),
-            AttrType::TextMap(nested) => DamlType::TextMap(Box::new(DamlType::from(nested.as_ref()))),
-            AttrType::Optional(nested) => DamlType::Optional(Box::new(DamlType::from(nested.as_ref()))),
-            AttrType::DataRef(data_name, path, type_arguments) =>
+            AttrType::List(nested) => DamlType::List(vec![DamlType::from(nested.as_ref())]),
+            AttrType::TextMap(nested) => DamlType::TextMap(vec![DamlType::from(nested.as_ref())]),
+            AttrType::Optional(nested) => DamlType::Optional(vec![DamlType::from(nested.as_ref())]),
+            AttrType::TyCon(data_name, path, type_arguments) =>
                 if path.is_empty() {
-                    DamlType::DataRef(DamlDataRef::Local(DamlLocalDataRef::new(
-                        data_name,
-                        "",
-                        "",
-                        to_vec_str(path),
+                    DamlType::TyCon(DamlTyCon::new(
+                        DamlTyConName::Local(DamlLocalTyCon::new(data_name, "", "", to_vec_str(path))),
                         type_arguments.iter().map(DamlType::from).collect(),
-                    )))
+                    ))
                 } else {
-                    DamlType::DataRef(DamlDataRef::Absolute(DamlAbsoluteDataRef::new(
-                        data_name,
-                        "",
-                        "",
-                        to_vec_str(path),
+                    DamlType::TyCon(DamlTyCon::new(
+                        DamlTyConName::Absolute(DamlAbsoluteTyCon::new(data_name, "", "", to_vec_str(path))),
                         type_arguments.iter().map(DamlType::from).collect(),
-                    )))
+                    ))
                 },
             AttrType::Box(boxed_data) => {
                 let inner_type = DamlType::from(boxed_data.as_ref());
                 match inner_type {
-                    DamlType::DataRef(data_ref) => DamlType::BoxedDataRef(data_ref),
-                    _ => panic!("expected DataRef"),
+                    DamlType::TyCon(tycon) => DamlType::BoxedTyCon(tycon),
+                    _ => panic!("expected TyCon"),
                 }
             },
         }

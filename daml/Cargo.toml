@@ -11,7 +11,7 @@ edition = "2018"
 
 [features]
 default = []
-full = [ "api", "macros", "derive", "codegen", "lf", "util", "prelude" ]
+full = [ "api", "macros", "derive", "codegen", "lf_full", "util", "prelude" ]
 
 # Enable GRPC ledger API feature.
 api = [ "daml_api" ]
@@ -27,6 +27,9 @@ codegen = [ "daml_codegen" ]
 
 # Enable DAML-LF feature.
 lf = [ "daml_lf" ]
+
+# Enable DAML-LF feature with support for all types
+lf_full = [ "daml_lf", "daml_lf/full" ]
 
 # Enable additional utilities feature.
 util = [ "daml_util" ]

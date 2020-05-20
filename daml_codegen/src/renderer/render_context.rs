@@ -2,27 +2,65 @@ use daml_lf::element::DamlArchive;
 
 /// Contextual information required during code generation.
 #[derive(Debug)]
-pub enum RenderContext<'a> {
-    Intermediate(DamlArchive<'a>),
-    Full(&'a DamlArchive<'a>),
+pub struct RenderContext<'a> {
+    mode: RenderMode<'a>,
+    filter_mode: RenderFilterMode,
 }
 
 impl Default for RenderContext<'_> {
     fn default() -> Self {
-        RenderContext::Intermediate(DamlArchive::default())
+        Self {
+            mode: RenderMode::default(),
+            filter_mode: RenderFilterMode::default(),
+        }
     }
 }
 
 impl<'a> RenderContext<'a> {
     /// Create a new `RenderContext` with a `DamlArchive`.
-    pub fn with_archive(archive: &'a DamlArchive<'a>) -> Self {
-        RenderContext::Full(archive)
+    pub fn with_archive(archive: &'a DamlArchive<'a>, filter_mode: RenderFilterMode) -> Self {
+        Self {
+            mode: RenderMode::Full(archive),
+            filter_mode,
+        }
     }
 
     pub fn archive(&self) -> &DamlArchive<'_> {
-        match self {
-            RenderContext::Intermediate(archive) => archive,
-            RenderContext::Full(archive) => archive,
+        match &self.mode {
+            RenderMode::Intermediate(archive) => archive,
+            RenderMode::Full(archive) => archive,
         }
+    }
+
+    pub const fn filter_mode(&self) -> RenderFilterMode {
+        self.filter_mode
+    }
+}
+
+/// Rendering mode.
+#[derive(Debug)]
+pub enum RenderMode<'a> {
+    Intermediate(DamlArchive<'a>),
+    Full(&'a DamlArchive<'a>),
+}
+
+impl Default for RenderMode<'_> {
+    fn default() -> Self {
+        RenderMode::Intermediate(DamlArchive::default())
+    }
+}
+
+/// Rendering filter mode.
+#[derive(Debug, Clone, Copy)]
+pub enum RenderFilterMode {
+    /// Exclude only fields with type constructors that contain Higher Kinded Types (HKT) only.
+    HKT,
+    /// Exclude all non-serializable fields.
+    NonSerializable,
+}
+
+impl Default for RenderFilterMode {
+    fn default() -> Self {
+        RenderFilterMode::HKT
     }
 }

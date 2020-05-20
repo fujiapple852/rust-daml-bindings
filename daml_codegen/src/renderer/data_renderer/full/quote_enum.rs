@@ -7,7 +7,7 @@ use crate::renderer::data_renderer::full::{
     quote_bounded_params, quote_deserialize_where, quote_serialize_where, quote_unbounded_params,
 };
 use crate::renderer::{quote_escaped_ident, RenderContext};
-use daml_lf::element::{DamlEnum, DamlTypeVar};
+use daml_lf::element::{DamlEnum, DamlTypeVarWithKind};
 
 /// Generate the `enum` and the `From` and `TryFrom` impls.
 pub fn quote_daml_enum(_ctx: &RenderContext<'_>, daml_enum: &DamlEnum<'_>) -> TokenStream {
@@ -24,7 +24,7 @@ pub fn quote_daml_enum(_ctx: &RenderContext<'_>, daml_enum: &DamlEnum<'_>) -> To
 }
 
 /// Generate `enum Foo {...}` enum.
-fn quote_enum(enum_name: &str, variants: &[&str], type_arguments: &[DamlTypeVar<'_>]) -> TokenStream {
+fn quote_enum(enum_name: &str, variants: &[&str], type_arguments: &[DamlTypeVarWithKind<'_>]) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(enum_name);
     let bounded_param_tokens = quote_bounded_params(type_arguments);
     let unbounded_param_tokens = quote_unbounded_params(type_arguments);
@@ -56,7 +56,7 @@ fn quote_enum_body(enum_variants: &[&str]) -> TokenStream {
 fn quote_serialize_trait_impl(
     enum_name: &str,
     enum_variants: &[&str],
-    type_arguments: &[DamlTypeVar<'_>],
+    type_arguments: &[DamlTypeVarWithKind<'_>],
 ) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(enum_name);
     let unbounded_param_tokens = quote_unbounded_params(type_arguments);
@@ -78,7 +78,7 @@ fn quote_serialize_trait_impl(
 fn quote_deserialize_trait_impl(
     enum_name: &str,
     enum_variants: &[&str],
-    type_arguments: &[DamlTypeVar<'_>],
+    type_arguments: &[DamlTypeVarWithKind<'_>],
 ) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(enum_name);
     let unbounded_param_tokens = quote_unbounded_params(type_arguments);

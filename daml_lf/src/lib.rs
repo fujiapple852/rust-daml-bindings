@@ -11,7 +11,6 @@
 //! See [here](https://github.com/digital-asset/daml/tree/master/daml-lf) for full details of DAML-LF.
 //!
 //! [`daml_package_service`]: ../daml_api/service/struct.DamlPackageService.html
-
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
     clippy::module_name_repetitions,

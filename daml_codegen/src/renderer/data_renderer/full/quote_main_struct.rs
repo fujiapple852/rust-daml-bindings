@@ -9,7 +9,7 @@ use crate::renderer::data_renderer::full::{
 use crate::renderer::render_context::RenderContext;
 use crate::renderer::type_renderer::quote_type;
 use crate::renderer::{make_ignored_ident, normalize_generic_param, quote_escaped_ident, quote_ident, IsRenderable};
-use daml_lf::element::{DamlField, DamlRecord, DamlType, DamlTypeVar};
+use daml_lf::element::{DamlField, DamlRecord, DamlType, DamlTypeVarWithKind};
 
 /// Generate the `Foo` struct and methods.
 pub fn quote_daml_record(ctx: &RenderContext<'_>, daml_record: &DamlRecord<'_>) -> TokenStream {
@@ -21,7 +21,7 @@ pub fn quote_daml_record_and_impl(
     ctx: &RenderContext<'_>,
     name: &str,
     fields: &[DamlField<'_>],
-    params: &[DamlTypeVar<'_>],
+    params: &[DamlTypeVarWithKind<'_>],
 ) -> TokenStream {
     let supported_fields: Vec<_> =
         fields.iter().filter(|&field| IsRenderable::new(ctx).check_type(field.ty())).collect();
@@ -38,7 +38,11 @@ pub fn quote_daml_record_and_impl(
 }
 
 /// Generate `struct Foo {...}` struct.
-fn quote_struct(struct_name: &str, struct_fields: &[&DamlField<'_>], params: &[DamlTypeVar<'_>]) -> TokenStream {
+fn quote_struct(
+    struct_name: &str,
+    struct_fields: &[&DamlField<'_>],
+    params: &[DamlTypeVarWithKind<'_>],
+) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let bounded_param_tokens = quote_bounded_params(params);
     let unbounded_param_tokens = quote_unbounded_params(params);
@@ -56,7 +60,11 @@ fn quote_struct(struct_name: &str, struct_fields: &[&DamlField<'_>], params: &[D
 }
 
 /// Generate the `Foo::new(...)` method.
-fn quote_new_method(struct_name: &str, struct_fields: &[&DamlField<'_>], params: &[DamlTypeVar<'_>]) -> TokenStream {
+fn quote_new_method(
+    struct_name: &str,
+    struct_fields: &[&DamlField<'_>],
+    params: &[DamlTypeVarWithKind<'_>],
+) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let method_arguments_tokens = quote_method_arguments(struct_fields);
     let method_body_tokens = quote_new_method_init(struct_fields);
@@ -79,7 +87,7 @@ fn quote_new_method(struct_name: &str, struct_fields: &[&DamlField<'_>], params:
 fn quote_serialize_trait_impl(
     struct_name: &str,
     struct_fields: &[&DamlField<'_>],
-    params: &[DamlTypeVar<'_>],
+    params: &[DamlTypeVarWithKind<'_>],
 ) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let unbounded_param_tokens = quote_unbounded_params(params);
@@ -98,7 +106,7 @@ fn quote_serialize_trait_impl(
 fn quote_deserialize_trait_impl(
     struct_name: &str,
     struct_fields: &[&DamlField<'_>],
-    params: &[DamlTypeVar<'_>],
+    params: &[DamlTypeVarWithKind<'_>],
 ) -> TokenStream {
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let unbounded_param_tokens = quote_unbounded_params(params);
@@ -179,7 +187,10 @@ fn quote_deserialize_trait_field(field: &DamlField<'_>) -> TokenStream {
     )
 }
 
-fn quote_decl_unused_phantom_params(params: &[DamlTypeVar<'_>], struct_fields: &[&DamlField<'_>]) -> TokenStream {
+fn quote_decl_unused_phantom_params(
+    params: &[DamlTypeVarWithKind<'_>],
+    struct_fields: &[&DamlField<'_>],
+) -> TokenStream {
     quote_unused_phantom_params(params, struct_fields, |param| {
         let name_tokens = quote_escaped_ident(make_ignored_ident(param.var()));
         let param_tokens = quote_ident(normalize_generic_param(param.var()).to_uppercase());
@@ -187,7 +198,10 @@ fn quote_decl_unused_phantom_params(params: &[DamlTypeVar<'_>], struct_fields: &
     })
 }
 
-fn quote_init_unused_phantom_params(params: &[DamlTypeVar<'_>], struct_fields: &[&DamlField<'_>]) -> TokenStream {
+fn quote_init_unused_phantom_params(
+    params: &[DamlTypeVarWithKind<'_>],
+    struct_fields: &[&DamlField<'_>],
+) -> TokenStream {
     quote_unused_phantom_params(params, struct_fields, |param| {
         let name_tokens = quote_escaped_ident(make_ignored_ident(param.var()));
         quote!( #name_tokens: std::marker::PhantomData )
@@ -195,9 +209,9 @@ fn quote_init_unused_phantom_params(params: &[DamlTypeVar<'_>], struct_fields: &
 }
 
 fn quote_unused_phantom_params(
-    params: &[DamlTypeVar<'_>],
+    params: &[DamlTypeVarWithKind<'_>],
     struct_fields: &[&DamlField<'_>],
-    type_var_quoter: impl Fn(&DamlTypeVar<'_>) -> TokenStream,
+    type_var_quoter: impl Fn(&DamlTypeVarWithKind<'_>) -> TokenStream,
 ) -> TokenStream {
     let all_params: Vec<_> = params
         .iter()

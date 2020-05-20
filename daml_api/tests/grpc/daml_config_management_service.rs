@@ -13,7 +13,7 @@ async fn test_get_time_model() -> TestResult {
     let _lock = WALLCLOCK_SANDBOX_LOCK.lock();
     let ledger_client = new_wallclock_sandbox().await?;
     let (configuration_generation, time_model) = ledger_client.config_management_service().get_time_model().await?;
-    assert_eq!(0, configuration_generation);
+    assert_eq!(1, configuration_generation);
     assert_eq!(Duration::from_secs(0), *time_model.avg_transaction_latency());
     assert_eq!(Duration::from_secs(30), *time_model.min_skew());
     assert_eq!(Duration::from_secs(30), *time_model.max_skew());
@@ -32,12 +32,12 @@ async fn test_set_time_model() -> TestResult {
     let new_time_model = DamlTimeModel::new(Duration::from_secs(0), Duration::from_secs(30), Duration::from_secs(30));
     let new_configuration_generation = ledger_client
         .config_management_service()
-        .set_time_model(create_test_uuid(SUBMISSION_ID_PREFIX), maximum_record_time, 0, new_time_model)
+        .set_time_model(create_test_uuid(SUBMISSION_ID_PREFIX), maximum_record_time, 1, new_time_model)
         .await?;
-    assert_eq!(1, new_configuration_generation);
+    assert_eq!(2, new_configuration_generation);
     let (fetch_configuration_generation, fetch_time_model) =
         ledger_client.config_management_service().get_time_model().await?;
-    assert_eq!(1, fetch_configuration_generation);
+    assert_eq!(2, fetch_configuration_generation);
     assert_eq!(Duration::from_secs(0), *fetch_time_model.avg_transaction_latency());
     assert_eq!(Duration::from_secs(30), *fetch_time_model.min_skew());
     assert_eq!(Duration::from_secs(30), *fetch_time_model.max_skew());
