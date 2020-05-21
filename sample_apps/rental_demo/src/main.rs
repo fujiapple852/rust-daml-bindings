@@ -8,7 +8,7 @@ use std::convert::TryFrom;
 
 #[tokio::main]
 async fn main() -> DamlResult<()> {
-    log4rs::init_file("sample_apps/rental_demo/resources/log4rs.yml", log4rs::file::Deserializers::default())
+    log4rs::init_file("resources/log4rs.yml", log4rs::file::Deserializers::default())
         .map_err(|e| DamlError::Other(e.to_string()))?;
     let client = DamlLedgerClientBuilder::uri("http://localhost:8082").connect().await?.reset_and_wait().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();

@@ -31,12 +31,12 @@ const PARTY_BOB: &str = "Bob";
 const CHOICE_RESPOND_PING: &str = "RespondPing";
 const CHOICE_RESPOND_PONG: &str = "RespondPong";
 const TOKEN_VALIDITY_SECS: i64 = 60;
-// const SERVER_CA_CERT_PATH: &str = "resources/testing_types_sandbox/.tls_certs/ca.cert";
-const TOKEN_KEY_PATH: &str = "resources/testing_types_sandbox/.auth_certs/es256.key";
+// const SERVER_CA_CERT_PATH: &str = "../../resources/testing_types_sandbox/.tls_certs/ca.cert";
+const TOKEN_KEY_PATH: &str = "../../resources/testing_types_sandbox/.auth_certs/es256.key";
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    log4rs::init_file("sample_apps/ping_pong_demo/log4rs.yml", log4rs::file::Deserializers::default())?;
+    log4rs::init_file("log4rs.yml", log4rs::file::Deserializers::default())?;
     let ledger_client = create_connection("https://localhost:8080").await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     send_initial_ping(&ledger_client, &package_id, PARTY_ALICE).await?;
