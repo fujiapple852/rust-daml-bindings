@@ -1,5 +1,5 @@
 use crate::convert::archive_payload::DamlArchiveWrapper;
-use crate::convert::data_data_box_checker::DamlDataBoxChecker;
+use crate::convert::data_box_checker::DamlDataBoxChecker;
 use crate::convert::data_payload::{DamlChoiceWrapper, DamlDataEnrichedPayload, DamlDataPayload, DamlDataWrapper};
 use crate::convert::field_payload::{DamlFieldPayload, DamlFieldWrapper};
 use crate::convert::interned::{InternableDottedName, PackageInternedResolver};
@@ -11,6 +11,8 @@ use crate::convert::type_payload::{
     DamlTyConWrapper, DamlTypePayload, DamlTypeSynNameWrapper, DamlTypeWrapper, DamlVarWrapper,
 };
 use crate::convert::typevar_payload::{DamlKindPayload, DamlTypeVarWithKindPayload, DamlTypeVarWithKindWrapper};
+#[cfg(feature = "full")]
+use crate::convert::util::Required;
 use crate::convert::wrapper::{DamlPayloadParentContext, DamlPayloadParentContextType, PayloadElementWrapper};
 #[cfg(feature = "full")]
 use crate::element::DamlDefValue;
@@ -219,7 +221,11 @@ impl<'a> TryFrom<DamlChoiceWrapper<'a>> for DamlChoice<'a> {
 
     fn try_from(choice: DamlChoiceWrapper<'a>) -> DamlLfConvertResult<Self> {
         let name = choice.payload.name.resolve(choice.context.package)?;
-        let target_data_wrapper = match &choice.payload.argument_type {
+        let resolved_type = match &choice.payload.argument_type {
+            DamlTypePayload::Interned(i) => choice.context.package.resolve_type(*i)?,
+            ty => ty,
+        };
+        let target_data_wrapper = match resolved_type {
             DamlTypePayload::TyCon(tycon) => Ok(resolve_tycon(choice.wrap(tycon))?),
             _ => Err(DamlLfConvertError::UnexpectedType(
                 "TyCon".to_owned(),
@@ -235,7 +241,32 @@ impl<'a> TryFrom<DamlChoiceWrapper<'a>> for DamlChoice<'a> {
             _ => Err(DamlLfConvertError::UnexpectedChoiceData),
         }?;
         let return_type = DamlType::try_from(&choice.wrap(&choice.payload.return_type))?;
-        Ok(DamlChoice::new(name, fields, return_type))
+        let consuming = choice.payload.consuming;
+        let self_binder = choice.payload.self_binder.resolve(choice.context.package)?;
+        #[cfg(feature = "full")]
+        let update = DamlExpr::try_from(&choice.wrap(&choice.payload.update))?;
+        #[cfg(feature = "full")]
+        let controllers = DamlExpr::try_from(&choice.wrap(&choice.payload.controllers))?;
+        #[cfg(feature = "full")]
+        let observers =
+            if choice.context.package.language_version.supports_feature(&LanguageFeatureVersion::CHOICE_OBSERVERS) {
+                DamlExpr::try_from(&choice.wrap(choice.payload.observers.as_ref().req()?))?
+            } else {
+                DamlExpr::Nil(DamlType::List(vec![DamlType::Party]))
+            };
+        Ok(DamlChoice::new(
+            name,
+            fields,
+            return_type,
+            consuming,
+            self_binder,
+            #[cfg(feature = "full")]
+            update,
+            #[cfg(feature = "full")]
+            controllers,
+            #[cfg(feature = "full")]
+            observers,
+        ))
     }
 }
 
@@ -282,6 +313,11 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
                     .map(|arg| DamlType::try_from(&daml_type.wrap(arg)))
                     .collect::<DamlLfConvertResult<Vec<_>>>()?,
             ),
+            DamlTypePayload::GenMap(args) => DamlType::GenMap(
+                args.iter()
+                    .map(|arg| DamlType::try_from(&daml_type.wrap(arg)))
+                    .collect::<DamlLfConvertResult<Vec<_>>>()?,
+            ),
             DamlTypePayload::Optional(args) => DamlType::Optional(
                 args.iter()
                     .map(|arg| DamlType::try_from(&daml_type.wrap(arg)))
@@ -313,6 +349,11 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
             DamlTypePayload::Forall(forall) => DamlType::Forall(DamlForall::try_from(&daml_type.wrap(forall))?),
             DamlTypePayload::Struct(tuple) => DamlType::Struct(DamlStruct::try_from(&daml_type.wrap(tuple))?),
             DamlTypePayload::Syn(syn) => DamlType::Syn(DamlSyn::try_from(&daml_type.wrap(syn))?),
+            DamlTypePayload::Interned(i) => {
+                let resolved = daml_type.context.package.resolve_type(*i)?;
+                let wrapped = daml_type.wrap(resolved);
+                DamlType::try_from(&wrapped)?
+            },
         })
     }
 }

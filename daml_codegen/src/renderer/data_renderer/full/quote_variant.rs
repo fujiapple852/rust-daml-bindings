@@ -34,7 +34,7 @@ fn quote_variant(variant_name: &str, variants: &[&DamlField<'_>], params: &[Daml
     let body_tokens = quote_variant_body(variants);
     let phantom_tokens = quote_unused_phantom_params(params, variants);
     quote!(
-        #[derive(Eq, PartialEq, Clone, Debug)]
+        #[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Debug)]
         pub enum #enum_name_tokens #bounded_param_tokens {
             #body_tokens
             #phantom_tokens

@@ -1,6 +1,6 @@
 mod archive_converter;
 mod archive_payload;
-mod data_data_box_checker;
+mod data_box_checker;
 mod data_payload;
 mod field_payload;
 mod interned;

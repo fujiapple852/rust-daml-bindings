@@ -1,3 +1,6 @@
+use std::borrow::Cow;
+use std::convert::{TryFrom, TryInto};
+
 use crate::convert::field_payload::DamlFieldPayload;
 use crate::convert::interned::{InternableDottedName, InternableString, PackageInternedResolver};
 use crate::convert::typevar_payload::DamlTypeVarWithKindPayload;
@@ -7,8 +10,6 @@ use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::r#type::{Con, Forall, Struct, Sum, Syn, Var};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::{package_ref, PrimType, TypeSynName};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::{ModuleRef, PackageRef, Type, TypeConName};
-use std::borrow::Cow;
-use std::convert::{TryFrom, TryInto};
 
 ///
 pub type DamlTypeWrapper<'a> = PayloadElementWrapper<'a, &'a DamlTypePayload<'a>>;
@@ -28,6 +29,7 @@ pub enum DamlTypePayload<'a> {
     Update,
     Scenario,
     TextMap(Vec<DamlTypePayload<'a>>),
+    GenMap(Vec<DamlTypePayload<'a>>),
     Optional(Vec<DamlTypePayload<'a>>),
     TyCon(DamlTyConPayload<'a>),
     Var(DamlVarPayload<'a>),
@@ -38,6 +40,7 @@ pub enum DamlTypePayload<'a> {
     Forall(DamlForallPayload<'a>),
     Struct(DamlStructPayload<'a>),
     Syn(DamlSynPayload<'a>),
+    Interned(i32),
 }
 
 impl<'a> DamlTypePayload<'a> {
@@ -56,6 +59,7 @@ impl<'a> DamlTypePayload<'a> {
             DamlTypePayload::Update => "Update",
             DamlTypePayload::Scenario => "Scenario",
             DamlTypePayload::TextMap(_) => "TextMap",
+            DamlTypePayload::GenMap(_) => "GenMap",
             DamlTypePayload::Optional(_) => "Optional",
             DamlTypePayload::TyCon(_) => "TyCon",
             DamlTypePayload::Var(_) => "Var",
@@ -66,6 +70,7 @@ impl<'a> DamlTypePayload<'a> {
             DamlTypePayload::Forall(_) => "Forall",
             DamlTypePayload::Struct(_) => "Struct",
             DamlTypePayload::Syn(_) => "Syn",
+            DamlTypePayload::Interned(_) => "Interned",
         }
     }
 }
@@ -106,6 +111,9 @@ impl<'a> TryFrom<&'a Type> for DamlTypePayload<'a> {
                 PrimType::Textmap => Ok(DamlTypePayload::TextMap(
                     prim.args.iter().map(DamlTypePayload::try_from).collect::<DamlLfConvertResult<Vec<_>>>()?,
                 )),
+                PrimType::Genmap => Ok(DamlTypePayload::GenMap(
+                    prim.args.iter().map(DamlTypePayload::try_from).collect::<DamlLfConvertResult<Vec<_>>>()?,
+                )),
                 PrimType::Any => Ok(DamlTypePayload::Any),
                 PrimType::TypeRep => Ok(DamlTypePayload::TypeRep),
             },
@@ -121,7 +129,7 @@ impl<'a> TryFrom<&'a Type> for DamlTypePayload<'a> {
             Sum::Forall(forall) => Ok(DamlTypePayload::Forall(DamlForallPayload::try_from(forall.as_ref())?)),
             Sum::Struct(tuple) => Ok(DamlTypePayload::Struct(DamlStructPayload::try_from(tuple)?)),
             Sum::Syn(syn) => Ok(DamlTypePayload::Syn(DamlSynPayload::try_from(syn)?)),
-            Sum::Fun(_) => Err(DamlLfConvertError::UnsupportedType("Fun".to_owned())),
+            Sum::Interned(i) => Ok(DamlTypePayload::Interned(*i)),
         }
     }
 }

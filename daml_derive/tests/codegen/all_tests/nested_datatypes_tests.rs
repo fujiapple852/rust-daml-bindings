@@ -4,14 +4,13 @@ use crate::common::test_utils::{
 };
 use daml::grpc_api::data::command::DamlCommand;
 use daml::grpc_api::data::event::DamlEvent;
-use daml::grpc_api::primitive_types::DamlTextMap;
+use daml::grpc_api::primitive_types::{DamlGenMap, DamlText, DamlTextMap};
 use daml::grpc_api::{CommandExecutor, DamlSimpleExecutorBuilder};
 use daml_derive::daml_codegen;
-use std::collections::HashMap;
 use std::convert::TryInto;
 
 daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_9_0-lf_1_8.dar",
+    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_9_0-lf_1_11.dar",
     module_filter_regex = "DA.Nested"
 );
 
@@ -23,11 +22,15 @@ pub async fn test() -> TestResult {
     let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
 
     // construct dummy data
-    let mut my_map: DamlTextMap<MyNestedData> = HashMap::new();
+    let mut my_map: DamlTextMap<MyNestedData> = DamlTextMap::new();
     my_map.insert("test_key".to_owned(), MyNestedData::new(true));
     let opt_of_list = Some(vec!["text".to_owned()]);
     let list_of_opt_of_map_of_data = vec![Some(my_map), None];
-    let nested_template = NestedTemplate::new("Alice", opt_of_list, list_of_opt_of_map_of_data);
+    let map_of_data_to_text =
+        vec![(MyNestedData::new(true), "TrueCase".to_owned()), (MyNestedData::new(false), "FalseCase".to_owned())]
+            .into_iter()
+            .collect::<DamlGenMap<_, _>>();
+    let nested_template = NestedTemplate::new("Alice", opt_of_list, list_of_opt_of_map_of_data, map_of_data_to_text);
 
     // submit create command and extract result
     let create_command = nested_template.create_command();
@@ -43,12 +46,19 @@ pub async fn test() -> TestResult {
 
     // construct dummy arguments
     let opt_of_list_param = Some(vec!["foo".to_owned()]);
-    let mut my_map_param: DamlTextMap<MyNestedData> = HashMap::new();
+    let mut my_map_param: DamlTextMap<MyNestedData> = DamlTextMap::new();
     my_map_param.insert("new_test_key_true".to_owned(), MyNestedData::new(true));
     my_map_param.insert("new_test_key_false".to_owned(), MyNestedData::new(false));
     let list_of_opt_of_map_of_data_param = vec![Some(my_map_param), None, None];
-    let exercise_command =
-        nested_contract.id().do_something_complex_command(opt_of_list_param, list_of_opt_of_map_of_data_param);
+    let map_of_data_to_text_param: DamlGenMap<MyNestedData, DamlText> =
+        vec![(MyNestedData::new(true), "TrueCase".to_owned()), (MyNestedData::new(false), "FalseCase".to_owned())]
+            .into_iter()
+            .collect();
+    let exercise_command = nested_contract.id().do_something_complex_command(
+        opt_of_list_param,
+        list_of_opt_of_map_of_data_param,
+        map_of_data_to_text_param,
+    );
     let exercise_command = update_exercise_command_package_id_for_testing(&client, exercise_command).await?;
     let exercise_result = alice_executor.execute_for_transaction(DamlCommand::Exercise(exercise_command)).await?;
     let created_event: DamlEvent = exercise_result.take_events().swap_remove(1);

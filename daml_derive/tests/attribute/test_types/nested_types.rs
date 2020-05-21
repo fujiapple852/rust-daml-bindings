@@ -16,6 +16,7 @@ pub struct NestedTemplate {
     pub owner: DamlParty,
     pub opt_of_list: DamlOptional<DamlList<DamlText>>,
     pub list_of_opt_of_map_of_data: DamlList<DamlOptional<DamlTextMap<MyNestedData>>>,
+    pub map_of_data_to_text: DamlGenMap<MyNestedData, DamlText>,
 }
 
 #[DamlChoices]
@@ -25,6 +26,7 @@ impl NestedTemplate {
         &self,
         new_opt_of_list: DamlOptional<DamlList<DamlText>>,
         new_list_of_opt_of_map_of_data: DamlList<DamlOptional<DamlTextMap<MyNestedData>>>,
+        new_map_of_data_to_text: DamlGenMap<MyNestedData, DamlText>,
     ) {
     }
 }

@@ -2,8 +2,8 @@ use crate::element::DamlPackage;
 use crate::error::{DamlLfError, DamlLfResult};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1;
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::module::Name;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1_8::archive_payload::Sum;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1_8::ArchivePayload;
+use crate::lf_protobuf::com::digitalasset::daml_lf_dev::archive_payload::Sum;
+use crate::lf_protobuf::com::digitalasset::daml_lf_dev::ArchivePayload;
 use crate::{convert, LanguageV1MinorVersion, LanguageVersion};
 use bytes::Bytes;
 use itertools::Itertools;
@@ -68,7 +68,6 @@ impl DamlLfArchivePayload {
     pub fn from_bytes(payload_buffer: impl Into<Bytes>) -> DamlLfResult<Self> {
         let payload: ArchivePayload = ArchivePayload::decode(payload_buffer.into())?;
         match payload.sum {
-            Some(Sum::DamlLf0(_)) => Err(DamlLfError::new_unsupported_version(LanguageVersion::LV0.to_string())),
             Some(Sum::DamlLf1(p)) => Ok(Self::new(
                 LanguageVersion::new_v1(LanguageV1MinorVersion::try_from(payload.minor.as_str())?),
                 DamlLfPackage::V1(p),

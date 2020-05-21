@@ -15,6 +15,7 @@ pub enum AttrType {
     Box(Box<AttrType>),
     List(Box<AttrType>),
     TextMap(Box<AttrType>),
+    GenMap(Box<AttrType>, Box<AttrType>),
     Optional(Box<AttrType>),
     TyCon(String, Vec<String>, Vec<AttrType>),
 }
@@ -81,6 +82,7 @@ fn daml_type_from_segments(segments: &[&PathSegment]) -> AttrType {
         },
         ("DamlList", &[ty]) => AttrType::List(Box::new(AttrType::from_type(ty))),
         ("DamlTextMap", &[ty]) => AttrType::TextMap(Box::new(AttrType::from_type(ty))),
+        ("DamlGenMap", &[k, v]) => AttrType::GenMap(Box::new(AttrType::from_type(k)), Box::new(AttrType::from_type(v))),
         ("DamlOptional", &[ty]) => AttrType::Optional(Box::new(AttrType::from_type(ty))),
         ("DamlContractId", &[ty]) => AttrType::ContractId(Box::new(AttrType::from_type(ty))),
         ("DamlContractId", _) => AttrType::ContractId(Box::new(AttrType::Unit)),

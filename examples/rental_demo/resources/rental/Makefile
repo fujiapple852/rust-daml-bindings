@@ -1,4 +1,4 @@
-DAML_LF_VERSION = 1.8
+DAML_LF_VERSION = 1.11
 OUTPUT_PATH = .daml/dist
 DAR_NAME = rental
 

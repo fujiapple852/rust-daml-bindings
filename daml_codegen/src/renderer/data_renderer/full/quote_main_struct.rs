@@ -49,7 +49,7 @@ fn quote_struct(
     let body_tokens = quote_struct_body(struct_fields);
     let phantom_tokens = quote_decl_unused_phantom_params(params, struct_fields);
     quote!(
-        #[derive(Eq, PartialEq, Clone, Debug)]
+        #[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Debug)]
         pub struct #struct_name_tokens #bounded_param_tokens {
             #body_tokens
             #phantom_tokens

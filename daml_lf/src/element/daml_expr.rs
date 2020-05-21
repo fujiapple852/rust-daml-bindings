@@ -212,6 +212,7 @@ pub enum DamlBuiltinFunction {
     FromTextInt64,
     FromTextDecimal,
     FromTextNumeric,
+    ToTextContractId,
     Sha256Text,
     DateToUnixDays,
     UnixDaysToDate,
@@ -237,6 +238,18 @@ pub enum DamlBuiltinFunction {
     CoerceContractId,
     TextFromCodePoints,
     TextToCodePoints,
+    GenmapEmpty,
+    GenmapInsert,
+    GenmapLookup,
+    GenmapDelete,
+    GenmapKeys,
+    GenmapValues,
+    GenmapSize,
+    Equal,
+    LessEq,
+    Less,
+    GreaterEq,
+    Greater,
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlBuiltinFunction {
@@ -1441,6 +1454,7 @@ pub enum DamlUpdate<'a> {
     Block(DamlBlock<'a>),
     Create(DamlCreate<'a>),
     Exercise(DamlExercise<'a>),
+    ExerciseByKey(DamlExerciseByKey<'a>),
     Fetch(DamlFetch<'a>),
     GetTime,
     LookupByKey(DamlRetrieveByKey<'a>),
@@ -1456,6 +1470,7 @@ impl<'a> DamlVisitableElement<'a> for DamlUpdate<'a> {
             DamlUpdate::Block(block) => block.accept(visitor),
             DamlUpdate::Create(create) => create.accept(visitor),
             DamlUpdate::Exercise(exercise) => exercise.accept(visitor),
+            DamlUpdate::ExerciseByKey(exercise_by_key) => exercise_by_key.accept(visitor),
             DamlUpdate::Fetch(fetch) => fetch.accept(visitor),
             DamlUpdate::LookupByKey(retrieve_by_key) | DamlUpdate::FetchByKey(retrieve_by_key) =>
                 retrieve_by_key.accept(visitor),
@@ -1475,6 +1490,7 @@ impl ToStatic for DamlUpdate<'_> {
             DamlUpdate::Block(block) => DamlUpdate::Block(block.to_static()),
             DamlUpdate::Create(create) => DamlUpdate::Create(create.to_static()),
             DamlUpdate::Exercise(exercise) => DamlUpdate::Exercise(exercise.to_static()),
+            DamlUpdate::ExerciseByKey(exercise_by_key) => DamlUpdate::ExerciseByKey(exercise_by_key.to_static()),
             DamlUpdate::Fetch(fetch) => DamlUpdate::Fetch(fetch.to_static()),
             DamlUpdate::GetTime => DamlUpdate::GetTime,
             DamlUpdate::LookupByKey(retrieve_by_key) => DamlUpdate::LookupByKey(retrieve_by_key.to_static()),
@@ -1568,7 +1584,6 @@ impl ToStatic for DamlCreate<'_> {
 pub struct DamlExercise<'a> {
     template: DamlTyConName<'a>,
     cid: Box<DamlExpr<'a>>,
-    actor: Option<Box<DamlExpr<'a>>>,
     arg: Box<DamlExpr<'a>>,
     choice: Cow<'a, str>,
 }
@@ -1577,14 +1592,12 @@ impl<'a> DamlExercise<'a> {
     pub fn new(
         template: DamlTyConName<'a>,
         cid: Box<DamlExpr<'a>>,
-        actor: Option<Box<DamlExpr<'a>>>,
         arg: Box<DamlExpr<'a>>,
         choice: Cow<'a, str>,
     ) -> Self {
         Self {
             template,
             cid,
-            actor,
             arg,
             choice,
         }
@@ -1596,10 +1609,6 @@ impl<'a> DamlExercise<'a> {
 
     pub fn cid(&self) -> &DamlExpr<'a> {
         self.cid.as_ref()
-    }
-
-    pub fn actor(&self) -> Option<&DamlExpr<'a>> {
-        self.actor.as_ref().map(AsRef::as_ref)
     }
 
     pub fn arg(&self) -> &DamlExpr<'a> {
@@ -1616,7 +1625,6 @@ impl<'a> DamlVisitableElement<'a> for DamlExercise<'a> {
         visitor.pre_visit_exercise(self);
         self.template.accept(visitor);
         self.cid.accept(visitor);
-        self.actor.as_ref().iter().for_each(|act| act.accept(visitor));
         self.arg.accept(visitor);
         visitor.post_visit_exercise(self);
     }
@@ -1629,9 +1637,71 @@ impl ToStatic for DamlExercise<'_> {
         DamlExercise::new(
             self.template.to_static(),
             Box::new(self.cid.to_static()),
-            self.actor.as_ref().map(|arg| Box::new(arg.to_static())),
             Box::new(self.arg.to_static()),
             self.choice.to_static(),
+        )
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct DamlExerciseByKey<'a> {
+    template: DamlTyConName<'a>,
+    choice: Cow<'a, str>,
+    key: Box<DamlExpr<'a>>,
+    arg: Box<DamlExpr<'a>>,
+}
+
+impl<'a> DamlExerciseByKey<'a> {
+    pub fn new(
+        template: DamlTyConName<'a>,
+        choice: Cow<'a, str>,
+        key: Box<DamlExpr<'a>>,
+        arg: Box<DamlExpr<'a>>,
+    ) -> Self {
+        Self {
+            template,
+            choice,
+            key,
+            arg,
+        }
+    }
+
+    pub fn template(&self) -> &DamlTyConName<'a> {
+        &self.template
+    }
+
+    pub fn choice(&self) -> &str {
+        &self.choice
+    }
+
+    pub fn key(&self) -> &DamlExpr<'a> {
+        self.key.as_ref()
+    }
+
+    pub fn arg(&self) -> &DamlExpr<'a> {
+        self.arg.as_ref()
+    }
+}
+
+impl<'a> DamlVisitableElement<'a> for DamlExerciseByKey<'a> {
+    fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
+        visitor.pre_visit_exercise_by_key(self);
+        self.template.accept(visitor);
+        self.key.accept(visitor);
+        self.arg.accept(visitor);
+        visitor.post_visit_exercise_by_key(self);
+    }
+}
+
+impl ToStatic for DamlExerciseByKey<'_> {
+    type Static = DamlExerciseByKey<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlExerciseByKey::new(
+            self.template.to_static(),
+            self.choice.to_static(),
+            Box::new(self.key.to_static()),
+            Box::new(self.arg.to_static()),
         )
     }
 }

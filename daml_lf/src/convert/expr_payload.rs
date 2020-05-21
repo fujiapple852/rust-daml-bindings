@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 use crate::convert::interned::{InternableDottedName, InternableString};
 use crate::convert::type_payload::{DamlPackageRefPayload, DamlTyConNamePayload, DamlTyConPayload, DamlTypePayload};
 use crate::convert::typevar_payload::DamlTypeVarWithKindPayload;
@@ -12,13 +14,12 @@ use crate::lf_protobuf::com::digitalasset::daml_lf_1::expr::{
 };
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::scenario::Commit;
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::update;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::update::{Create, Exercise, Fetch, RetrieveByKey};
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::update::{Create, Exercise, ExerciseByKey, Fetch, RetrieveByKey};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::{case_alt, scenario, CaseAlt};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::{
     expr, prim_lit, Binding, Block, BuiltinFunction, Case, Expr, FieldWithExpr, ModuleRef, PrimCon, PrimLit, Pure,
     Scenario, Update, ValName, VarWithType,
 };
-use std::convert::TryFrom;
 
 ///
 pub type DamlExprWrapper<'a> = PayloadElementWrapper<'a, &'a DamlExprPayload<'a>>;
@@ -989,6 +990,7 @@ pub enum DamlBuiltinFunctionPayload {
     FromTextInt64,
     FromTextDecimal,
     FromTextNumeric,
+    ToTextContractId,
     Sha256Text,
     DateToUnixDays,
     UnixDaysToDate,
@@ -1014,11 +1016,24 @@ pub enum DamlBuiltinFunctionPayload {
     CoerceContractId,
     TextFromCodePoints,
     TextToCodePoints,
+    GenmapEmpty,
+    GenmapInsert,
+    GenmapLookup,
+    GenmapDelete,
+    GenmapKeys,
+    GenmapValues,
+    GenmapSize,
+    Equal,
+    LessEq,
+    Less,
+    GreaterEq,
+    Greater,
 }
 
 impl<'a> TryFrom<&i32> for DamlBuiltinFunctionPayload {
     type Error = DamlLfConvertError;
 
+    #[allow(clippy::too_many_lines)]
     fn try_from(builtin_function: &i32) -> DamlLfConvertResult<Self> {
         match BuiltinFunction::from_i32(*builtin_function) {
             Some(BuiltinFunction::AddDecimal) => Ok(DamlBuiltinFunctionPayload::AddDecimal),
@@ -1090,6 +1105,7 @@ impl<'a> TryFrom<&i32> for DamlBuiltinFunctionPayload {
             Some(BuiltinFunction::FromTextInt64) => Ok(DamlBuiltinFunctionPayload::FromTextInt64),
             Some(BuiltinFunction::FromTextDecimal) => Ok(DamlBuiltinFunctionPayload::FromTextDecimal),
             Some(BuiltinFunction::FromTextNumeric) => Ok(DamlBuiltinFunctionPayload::FromTextNumeric),
+            Some(BuiltinFunction::ToTextContractId) => Ok(DamlBuiltinFunctionPayload::ToTextContractId),
             Some(BuiltinFunction::Sha256Text) => Ok(DamlBuiltinFunctionPayload::Sha256Text),
             Some(BuiltinFunction::DateToUnixDays) => Ok(DamlBuiltinFunctionPayload::DateToUnixDays),
             Some(BuiltinFunction::UnixDaysToDate) => Ok(DamlBuiltinFunctionPayload::UnixDaysToDate),
@@ -1117,6 +1133,18 @@ impl<'a> TryFrom<&i32> for DamlBuiltinFunctionPayload {
             Some(BuiltinFunction::CoerceContractId) => Ok(DamlBuiltinFunctionPayload::CoerceContractId),
             Some(BuiltinFunction::TextFromCodePoints) => Ok(DamlBuiltinFunctionPayload::TextFromCodePoints),
             Some(BuiltinFunction::TextToCodePoints) => Ok(DamlBuiltinFunctionPayload::TextToCodePoints),
+            Some(BuiltinFunction::GenmapEmpty) => Ok(DamlBuiltinFunctionPayload::GenmapEmpty),
+            Some(BuiltinFunction::GenmapInsert) => Ok(DamlBuiltinFunctionPayload::GenmapInsert),
+            Some(BuiltinFunction::GenmapLookup) => Ok(DamlBuiltinFunctionPayload::GenmapLookup),
+            Some(BuiltinFunction::GenmapDelete) => Ok(DamlBuiltinFunctionPayload::GenmapDelete),
+            Some(BuiltinFunction::GenmapKeys) => Ok(DamlBuiltinFunctionPayload::GenmapKeys),
+            Some(BuiltinFunction::GenmapValues) => Ok(DamlBuiltinFunctionPayload::GenmapValues),
+            Some(BuiltinFunction::GenmapSize) => Ok(DamlBuiltinFunctionPayload::GenmapSize),
+            Some(BuiltinFunction::Equal) => Ok(DamlBuiltinFunctionPayload::Equal),
+            Some(BuiltinFunction::LessEq) => Ok(DamlBuiltinFunctionPayload::LessEq),
+            Some(BuiltinFunction::Less) => Ok(DamlBuiltinFunctionPayload::Less),
+            Some(BuiltinFunction::GreaterEq) => Ok(DamlBuiltinFunctionPayload::GreaterEq),
+            Some(BuiltinFunction::Greater) => Ok(DamlBuiltinFunctionPayload::Greater),
             None => Err(DamlLfConvertError::UnknownBuiltinFunction(*builtin_function)),
         }
     }
@@ -1226,6 +1254,7 @@ pub enum DamlUpdatePayload<'a> {
     Block(DamlBlockPayload<'a>),
     Create(DamlCreatePayload<'a>),
     Exercise(DamlExercisePayload<'a>),
+    ExerciseByKey(DamlExerciseByKeyPayload<'a>),
     Fetch(DamlFetchPayload<'a>),
     GetTime,
     LookupByKey(DamlRetrieveByKeyPayload<'a>),
@@ -1243,6 +1272,8 @@ impl<'a> TryFrom<&'a Update> for DamlUpdatePayload<'a> {
             update::Sum::Create(create) => DamlUpdatePayload::Create(DamlCreatePayload::try_from(create.as_ref())?),
             update::Sum::Exercise(exercise) =>
                 DamlUpdatePayload::Exercise(DamlExercisePayload::try_from(exercise.as_ref())?),
+            update::Sum::ExerciseByKey(exercise_by_key) =>
+                DamlUpdatePayload::ExerciseByKey(DamlExerciseByKeyPayload::try_from(exercise_by_key.as_ref())?),
             update::Sum::Fetch(fetch) => DamlUpdatePayload::Fetch(DamlFetchPayload::try_from(fetch.as_ref())?),
             update::Sum::GetTime(_) => DamlUpdatePayload::GetTime,
             update::Sum::LookupByKey(retrieve_by_key) =>
@@ -1345,7 +1376,6 @@ pub type DamlExerciseWrapper<'a> = PayloadElementWrapper<'a, &'a DamlExercisePay
 pub struct DamlExercisePayload<'a> {
     pub template: DamlTyConNamePayload<'a>,
     pub cid: Box<DamlExprPayload<'a>>,
-    pub actor: Option<Box<DamlExprPayload<'a>>>,
     pub arg: Box<DamlExprPayload<'a>>,
     pub choice: InternableString<'a>,
 }
@@ -1354,14 +1384,12 @@ impl<'a> DamlExercisePayload<'a> {
     pub fn new(
         template: DamlTyConNamePayload<'a>,
         cid: Box<DamlExprPayload<'a>>,
-        actor: Option<Box<DamlExprPayload<'a>>>,
         arg: Box<DamlExprPayload<'a>>,
         choice: InternableString<'a>,
     ) -> Self {
         Self {
             template,
             cid,
-            actor,
             arg,
             choice,
         }
@@ -1372,18 +1400,50 @@ impl<'a> TryFrom<&'a Exercise> for DamlExercisePayload<'a> {
     type Error = DamlLfConvertError;
 
     fn try_from(exercise: &'a Exercise) -> DamlLfConvertResult<Self> {
-        let actor = exercise
-            .actor
-            .as_ref()
-            .map(|actor| Ok(DamlExprPayload::try_from(actor.as_ref())?))
-            .transpose()?
-            .map(Box::new);
         Ok(Self::new(
             DamlTyConNamePayload::try_from(exercise.template.as_ref().req()?)?,
             Box::new(DamlExprPayload::try_from(exercise.cid.as_ref().req()?.as_ref())?),
-            actor,
             Box::new(DamlExprPayload::try_from(exercise.arg.as_ref().req()?.as_ref())?),
             InternableString::from(exercise.choice.as_ref().req()?),
+        ))
+    }
+}
+
+pub type DamlExerciseByKeyWrapper<'a> = PayloadElementWrapper<'a, &'a DamlExerciseByKeyPayload<'a>>;
+
+#[derive(Debug)]
+pub struct DamlExerciseByKeyPayload<'a> {
+    pub template: DamlTyConNamePayload<'a>,
+    pub choice: InternableString<'a>,
+    pub key: Box<DamlExprPayload<'a>>,
+    pub arg: Box<DamlExprPayload<'a>>,
+}
+
+impl<'a> DamlExerciseByKeyPayload<'a> {
+    pub fn new(
+        template: DamlTyConNamePayload<'a>,
+        choice: InternableString<'a>,
+        key: Box<DamlExprPayload<'a>>,
+        arg: Box<DamlExprPayload<'a>>,
+    ) -> Self {
+        Self {
+            template,
+            choice,
+            key,
+            arg,
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a ExerciseByKey> for DamlExerciseByKeyPayload<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(exercise_by_key: &'a ExerciseByKey) -> DamlLfConvertResult<Self> {
+        Ok(Self::new(
+            DamlTyConNamePayload::try_from(exercise_by_key.template.as_ref().req()?)?,
+            InternableString::InternedString(exercise_by_key.choice_interned_str),
+            Box::new(DamlExprPayload::try_from(exercise_by_key.key.as_ref().req()?.as_ref())?),
+            Box::new(DamlExprPayload::try_from(exercise_by_key.arg.as_ref().req()?.as_ref())?),
         ))
     }
 }
@@ -1541,6 +1601,7 @@ impl<'a> TryFrom<&'a DefKey> for DamlDefKeyPayload<'a> {
     }
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum DamlKeyExprPayload<'a> {
     LegacyKey,

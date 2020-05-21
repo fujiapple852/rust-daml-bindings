@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::convert::TryFrom;
+
 use crate::convert::archive_payload::DamlArchivePayload;
 use crate::convert::data_payload::{DamlDataPayload, DamlTemplatePayload};
 #[cfg(feature = "full")]
@@ -10,8 +13,6 @@ use crate::convert::util::Required;
 use crate::convert::wrapper::{DamlPayloadParentContext, DamlPayloadParentContextType, PayloadElementWrapper};
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::{DefTypeSyn, FeatureFlags, Module};
-use std::collections::HashMap;
-use std::convert::TryFrom;
 
 ///
 #[derive(Debug, Clone, Copy)]

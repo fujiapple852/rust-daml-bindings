@@ -3,24 +3,25 @@ use crate::convert::expr_payload::{
     DamlAbsWrapper, DamlAppWrapper, DamlBindingWrapper, DamlBlockWrapper, DamlBuiltinFunctionPayload,
     DamlCaseAltConsWrapper, DamlCaseAltEnumWrapper, DamlCaseAltOptionalSomeWrapper, DamlCaseAltSumPayload,
     DamlCaseAltSumWrapper, DamlCaseAltVariantWrapper, DamlCaseAltWrapper, DamlCaseWrapper, DamlCommitWrapper,
-    DamlConsWrapper, DamlCreateWrapper, DamlDefKeyWrapper, DamlEnumConWrapper, DamlExerciseWrapper, DamlExprPayload,
-    DamlExprWrapper, DamlFetchWrapper, DamlFieldWithExprWrapper, DamlFromAnyWrapper, DamlKeyExprPayload,
-    DamlOptionalSomeWrapper, DamlPrimConPayload, DamlPrimLitPayload, DamlPrimLitWrapper, DamlPureWrapper,
-    DamlRecConWrapper, DamlRecProjWrapper, DamlRecUpdWrapper, DamlRetrieveByKeyWrapper, DamlScenarioEmbedExprWrapper,
-    DamlScenarioPayload, DamlScenarioWrapper, DamlStructConWrapper, DamlStructProjWrapper, DamlStructUpdWrapper,
-    DamlToAnyWrapper, DamlTyAbsWrapper, DamlTyAppWrapper, DamlUpdateEmbedExprWrapper, DamlUpdatePayload,
-    DamlUpdateWrapper, DamlValueNameWrapper, DamlVarWithTypeWrapper, DamlVariantConWrapper,
+    DamlConsWrapper, DamlCreateWrapper, DamlDefKeyWrapper, DamlEnumConWrapper, DamlExerciseByKeyWrapper,
+    DamlExerciseWrapper, DamlExprPayload, DamlExprWrapper, DamlFetchWrapper, DamlFieldWithExprWrapper,
+    DamlFromAnyWrapper, DamlKeyExprPayload, DamlOptionalSomeWrapper, DamlPrimConPayload, DamlPrimLitPayload,
+    DamlPrimLitWrapper, DamlPureWrapper, DamlRecConWrapper, DamlRecProjWrapper, DamlRecUpdWrapper,
+    DamlRetrieveByKeyWrapper, DamlScenarioEmbedExprWrapper, DamlScenarioPayload, DamlScenarioWrapper,
+    DamlStructConWrapper, DamlStructProjWrapper, DamlStructUpdWrapper, DamlToAnyWrapper, DamlTyAbsWrapper,
+    DamlTyAppWrapper, DamlUpdateEmbedExprWrapper, DamlUpdatePayload, DamlUpdateWrapper, DamlValueNameWrapper,
+    DamlVarWithTypeWrapper, DamlVariantConWrapper,
 };
 use crate::convert::interned::PackageInternedResolver;
 use crate::convert::package_payload::DamlPackagePayload;
 use crate::element::{
     DamlAbs, DamlApp, DamlBinding, DamlBlock, DamlBuiltinFunction, DamlCase, DamlCaseAlt, DamlCaseAltCons,
     DamlCaseAltEnum, DamlCaseAltOptionalSome, DamlCaseAltSum, DamlCaseAltVariant, DamlCommit, DamlCons, DamlCreate,
-    DamlDefKey, DamlDefValue, DamlEnumCon, DamlExercise, DamlExpr, DamlFetch, DamlFieldWithExpr, DamlFromAny,
-    DamlLocalTyCon, DamlNonLocalTyCon, DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon, DamlRecProj,
-    DamlRecUpd, DamlRetrieveByKey, DamlScenario, DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj, DamlStructUpd,
-    DamlToAny, DamlTyAbs, DamlTyApp, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind, DamlUpdate,
-    DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
+    DamlDefKey, DamlDefValue, DamlEnumCon, DamlExercise, DamlExerciseByKey, DamlExpr, DamlFetch, DamlFieldWithExpr,
+    DamlFromAny, DamlLocalTyCon, DamlNonLocalTyCon, DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon,
+    DamlRecProj, DamlRecUpd, DamlRetrieveByKey, DamlScenario, DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj,
+    DamlStructUpd, DamlToAny, DamlTyAbs, DamlTyApp, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind,
+    DamlUpdate, DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
 };
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use crate::LanguageFeatureVersion;
@@ -86,6 +87,7 @@ impl<'a> TryFrom<&DamlExprWrapper<'a>> for DamlExpr<'a> {
 }
 
 impl<'a> From<&DamlBuiltinFunctionPayload> for DamlBuiltinFunction {
+    #[allow(clippy::too_many_lines)]
     fn from(builtin: &DamlBuiltinFunctionPayload) -> Self {
         match builtin {
             DamlBuiltinFunctionPayload::AddDecimal => DamlBuiltinFunction::AddDecimal,
@@ -157,6 +159,7 @@ impl<'a> From<&DamlBuiltinFunctionPayload> for DamlBuiltinFunction {
             DamlBuiltinFunctionPayload::FromTextInt64 => DamlBuiltinFunction::FromTextInt64,
             DamlBuiltinFunctionPayload::FromTextDecimal => DamlBuiltinFunction::FromTextDecimal,
             DamlBuiltinFunctionPayload::FromTextNumeric => DamlBuiltinFunction::FromTextNumeric,
+            DamlBuiltinFunctionPayload::ToTextContractId => DamlBuiltinFunction::ToTextContractId,
             DamlBuiltinFunctionPayload::Sha256Text => DamlBuiltinFunction::Sha256Text,
             DamlBuiltinFunctionPayload::DateToUnixDays => DamlBuiltinFunction::DateToUnixDays,
             DamlBuiltinFunctionPayload::UnixDaysToDate => DamlBuiltinFunction::UnixDaysToDate,
@@ -182,6 +185,18 @@ impl<'a> From<&DamlBuiltinFunctionPayload> for DamlBuiltinFunction {
             DamlBuiltinFunctionPayload::CoerceContractId => DamlBuiltinFunction::CoerceContractId,
             DamlBuiltinFunctionPayload::TextFromCodePoints => DamlBuiltinFunction::TextFromCodePoints,
             DamlBuiltinFunctionPayload::TextToCodePoints => DamlBuiltinFunction::TextToCodePoints,
+            DamlBuiltinFunctionPayload::GenmapEmpty => DamlBuiltinFunction::GenmapEmpty,
+            DamlBuiltinFunctionPayload::GenmapInsert => DamlBuiltinFunction::GenmapInsert,
+            DamlBuiltinFunctionPayload::GenmapLookup => DamlBuiltinFunction::GenmapLookup,
+            DamlBuiltinFunctionPayload::GenmapDelete => DamlBuiltinFunction::GenmapDelete,
+            DamlBuiltinFunctionPayload::GenmapKeys => DamlBuiltinFunction::GenmapKeys,
+            DamlBuiltinFunctionPayload::GenmapValues => DamlBuiltinFunction::GenmapValues,
+            DamlBuiltinFunctionPayload::GenmapSize => DamlBuiltinFunction::GenmapSize,
+            DamlBuiltinFunctionPayload::Equal => DamlBuiltinFunction::Equal,
+            DamlBuiltinFunctionPayload::LessEq => DamlBuiltinFunction::LessEq,
+            DamlBuiltinFunctionPayload::Less => DamlBuiltinFunction::Less,
+            DamlBuiltinFunctionPayload::GreaterEq => DamlBuiltinFunction::GreaterEq,
+            DamlBuiltinFunctionPayload::Greater => DamlBuiltinFunction::Greater,
         }
     }
 }
@@ -554,6 +569,8 @@ impl<'a> TryFrom<&DamlUpdateWrapper<'a>> for DamlUpdate<'a> {
             DamlUpdatePayload::Create(create) => DamlUpdate::Create(DamlCreate::try_from(&update.wrap(create))?),
             DamlUpdatePayload::Exercise(exercise) =>
                 DamlUpdate::Exercise(DamlExercise::try_from(&update.wrap(exercise))?),
+            DamlUpdatePayload::ExerciseByKey(exercise_by_key) =>
+                DamlUpdate::ExerciseByKey(DamlExerciseByKey::try_from(&update.wrap(exercise_by_key))?),
             DamlUpdatePayload::Fetch(fetch) => DamlUpdate::Fetch(DamlFetch::try_from(&update.wrap(fetch))?),
             DamlUpdatePayload::GetTime => DamlUpdate::GetTime,
             DamlUpdatePayload::LookupByKey(retrieve_by_key) =>
@@ -592,17 +609,21 @@ impl<'a> TryFrom<&DamlExerciseWrapper<'a>> for DamlExercise<'a> {
     fn try_from(exercise: &DamlExerciseWrapper<'a>) -> DamlLfConvertResult<Self> {
         let template = DamlTyConName::try_from(&exercise.wrap(&exercise.payload.template))?;
         let cid = DamlExpr::try_from(&exercise.wrap(exercise.payload.cid.as_ref()))?;
-        let actor = exercise
-            .payload
-            .actor
-            .as_ref()
-            .map(|expr| exercise.wrap(expr.as_ref()))
-            .map(|expr| Ok(DamlExpr::try_from(&expr)?))
-            .transpose()?
-            .map(Box::new);
         let arg = DamlExpr::try_from(&exercise.wrap(exercise.payload.arg.as_ref()))?;
         let choice = exercise.payload.choice.resolve(exercise.context.package)?;
-        Ok(DamlExercise::new(template, Box::new(cid), actor, Box::new(arg), choice))
+        Ok(DamlExercise::new(template, Box::new(cid), Box::new(arg), choice))
+    }
+}
+
+impl<'a> TryFrom<&DamlExerciseByKeyWrapper<'a>> for DamlExerciseByKey<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(exercise_by_key: &DamlExerciseByKeyWrapper<'a>) -> DamlLfConvertResult<Self> {
+        let template = DamlTyConName::try_from(&exercise_by_key.wrap(&exercise_by_key.payload.template))?;
+        let choice = exercise_by_key.payload.choice.resolve(exercise_by_key.context.package)?;
+        let key = DamlExpr::try_from(&exercise_by_key.wrap(exercise_by_key.payload.key.as_ref()))?;
+        let arg = DamlExpr::try_from(&exercise_by_key.wrap(exercise_by_key.payload.arg.as_ref()))?;
+        Ok(DamlExerciseByKey::new(template, choice, Box::new(key), Box::new(arg)))
     }
 }
 

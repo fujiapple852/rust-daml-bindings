@@ -42,7 +42,7 @@ impl<'a> IsRenderable<'a> {
             | DamlType::Date
             | DamlType::Nat(_) => true,
             DamlType::Numeric(num) => self.check_type(num.as_ref()),
-            DamlType::List(args) | DamlType::TextMap(args) | DamlType::Optional(args) =>
+            DamlType::List(args) | DamlType::TextMap(args) | DamlType::GenMap(args) | DamlType::Optional(args) =>
                 args.iter().all(|arg| self.check_type(arg)),
             DamlType::ContractId(tycon) => tycon.as_ref().map_or(true, |ty| self.check_type(ty)),
             DamlType::TyCon(tycon) | DamlType::BoxedTyCon(tycon) => self.check_tycon(tycon),

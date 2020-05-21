@@ -32,7 +32,8 @@ pub fn generate_tokens(args: AttributeArgs) -> proc_macro::TokenStream {
         archive.apply(|archive| ModuleMatcher::new(&filters).map(|mm| quote_archive(archive, &mm, &render_method)));
     match applied {
         Ok(Ok(tokens)) => proc_macro::TokenStream::from(tokens),
-        _ => panic!("failed to generate DAML code"),
+        Ok(Err(e)) => panic!("failed to generate DAML code: {0}", e),
+        Err(e) => panic!("DAML-LF error in DAML code generator: {0}", e),
     }
 }
 

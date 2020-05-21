@@ -31,7 +31,7 @@ impl<'a> From<&'a AttrTemplate> for DamlTemplate<'a> {
 
 impl<'a> From<&'a AttrChoice> for DamlChoice<'a> {
     fn from(attr_choice: &'a AttrChoice) -> Self {
-        DamlChoice::new(
+        DamlChoice::new_with_default(
             Cow::from(&attr_choice.choice_name),
             attr_choice.choice_arguments.iter().map(DamlField::from).collect(),
             DamlType::from(&attr_choice.choice_return_type),
@@ -86,6 +86,7 @@ impl<'a> From<&'a AttrType> for DamlType<'a> {
             AttrType::Date => DamlType::Date,
             AttrType::List(nested) => DamlType::List(vec![DamlType::from(nested.as_ref())]),
             AttrType::TextMap(nested) => DamlType::TextMap(vec![DamlType::from(nested.as_ref())]),
+            AttrType::GenMap(k, v) => DamlType::GenMap(vec![DamlType::from(k.as_ref()), DamlType::from(v.as_ref())]),
             AttrType::Optional(nested) => DamlType::Optional(vec![DamlType::from(nested.as_ref())]),
             AttrType::TyCon(data_name, path, type_arguments) =>
                 if path.is_empty() {

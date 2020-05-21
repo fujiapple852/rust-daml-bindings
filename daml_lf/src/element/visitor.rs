@@ -4,10 +4,10 @@ use crate::element::daml_expr::DamlScenario;
 use crate::element::{
     DamlAbs, DamlApp, DamlBinding, DamlBlock, DamlBuiltinFunction, DamlCase, DamlCaseAlt, DamlCaseAltCons,
     DamlCaseAltEnum, DamlCaseAltOptionalSome, DamlCaseAltSum, DamlCaseAltVariant, DamlCommit, DamlCons, DamlCreate,
-    DamlDefKey, DamlDefValue, DamlEnumCon, DamlExercise, DamlExpr, DamlFetch, DamlFieldWithExpr, DamlFromAny,
-    DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon, DamlRecProj, DamlRecUpd, DamlRetrieveByKey,
-    DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj, DamlStructUpd, DamlToAny, DamlTyAbs, DamlTyApp, DamlUpdate,
-    DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
+    DamlDefKey, DamlDefValue, DamlEnumCon, DamlExercise, DamlExerciseByKey, DamlExpr, DamlFetch, DamlFieldWithExpr,
+    DamlFromAny, DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon, DamlRecProj, DamlRecUpd,
+    DamlRetrieveByKey, DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj, DamlStructUpd, DamlToAny, DamlTyAbs,
+    DamlTyApp, DamlUpdate, DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
 };
 use crate::element::{
     DamlAbsoluteTyCon, DamlArchive, DamlArrow, DamlChoice, DamlData, DamlDefTypeSyn, DamlEnum, DamlField, DamlForall,
@@ -197,6 +197,10 @@ pub trait DamlElementVisitor {
     fn pre_visit_exercise<'a>(&mut self, exercise: &DamlExercise<'a>) {}
     #[cfg(feature = "full")]
     fn post_visit_exercise<'a>(&mut self, exercise: &DamlExercise<'a>) {}
+    #[cfg(feature = "full")]
+    fn pre_visit_exercise_by_key<'a>(&mut self, exercise_by_key: &DamlExerciseByKey<'a>) {}
+    #[cfg(feature = "full")]
+    fn post_visit_exercise_by_key<'a>(&mut self, exercise_by_key: &DamlExerciseByKey<'a>) {}
     #[cfg(feature = "full")]
     fn pre_visit_fetch<'a>(&mut self, fetch: &DamlFetch<'a>) {}
     #[cfg(feature = "full")]

@@ -2,9 +2,9 @@ use crate::data::value::DamlValue;
 use crate::data::DamlResult;
 use crate::nat::Nat;
 use crate::primitive_types::{
-    DamlBool, DamlContractId, DamlDate, DamlFixedNumeric, DamlInt64, DamlParty, DamlText, DamlTimestamp, DamlUnit,
+    DamlBool, DamlContractId, DamlDate, DamlFixedNumeric, DamlGenMap, DamlInt64, DamlParty, DamlText, DamlTextMap,
+    DamlTimestamp, DamlUnit,
 };
-use std::collections::HashMap;
 
 /// Marker trait for types which can be serialized to a [`DamlValue`].
 pub trait DamlSerializableType: Sized {}
@@ -21,8 +21,13 @@ impl<T> DamlSerializableType for DamlFixedNumeric<T> where T: DamlSerializableTy
 impl<T> DamlSerializableType for Box<T> where T: DamlSerializeInto<DamlValue> + DamlSerializableType {}
 impl<T> DamlSerializableType for Option<T> where T: DamlSerializeInto<DamlValue> + DamlSerializableType {}
 impl<T> DamlSerializableType for Vec<T> where T: DamlSerializeInto<DamlValue> + DamlSerializableType {}
-#[allow(clippy::implicit_hasher)]
-impl<T> DamlSerializableType for HashMap<String, T> where T: DamlSerializeInto<DamlValue> + DamlSerializableType {}
+impl<K, V> DamlSerializableType for DamlGenMap<K, V>
+where
+    K: DamlSerializeInto<DamlValue> + DamlSerializableType,
+    V: DamlSerializeInto<DamlValue> + DamlSerializableType,
+{
+}
+impl<V> DamlSerializableType for DamlTextMap<V> where V: DamlSerializeInto<DamlValue> + DamlSerializableType {}
 
 /// Serialize from a concrete [`DamlSerializableType`] to a [`DamlValue`].
 pub trait DamlSerializeFrom<T>: Sized
@@ -83,5 +88,10 @@ impl<T> DamlDeserializableType for DamlFixedNumeric<T> where T: DamlDeserializab
 impl<T> DamlDeserializableType for Box<T> where T: DamlDeserializeFrom + DamlDeserializableType {}
 impl<T> DamlDeserializableType for Option<T> where T: DamlDeserializeFrom + DamlDeserializableType {}
 impl<T> DamlDeserializableType for Vec<T> where T: DamlDeserializeFrom + DamlDeserializableType {}
-#[allow(clippy::implicit_hasher)]
-impl<T> DamlDeserializableType for HashMap<String, T> where T: DamlDeserializeFrom + DamlDeserializableType {}
+impl<K, V> DamlDeserializableType for DamlGenMap<K, V>
+where
+    K: DamlDeserializeFrom + DamlDeserializableType,
+    V: DamlDeserializeFrom + DamlDeserializableType,
+{
+}
+impl<V> DamlDeserializableType for DamlTextMap<V> where V: DamlDeserializeFrom + DamlDeserializableType {}

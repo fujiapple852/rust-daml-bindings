@@ -6,20 +6,19 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::{
 };
 use crate::util;
 use crate::util::Required;
-use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 
 use crate::nat::Nat;
 use crate::primitive_types::{
-    DamlBool, DamlContractId, DamlDate, DamlFixedNumeric, DamlInt64, DamlNumeric, DamlParty, DamlText, DamlTimestamp,
-    DamlUnit,
+    DamlBool, DamlContractId, DamlDate, DamlFixedNumeric, DamlGenMap, DamlInt64, DamlList, DamlNumeric, DamlOptional,
+    DamlParty, DamlText, DamlTextMap, DamlTimestamp, DamlUnit,
 };
 use crate::serialize::{
     DamlDeserializableType, DamlDeserializeFrom, DamlDeserializeInto, DamlSerializableType, DamlSerializeFrom,
     DamlSerializeInto,
 };
+use itertools::Itertools;
 use std::cmp::Ordering;
-use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
 /// A generic representation of data on a DAML ledger.
@@ -39,8 +38,8 @@ pub enum DamlValue {
     Unit,
     Date(DamlDate),
     Optional(Option<Box<DamlValue>>),
-    Map(HashMap<String, DamlValue>),
-    GenMap(HashMap<DamlValue, DamlValue>),
+    Map(DamlTextMap<DamlValue>),
+    GenMap(DamlGenMap<DamlValue, DamlValue>),
 }
 
 impl DamlValue {
@@ -100,11 +99,11 @@ impl DamlValue {
         DamlValue::Optional(optional.map(Box::new))
     }
 
-    pub fn new_map(map: impl Into<HashMap<String, Self>>) -> Self {
+    pub fn new_map(map: impl Into<DamlTextMap<Self>>) -> Self {
         DamlValue::Map(map.into())
     }
 
-    pub fn new_genmap(map: impl Into<HashMap<Self, Self>>) -> Self {
+    pub fn new_genmap(map: impl Into<DamlGenMap<Self, Self>>) -> Self {
         DamlValue::GenMap(map.into())
     }
 
@@ -249,14 +248,14 @@ impl DamlValue {
         }
     }
 
-    pub fn try_map(&self) -> DamlResult<&HashMap<String, Self>> {
+    pub fn try_map(&self) -> DamlResult<&DamlTextMap<Self>> {
         match self {
             DamlValue::Map(m) => Ok(m),
             _ => Err(self.make_unexpected_type_error("Map")),
         }
     }
 
-    pub fn try_genmap(&self) -> DamlResult<&HashMap<Self, Self>> {
+    pub fn try_genmap(&self) -> DamlResult<&DamlGenMap<Self, Self>> {
         match self {
             DamlValue::GenMap(m) => Ok(m),
             _ => Err(self.make_unexpected_type_error("GenMap")),
@@ -291,14 +290,14 @@ impl DamlValue {
         }
     }
 
-    pub fn try_take_map(self) -> DamlResult<HashMap<String, Self>> {
+    pub fn try_take_map(self) -> DamlResult<DamlTextMap<Self>> {
         match self {
             DamlValue::Map(m) => Ok(m),
             _ => Err(self.make_unexpected_type_error("Map")),
         }
     }
 
-    pub fn try_take_genmap(self) -> DamlResult<HashMap<Self, Self>> {
+    pub fn try_take_genmap(self) -> DamlResult<DamlGenMap<Self, Self>> {
         match self {
             DamlValue::GenMap(m) => Ok(m),
             _ => Err(self.make_unexpected_type_error("Map")),
@@ -394,51 +393,61 @@ impl From<()> for DamlValue {
         Self::new_unit()
     }
 }
+
 impl From<bool> for DamlValue {
     fn from(b: bool) -> Self {
         Self::new_bool(b)
     }
 }
+
 impl From<&str> for DamlValue {
     fn from(s: &str) -> Self {
         Self::new_text(s)
     }
 }
+
 impl From<String> for DamlValue {
     fn from(s: String) -> Self {
         Self::new_text(s)
     }
 }
+
 impl From<u8> for DamlValue {
     fn from(i: u8) -> Self {
         Self::new_int64(i)
     }
 }
+
 impl From<i8> for DamlValue {
     fn from(i: i8) -> Self {
         Self::new_int64(i)
     }
 }
+
 impl From<u16> for DamlValue {
     fn from(i: u16) -> Self {
         Self::new_int64(i)
     }
 }
+
 impl From<i16> for DamlValue {
     fn from(i: i16) -> Self {
         Self::new_int64(i)
     }
 }
+
 impl From<u32> for DamlValue {
     fn from(i: u32) -> Self {
         Self::new_int64(i)
     }
 }
+
 impl From<i32> for DamlValue {
     fn from(i: i32) -> Self {
         Self::new_int64(i)
     }
 }
+
 impl From<i64> for DamlValue {
     fn from(i: i64) -> Self {
         Self::new_int64(i)
@@ -525,31 +534,45 @@ where
     }
 }
 
-impl<T> DamlSerializeFrom<Option<T>> for DamlValue
+impl<T> DamlSerializeFrom<DamlOptional<T>> for DamlValue
 where
     T: DamlSerializableType + DamlSerializeInto<DamlValue>,
 {
-    fn serialize_from(optional: Option<T>) -> DamlValue {
+    fn serialize_from(optional: DamlOptional<T>) -> DamlValue {
         DamlValue::new_optional(optional.map(T::serialize_into))
     }
 }
 
-impl<T> DamlSerializeFrom<Vec<T>> for DamlValue
+impl<T> DamlSerializeFrom<DamlList<T>> for DamlValue
 where
     T: DamlSerializableType + DamlSerializeInto<DamlValue>,
 {
-    fn serialize_from(list: Vec<T>) -> DamlValue {
+    fn serialize_from(list: DamlList<T>) -> DamlValue {
         DamlValue::new_list(list.into_iter().map(T::serialize_into).collect::<Vec<_>>())
     }
 }
 
-#[allow(clippy::implicit_hasher)]
-impl<T> DamlSerializeFrom<HashMap<String, T>> for DamlValue
+impl<K, V> DamlSerializeFrom<DamlGenMap<K, V>> for DamlValue
 where
-    T: DamlSerializableType + DamlSerializeInto<DamlValue>,
+    K: DamlSerializableType + DamlSerializeInto<DamlValue>,
+    V: DamlSerializableType + DamlSerializeInto<DamlValue>,
 {
-    fn serialize_from(text_map: HashMap<String, T>) -> DamlValue {
-        DamlValue::new_map(text_map.into_iter().map(|(k, v)| (k, T::serialize_into(v))).collect::<HashMap<String, _>>())
+    fn serialize_from(gen_map: DamlGenMap<K, V>) -> DamlValue {
+        DamlValue::new_genmap(
+            gen_map
+                .into_iter()
+                .map(|(k, v)| (K::serialize_into(k), V::serialize_into(v)))
+                .collect::<DamlGenMap<_, _>>(),
+        )
+    }
+}
+
+impl<V> DamlSerializeFrom<DamlTextMap<V>> for DamlValue
+where
+    V: DamlSerializableType + DamlSerializeInto<DamlValue>,
+{
+    fn serialize_from(text_map: DamlTextMap<V>) -> DamlValue {
+        DamlValue::new_map(text_map.0.into_iter().map(|(k, v)| (k, V::serialize_into(v))).collect::<DamlTextMap<_>>())
     }
 }
 
@@ -646,7 +669,7 @@ where
     }
 }
 
-impl<T> DamlDeserializeFrom for Option<T>
+impl<T> DamlDeserializeFrom for DamlOptional<T>
 where
     T: DamlDeserializeFrom + DamlDeserializableType,
 {
@@ -658,30 +681,45 @@ where
     }
 }
 
-impl<T> DamlDeserializeFrom for Vec<T>
+impl<T> DamlDeserializeFrom for DamlList<T>
 where
     T: DamlDeserializeFrom + DamlDeserializableType,
 {
     fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
         match value {
-            DamlValue::List(l) => Ok(l.into_iter().map(T::deserialize_from).collect::<DamlResult<Vec<_>>>()?),
+            DamlValue::List(l) => Ok(l.into_iter().map(T::deserialize_from).collect::<DamlResult<DamlList<_>>>()?),
             _ => Err(value.make_unexpected_type_error("List")),
         }
     }
 }
 
-#[allow(clippy::implicit_hasher)]
-impl<T> DamlDeserializeFrom for HashMap<String, T>
+impl<V> DamlDeserializeFrom for DamlTextMap<V>
 where
-    T: DamlDeserializeFrom + DamlDeserializableType,
+    V: DamlDeserializeFrom + DamlDeserializableType,
 {
     fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
         match value {
             DamlValue::Map(text_map) => Ok(text_map
                 .into_iter()
-                .map(|(k, v)| Ok((k, T::deserialize_from(v)?)))
-                .collect::<DamlResult<HashMap<String, _>>>()?),
+                .map(|(k, v)| Ok((k, V::deserialize_from(v)?)))
+                .collect::<DamlResult<DamlTextMap<_>>>()?),
             _ => Err(value.make_unexpected_type_error("Map")),
+        }
+    }
+}
+
+impl<K, V> DamlDeserializeFrom for DamlGenMap<K, V>
+where
+    K: DamlDeserializeFrom + DamlDeserializableType + Ord,
+    V: DamlDeserializeFrom + DamlDeserializableType,
+{
+    fn deserialize_from(value: DamlValue) -> DamlResult<Self> {
+        match value {
+            DamlValue::GenMap(gen_map) => Ok(gen_map
+                .into_iter()
+                .map(|(k, v)| Ok((K::deserialize_from(k)?, V::deserialize_from(v)?)))
+                .collect::<DamlResult<DamlGenMap<_, _>>>()?),
+            _ => Err(value.make_unexpected_type_error("GenMap")),
         }
     }
 }
@@ -711,7 +749,7 @@ impl TryFrom<Value> for DamlValue {
                 v.entries
                     .into_iter()
                     .map(|v| Ok((v.key, v.value.req().and_then(DamlValue::try_from)?)))
-                    .collect::<DamlResult<HashMap<_, _>>>()?,
+                    .collect::<DamlResult<DamlTextMap<_>>>()?,
             ),
             Sum::GenMap(v) => DamlValue::GenMap(
                 v.entries
@@ -719,7 +757,7 @@ impl TryFrom<Value> for DamlValue {
                     .map(|v| {
                         Ok((v.key.req().and_then(DamlValue::try_from)?, v.value.req().and_then(DamlValue::try_from)?))
                     })
-                    .collect::<DamlResult<HashMap<_, _>>>()?,
+                    .collect::<DamlResult<DamlGenMap<_, _>>>()?,
             ),
         })
     }
@@ -774,48 +812,6 @@ impl From<DamlValue> for Value {
     }
 }
 
-/// A custom implementation of `Hash` for `DamlValue`.
-///
-/// The DAML ledger API allows any arbitrary `DamlValue` to be the key to a `DamlValue::GenMap`and so this requires
-/// that we be able to derive a stable hash for all possible values.
-///
-/// Typically the `Hash` is delegated to the type contained within the `DamlValue` (i.e. `String` in the case of
-/// `DamlValue::Text`) however for other variants such as `DamlValue::Map` and `DamlValue::GenMap` a custom
-/// implementation is needed which in turn requires that a custom implementation of `PartialOrd` and `Ord` be defined
-/// as well.
-// As we ensure the invariant `k1 == k2 ⇒ hash(k1) == hash(k2)` holds we can safely suppress this lint.
-#[allow(clippy::derive_hash_xor_eq)]
-impl Hash for DamlValue {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        match self {
-            DamlValue::Record(v) => v.hash(state),
-            DamlValue::Variant(v) => v.hash(state),
-            DamlValue::Enum(v) => v.hash(state),
-            DamlValue::List(v) => v.hash(state),
-            DamlValue::Int64(v) => v.hash(state),
-            DamlValue::Numeric(v) => v.hash(state),
-            DamlValue::Text(v) => v.hash(state),
-            DamlValue::Party(v) => v.party.hash(state),
-            DamlValue::ContractId(v) => v.contract_id.hash(state),
-            DamlValue::Timestamp(v) => v.hash(state),
-            DamlValue::Bool(v) => v.hash(state),
-            DamlValue::Unit => {},
-            DamlValue::Date(v) => v.hash(state),
-            DamlValue::Optional(v) => v.hash(state),
-            DamlValue::Map(v) => {
-                let mut map_entries = v.iter().collect::<Vec<_>>();
-                map_entries.sort_by(|(k1, _), (k2, _)| k1.cmp(k2));
-                map_entries.iter().for_each(|kv| kv.hash(state));
-            },
-            DamlValue::GenMap(v) => {
-                let mut map_entries = v.iter().collect::<Vec<_>>();
-                map_entries.sort_by(|(k1, _), (k2, _)| k1.cmp(k2));
-                map_entries.iter().for_each(|kv| kv.hash(state));
-            },
-        }
-    }
-}
-
 /// A custom `PartialEq` implementation to allow us to order all possible `DamlValue` types.
 ///
 /// This is required tp support the custom `Hash` implementation.
@@ -836,8 +832,18 @@ impl PartialOrd for DamlValue {
             (DamlValue::Unit, DamlValue::Unit) => Some(Ordering::Equal),
             (DamlValue::Date(v1), DamlValue::Date(v2)) => v1.partial_cmp(v2),
             (DamlValue::Optional(v1), DamlValue::Optional(v2)) => v1.partial_cmp(v2),
-            (DamlValue::Map(v1), DamlValue::Map(v2)) => v1.keys().partial_cmp(v2.keys()),
-            (DamlValue::GenMap(v1), DamlValue::GenMap(v2)) => v1.keys().partial_cmp(v2.keys()),
+            (DamlValue::Map(v1), DamlValue::Map(v2)) =>
+                if v1.len() == v2.len() {
+                    v1.keys().sorted().partial_cmp(v2.keys().sorted())
+                } else {
+                    v1.len().partial_cmp(&v2.len())
+                },
+            (DamlValue::GenMap(v1), DamlValue::GenMap(v2)) =>
+                if v1.len() == v2.len() {
+                    v1.keys().partial_cmp(v2.keys())
+                } else {
+                    v1.len().partial_cmp(&v2.len())
+                },
             _ => None,
         }
     }
@@ -851,68 +857,93 @@ impl Ord for DamlValue {
 
 #[cfg(test)]
 mod tests {
-    use super::{DamlValue, Hash, HashMap, Hasher};
-    use std::collections::hash_map::DefaultHasher;
+    use crate::data::value::DamlValue;
+    use crate::primitive_types::{DamlGenMap, DamlTextMap};
+    use std::cmp::Ordering;
 
     #[test]
-    fn test_hash_and_eq_for_text() {
+    fn test_eq_for_text() {
         let value1 = DamlValue::Text(String::from("text"));
         let value2 = DamlValue::Text(String::from("text"));
-        let mut hasher1 = DefaultHasher::new();
-        value1.hash(&mut hasher1);
-        let hash1 = hasher1.finish();
-        let mut hasher2 = DefaultHasher::new();
-        value2.hash(&mut hasher2);
-        let hash2 = hasher2.finish();
         assert_eq!(value1, value2);
-        assert_eq!(hash1, hash2);
     }
 
     #[test]
-    fn test_hash_and_eq_for_i64() {
+    fn test_ord_for_text() {
+        let value1 = DamlValue::Text(String::from("textA"));
+        let value2 = DamlValue::Text(String::from("textB"));
+        assert_eq!(value1.cmp(&value2), Ordering::Less);
+    }
+
+    #[test]
+    fn test_eq_for_i64() {
         let value1 = DamlValue::Int64(101);
         let value2 = DamlValue::Int64(101);
-        let mut hasher1 = DefaultHasher::new();
-        value1.hash(&mut hasher1);
-        let hash1 = hasher1.finish();
-        let mut hasher2 = DefaultHasher::new();
-        value2.hash(&mut hasher2);
-        let hash2 = hasher2.finish();
         assert_eq!(value1, value2);
-        assert_eq!(hash1, hash2);
     }
 
     #[test]
-    fn test_hash_and_eq_for_map() {
+    fn test_ord_for_i64() {
+        let value1 = DamlValue::Int64(102);
+        let value2 = DamlValue::Int64(101);
+        assert_eq!(value1.cmp(&value2), Ordering::Greater);
+    }
+
+    #[test]
+    fn test_eq_for_textmap() {
         let items =
             vec![(String::from("text1"), DamlValue::Int64(100)), (String::from("text2"), DamlValue::Int64(200))];
-        let value1 = DamlValue::Map(items.clone().into_iter().collect::<HashMap<String, DamlValue>>());
-        let value2 = DamlValue::Map(items.into_iter().collect::<HashMap<String, DamlValue>>());
-        let mut hasher1 = DefaultHasher::new();
-        value1.hash(&mut hasher1);
-        let hash1 = hasher1.finish();
-        let mut hasher2 = DefaultHasher::new();
-        value2.hash(&mut hasher2);
-        let hash2 = hasher2.finish();
+        let value1 = DamlValue::Map(items.clone().into_iter().collect::<DamlTextMap<DamlValue>>());
+        let value2 = DamlValue::Map(items.into_iter().collect::<DamlTextMap<DamlValue>>());
         assert_eq!(value1, value2);
-        assert_eq!(hash1, hash2);
     }
 
     #[test]
-    fn test_hash_and_eq_for_genmap() {
+    fn test_ord_for_textmap() {
+        let items1 =
+            vec![(String::from("text1"), DamlValue::Int64(100)), (String::from("text2"), DamlValue::Int64(200))];
+        let items2 =
+            vec![(String::from("text2"), DamlValue::Int64(100)), (String::from("text3"), DamlValue::Int64(200))];
+        let items3 =
+            vec![(String::from("text1"), DamlValue::Int64(100)), (String::from("text2"), DamlValue::Int64(200))];
+        let value1 = DamlValue::Map(items1.into_iter().collect::<DamlTextMap<DamlValue>>());
+        let value2 = DamlValue::Map(items2.into_iter().collect::<DamlTextMap<DamlValue>>());
+        let value3 = DamlValue::Map(items3.into_iter().collect::<DamlTextMap<DamlValue>>());
+        assert_eq!(value1.cmp(&value2), Ordering::Less);
+        assert_eq!(value2.cmp(&value1), Ordering::Greater);
+        assert_eq!(value1.cmp(&value3), Ordering::Equal);
+    }
+
+    #[test]
+    fn test_eq_for_genmap() {
         let items = vec![
             (DamlValue::Text(String::from("text1")), DamlValue::Int64(100)),
             (DamlValue::Text(String::from("text2")), DamlValue::Int64(200)),
         ];
-        let value1 = DamlValue::GenMap(items.clone().into_iter().collect::<HashMap<_, _>>());
-        let value2 = DamlValue::GenMap(items.into_iter().collect::<HashMap<_, _>>());
-        let mut hasher1 = DefaultHasher::new();
-        value1.hash(&mut hasher1);
-        let hash1 = hasher1.finish();
-        let mut hasher2 = DefaultHasher::new();
-        value2.hash(&mut hasher2);
-        let hash2 = hasher2.finish();
+        let value1 = DamlValue::GenMap(items.clone().into_iter().collect::<DamlGenMap<_, _>>());
+        let value2 = DamlValue::GenMap(items.into_iter().collect::<DamlGenMap<_, _>>());
         assert_eq!(value1, value2);
-        assert_eq!(hash1, hash2);
+    }
+
+    #[test]
+    fn test_ord_for_genmap() {
+        let items1 = vec![
+            (DamlValue::Text(String::from("text1")), DamlValue::Int64(100)),
+            (DamlValue::Text(String::from("text2")), DamlValue::Int64(200)),
+        ];
+        let items2 = vec![
+            (DamlValue::Text(String::from("text2")), DamlValue::Int64(100)),
+            (DamlValue::Text(String::from("text3")), DamlValue::Int64(200)),
+        ];
+        let items3 = vec![
+            (DamlValue::Text(String::from("text1")), DamlValue::Int64(100)),
+            (DamlValue::Text(String::from("text2")), DamlValue::Int64(200)),
+        ];
+        let value1 = DamlValue::GenMap(items1.into_iter().collect::<DamlGenMap<DamlValue, DamlValue>>());
+        let value2 = DamlValue::GenMap(items2.into_iter().collect::<DamlGenMap<DamlValue, DamlValue>>());
+        let value3 = DamlValue::GenMap(items3.into_iter().collect::<DamlGenMap<DamlValue, DamlValue>>());
+        assert_eq!(value1.cmp(&value2), Ordering::Less);
+        assert_eq!(value2.cmp(&value1), Ordering::Greater);
+        assert_eq!(value1.cmp(&value3), Ordering::Equal);
     }
 }

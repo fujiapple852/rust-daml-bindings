@@ -4,7 +4,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::{Identifier, Record, Recor
 use std::convert::{TryFrom, TryInto};
 
 /// A representation of the fields on a DAML `template` or `data` construct.
-#[derive(Debug, PartialEq, Eq, Default, Clone, Hash, Ord, PartialOrd)]
+#[derive(Debug, PartialEq, Eq, Default, Clone, Ord, PartialOrd)]
 pub struct DamlRecord {
     record_id: Option<DamlIdentifier>,
     fields: Vec<DamlRecordField>,

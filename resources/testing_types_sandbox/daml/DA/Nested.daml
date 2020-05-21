@@ -1,30 +1,42 @@
 module DA.Nested where
 
 import DA.TextMap as M
+import DA.Map as GenMap
 
 data MyNestedData = MyNestedData 
     with 
         my_bool: Bool
-    deriving (Eq, Show)
-
+    deriving (Eq, Show, Ord)
+   
 template NestedTemplate
     with
-        owner : Party
-        opt_of_list: Optional [Text]
-        list_of_opt_of_map_of_data: [Optional (TextMap MyNestedData)]
+        owner: Party
+        opt_of_list : Optional [Text]
+        list_of_opt_of_map_of_data : [Optional (TextMap MyNestedData)]
+        map_of_data_to_text : GenMap.Map MyNestedData Text
     where
         signatory owner
 
         controller owner can
             DoSomethingComplex : ()
                 with 
-                    new_opt_of_list: Optional [Text]
-                    new_list_of_opt_of_map_of_data: [Optional (TextMap MyNestedData)]
-                do   
-                    create NestedTemplate with owner; opt_of_list = new_opt_of_list; list_of_opt_of_map_of_data = new_list_of_opt_of_map_of_data
+                    new_opt_of_list : Optional [Text]
+                    new_list_of_opt_of_map_of_data : [Optional (TextMap MyNestedData)]
+                    new_map_of_data_to_text : GenMap.Map MyNestedData Text
+                do
+                    create NestedTemplate with 
+                        owner
+                        opt_of_list = new_opt_of_list
+                        list_of_opt_of_map_of_data = new_list_of_opt_of_map_of_data
+                        map_of_data_to_text = new_map_of_data_to_text
+
                     return ()
                     
 name = scenario do
   alice <- getParty "Alice"
   submit alice do 
-    create NestedTemplate with owner = alice; opt_of_list = Some (["hello"]); list_of_opt_of_map_of_data = [Some (M.fromList [("key", MyNestedData True)])]
+    create NestedTemplate with 
+        owner = alice
+        opt_of_list = Some (["hello"]) 
+        list_of_opt_of_map_of_data = [Some (M.fromList [("key", MyNestedData True)])]
+        map_of_data_to_text = GenMap.fromList [(MyNestedData True, "TrueCase"), (MyNestedData False, "FalseCase")]

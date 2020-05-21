@@ -27,7 +27,7 @@ fn quote_enum(daml_enum: &DamlEnum<'_>) -> TokenStream {
 
     let body_tokens = quote_enum_body(daml_enum);
     quote!(
-        #[derive(Eq, PartialEq, Clone, Debug)]
+        #[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Debug)]
         pub enum #enum_name_tokens #bounded_param_tokens {
             #body_tokens
         }

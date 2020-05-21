@@ -215,6 +215,8 @@ pub struct DamlChoicePayload<'a> {
     pub update: DamlExprPayload<'a>,
     #[cfg(feature = "full")]
     pub controllers: DamlExprPayload<'a>,
+    #[cfg(feature = "full")]
+    pub observers: Option<DamlExprPayload<'a>>,
 }
 
 impl<'a> DamlChoicePayload<'a> {
@@ -228,6 +230,7 @@ impl<'a> DamlChoicePayload<'a> {
         self_binder: InternableString<'a>,
         #[cfg(feature = "full")] update: DamlExprPayload<'a>,
         #[cfg(feature = "full")] controllers: DamlExprPayload<'a>,
+        #[cfg(feature = "full")] observers: Option<DamlExprPayload<'a>>,
     ) -> Self {
         Self {
             consuming,
@@ -240,6 +243,8 @@ impl<'a> DamlChoicePayload<'a> {
             update,
             #[cfg(feature = "full")]
             controllers,
+            #[cfg(feature = "full")]
+            observers,
         }
     }
 }
@@ -255,6 +260,8 @@ impl<'a> TryFrom<&'a TemplateChoice> for DamlChoicePayload<'a> {
         let update = template_choice.update.as_ref().req()?;
         #[cfg(feature = "full")]
         let controllers = template_choice.controllers.as_ref().req()?;
+        #[cfg(feature = "full")]
+        let observers = template_choice.observers.as_ref();
         Ok(Self::new(
             template_choice.consuming,
             InternableString::from(template_choice.name.as_ref().req()?),
@@ -266,6 +273,8 @@ impl<'a> TryFrom<&'a TemplateChoice> for DamlChoicePayload<'a> {
             DamlExprPayload::try_from(update)?,
             #[cfg(feature = "full")]
             DamlExprPayload::try_from(controllers)?,
+            #[cfg(feature = "full")]
+            observers.map(DamlExprPayload::try_from).transpose()?,
         ))
     }
 }

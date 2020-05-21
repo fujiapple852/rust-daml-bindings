@@ -1,14 +1,13 @@
-// Copyright (c) 2020 The DAML Authors. All rights reserved.
+// Copyright (c) 2021 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
-package daml_lf_dev;
+package daml_lf_1_11;
 
-option java_package = "com.digitalasset.daml_lf_dev";
-option csharp_namespace = "Com.DigitalAsset.Daml_Lf_Dev.DamlLf";
+option java_package = "com.daml.daml_lf_1_11";
+option csharp_namespace = "Com.Daml.Daml_Lf_1_11.DamlLf";
 
-import "com/digitalasset/daml_lf_dev/daml_lf_0.proto";
-import "com/digitalasset/daml_lf_dev/daml_lf_1.proto";
+import "com/daml/daml_lf_1_11/daml_lf_1.proto";
 
 message ArchivePayload {
   // this is number 3 for historical reasons -- we had
@@ -16,8 +15,9 @@ message ArchivePayload {
   string minor = 3;
   reserved 9999; // for the removed "dev" major version
 
+  reserved 1; // was daml_lf_0
+
   oneof Sum {
-    daml_lf_0.Package daml_lf_0 = 1;
     daml_lf_1.Package daml_lf_1 = 2;
 
     // lf_2 = 4, lf_3 = 5, etc

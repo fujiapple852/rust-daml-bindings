@@ -1,8 +1,10 @@
+use std::borrow::Cow;
+
+use serde::Serialize;
+
 use crate::element::visitor::DamlElementVisitor;
 use crate::element::{DamlField, DamlTypeVarWithKind, DamlVisitableElement};
 use crate::owned::ToStatic;
-use serde::Serialize;
-use std::borrow::Cow;
 
 /// Representation of a DAML type.
 #[derive(Debug, Serialize, Clone)]
@@ -18,6 +20,7 @@ pub enum DamlType<'a> {
     Date,
     List(Vec<DamlType<'a>>),
     TextMap(Vec<DamlType<'a>>),
+    GenMap(Vec<DamlType<'a>>),
     Optional(Vec<DamlType<'a>>),
     TyCon(DamlTyCon<'a>),
     BoxedTyCon(DamlTyCon<'a>),
@@ -47,6 +50,7 @@ impl<'a> DamlType<'a> {
             DamlType::Date => "DamlDate",
             DamlType::List(_) => "DamlList",
             DamlType::TextMap(_) => "DamlTextMap",
+            DamlType::GenMap(_) => "DamlGenMap",
             DamlType::Optional(_) => "DamlOptional",
             DamlType::Update => "None (Update)",
             DamlType::Scenario => "None (Scenario)",
@@ -71,7 +75,7 @@ impl<'a> DamlType<'a> {
                 ..
             }) => var == type_var,
             DamlType::Numeric(inner) => inner.contains_type_var(type_var),
-            DamlType::List(args) | DamlType::Optional(args) | DamlType::TextMap(args) =>
+            DamlType::List(args) | DamlType::Optional(args) | DamlType::TextMap(args) | DamlType::GenMap(args) =>
                 args.iter().any(|arg| arg.contains_type_var(type_var)),
             DamlType::ContractId(inner) => inner.as_ref().map_or(false, |ty| ty.contains_type_var(type_var)),
             DamlType::TyCon(tycon) | DamlType::BoxedTyCon(tycon) =>
@@ -102,7 +106,7 @@ impl<'a> DamlVisitableElement<'a> for DamlType<'a> {
         match self {
             DamlType::Var(var) => var.accept(visitor),
             DamlType::Numeric(inner) => inner.accept(visitor),
-            DamlType::List(args) | DamlType::Optional(args) | DamlType::TextMap(args) =>
+            DamlType::List(args) | DamlType::Optional(args) | DamlType::TextMap(args) | DamlType::GenMap(args) =>
                 args.iter().for_each(|arg| arg.accept(visitor)),
             DamlType::ContractId(tycon) => tycon.as_ref().map_or_else(|| {}, |dr| dr.accept(visitor)),
             DamlType::TyCon(tycon) | DamlType::BoxedTyCon(tycon) => tycon.accept(visitor),
@@ -144,6 +148,7 @@ impl ToStatic for DamlType<'_> {
             DamlType::Date => DamlType::Date,
             DamlType::List(args) => DamlType::List(args.iter().map(DamlType::to_static).collect()),
             DamlType::TextMap(args) => DamlType::TextMap(args.iter().map(DamlType::to_static).collect()),
+            DamlType::GenMap(args) => DamlType::GenMap(args.iter().map(DamlType::to_static).collect()),
             DamlType::Optional(args) => DamlType::Optional(args.iter().map(DamlType::to_static).collect()),
             DamlType::TyCon(tycon) => DamlType::TyCon(tycon.to_static()),
             DamlType::BoxedTyCon(tycon) => DamlType::BoxedTyCon(tycon.to_static()),

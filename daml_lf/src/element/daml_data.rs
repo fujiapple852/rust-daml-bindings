@@ -285,14 +285,56 @@ pub struct DamlChoice<'a> {
     name: Cow<'a, str>,
     fields: Vec<DamlField<'a>>,
     return_type: DamlType<'a>,
+    consuming: bool,
+    self_binder: Cow<'a, str>,
+    #[cfg(feature = "full")]
+    update: DamlExpr<'a>,
+    #[cfg(feature = "full")]
+    controllers: DamlExpr<'a>,
+    #[cfg(feature = "full")]
+    observers: DamlExpr<'a>,
 }
 
 impl<'a> DamlChoice<'a> {
-    pub fn new(name: Cow<'a, str>, fields: Vec<DamlField<'a>>, return_type: DamlType<'a>) -> Self {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        name: Cow<'a, str>,
+        fields: Vec<DamlField<'a>>,
+        return_type: DamlType<'a>,
+        consuming: bool,
+        self_binder: Cow<'a, str>,
+        #[cfg(feature = "full")] update: DamlExpr<'a>,
+        #[cfg(feature = "full")] controllers: DamlExpr<'a>,
+        #[cfg(feature = "full")] observers: DamlExpr<'a>,
+    ) -> Self {
         Self {
             name,
             fields,
             return_type,
+            consuming,
+            self_binder,
+            #[cfg(feature = "full")]
+            update,
+            #[cfg(feature = "full")]
+            controllers,
+            #[cfg(feature = "full")]
+            observers,
+        }
+    }
+
+    pub fn new_with_default(name: Cow<'a, str>, fields: Vec<DamlField<'a>>, return_type: DamlType<'a>) -> Self {
+        Self {
+            name,
+            fields,
+            return_type,
+            consuming: false,
+            self_binder: Cow::default(),
+            #[cfg(feature = "full")]
+            update: DamlExpr::Nil(DamlType::List(vec![DamlType::Party])),
+            #[cfg(feature = "full")]
+            controllers: DamlExpr::Nil(DamlType::List(vec![DamlType::Party])),
+            #[cfg(feature = "full")]
+            observers: DamlExpr::Nil(DamlType::List(vec![DamlType::Party])),
         }
     }
 
@@ -307,6 +349,29 @@ impl<'a> DamlChoice<'a> {
     pub const fn return_type(&self) -> &DamlType<'a> {
         &self.return_type
     }
+
+    pub const fn consuming(&self) -> bool {
+        self.consuming
+    }
+
+    pub fn self_binder(&self) -> &str {
+        &self.self_binder
+    }
+
+    #[cfg(feature = "full")]
+    pub fn update(&self) -> &DamlExpr<'a> {
+        &self.update
+    }
+
+    #[cfg(feature = "full")]
+    pub fn controllers(&self) -> &DamlExpr<'a> {
+        &self.controllers
+    }
+
+    #[cfg(feature = "full")]
+    pub fn observers(&self) -> &DamlExpr<'a> {
+        &self.observers
+    }
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlChoice<'a> {
@@ -314,6 +379,12 @@ impl<'a> DamlVisitableElement<'a> for DamlChoice<'a> {
         visitor.pre_visit_choice(self);
         self.fields.iter().for_each(|field| field.accept(visitor));
         self.return_type.accept(visitor);
+        #[cfg(feature = "full")]
+        self.update.accept(visitor);
+        #[cfg(feature = "full")]
+        self.controllers.accept(visitor);
+        #[cfg(feature = "full")]
+        self.observers.accept(visitor);
         visitor.post_visit_choice(self);
     }
 }
@@ -326,6 +397,14 @@ impl ToStatic for DamlChoice<'_> {
             self.name.to_static(),
             self.fields.iter().map(DamlField::to_static).collect(),
             self.return_type.to_static(),
+            self.consuming,
+            self.self_binder.to_static(),
+            #[cfg(feature = "full")]
+            self.update.to_static(),
+            #[cfg(feature = "full")]
+            self.controllers.to_static(),
+            #[cfg(feature = "full")]
+            self.observers.to_static(),
         )
     }
 }

@@ -1,9 +1,9 @@
-// Copyright (c) 2020 The DAML Authors. All rights reserved.
+// Copyright (c) 2021 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-// .proto representation of the first version of the DAML-LF 1.8 language,
+// .proto representation of the first version of the DAML-LF  1.11 language,
 // as specified by
-// <https://github.com/digital-asset/daml/tree/cc7f3e7ad007bbc632af4201e768ddeb108260d5/daml-lf/spec/daml-lf-1.rst>.
+// <https://github.com/digital-asset/daml/commit/9ba146a3e4ce5b50c63e61e9471488b592ca3774/daml-lf/spec/daml-lf-1.rst>.
 //
 // A few notes:
 //
@@ -15,38 +15,43 @@
 //   and light.
 
 
-// Minor version history (to be officialized in the spec):
+// Minor version history:
 // * 0 (somewhen in December 2018): initial version
-// * 1 -- 2019-01-10: Add Optional type
-//     -- 2019-01-27: Add <, <=, =>, > for Party
-//     -- 2019-01-29: Add PrimType.ARROW
-// * 2 -- 2019-03-18: Add BuiltinFunction.{SHA256_TEXT, TO_TEXT_PARTY, FROM_TEXT_PARTY}
-//     -- 2019-03-18: Add flexible controllers (change scoping of controller expressions)
-// * 3 -- 2019-03-25: Add contract keys
-//     -- 2019-03-27: Add Map type
-// * 4 -- 2019-05-15: Add complex contract keys
-// * 5 -- 2019-05-22: Relax serializability constraints for contract ids
-//        2019-05-23: Add BuiltinFunction.COERCE_CONTRACT_ID
-//        2019-05-24: Make actors in exercise optional
-// * 6 -- 2019-05-27: Add enum type.
-//        2019-06-04: Add BuiltinFunction.{TEXT_FROM_CODE_POINTS, TEXT_TO_CODE_POINTS}
-//        2019-06-12: Add Package.interned_package_ids and PackageRef.interned_id
-//        2019-07-04: Transaction submitters must be in contract key maintainers when looking up. See #1866.
-// * 7 -- 2019-07-29: Add nat kind and Nat types, Numeric types and Numeric builtins
-//        2019-09-17: Add Any type and, `to_any` and `from_any` builtins
-//        2019-09-17: Drop support for Decimal
-//        2019-09-30: Add interning of strings and dotted names
-//        2019-11-04: Add Type representation values
-// * 8 -- 2019-11-22: Rename Map to TextMap
-//        2019-11-28: Rename Tuple to Struct
-//        2019-12-03: Add type synonyms
-//        2020-02-20: Add PackageMetadata.
+// * 1 --  2019-01-10: Add Optional type
+//     --  2019-01-27: Add <, <=, =>, > for Party
+//     --  2019-01-29: Add PrimType.ARROW
+// * 2 --  2019-03-18: Add BuiltinFunction.{SHA256_TEXT, TO_TEXT_PARTY, FROM_TEXT_PARTY}
+//     --  2019-03-18: Add flexible controllers (change scoping of controller expressions)
+// * 3 --  2019-03-25: Add contract keys
+//     --  2019-03-27: Add Map type
+// * 4 --  2019-05-15: Add complex contract keys
+// * 5 --  2019-05-22: Relax serializability constraints for contract ids
+//         2019-05-23: Add BuiltinFunction.COERCE_CONTRACT_ID
+//         2019-05-24: Make actors in exercise optional
+// * 6 --  2019-05-27: Add enum type.
+//         2019-06-04: Add BuiltinFunction.{TEXT_FROM_CODE_POINTS, TEXT_TO_CODE_POINTS}
+//         2019-06-12: Add Package.interned_package_ids and PackageRef.interned_id
+// * 7 --  2019-07-29: Add nat kind and Nat types, Numeric types and Numeric builtins
+//         2019-09-17: Add Any type and, `to_any` and `from_any` builtins
+//         2019-09-17: Drop support for Decimal
+//         2019-09-30: Add interning of strings and dotted names
+//         2019-11-04: Add Type representation values
+// * 8 --  2019-11-22: Rename Map to TextMap
+//         2019-11-28: Rename Tuple to Struct
+//         2019-12-03: Add type synonyms
+//         2020-02-20: Add PackageMetadata.
+// * 11 -- 2019-11-12: Add Generic Map (GenMap)
+//         2019-12-03: Add (experimental) text primitives.
+//         2019-12-05: Add Generic Equality builtin
+//         2019-10-13: Add ExerciseByKey Update
+//         2020-11-04: Add interning of types
+//         2020-11-20: Add choice-observers
 
 syntax = "proto3";
 package daml_lf_1;
 
-option java_package = "com.digitalasset.daml_lf_1_8";
-option csharp_namespace = "Com.DigitalAsset.Daml_Lf_1_8.DamlLf1";
+option java_package = "com.daml.daml_lf_1_11";
+option csharp_namespace = "Com.Daml.Daml_Lf_1_11.DamlLf1";
 
 // Canonical encoding in one-ofs for cases that carry no meaningful
 // values.
@@ -67,7 +72,7 @@ message PackageRef {
     // An index into `interned_package_ids` of the Package containing
     // this reference.
     // *Must be a valid interned package Id string*
-    int32 package_id_interned_str = 3; // *Available in versions >= 1.6*
+    int32 package_id_interned_str = 3;
   }
 }
 
@@ -298,6 +303,10 @@ enum PrimType {
   // Builtin type 'TypeRep'
   // *Available in versions >= 1.7*
   TYPE_REP = 19;
+
+  // Builtin type 'TGenMap`
+  // *Available in versions >= 1.11*
+  GENMAP = 20;
 }
 
 // Types
@@ -380,7 +389,6 @@ message Type {
     Var var = 1;
     Con con = 2;
     Prim prim = 3; // FixMe: renamed
-    Fun fun = 4;
     Forall forall = 5;
     Struct struct = 7;
     // *Available in versions >= 1.7*
@@ -388,8 +396,11 @@ message Type {
     // use standard signed long for future usage.
     sint64 nat = 11;
     Syn syn = 12; // *Available in versions >= 1.8*
+
+    int32 interned = 13; // *Available in versions >= 1.11*
   }
 
+  reserved 4; // This was fun.  Removed in favour of PrimType.ARROW
   reserved 6; // This was list. Removed in favour of PrimType.LIST
   reserved 8; // This was contract_id. Removed in favour of PrimType.CONTRACT_ID
   reserved 9; // This was update. Removed in favour of PrimType.UPDATE
@@ -444,42 +455,50 @@ enum BuiltinFunction {
   TEXTMAP_TO_LIST = 100;
   TEXTMAP_SIZE = 101;
 
+  GENMAP_EMPTY = 124; // *Available in versions >= 1.11*
+  GENMAP_INSERT = 125; // *Available in versions >= 1.11*
+  GENMAP_LOOKUP = 126; // *Available in versions >= 1.11*
+  GENMAP_DELETE = 127; // *Available in versions >= 1.11*
+  GENMAP_KEYS = 128; // *Available in versions >= 1.11*
+  GENMAP_VALUES = 129; // *Available in versions >= 1.11*
+  GENMAP_SIZE = 130; // *Available in versions >= 1.11*
+
   EXPLODE_TEXT = 23;
   APPEND_TEXT = 24;
 
   ERROR = 25;
 
-  LEQ_INT64 = 33;
-  LEQ_DECIMAL = 34;  // *Available in versions < 1.7*
-  LEQ_NUMERIC = 112;  // *Available in versions >= 1.7*
-  LEQ_TEXT = 36;
-  LEQ_TIMESTAMP = 37;
-  LEQ_DATE = 67;
-  LEQ_PARTY = 89; // *Available in versions >= 1.1*
+  LEQ_INT64 = 33;         // *Available in versions < 1.11*
+  LEQ_DECIMAL = 34;       // *Available in versions < 1.7*
+  LEQ_NUMERIC = 112;      // *Available in versions >= 1.7 and < 1.11*
+  LEQ_TEXT = 36;          // *Available in versions < 1.11*
+  LEQ_TIMESTAMP = 37;     // *Available in versions < 1.11*
+  LEQ_DATE = 67;          // *Available in versions < 1.11*
+  LEQ_PARTY = 89;         // *Available in versions >= 1.1 and < 1.11*
 
-  LESS_INT64 = 39;
-  LESS_DECIMAL = 40;  // *Available in versions < 1.7*
-  LESS_NUMERIC = 113;  // *Available in versions >= 1.7*
-  LESS_TEXT = 42;
-  LESS_TIMESTAMP = 43;
-  LESS_DATE = 68;
-  LESS_PARTY = 90; // *Available in versions >= 1.1*
+  LESS_INT64 = 39;        // *Available in versions < 1.11*
+  LESS_DECIMAL = 40;      // *Available in versions < 1.7*
+  LESS_NUMERIC = 113;     // *Available in versions >= 1.7 and < 1.11*
+  LESS_TEXT = 42;         // *Available in versions < 1.11*
+  LESS_TIMESTAMP = 43;    // *Available in versions < 1.11*
+  LESS_DATE = 68;         // *Available in versions < 1.11*
+  LESS_PARTY = 90;        // *Available in versions >= 1.1 and < 1.11*
 
-  GEQ_INT64 = 45;
-  GEQ_DECIMAL = 46;  // *Available in versions < 1.7*
-  GEQ_NUMERIC = 114;  // *Available in versions >= 1.7*
-  GEQ_TEXT = 48;
-  GEQ_TIMESTAMP = 49;
-  GEQ_DATE = 69;
-  GEQ_PARTY = 91; // *Available in versions >= 1.1*
+  GEQ_INT64 = 45;         // *Available in versions < 1.11*
+  GEQ_DECIMAL = 46;       // *Available in versions < 1.7*
+  GEQ_NUMERIC = 114;      // *Available in versions >= 1.7 and < 1.11*
+  GEQ_TEXT = 48;          // *Available in versions < 1.11*
+  GEQ_TIMESTAMP = 49;     // *Available in versions < 1.11*
+  GEQ_DATE = 69;          // *Available in versions < 1.11*
+  GEQ_PARTY = 91;         // *Available in versions >= 1.1 and < 1.11*
 
-  GREATER_INT64 = 51;
-  GREATER_DECIMAL = 52;  // *Available in versions < 1.7*
-  GREATER_NUMERIC = 115;  // *Available in versions >= 1.7*
-  GREATER_TEXT = 54;
-  GREATER_TIMESTAMP = 55;
-  GREATER_DATE = 70;
-  GREATER_PARTY = 92; // *Available in versions >= 1.1*
+  GREATER_INT64 = 51;     // *Available in versions < 1.11*
+  GREATER_DECIMAL = 52;   // *Available in versions < 1.7*
+  GREATER_NUMERIC = 115;  // *Available in versions >= 1.7 and < 1.11*
+  GREATER_TEXT = 54;      // *Available in versions < 1.11*
+  GREATER_TIMESTAMP = 55; // *Available in versions < 1.11*
+  GREATER_DATE = 70;      // *Available in versions < 1.11*
+  GREATER_PARTY = 92;     // *Available in versions >= 1.1 and < 1.11*
 
   TO_TEXT_INT64 = 57;
   TO_TEXT_DECIMAL = 58;  // *Available in versions < 1.7*
@@ -493,6 +512,7 @@ enum BuiltinFunction {
   FROM_TEXT_INT64 = 103; // *Available in versions >= 1.5*
   FROM_TEXT_DECIMAL = 104; // *Available in versions 1.5 and 1.6
   FROM_TEXT_NUMERIC = 117;  // *Available in versions >= 1.7*
+  TO_TEXT_CONTRACT_ID = 136; // *Available in versions >= 1.11*
   SHA256_TEXT = 93; // *Available in versions >= 1.2*
 
   DATE_TO_UNIX_DAYS = 72; // Date -> Int64
@@ -509,17 +529,23 @@ enum BuiltinFunction {
 
   IMPLODE_TEXT = 78;
 
-  EQUAL_INT64 = 79;
+  EQUAL_INT64 = 79;       // *Available in versions < 1.11*
   EQUAL_DECIMAL = 80;     // *Available in versions < 1.7*
-  EQUAL_NUMERIC = 120;    // *Available in versions >= 1.7*
-  EQUAL_TEXT = 81;
-  EQUAL_TIMESTAMP = 82;
-  EQUAL_DATE = 83;
-  EQUAL_PARTY = 84;
-  EQUAL_BOOL = 85;
-  EQUAL_CONTRACT_ID = 86;
+  EQUAL_NUMERIC = 120;    // *Available in versions >= 1.7 and < 1.11*
+  EQUAL_TEXT = 81;        // *Available in versions < 1.11*
+  EQUAL_TIMESTAMP = 82;   // *Available in versions < 1.11*
+  EQUAL_DATE = 83;        // *Available in versions < 1.11*
+  EQUAL_PARTY = 84;       // *Available in versions < 1.11*
+  EQUAL_BOOL = 85;        // *Available in versions < 1.11*
+  EQUAL_CONTRACT_ID = 86; // *Available in versions < 1.11*
   EQUAL_LIST = 87;
-  EQUAL_TYPE_REP = 123;
+  EQUAL_TYPE_REP = 123;   // *Available in versions = 1.8*
+
+  EQUAL = 131;            // *Available in versions >= 1.11*
+  LESS_EQ = 132;          // *Available in versions >= 1.11*
+  LESS = 133;             // *Available in versions >= 1.11*
+  GREATER_EQ = 134;       // *Available in versions >= 1.11*
+  GREATER = 135;          // *Available in versions >= 1.11*
 
   TRACE = 88;
 
@@ -528,7 +554,7 @@ enum BuiltinFunction {
   TEXT_FROM_CODE_POINTS = 105;  // *Available in versions >= 1.6*
   TEXT_TO_CODE_POINTS = 106; // *Available in versions >= 1.6*
 
-  // Next id is 132. 131 is EQUAL.
+  // Next id is 144. 143 is CONTRACT_ERROR_MESSAGE.
 }
 
 // Builtin literals
@@ -1061,10 +1087,21 @@ message Update {
     // contract id
     Expr cid = 3;
     // actors
-    // *optional since version 1.5*
-    Expr actor = 4;
+    reserved 4; // Was actor
     // argument
     Expr arg = 5;
+  }
+
+ // ExerciseByKey Update
+  message ExerciseByKey {
+    // Template type
+    TypeConName template = 1;
+    // *Must be a valid interned identifier*
+    int32 choice_interned_str = 2;
+    // key
+    Expr key = 3;
+    // argument
+    Expr arg = 4;
   }
 
   // Fetch Update
@@ -1096,6 +1133,7 @@ message Update {
     Block block = 2;
     Create create = 3;
     Exercise exercise = 4;
+    ExerciseByKey exercise_by_key = 10; // *Available in versions >= 1.11*
     Fetch fetch = 5;
     Unit get_time = 6;
     RetrieveByKey lookup_by_key = 8; // *Available in versions >= 1.2*
@@ -1159,10 +1197,13 @@ message TemplateChoice {
   bool consuming = 2;
 
   // The controllers of the choice. They have type `List Party` and the
-  // template parameter in scope, but not the choice parameter. All of these
+  // template parameter in scope, and the choice parameter. All of these
   // controllers need to authorize the exercising of this choice (aka
   // conjunctive choice controllers).
   Expr controllers = 3;
+
+  // The additional informees of the choice. They have type `List Party`.
+  Expr observers = 11; // *Available in versions >= 1.11*
 
   // Name to which the choice argument is bound and its type.
   VarWithType arg_binder = 4;
@@ -1427,7 +1468,11 @@ message PackageMetadata {
 
 message Package {
   repeated Module modules = 1;
-  repeated string interned_strings = 2; // *Available in versions >= 1.6*
+  repeated string interned_strings = 2;
   repeated InternedDottedName interned_dotted_names = 3; // *Available in versions >= 1.7*
   PackageMetadata metadata = 4; // *Available and required in versions >= 1.8*
+
+  // Types in the interning table are only allowed to refer to interned types
+  // at smaller indices.
+  repeated Type interned_types = 5; // *Available in versions >= 1.11*
 }

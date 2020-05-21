@@ -1,6 +1,7 @@
 use crate::convert::archive_payload::DamlArchivePayload;
 use crate::convert::interned::PackageInternedResolver;
 use crate::convert::module_payload::{DamlModulePayload, DamlModuleWrapper};
+use crate::convert::type_payload::DamlTypePayload;
 use crate::convert::util::Required;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use crate::{DamlLfArchive, DamlLfPackage, LanguageFeatureVersion, LanguageVersion};
@@ -32,10 +33,11 @@ pub struct DamlPackagePayload<'a> {
     pub package_id: &'a str,
     pub interned_strings: &'a [String],
     pub interned_dotted_names: Vec<&'a [i32]>,
+    pub interned_types: Vec<DamlTypePayload<'a>>,
     pub modules: HashMap<String, DamlModulePayload<'a>>,
 }
 
-impl<'a> PackageInternedResolver for DamlPackagePayload<'a> {
+impl<'a> PackageInternedResolver for DamlPackagePayload<'_> {
     fn package_id(&self) -> &str {
         self.package_id
     }
@@ -50,6 +52,10 @@ impl<'a> PackageInternedResolver for DamlPackagePayload<'a> {
 
     fn interned_dotted_names(&self) -> &[&[i32]] {
         &self.interned_dotted_names
+    }
+
+    fn interned_types(&self) -> &[DamlTypePayload<'_>] {
+        &self.interned_types
     }
 }
 
@@ -109,6 +115,10 @@ impl<'a> TryFrom<&'a DamlLfArchive> for DamlPackagePayload<'a> {
             fn interned_dotted_names(&self) -> &[&[i32]] {
                 self.interned_dotted_names
             }
+
+            fn interned_types(&self) -> &[DamlTypePayload<'_>] {
+                &[]
+            }
         }
 
         Ok(match &daml_lf_archive.payload.package {
@@ -118,6 +128,8 @@ impl<'a> TryFrom<&'a DamlLfArchive> for DamlPackagePayload<'a> {
                 let interned_strings = package.interned_strings.as_slice();
                 let interned_dotted_names: Vec<_> =
                     package.interned_dotted_names.iter().map(|dn| dn.segments_interned_str.as_slice()).collect();
+                let interned_types: Vec<_> =
+                    package.interned_types.iter().map(DamlTypePayload::try_from).collect::<DamlLfConvertResult<_>>()?;
                 let self_resolver =
                     SelfResolver::new(language_version, package_id, interned_strings, &interned_dotted_names);
                 let (name, version) = if language_version.supports_feature(&LanguageFeatureVersion::PACKAGE_METADATA) {
@@ -142,6 +154,7 @@ impl<'a> TryFrom<&'a DamlLfArchive> for DamlPackagePayload<'a> {
                     package_id,
                     interned_strings,
                     interned_dotted_names,
+                    interned_types,
                     modules,
                 }
             },

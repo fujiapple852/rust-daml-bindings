@@ -48,6 +48,10 @@ pub enum DamlJsonCodecError {
     UnexpectedOptionalArrayLength,
     #[error("expected exactly one list item")]
     UnexpectedListEntries,
+    #[error("duplicate genmap keys")]
+    DuplicateGenMapKeys,
+    #[error("expected exactly two types for genmap")]
+    UnexpectedGenMapTypes,
     #[error("unsupported DAML type {0}")]
     UnsupportedDamlType(String),
     #[error("Data item {0} not found in archive")]

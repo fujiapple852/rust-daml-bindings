@@ -1,3 +1,4 @@
+use crate::convert::type_payload::DamlTypePayload;
 use crate::convert::util::Required;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::expr::{
@@ -18,6 +19,7 @@ pub trait PackageInternedResolver {
     fn language_version(&self) -> LanguageVersion;
     fn interned_strings(&self) -> &[String];
     fn interned_dotted_names(&self) -> &[&[i32]];
+    fn interned_types(&self) -> &[DamlTypePayload<'_>];
 
     /// Partially resolve an interned dotted name by index to interned string indices.
     fn resolve_dotted_to_indices(&self, index: i32) -> DamlLfConvertResult<&[i32]> {
@@ -52,6 +54,11 @@ pub trait PackageInternedResolver {
     /// Fully resolve an interned dotted name to a `Vec<Cow<str>>` by index.
     fn resolve_dotted(&self, index: i32) -> DamlLfConvertResult<Vec<Cow<'_, str>>> {
         Ok(self.resolve_strings(self.resolve_dotted_to_indices(index)?)?)
+    }
+
+    /// Resolve an interned type to a `DamlTypePayload`
+    fn resolve_type(&self, index: i32) -> DamlLfConvertResult<&DamlTypePayload<'_>> {
+        Ok(self.interned_types().get(index as usize).req()?)
     }
 }
 

@@ -20,7 +20,7 @@ macro_rules! make_nat {
 
 macro_rules! make_nat_struct {
     ($name:ident, $n:literal) => {
-        #[derive(Debug, Eq, PartialEq, Clone)]
+        #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone)]
         pub struct $name {}
         impl Nat for $name {
             fn nat() -> u8 {

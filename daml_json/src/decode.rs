@@ -3,15 +3,14 @@ use crate::util::{AsSingleSliceExt, Required};
 use chrono::{offset, Date, DateTime, NaiveDate};
 use daml_grpc::data::value::{DamlEnum, DamlRecord, DamlRecordField, DamlValue, DamlVariant};
 use daml_grpc::data::DamlIdentifier;
-use daml_grpc::primitive_types::{DamlInt64, DamlNumeric};
+use daml_grpc::primitive_types::{DamlGenMap, DamlInt64, DamlNumeric, DamlTextMap};
 use daml_lf::element;
 use daml_lf::element::{DamlArchive, DamlData, DamlField, DamlType};
 use serde_json::{Map, Value};
-use std::collections::HashMap;
-use std::str::FromStr;
 use std::convert::TryFrom;
+use std::str::FromStr;
 
-/// DOCME
+/// Decode a `DamlValue` from JSON.
 #[derive(Debug)]
 pub struct JsonDecoder<'a> {
     arc: &'a DamlArchive<'a>,
@@ -26,16 +25,18 @@ impl<'a> JsonDecoder<'a> {
 
     /// Decode a `DamlValue` from a JSON `Value` for a given `DamlType`.
     ///
-    /// Here `top_level` refers to whether we are processing a value corresponding to the "top level" of a type or a
-    /// nested types.  This is required to support the "shortcut" decoding for optional fields.  See [`JsonEncoder`]
-    /// and the (DAML LF JSON Encoding documentation)[https://docs.daml.com/json-api/lf-value-specification.html] for
-    /// further details.
+    /// See [`JsonEncoder`] and the
+    /// (DAML LF JSON Encoding specification)[https://docs.daml.com/json-api/lf-value-specification.html] for details.
     ///
     /// [`JsonEncoder`]: crate::encode::JsonEncoder
     pub fn decode(&self, json: &Value, ty: &DamlType<'_>) -> DamlJsonCodecResult<DamlValue> {
         self.do_decode(json, ty, true)
     }
 
+    /// Perform the decode.
+    ///
+    /// Here `top_level` refers to whether we are processing a value corresponding to the "top level" of a type or a
+    /// nested types.  This is required to support the "shortcut" decoding for optional fields.
     fn do_decode(&self, json: &Value, ty: &DamlType<'_>, top_level: bool) -> DamlJsonCodecResult<DamlValue> {
         match ty {
             DamlType::Unit =>
@@ -62,8 +63,29 @@ impl<'a> JsonDecoder<'a> {
                 json.try_object()?
                     .iter()
                     .map(|(k, v)| Ok((k.clone(), self.do_decode(v, tys.as_single()?, true)?)))
-                    .collect::<DamlJsonCodecResult<HashMap<String, DamlValue>>>()?,
+                    .collect::<DamlJsonCodecResult<DamlTextMap<DamlValue>>>()?,
             )),
+            DamlType::GenMap(tys) => {
+                let array = json.try_array()?;
+                let genmap = array
+                    .iter()
+                    .map(|item| match item.try_array()?.as_slice() {
+                        [k, v] => Ok((
+                            self.do_decode(k, tys.first().req()?, true)?,
+                            self.do_decode(v, tys.last().req()?, true)?,
+                        )),
+                        _ => Err(DamlJsonCodecError::UnexpectedGenMapTypes),
+                    })
+                    .collect::<DamlJsonCodecResult<DamlGenMap<DamlValue, DamlValue>>>()?;
+
+                // If the resulting GenMap containers fewer entries that the input array then we know that the input
+                // array must have contained duplicate keys and should therefore be rejected.
+                if array.len() == genmap.len() {
+                    Ok(DamlValue::GenMap(genmap))
+                } else {
+                    Err(DamlJsonCodecError::DuplicateGenMapKeys)
+                }
+            },
             DamlType::TyCon(tycon) | DamlType::BoxedTyCon(tycon) => self.decode_data(
                 json,
                 self.arc
@@ -290,6 +312,7 @@ mod tests {
         DamlArchive, DamlEnum, DamlJsonCodecError, DamlJsonCodecResult, DamlType, DamlValue, JsonDecoder, Value,
     };
     use daml::macros::daml_value;
+    use daml_grpc::primitive_types::DamlTextMap;
     use daml_lf::element::{DamlAbsoluteTyCon, DamlTyCon, DamlTyConName};
     use daml_lf::DarFile;
     use maplit::hashmap;
@@ -297,7 +320,7 @@ mod tests {
     use std::borrow::Cow;
 
     static TESTING_TYPES_DAR_PATH: &str =
-        "../resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_1_1-lf_1_8.dar";
+        "../resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_9_0-lf_1_11.dar";
 
     /// `{}` -> `() : ()`
     #[test]
@@ -1011,8 +1034,8 @@ mod tests {
         let json_value = json!([{"foo": 42}, {"bar": 43}]);
         let ty = DamlType::List(vec![DamlType::TextMap(vec![DamlType::Int64])]);
         let expected = daml_value![[
-            (DamlValue::Map(hashmap! {"foo".to_owned() => daml_value![42]})),
-            (DamlValue::Map(hashmap! {"bar".to_owned() => daml_value![43]}))
+            (DamlValue::Map(DamlTextMap::from(hashmap! {"foo".to_owned() => daml_value![42]}))),
+            (DamlValue::Map(DamlTextMap::from(hashmap! {"bar".to_owned() => daml_value![43]})))
         ]];
         let actual = JsonDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -1024,10 +1047,10 @@ mod tests {
     fn test_textmap_list_int() -> DamlJsonCodecResult<()> {
         let json_value = json!({"foo": [1, 2, 3], "bar": [4, 5, 6]});
         let ty = DamlType::TextMap(vec![DamlType::List(vec![DamlType::Int64])]);
-        let expected = DamlValue::Map(hashmap! {
+        let expected = DamlValue::Map(DamlTextMap::from(hashmap! {
             "foo".to_owned() => daml_value![[1, 2, 3]],
             "bar".to_owned() => daml_value![[4, 5, 6]]
-        });
+        }));
         let actual = JsonDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -1049,12 +1072,80 @@ mod tests {
             "terms": "more test terms",
         }});
         let ty = DamlType::TextMap(vec![make_tycon("RentalAgreement", &dar.main.hash, vec!["DA", "RentDemo"])]);
-        let expected = DamlValue::Map(hashmap! {
+        let expected = DamlValue::Map(DamlTextMap::from(hashmap! {
             "first".to_owned() => daml_value!({landlord: "Alice"#p, tenant: "Bob"#p, terms: "test terms"}),
             "last".to_owned() => daml_value!({landlord: "John"#p, tenant: "Paul"#p, terms: "more test terms"})
-        });
+        }));
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
+        Ok(())
+    }
+
+    /// `[]` -> `M.fromList [] : Map Int`
+    #[test]
+    fn test_genmap_int_empty() -> DamlJsonCodecResult<()> {
+        let json_value = json!([]);
+        let ty = DamlType::GenMap(vec![DamlType::Int64]);
+        let expected = DamlValue::GenMap(vec![].into_iter().collect());
+        let actual = JsonDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
+        assert_eq!(actual, expected);
+        Ok(())
+    }
+
+    /// `[["foo", 42], ["bar", 43]]` -> `M.fromList [("foo", 42), ("bar", 43)] : Map Int`
+    #[test]
+    fn test_genmap_string_to_int() -> DamlJsonCodecResult<()> {
+        let json_value = json!([["foo", 42], ["bar", 43]]);
+        let ty = DamlType::GenMap(vec![DamlType::Text, DamlType::Int64]);
+        let expected = DamlValue::GenMap(
+            vec![(daml_value!["foo"], daml_value![42]), (daml_value!["bar"], daml_value![43])].into_iter().collect(),
+        );
+        let actual = JsonDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
+        assert_eq!(actual, expected);
+        Ok(())
+    }
+
+    /// `[[42, "foo"], [43, "bar"]]` -> `M.fromList [(42, "foo"), (43, "bar")] : Map Int`
+    #[test]
+    fn test_genmap_int_to_string() -> DamlJsonCodecResult<()> {
+        let json_value = json!([[42, "foo"], [43, "bar"]]);
+        let ty = DamlType::GenMap(vec![DamlType::Int64, DamlType::Text]);
+        let expected = DamlValue::GenMap(
+            vec![(daml_value![42], daml_value!["foo"]), (daml_value![43], daml_value!["bar"])].into_iter().collect(),
+        );
+        let actual = JsonDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
+        assert_eq!(actual, expected);
+        Ok(())
+    }
+
+    /// `[[{"name": "Alice", "age": 30}, "foo"], [{"name": "Bob", "age": 18}, "bar"]]` -> `M.fromList [(Person "Alice"
+    /// 30, "foo"), (Person "Bob" 18, "bar")] : Map Person Text`
+    #[test]
+    fn test_genmap_person_to_string() -> DamlJsonCodecResult<()> {
+        let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
+        let json_value = json!([[{"name": "Alice", "age": 30}, "foo"], [{"name": "Bob", "age": 18}, "bar"]]);
+        let key_type = make_tycon("Person", &dar.main.hash, vec!["DA", "JsonTest"]);
+        let value_type = DamlType::Text;
+        let ty = DamlType::GenMap(vec![key_type, value_type]);
+        let expected = DamlValue::GenMap(
+            vec![
+                (daml_value![{name: "Alice", age: 30}], daml_value!["foo"]),
+                (daml_value![{name: "Bob", age: 18}], daml_value!["bar"]),
+            ]
+            .into_iter()
+            .collect(),
+        );
+        let actual = decode_apply(&dar, &json_value, &ty)?;
+        assert_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_genmap_duplicate_key_should_fail() -> DamlJsonCodecResult<()> {
+        let json_value = json!([[42, "foo"], [42, "bar"]]);
+        let ty = DamlType::GenMap(vec![DamlType::Int64, DamlType::Text]);
+        let actual = JsonDecoder::new(&DamlArchive::default()).decode(&json_value, &ty);
+        assert!(actual.is_err());
         Ok(())
     }
 

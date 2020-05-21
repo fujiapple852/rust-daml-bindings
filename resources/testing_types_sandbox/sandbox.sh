@@ -39,12 +39,17 @@ function make_database_params() {
   echo "--jdbcurl \"jdbc:postgresql://localhost:54320/${database_name}?user=postgres\""
 }
 
+function make_early_access_params() {
+  echo "--early-access-unsafe"
+}
+
 SANDBOX_TLS_ENABLED=false
 SANDBOX_DATABASE_ENABLED=false
+SANDBOX_EARLY_ACCESS_ENABLED=false
 SANDBOX_SEEDING_MODE="testing-weak"
 SANDBOX_CLIENT_AUTH="none"
 
-while getopts "h:p:l:m:a:s:c:td" opt; do
+while getopts "h:p:l:m:a:s:c:tde" opt; do
   case ${opt} in
     h )
       SANDBOX_HOST=$OPTARG
@@ -73,11 +78,14 @@ while getopts "h:p:l:m:a:s:c:td" opt; do
     d )
       SANDBOX_DATABASE_ENABLED=true
       ;;
+    e )
+      SANDBOX_EARLY_ACCESS_ENABLED=true
+      ;;
   esac
 done
 
 if [[ ${SANDBOX_HOST} == "" ]] || [[ ${SANDBOX_PORT} == "" ]] || [[ ${SANDBOX_TIME_MODE} == "" ]]; then
-    echo "usage: sandbox.sh -h <hostname> -p <port> -l <ledger_id> -m <static|wallclock> [-a <es256|rs256|hs256-unsafe>] [-s <seeding_mode>] [-c <client_auth_mode>] [-t] [-d]"
+    echo "usage: sandbox.sh -h <hostname> -p <port> -l <ledger_id> -m <static|wallclock> [-a <es256|rs256|hs256-unsafe>] [-s <seeding_mode>] [-c <client_auth_mode>] [-t] [-d] [-e]"
     exit
 fi
 
@@ -86,12 +94,14 @@ if [[ ${SANDBOX_TLS_ENABLED} == true ]]; then
   tls_params=$(make_tls_params ${SANDBOX_CLIENT_AUTH})
 fi
 auth_params=$(make_auth_params $SANDBOX_AUTH_MODE)
-
 if [[ ${SANDBOX_DATABASE_ENABLED} == true ]]; then
   database_params=$(make_database_params ${SANDBOX_TIME_MODE})
 fi
 seeding_params=$(make_seeding_params ${SANDBOX_SEEDING_MODE})
 log_file="sandbox_${SANDBOX_LEDGER_ID}.log"
+if [[ ${SANDBOX_EARLY_ACCESS_ENABLED} == true ]]; then
+  early_access_params=$(make_early_access_params)
+fi
 
-echo "nohup daml sandbox ${core_params} ${tls_params} ${auth_params} ${seeding_params} ${database_params} .daml/dist/* > ${log_file} 2>&1 &"
-nohup daml sandbox ${core_params} ${tls_params} ${auth_params} ${seeding_params} ${database_params} .daml/dist/* > ${log_file} 2>&1 &
+echo "nohup daml sandbox ${core_params} ${tls_params} ${auth_params} ${seeding_params} ${database_params} ${early_access_params} .daml/dist/* > ${log_file} 2>&1 &"
+nohup daml sandbox ${core_params} ${tls_params} ${auth_params} ${seeding_params} ${database_params} ${early_access_params} .daml/dist/* > ${log_file} 2>&1 &

@@ -6,7 +6,7 @@ use daml_grpc::data::value::DamlValue;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 
-/// An `DamlValue` to JSON encoder.
+/// Encode a `DamlValue` as JSON.
 #[derive(Debug, Default)]
 pub struct JsonEncoder {
     encode_decimal_as_string: bool,
@@ -104,7 +104,13 @@ impl JsonEncoder {
                 Ok(json!({"tag": ctor, "value": value}))
             },
             DamlValue::Enum(data_enum) => Ok(json!(data_enum.constructor())),
-            DamlValue::GenMap(_) => unimplemented!(),
+            DamlValue::GenMap(map) => {
+                let entries = map
+                    .iter()
+                    .map(|(k, v)| Ok((self.do_encode(k, true)?, self.do_encode(v, true)?)))
+                    .collect::<DamlJsonCodecResult<Vec<(_, _)>>>()?;
+                Ok(json!(entries))
+            },
         }
     }
 }
@@ -112,11 +118,14 @@ impl JsonEncoder {
 #[cfg(test)]
 mod tests {
     use super::{DamlJsonCodecResult, DamlValue, JsonEncoder};
+    use crate::decode::JsonTryAsExt;
+    use crate::util::Required;
     use daml::macros::daml_value;
     use daml_grpc::data::value::{DamlEnum, DamlRecord, DamlRecordField};
     use daml_grpc::data::DamlIdentifier;
+    use daml_grpc::primitive_types::DamlTextMap;
     use maplit::hashmap;
-    use serde_json::json;
+    use serde_json::{json, Value};
 
     #[test]
     fn test_unit() -> DamlJsonCodecResult<()> {
@@ -574,10 +583,10 @@ mod tests {
 
     #[test]
     fn test_textmap_list_int() -> DamlJsonCodecResult<()> {
-        let grpc_value = DamlValue::Map(hashmap! {
+        let grpc_value = DamlValue::Map(DamlTextMap::from(hashmap! {
             "foo".to_owned() => daml_value![[1, 2, 3]],
             "bar".to_owned() => daml_value![[4, 5, 6]]
-        });
+        }));
         let expected = json!({"foo": [1, 2, 3], "bar": [4, 5, 6]});
         let actual = JsonEncoder::default().encode(&grpc_value)?;
         assert_eq!(actual, expected);
@@ -586,10 +595,10 @@ mod tests {
 
     #[test]
     fn test_textmap_record() -> DamlJsonCodecResult<()> {
-        let grpc_value = DamlValue::Map(hashmap! {
+        let grpc_value = DamlValue::Map(DamlTextMap::from(hashmap! {
             "first".to_owned() => daml_value!({landlord: "Alice"#p, tenant: "Bob"#p, terms: "test terms"}),
             "last".to_owned() => daml_value!({landlord: "John"#p, tenant: "Paul"#p, terms: "more test terms"})
-        });
+        }));
         let expected = json!({
         "first": {
             "landlord": "Alice",
@@ -603,6 +612,59 @@ mod tests {
         }});
         let actual = JsonEncoder::default().encode(&grpc_value)?;
         assert_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_genmap_empty() -> DamlJsonCodecResult<()> {
+        let grpc_value = DamlValue::GenMap(vec![].into_iter().collect());
+        let expected = json!([]);
+        let actual = JsonEncoder::default().encode(&grpc_value)?;
+        assert_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_genmap_string_to_int() -> DamlJsonCodecResult<()> {
+        let grpc_value = DamlValue::GenMap(
+            vec![(daml_value!["foo"], daml_value![42]), (daml_value!["bar"], daml_value![43])].into_iter().collect(),
+        );
+        let actual = JsonEncoder::default().encode(&grpc_value)?;
+        let key_foo_value = find_genmap_value(&actual, &json!["foo"])?;
+        let key_bar_value = find_genmap_value(&actual, &json!["bar"])?;
+        assert_eq!(key_foo_value, &json![42]);
+        assert_eq!(key_bar_value, &json![43]);
+        Ok(())
+    }
+
+    #[test]
+    fn test_genmap_int_to_string() -> DamlJsonCodecResult<()> {
+        let grpc_value = DamlValue::GenMap(
+            vec![(daml_value![42], daml_value!["foo"]), (daml_value![43], daml_value!["bar"])].into_iter().collect(),
+        );
+        let actual = JsonEncoder::default().encode(&grpc_value)?;
+        let key_42_value = find_genmap_value(&actual, &json![42])?;
+        let key_43_value = find_genmap_value(&actual, &json![43])?;
+        assert_eq!(key_42_value, &json!["foo"]);
+        assert_eq!(key_43_value, &json!["bar"]);
+        Ok(())
+    }
+
+    #[test]
+    fn test_genmap_person_to_string() -> DamlJsonCodecResult<()> {
+        let grpc_value = DamlValue::GenMap(
+            vec![
+                (daml_value![{name: "John", age: 29}], daml_value!["foo"]),
+                (daml_value![{name: "Alice", age: 22}], daml_value!["bar"]),
+            ]
+            .into_iter()
+            .collect(),
+        );
+        let actual = JsonEncoder::default().encode(&grpc_value)?;
+        let key_john_value = find_genmap_value(&actual, &json![{"name": "John", "age": 29}])?;
+        let key_alice_value = find_genmap_value(&actual, &json![{"name": "Alice", "age": 22}])?;
+        assert_eq!(key_john_value, &json!["foo"]);
+        assert_eq!(key_alice_value, &json!["bar"]);
         Ok(())
     }
 
@@ -658,5 +720,16 @@ mod tests {
         let actual = JsonEncoder::default().encode(&grpc_value)?;
         assert_eq!(actual, expected);
         Ok(())
+    }
+
+    fn find_genmap_value<'a>(genmap: &'a Value, key: &Value) -> DamlJsonCodecResult<&'a Value> {
+        fn item_with_key<'a>(item: &'a Value, key: &Value) -> Option<&'a Value> {
+            if item.try_array().ok()?.first()? == key {
+                Some(item)
+            } else {
+                None
+            }
+        }
+        genmap.try_array()?.iter().find_map(|item| item_with_key(item, key)).req()?.try_array()?.last().req()
     }
 }

@@ -27,6 +27,7 @@ prost = "0.7"
 prost-derive = "0.7"
 prost-types = "0.7"
 async-trait = "0.1"
+itertools = "0.10"
 
 [dev-dependencies]
 daml = { path = "../daml", features = [ "lf", "sandbox", "util" ] }

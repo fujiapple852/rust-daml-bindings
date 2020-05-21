@@ -5,7 +5,7 @@ use crate::util::Required;
 use std::convert::TryFrom;
 
 /// A representation of a single field on a DAML record.
-#[derive(Debug, Eq, PartialEq, Clone, Hash, Ord, PartialOrd)]
+#[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd)]
 pub struct DamlRecordField {
     label: Option<String>,
     value: DamlValue,

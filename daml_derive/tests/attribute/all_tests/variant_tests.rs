@@ -8,9 +8,8 @@ use crate::common::test_utils::{
 };
 use daml::grpc_api::data::command::DamlCommand;
 use daml::grpc_api::data::event::DamlEvent;
-use daml::grpc_api::primitive_types::DamlParty;
+use daml::grpc_api::primitive_types::{DamlParty, DamlTextMap};
 use daml::grpc_api::{CommandExecutor, DamlSimpleExecutorBuilder};
-use std::collections::HashMap;
 use std::convert::TryInto;
 
 #[tokio::test]
@@ -45,10 +44,10 @@ async fn test_all_variant_types() -> TestResult {
     let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
-    let mut map_of_party: HashMap<String, DamlParty> = HashMap::new();
+    let mut map_of_party: DamlTextMap<DamlParty> = DamlTextMap::new();
     map_of_party.insert("sender".to_owned(), DamlParty::new("Alice"));
     map_of_party.insert("receiver".to_owned(), DamlParty::new("Bob"));
-    let mut map_of_records: HashMap<String, RecordArgument> = HashMap::new();
+    let mut map_of_records: DamlTextMap<RecordArgument> = DamlTextMap::new();
     map_of_records.insert("Alice".to_owned(), RecordArgument::new(8, vec!["test1".to_owned()]));
     map_of_records.insert("Bob".to_owned(), RecordArgument::new(4, vec!["test2".to_owned()]));
     let variants = vec![

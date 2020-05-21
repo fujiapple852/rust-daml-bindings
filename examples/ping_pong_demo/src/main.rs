@@ -20,6 +20,7 @@ use daml::util::DamlSandboxTokenBuilder;
 use futures::stream::StreamExt;
 use futures::try_join;
 use log::info;
+use log4rs::config::Deserializers;
 use std::convert::TryInto;
 
 const PINGPONG_MODULE_NAME: &str = "DA.PingPong";
@@ -38,7 +39,7 @@ const LOGGER_CONFIG: &str = "log4rs.yml";
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    log4rs::init_file(LOGGER_CONFIG, Default::default()).context(LOGGER_CONFIG)?;
+    log4rs::init_file(LOGGER_CONFIG, Deserializers::default()).context(LOGGER_CONFIG)?;
     let ledger_client = create_connection("https://localhost:8080").await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     send_initial_ping(&ledger_client, &package_id, PARTY_ALICE).await?;

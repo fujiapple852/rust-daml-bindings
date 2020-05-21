@@ -1,6 +1,6 @@
 use crate::convert::data_payload::{DamlDataEnrichedPayload, DamlDataWrapper};
 use crate::convert::field_payload::DamlFieldWrapper;
-use crate::convert::interned::InternableDottedName;
+use crate::convert::interned::{InternableDottedName, PackageInternedResolver};
 use crate::convert::resolver::{resolve_syn, resolve_tycon};
 use crate::convert::type_payload::{DamlTypePayload, DamlTypeWrapper};
 use crate::error::DamlLfConvertResult;
@@ -68,6 +68,11 @@ impl<'a> DamlDataBoxChecker<'a> {
             DamlTypePayload::Forall(forall) => self.check_type(daml_type.wrap(forall.body.as_ref()))?,
             DamlTypePayload::Struct(tuple) =>
                 self.check_types(tuple.fields.iter().map(|field| daml_type.wrap(&field.ty)))?,
+            DamlTypePayload::Interned(i) => {
+                let resolved = daml_type.context.package.resolve_type(*i)?;
+                let wrapped = daml_type.wrap(resolved);
+                self.check_type(wrapped)?
+            },
             DamlTypePayload::ContractId(_)
             | DamlTypePayload::Int64
             | DamlTypePayload::Numeric(_)
@@ -81,6 +86,7 @@ impl<'a> DamlDataBoxChecker<'a> {
             | DamlTypePayload::Update
             | DamlTypePayload::Scenario
             | DamlTypePayload::TextMap(_)
+            | DamlTypePayload::GenMap(_)
             | DamlTypePayload::Var(_)
             | DamlTypePayload::Arrow
             | DamlTypePayload::Any
