@@ -3,7 +3,7 @@ use anyhow::Result;
 use daml::api::DamlLedgerClientBuilder;
 use std::io::Read;
 
-pub(crate) async fn upload(dar_path: &str, uri: &str, token_key_path: Option<&str>) -> Result<()> {
+pub async fn upload(dar_path: &str, uri: &str, token_key_path: Option<&str>) -> Result<()> {
     let mut dar = std::fs::File::open(dar_path)?;
     let mut buffer = Vec::new();
     dar.read_to_end(&mut buffer)?;

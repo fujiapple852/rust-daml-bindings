@@ -26,7 +26,7 @@ use uuid::Uuid;
 //         .new_ec256_token(std::fs::read_to_string(token_key_path)?)?)
 // }
 
-pub(crate) async fn list(uri: &str, token_key_path: Option<&str>) -> Result<()> {
+pub async fn list(uri: &str, token_key_path: Option<&str>) -> Result<()> {
     // let ledger_client = Arc::new(match token_key_path {
     //     Some(key) => DamlLedgerClientBuilder::uri(uri).with_auth(make_ec256_token(key)?).connect().await?,
     //     None => DamlLedgerClientBuilder::uri(uri).connect().await?,

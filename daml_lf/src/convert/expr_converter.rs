@@ -688,18 +688,21 @@ impl<'a> TryFrom<&DamlValueNameWrapper<'a>> for DamlValueName<'a> {
             .archive
             .package_by_id(target_package_id)
             .ok_or_else(|| DamlLfConvertError::UnknownPackage(target_package_id.to_owned()))?;
-        let current_package_name = value_name.context.package.name.as_str();
-        let current_module_path = value_name.context.module.path.resolve(source_resolver)?;
+        let source_package_id = value_name.context.package.package_id;
+        let source_package_name = value_name.context.package.name.as_str();
+        let source_module_path = value_name.context.module.path.resolve(source_resolver)?;
         let target_package_name = target_package.name.as_str();
         let target_module_path = value_name.payload.module_path.resolve(source_resolver)?;
         let data_name = value_name.payload.name.resolve_last(source_resolver)?;
-        if target_package_name == current_package_name && target_module_path == current_module_path {
-            Ok(DamlValueName::Local(DamlLocalTyCon::new(data_name, target_package_name, target_module_path)))
+        if target_package_name == source_package_name && target_module_path == source_module_path {
+            Ok(DamlValueName::Local(DamlLocalTyCon::new(data_name, target_package_id, target_package_name, target_module_path)))
         } else {
             Ok(DamlValueName::NonLocal(DamlNonLocalTyCon::new(
                 data_name,
-                current_package_name,
-                current_module_path,
+                source_package_id,
+                source_package_name,
+                source_module_path,
+                target_package_id,
                 target_package_name,
                 target_module_path,
             )))

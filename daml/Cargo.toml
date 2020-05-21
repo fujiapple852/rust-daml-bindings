@@ -29,7 +29,7 @@ codegen = [ "daml_codegen" ]
 lf = [ "daml_lf" ]
 
 # Enable DAML-LF feature with support for all types
-lf_full = [ "daml_lf", "daml_lf/full" ]
+lf_full = [ "lf", "daml_lf/full" ]
 
 # Enable additional utilities feature.
 util = [ "daml_util" ]

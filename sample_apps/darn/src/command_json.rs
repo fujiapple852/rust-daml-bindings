@@ -2,7 +2,7 @@ use crate::error::DarnError;
 use anyhow::Result;
 use daml::lf::DarFile;
 
-pub(crate) fn json(dar_path: &str, package_opt: Option<&str>, module_opt: Option<&str>) -> Result<()> {
+pub fn json(dar_path: &str, package_opt: Option<&str>, module_opt: Option<&str>) -> Result<()> {
     let dar = DarFile::from_file(dar_path)?;
     let serialized = dar.apply(|archive| match (package_opt, module_opt) {
         (Some(search_package), Some(search_module)) => {

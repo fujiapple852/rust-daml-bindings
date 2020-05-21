@@ -8,7 +8,7 @@ use daml::lf::DarFile;
 use ptree::print_config::UTF_CHARS_BOLD;
 use ptree::{print_tree_with, Color, PrintConfig, Style, TreeBuilder};
 
-pub(crate) fn outline(dar_path: &str, package_opt: Option<&str>, module_opt: Option<&str>) -> Result<()> {
+pub fn outline(dar_path: &str, package_opt: Option<&str>, module_opt: Option<&str>) -> Result<()> {
     struct ModuleTreeVisitor {
         tree: TreeBuilder,
     }

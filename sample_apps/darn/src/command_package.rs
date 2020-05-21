@@ -4,7 +4,7 @@ use itertools::Itertools;
 use prettytable::format;
 use prettytable::{color, Attr, Cell, Row, Table};
 
-pub(crate) fn package(dar_path: &str) -> Result<()> {
+pub fn package(dar_path: &str) -> Result<()> {
     let dar = DarFile::from_file(dar_path)?;
     Ok(dar.apply(|archive| {
         let mut table = Table::new();

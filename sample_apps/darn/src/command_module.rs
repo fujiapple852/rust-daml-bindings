@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-pub(crate) fn module(_dar_path: &str, _module: Option<&str>) -> Result<()> {
+pub fn module(_dar_path: &str, _module: Option<&str>) -> Result<()> {
     // fn cell(data: &str, color: color::Color) -> Cell {
     //     Cell::new(data).with_style(Attr::Bold).with_style(Attr::ForegroundColor(color))
     // }

@@ -10,6 +10,7 @@
 
 use anyhow::Result;
 use clap::{App, AppSettings, Arg, SubCommand};
+use crate::command_intern::SortOrder;
 
 pub mod command_download;
 pub mod command_intern;
@@ -159,7 +160,7 @@ async fn main() -> Result<()> {
     if let Some(inspect_matches) = matches.subcommand_matches("intern") {
         let dar_path = inspect_matches.value_of("dar").unwrap();
         let index = inspect_matches.value_of("index").unwrap();
-        command_intern::intern_dotted(dar_path, index)?;
+        command_intern::intern_all_dotted(dar_path, false, SortOrder::ByIndex)?;
     }
     if let Some(inspect_matches) = matches.subcommand_matches("module") {
         let dar_path = inspect_matches.value_of("dar").unwrap();
