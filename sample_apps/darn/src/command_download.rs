@@ -6,12 +6,16 @@ use daml::lf::DamlLfArchivePayload;
 use daml::lf::{
     DamlLfArchive, DamlLfHashFunction, DarEncryptionType, DarFile, DarManifest, DarManifestFormat, DarManifestVersion,
 };
+use daml::lf::element::{DamlArchive, DamlElementVisitor, DamlNonLocalTyCon, DamlAbsoluteTyCon};
+
 use daml::util::archive::ExtendedPackageInfo;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io::Write;
 use std::path::PathBuf;
 use zip::write::FileOptions;
 use zip::CompressionMethod;
+use std::iter::FromIterator;
+use daml::lf::element::DamlVisitableElement;
 
 const UNKNOWN_LF_ARCHIVE_PREFIX: &str = "dep";
 const MANIFEST_FILE_PATH: &str = "META-INF/MANIFEST.MF";
@@ -37,22 +41,29 @@ pub async fn download(
         extended_package_list.iter().map(|i| (i.package_id.as_str(), i)).collect();
 
     // find the main package by name (TODO: or by id)
-    let main_package_id = extended_package_info
+    let main_package_info = extended_package_info
         .values()
-        .find_map(|p| {
+        .find_map(|&p| {
             if p.package_name == main_package_name {
-                Some(p.package_id.as_str())
+                Some(p)
             } else {
                 None
             }
         })
         .ok_or_else(|| DarnError::unknown_package(main_package_name))?;
 
+    // let eps: HashSet<ExtendedPackageInfo> = working_dar.apply(|arc| {
+    //     let deps = extract_package_dependencies(arc, main_package_info.clone()).unwrap();
+    //     deps
+    // })?;
+    //
+    // dbg!(eps);
+
     // build a map of package id to payload byte blob
     let all_packages_bytes = make_final_packages(all_packages_raw)?;
 
     // write out a dar file
-    write_dar(all_packages_bytes, main_package_id, &extended_package_info, output_dir)?;
+    write_dar(all_packages_bytes, &main_package_info.package_id, &extended_package_info, output_dir)?;
     Ok(())
 }
 
@@ -144,6 +155,56 @@ fn make_working_dar(mut all_packages: Vec<DamlLfArchive>) -> DarFile {
     let (first, rest) = all_packages.try_swap_remove(0).map(|i| (i, all_packages)).unwrap();
     let manifest = DarManifest::new_implied(first.name.clone(), rest.iter().map(|n| n.name.clone()).collect());
     DarFile::new(manifest, first, rest)
+}
+
+// fn extract_package_dependencies(
+//     archive: &DamlArchive<'_>,
+//     package_info: ExtendedPackageInfo,
+// ) -> Result<HashSet<ExtendedPackageInfo>> {
+//     let package = archive
+//         .packages()
+//         .values()
+//         .inspect(|i| {dbg!(i.package_id());})
+//         .find(|&p| p.package_id() == package_info.package_id)
+//         .ok_or_else(|| DarnError::unknown_package(&package_info.package_id))?;
+//     let mut visitor = PackageDependencyVisitor {
+//         refs: HashSet::<ExtendedPackageInfo>::default(),
+//     };
+//     package.accept(&mut visitor);
+//     visitor.refs.into_iter().fold(Ok(HashSet::from_iter(vec![package_info].into_iter())), |all_refs, name| {
+//         match all_refs {
+//             Ok(mut r) => {
+//                 r.extend(extract_package_dependencies(archive, name)?);
+//                 Ok(r)
+//             },
+//             Err(e) => Err(e),
+//         }
+//     })
+// }
+
+#[derive(Default)]
+struct PackageDependencyVisitor {
+    refs: HashSet<ExtendedPackageInfo>,
+}
+
+impl DamlElementVisitor for PackageDependencyVisitor {
+    fn pre_visit_non_local_tycon(&mut self, non_local_data_ref: &DamlNonLocalTyCon<'_>) {
+        self.refs.insert(ExtendedPackageInfo {
+            package_id: non_local_data_ref.target_package_id().to_owned(),
+            package_name: non_local_data_ref.target_package_name().to_owned(),
+            version: None,
+            language_version: "".to_owned(),
+        });
+    }
+
+    fn pre_visit_absolute_tycon(&mut self, absolute_data_ref: &DamlAbsoluteTyCon<'_>) {
+        self.refs.insert(ExtendedPackageInfo {
+            package_id: absolute_data_ref.package_id().to_owned(),
+            package_name: absolute_data_ref.package_name().to_owned(),
+            version: None,
+            language_version: "".to_owned(),
+        });
+    }
 }
 
 trait TrySwapRemove<T>: Sized {
