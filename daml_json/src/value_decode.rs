@@ -114,6 +114,10 @@ impl<'a> JsonValueDecoder<'a> {
             | DamlType::Arrow
             | DamlType::Any
             | DamlType::TypeRep
+            | DamlType::AnyException
+            | DamlType::GeneralError
+            | DamlType::ArithmeticError
+            | DamlType::ContractError
             | DamlType::Update
             | DamlType::Scenario
             | DamlType::Forall(_)

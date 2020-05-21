@@ -7,7 +7,9 @@ use crate::convert::data_payload::{
 use crate::convert::expr_payload::DamlKeyExprPayload;
 use crate::convert::field_payload::{DamlFieldPayload, DamlFieldWrapper};
 use crate::convert::interned::{InternableDottedName, PackageInternedResolver};
-use crate::convert::module_payload::{DamlDefTypeSynWrapper, DamlFeatureFlagsPayload, DamlModuleWrapper};
+use crate::convert::module_payload::{
+    DamlDefExceptionWrapper, DamlDefTypeSynWrapper, DamlFeatureFlagsPayload, DamlModuleWrapper,
+};
 use crate::convert::package_payload::{DamlPackagePayload, DamlPackageWrapper};
 use crate::convert::resolver::resolve_tycon;
 use crate::convert::type_payload::{
@@ -23,9 +25,10 @@ use crate::element::DamlDefValue;
 #[cfg(feature = "full")]
 use crate::element::DamlExpr;
 use crate::element::{
-    DamlArchive, DamlArrow, DamlChoice, DamlData, DamlDefKey, DamlDefTypeSyn, DamlEnum, DamlFeatureFlags, DamlField,
-    DamlForall, DamlKind, DamlLocalTyCon, DamlModule, DamlNonLocalTyCon, DamlPackage, DamlRecord, DamlStruct, DamlSyn,
-    DamlTemplate, DamlTyCon, DamlTyConName, DamlType, DamlTypeSynName, DamlTypeVarWithKind, DamlVar, DamlVariant,
+    DamlArchive, DamlArrow, DamlChoice, DamlData, DamlDefException, DamlDefKey, DamlDefTypeSyn, DamlEnum,
+    DamlFeatureFlags, DamlField, DamlForall, DamlKind, DamlLocalTyCon, DamlModule, DamlNonLocalTyCon, DamlPackage,
+    DamlRecord, DamlStruct, DamlSyn, DamlTemplate, DamlTyCon, DamlTyConName, DamlType, DamlTypeSynName,
+    DamlTypeVarWithKind, DamlVar, DamlVariant,
 };
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use crate::LanguageFeatureVersion;
@@ -82,6 +85,12 @@ impl<'a> TryFrom<&DamlModuleWrapper<'a>> for DamlModule<'a> {
             .iter()
             .map(|dt| DamlData::try_from(enriched_data(module.wrap_data(dt))?))
             .collect::<DamlLfConvertResult<_>>()?;
+        let exceptions: Vec<_> = module
+            .module
+            .exceptions
+            .iter()
+            .map(|ex| DamlDefException::try_from(&module.wrap_def_exception(ex)))
+            .collect::<DamlLfConvertResult<_>>()?;
         #[cfg(feature = "full")]
         let values: Vec<_> = module
             .module
@@ -94,6 +103,7 @@ impl<'a> TryFrom<&DamlModuleWrapper<'a>> for DamlModule<'a> {
             flags,
             synonyms,
             data_types.into_iter().map(|dt| (dt.name_clone(), dt)).collect(),
+            exceptions,
             #[cfg(feature = "full")]
             values,
         ))
@@ -125,6 +135,19 @@ impl<'a> TryFrom<DamlDefTypeSynWrapper<'a>> for DamlDefTypeSyn<'a> {
         let name = def_type_syn.payload.name.resolve(def_type_syn.context.package)?;
         let ty = DamlType::try_from(&def_type_syn.wrap(&def_type_syn.payload.ty))?;
         Ok(DamlDefTypeSyn::new(params, ty, name))
+    }
+}
+
+/// Convert from `DamlDefExceptionWrapper` to `DamlDefException`.
+impl<'a> TryFrom<&DamlDefExceptionWrapper<'a>> for DamlDefException<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(def_exception: &DamlDefExceptionWrapper<'a>) -> DamlLfConvertResult<Self> {
+        Ok(DamlDefException::new(
+            def_exception.payload.name.resolve(def_exception.context.package)?,
+            #[cfg(feature = "full")]
+            DamlExpr::try_from(&def_exception.wrap(&def_exception.payload.message))?,
+        ))
     }
 }
 
@@ -367,7 +390,8 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
                         }
                     },
                     // We are not in a context with a DamlDataPayload and so we do not need to Box this reference
-                    DamlPayloadParentContextType::DefTypeSyn(_) => DamlType::TyCon(tycon),
+                    DamlPayloadParentContextType::DefTypeSyn(_) | DamlPayloadParentContextType::DefException(_) =>
+                        DamlType::TyCon(tycon),
                     #[cfg(feature = "full")]
                     DamlPayloadParentContextType::Value(_) => DamlType::TyCon(tycon),
                 }
@@ -376,6 +400,10 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
             DamlTypePayload::Arrow => DamlType::Arrow,
             DamlTypePayload::Any => DamlType::Any,
             DamlTypePayload::TypeRep => DamlType::TypeRep,
+            DamlTypePayload::AnyException => DamlType::AnyException,
+            DamlTypePayload::GeneralError => DamlType::GeneralError,
+            DamlTypePayload::ArithmeticError => DamlType::ArithmeticError,
+            DamlTypePayload::ContractError => DamlType::ContractError,
             DamlTypePayload::Nat(n) => DamlType::Nat(*n),
             DamlTypePayload::Forall(forall) => DamlType::Forall(DamlForall::try_from(&daml_type.wrap(forall))?),
             DamlTypePayload::Struct(tuple) => DamlType::Struct(DamlStruct::try_from(&daml_type.wrap(tuple))?),

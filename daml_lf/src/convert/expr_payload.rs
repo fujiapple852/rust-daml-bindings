@@ -9,12 +9,14 @@ use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::case_alt::Sum;
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::def_template::def_key;
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::expr::{
-    Abs, App, Cons, EnumCon, FromAny, OptionalSome, RecCon, RecProj, RecUpd, StructCon, StructProj, StructUpd, ToAny,
-    TyAbs, TyApp, VariantCon,
+    Abs, App, Cons, EnumCon, FromAny, FromAnyException, OptionalSome, RecCon, RecProj, RecUpd, StructCon, StructProj,
+    StructUpd, Throw, ToAny, ToAnyException, TyAbs, TyApp, VariantCon,
 };
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::scenario::Commit;
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::update;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::update::{Create, Exercise, ExerciseByKey, Fetch, RetrieveByKey};
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::update::{
+    Create, Exercise, ExerciseByKey, Fetch, RetrieveByKey, TryCatch,
+};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::{case_alt, scenario, CaseAlt};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::{
     expr, prim_lit, Binding, Block, BuiltinFunction, Case, Expr, FieldWithExpr, ModuleRef, PrimCon, PrimLit, Pure,
@@ -54,6 +56,9 @@ pub enum DamlExprPayload<'a> {
     ToAny(DamlToAnyPayload<'a>),
     FromAny(DamlFromAnyPayload<'a>),
     TypeRep(DamlTypePayload<'a>),
+    ToAnyException(DamlToAnyExceptionPayload<'a>),
+    FromAnyException(DamlFromAnyExceptionPayload<'a>),
+    Throw(DamlThrowPayload<'a>),
 }
 
 impl<'a> TryFrom<&'a Expr> for DamlExprPayload<'a> {
@@ -96,6 +101,11 @@ impl<'a> TryFrom<&'a Expr> for DamlExprPayload<'a> {
             expr::Sum::ToAny(to_any) => DamlExprPayload::ToAny(DamlToAnyPayload::try_from(to_any.as_ref())?),
             expr::Sum::FromAny(from_any) => DamlExprPayload::FromAny(DamlFromAnyPayload::try_from(from_any.as_ref())?),
             expr::Sum::TypeRep(ty) => DamlExprPayload::TypeRep(DamlTypePayload::try_from(ty)?),
+            expr::Sum::ToAnyException(to_any_exception) =>
+                DamlExprPayload::ToAnyException(DamlToAnyExceptionPayload::try_from(to_any_exception.as_ref())?),
+            expr::Sum::FromAnyException(from_any_exception) =>
+                DamlExprPayload::FromAnyException(DamlFromAnyExceptionPayload::try_from(from_any_exception.as_ref())?),
+            expr::Sum::Throw(throw) => DamlExprPayload::Throw(DamlThrowPayload::try_from(throw.as_ref())?),
         })
     }
 }
@@ -950,6 +960,13 @@ pub enum DamlBuiltinFunctionPayload {
     ExplodeText,
     AppendText,
     Error,
+    AnyExceptionMessage,
+    MakeGeneralError,
+    GeneralErrorMessage,
+    MakeArithmeticError,
+    ArithmeticErrorMessage,
+    MakeContractError,
+    ContractErrorMessage,
     LeqInt64,
     LeqDecimal,
     LeqNumeric,
@@ -1028,6 +1045,14 @@ pub enum DamlBuiltinFunctionPayload {
     Less,
     GreaterEq,
     Greater,
+    TextToUpper,
+    TextToLower,
+    TextSlice,
+    TextSliceIndex,
+    TextContainsOnly,
+    TextReplicate,
+    TextSplitOn,
+    TextIntercalate,
 }
 
 impl<'a> TryFrom<&i32> for DamlBuiltinFunctionPayload {
@@ -1065,6 +1090,13 @@ impl<'a> TryFrom<&i32> for DamlBuiltinFunctionPayload {
             Some(BuiltinFunction::ExplodeText) => Ok(DamlBuiltinFunctionPayload::ExplodeText),
             Some(BuiltinFunction::AppendText) => Ok(DamlBuiltinFunctionPayload::AppendText),
             Some(BuiltinFunction::Error) => Ok(DamlBuiltinFunctionPayload::Error),
+            Some(BuiltinFunction::AnyExceptionMessage) => Ok(DamlBuiltinFunctionPayload::AnyExceptionMessage),
+            Some(BuiltinFunction::MakeGeneralError) => Ok(DamlBuiltinFunctionPayload::MakeGeneralError),
+            Some(BuiltinFunction::GeneralErrorMessage) => Ok(DamlBuiltinFunctionPayload::GeneralErrorMessage),
+            Some(BuiltinFunction::MakeArithmeticError) => Ok(DamlBuiltinFunctionPayload::MakeArithmeticError),
+            Some(BuiltinFunction::ArithmeticErrorMessage) => Ok(DamlBuiltinFunctionPayload::ArithmeticErrorMessage),
+            Some(BuiltinFunction::MakeContractError) => Ok(DamlBuiltinFunctionPayload::MakeContractError),
+            Some(BuiltinFunction::ContractErrorMessage) => Ok(DamlBuiltinFunctionPayload::ContractErrorMessage),
             Some(BuiltinFunction::LeqInt64) => Ok(DamlBuiltinFunctionPayload::LeqInt64),
             Some(BuiltinFunction::LeqDecimal) => Ok(DamlBuiltinFunctionPayload::LeqDecimal),
             Some(BuiltinFunction::LeqNumeric) => Ok(DamlBuiltinFunctionPayload::LeqNumeric),
@@ -1145,6 +1177,14 @@ impl<'a> TryFrom<&i32> for DamlBuiltinFunctionPayload {
             Some(BuiltinFunction::Less) => Ok(DamlBuiltinFunctionPayload::Less),
             Some(BuiltinFunction::GreaterEq) => Ok(DamlBuiltinFunctionPayload::GreaterEq),
             Some(BuiltinFunction::Greater) => Ok(DamlBuiltinFunctionPayload::Greater),
+            Some(BuiltinFunction::TextToUpper) => Ok(DamlBuiltinFunctionPayload::TextToUpper),
+            Some(BuiltinFunction::TextToLower) => Ok(DamlBuiltinFunctionPayload::TextToLower),
+            Some(BuiltinFunction::TextSlice) => Ok(DamlBuiltinFunctionPayload::TextSlice),
+            Some(BuiltinFunction::TextSliceIndex) => Ok(DamlBuiltinFunctionPayload::TextSliceIndex),
+            Some(BuiltinFunction::TextContainsOnly) => Ok(DamlBuiltinFunctionPayload::TextContainsOnly),
+            Some(BuiltinFunction::TextReplicate) => Ok(DamlBuiltinFunctionPayload::TextReplicate),
+            Some(BuiltinFunction::TextSplitOn) => Ok(DamlBuiltinFunctionPayload::TextSplitOn),
+            Some(BuiltinFunction::TextIntercalate) => Ok(DamlBuiltinFunctionPayload::TextIntercalate),
             None => Err(DamlLfConvertError::UnknownBuiltinFunction(*builtin_function)),
         }
     }
@@ -1260,6 +1300,7 @@ pub enum DamlUpdatePayload<'a> {
     LookupByKey(DamlRetrieveByKeyPayload<'a>),
     FetchByKey(DamlRetrieveByKeyPayload<'a>),
     EmbedExpr(DamlUpdateEmbedExprPayload<'a>),
+    TryCatch(DamlTryCatchPayload<'a>),
 }
 
 impl<'a> TryFrom<&'a Update> for DamlUpdatePayload<'a> {
@@ -1282,6 +1323,8 @@ impl<'a> TryFrom<&'a Update> for DamlUpdatePayload<'a> {
                 DamlUpdatePayload::FetchByKey(DamlRetrieveByKeyPayload::try_from(retrieve_by_key.as_ref())?),
             update::Sum::EmbedExpr(embed_expr) =>
                 DamlUpdatePayload::EmbedExpr(DamlUpdateEmbedExprPayload::try_from(embed_expr.as_ref())?),
+            update::Sum::TryCatch(try_catch) =>
+                DamlUpdatePayload::TryCatch(DamlTryCatchPayload::try_from(try_catch.as_ref())?),
         })
     }
 }
@@ -1448,6 +1491,45 @@ impl<'a> TryFrom<&'a ExerciseByKey> for DamlExerciseByKeyPayload<'a> {
     }
 }
 
+pub type DamlTryCatchWrapper<'a> = PayloadElementWrapper<'a, &'a DamlTryCatchPayload<'a>>;
+
+#[derive(Debug)]
+pub struct DamlTryCatchPayload<'a> {
+    pub return_type: DamlTypePayload<'a>,
+    pub try_expr: Box<DamlExprPayload<'a>>,
+    pub var: InternableString<'a>,
+    pub catch_expr: Box<DamlExprPayload<'a>>,
+}
+
+impl<'a> DamlTryCatchPayload<'a> {
+    pub fn new(
+        return_type: DamlTypePayload<'a>,
+        try_expr: Box<DamlExprPayload<'a>>,
+        var: InternableString<'a>,
+        catch_expr: Box<DamlExprPayload<'a>>,
+    ) -> Self {
+        Self {
+            return_type,
+            try_expr,
+            var,
+            catch_expr,
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a TryCatch> for DamlTryCatchPayload<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(try_catch: &'a TryCatch) -> DamlLfConvertResult<Self> {
+        Ok(Self::new(
+            DamlTypePayload::try_from(try_catch.return_type.as_ref().req()?)?,
+            Box::new(DamlExprPayload::try_from(try_catch.try_expr.as_ref().req()?.as_ref())?),
+            InternableString::InternedString(try_catch.var_interned_str),
+            Box::new(DamlExprPayload::try_from(try_catch.catch_expr.as_ref().req()?.as_ref())?),
+        ))
+    }
+}
+
 pub type DamlCreateWrapper<'a> = PayloadElementWrapper<'a, &'a DamlCreatePayload<'a>>;
 
 #[derive(Debug)]
@@ -1585,5 +1667,96 @@ impl<'a> TryFrom<&'a def_key::KeyExpr> for DamlKeyExprPayload<'a> {
             def_key::KeyExpr::Key(_) => DamlKeyExprPayload::LegacyKey,
             def_key::KeyExpr::ComplexKey(expr) => DamlKeyExprPayload::ComplexKey(DamlExprPayload::try_from(expr)?),
         })
+    }
+}
+
+pub type DamlToAnyExceptionWrapper<'a> = PayloadElementWrapper<'a, &'a DamlToAnyExceptionPayload<'a>>;
+
+#[derive(Debug)]
+pub struct DamlToAnyExceptionPayload<'a> {
+    pub ty: DamlTypePayload<'a>,
+    pub expr: Box<DamlExprPayload<'a>>,
+}
+
+impl<'a> DamlToAnyExceptionPayload<'a> {
+    pub fn new(ty: DamlTypePayload<'a>, expr: Box<DamlExprPayload<'a>>) -> Self {
+        Self {
+            ty,
+            expr,
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a ToAnyException> for DamlToAnyExceptionPayload<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(to_any_exception: &'a ToAnyException) -> DamlLfConvertResult<Self> {
+        Ok(Self::new(
+            DamlTypePayload::try_from(to_any_exception.r#type.as_ref().req()?)?,
+            Box::new(DamlExprPayload::try_from(to_any_exception.expr.as_ref().req()?.as_ref())?),
+        ))
+    }
+}
+
+pub type DamlFromAnyExceptionWrapper<'a> = PayloadElementWrapper<'a, &'a DamlFromAnyExceptionPayload<'a>>;
+
+#[derive(Debug)]
+pub struct DamlFromAnyExceptionPayload<'a> {
+    pub ty: DamlTypePayload<'a>,
+    pub expr: Box<DamlExprPayload<'a>>,
+}
+
+impl<'a> DamlFromAnyExceptionPayload<'a> {
+    pub fn new(ty: DamlTypePayload<'a>, expr: Box<DamlExprPayload<'a>>) -> Self {
+        Self {
+            ty,
+            expr,
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a FromAnyException> for DamlFromAnyExceptionPayload<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(from_any_exception: &'a FromAnyException) -> DamlLfConvertResult<Self> {
+        Ok(Self::new(
+            DamlTypePayload::try_from(from_any_exception.r#type.as_ref().req()?)?,
+            Box::new(DamlExprPayload::try_from(from_any_exception.expr.as_ref().req()?.as_ref())?),
+        ))
+    }
+}
+
+pub type DamlThrowWrapper<'a> = PayloadElementWrapper<'a, &'a DamlThrowPayload<'a>>;
+
+#[derive(Debug)]
+pub struct DamlThrowPayload<'a> {
+    pub return_type: DamlTypePayload<'a>,
+    pub exception_type: DamlTypePayload<'a>,
+    pub exception_expr: Box<DamlExprPayload<'a>>,
+}
+
+impl<'a> DamlThrowPayload<'a> {
+    pub fn new(
+        return_type: DamlTypePayload<'a>,
+        exception_type: DamlTypePayload<'a>,
+        exception_expr: Box<DamlExprPayload<'a>>,
+    ) -> Self {
+        Self {
+            return_type,
+            exception_type,
+            exception_expr,
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a Throw> for DamlThrowPayload<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(throw: &'a Throw) -> DamlLfConvertResult<Self> {
+        Ok(Self::new(
+            DamlTypePayload::try_from(throw.return_type.as_ref().req()?)?,
+            DamlTypePayload::try_from(throw.exception_type.as_ref().req()?)?,
+            Box::new(DamlExprPayload::try_from(throw.exception_expr.as_ref().req()?.as_ref())?),
+        ))
     }
 }

@@ -31,6 +31,10 @@ pub enum DamlType<'a> {
     Arrow,
     Any,
     TypeRep,
+    AnyException,
+    GeneralError,
+    ArithmeticError,
+    ContractError,
     Update,
     Scenario,
     Forall(DamlForall<'a>),
@@ -62,6 +66,10 @@ impl<'a> DamlType<'a> {
             DamlType::Arrow => "None (Arrow)",
             DamlType::Any => "None (Any)",
             DamlType::TypeRep => "None (TypeRep)",
+            DamlType::AnyException => "None (AnyException)",
+            DamlType::GeneralError => "None (GeneralError)",
+            DamlType::ArithmeticError => "None (ArithmeticError)",
+            DamlType::ContractError => "None (ContractError)",
             DamlType::Nat(_) => "Nat",
             DamlType::Forall(_) => "Forall",
             DamlType::Struct(_) => "Struct",
@@ -97,6 +105,10 @@ impl<'a> DamlType<'a> {
             | DamlType::Arrow
             | DamlType::Any
             | DamlType::TypeRep
+            | DamlType::AnyException
+            | DamlType::GeneralError
+            | DamlType::ArithmeticError
+            | DamlType::ContractError
             | DamlType::Nat(_) => false,
         }
     }
@@ -140,6 +152,10 @@ impl<'a> DamlVisitableElement<'a> for DamlType<'a> {
             | DamlType::Arrow
             | DamlType::Any
             | DamlType::TypeRep
+            | DamlType::AnyException
+            | DamlType::GeneralError
+            | DamlType::ArithmeticError
+            | DamlType::ContractError
             | DamlType::Nat(_) => {},
         }
         visitor.post_visit_type(self);
@@ -172,6 +188,10 @@ impl ToStatic for DamlType<'_> {
             DamlType::Arrow => DamlType::Arrow,
             DamlType::Any => DamlType::Any,
             DamlType::TypeRep => DamlType::TypeRep,
+            DamlType::AnyException => DamlType::AnyException,
+            DamlType::GeneralError => DamlType::GeneralError,
+            DamlType::ArithmeticError => DamlType::ArithmeticError,
+            DamlType::ContractError => DamlType::ContractError,
             DamlType::Update => DamlType::Update,
             DamlType::Scenario => DamlType::Scenario,
             DamlType::Forall(forall) => DamlType::Forall(forall.to_static()),

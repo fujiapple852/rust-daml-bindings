@@ -5,14 +5,15 @@ use crate::element::{
     DamlAbs, DamlApp, DamlBinding, DamlBlock, DamlBuiltinFunction, DamlCase, DamlCaseAlt, DamlCaseAltCons,
     DamlCaseAltEnum, DamlCaseAltOptionalSome, DamlCaseAltSum, DamlCaseAltVariant, DamlCommit, DamlCons, DamlCreate,
     DamlDefValue, DamlEnumCon, DamlExercise, DamlExerciseByKey, DamlExpr, DamlFetch, DamlFieldWithExpr, DamlFromAny,
-    DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon, DamlRecProj, DamlRecUpd, DamlRetrieveByKey,
-    DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj, DamlStructUpd, DamlToAny, DamlTyAbs, DamlTyApp, DamlUpdate,
-    DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
+    DamlFromAnyException, DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon, DamlRecProj, DamlRecUpd,
+    DamlRetrieveByKey, DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj, DamlStructUpd, DamlThrow, DamlToAny,
+    DamlToAnyException, DamlTryCatch, DamlTyAbs, DamlTyApp, DamlUpdate, DamlUpdateEmbedExpr, DamlValueName,
+    DamlVarWithType, DamlVariantCon,
 };
 use crate::element::{
-    DamlAbsoluteTyCon, DamlArchive, DamlArrow, DamlChoice, DamlData, DamlDefKey, DamlDefTypeSyn, DamlEnum, DamlField,
-    DamlForall, DamlKind, DamlLocalTyCon, DamlModule, DamlNonLocalTyCon, DamlPackage, DamlRecord, DamlStruct, DamlSyn,
-    DamlTemplate, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind, DamlVar, DamlVariant,
+    DamlAbsoluteTyCon, DamlArchive, DamlArrow, DamlChoice, DamlData, DamlDefException, DamlDefKey, DamlDefTypeSyn,
+    DamlEnum, DamlField, DamlForall, DamlKind, DamlLocalTyCon, DamlModule, DamlNonLocalTyCon, DamlPackage, DamlRecord,
+    DamlStruct, DamlSyn, DamlTemplate, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind, DamlVar, DamlVariant,
 };
 
 pub trait DamlVisitableElement<'a> {
@@ -72,6 +73,8 @@ pub trait DamlElementVisitor {
     fn post_visit_non_local_tycon<'a>(&mut self, non_local_tycon: &'a DamlNonLocalTyCon<'a>) {}
     fn pre_visit_absolute_tycon<'a>(&mut self, absolute_tycon: &'a DamlAbsoluteTyCon<'a>) {}
     fn post_visit_absolute_tycon<'a>(&mut self, absolute_tycon: &'a DamlAbsoluteTyCon<'a>) {}
+    fn pre_visit_def_exception<'a>(&mut self, def_exception: &'a DamlDefException<'a>) {}
+    fn post_visit_def_exception<'a>(&mut self, def_exception: &'a DamlDefException<'a>) {}
     fn pre_visit_def_key<'a>(&mut self, def_key: &DamlDefKey<'a>) {}
     fn post_visit_def_key<'a>(&mut self, def_key: &DamlDefKey<'a>) {}
 
@@ -204,6 +207,10 @@ pub trait DamlElementVisitor {
     #[cfg(feature = "full")]
     fn post_visit_exercise_by_key<'a>(&mut self, exercise_by_key: &DamlExerciseByKey<'a>) {}
     #[cfg(feature = "full")]
+    fn pre_visit_try_catch<'a>(&mut self, try_catch: &DamlTryCatch<'a>) {}
+    #[cfg(feature = "full")]
+    fn post_visit_try_catch<'a>(&mut self, try_catch: &DamlTryCatch<'a>) {}
+    #[cfg(feature = "full")]
     fn pre_visit_fetch<'a>(&mut self, fetch: &DamlFetch<'a>) {}
     #[cfg(feature = "full")]
     fn post_visit_fetch<'a>(&mut self, fetch: &DamlFetch<'a>) {}
@@ -251,4 +258,16 @@ pub trait DamlElementVisitor {
     fn pre_visit_case_alt_enum<'a>(&mut self, case_alt_enum: &DamlCaseAltEnum<'a>) {}
     #[cfg(feature = "full")]
     fn post_visit_case_alt_enum<'a>(&mut self, case_alt_enum: &DamlCaseAltEnum<'a>) {}
+    #[cfg(feature = "full")]
+    fn pre_visit_to_any_exception<'a>(&mut self, to_any_exception: &DamlToAnyException<'a>) {}
+    #[cfg(feature = "full")]
+    fn post_visit_to_any_exception<'a>(&mut self, to_any_exception: &DamlToAnyException<'a>) {}
+    #[cfg(feature = "full")]
+    fn pre_visit_from_any_exception<'a>(&mut self, from_any_exception: &DamlFromAnyException<'a>) {}
+    #[cfg(feature = "full")]
+    fn post_visit_from_any_exception<'a>(&mut self, from_any_exception: &DamlFromAnyException<'a>) {}
+    #[cfg(feature = "full")]
+    fn pre_visit_throw<'a>(&mut self, throw: &DamlThrow<'a>) {}
+    #[cfg(feature = "full")]
+    fn post_visit_throw<'a>(&mut self, throw: &DamlThrow<'a>) {}
 }

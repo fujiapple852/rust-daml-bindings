@@ -52,6 +52,13 @@ impl<'a> IsRenderable<'a> {
             | DamlType::Scenario
             | DamlType::Any
             | DamlType::TypeRep
+
+            // TODO revisit when these types are stable in DAML LF 1.x
+            | DamlType::AnyException
+            | DamlType::GeneralError
+            | DamlType::ArithmeticError
+            | DamlType::ContractError
+
             | DamlType::Forall(_)
             | DamlType::Struct(_)
             | DamlType::Syn(_) => false,

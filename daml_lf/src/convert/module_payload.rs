@@ -5,6 +5,8 @@ use crate::convert::archive_payload::DamlArchivePayload;
 use crate::convert::data_payload::{DamlDataPayload, DamlTemplatePayload};
 #[cfg(feature = "full")]
 use crate::convert::defvalue_payload::{DamlDefValuePayload, DamlDefValueWrapper};
+#[cfg(feature = "full")]
+use crate::convert::expr_payload::DamlExprPayload;
 use crate::convert::interned::InternableDottedName;
 use crate::convert::package_payload::DamlPackagePayload;
 use crate::convert::type_payload::DamlTypePayload;
@@ -12,7 +14,7 @@ use crate::convert::typevar_payload::DamlTypeVarWithKindPayload;
 use crate::convert::util::Required;
 use crate::convert::wrapper::{DamlPayloadParentContext, DamlPayloadParentContextType, PayloadElementWrapper};
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::{DefTypeSyn, FeatureFlags, Module};
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::{DefException, DefTypeSyn, FeatureFlags, Module};
 
 ///
 #[derive(Debug, Clone, Copy)]
@@ -46,6 +48,22 @@ impl<'a> DamlModuleWrapper<'a> {
         }
     }
 
+    /// DOCME
+    pub const fn wrap_def_exception(
+        self,
+        def_exception: &'a DamlDefExceptionPayload<'_>,
+    ) -> DamlDefExceptionWrapper<'a> {
+        DamlDefExceptionWrapper {
+            context: DamlPayloadParentContext {
+                archive: self.archive,
+                package: self.package,
+                module: self.module,
+                parent: DamlPayloadParentContextType::DefException(def_exception),
+            },
+            payload: def_exception,
+        }
+    }
+
     #[cfg(feature = "full")]
     pub fn wrap_value(self, def_value: &'a DamlDefValuePayload<'_>) -> DamlDefValueWrapper<'a> {
         DamlDefValueWrapper {
@@ -66,6 +84,7 @@ pub struct DamlModulePayload<'a> {
     pub synonyms: Vec<DamlDefTypeSynPayload<'a>>,
     pub data_types: Vec<DamlDataPayload<'a>>,
     pub templates: HashMap<InternableDottedName<'a>, DamlTemplatePayload<'a>>,
+    pub exceptions: Vec<DamlDefExceptionPayload<'a>>,
     #[cfg(feature = "full")]
     pub values: Vec<DamlDefValuePayload<'a>>,
     pub path: InternableDottedName<'a>,
@@ -91,6 +110,8 @@ impl<'a> TryFrom<&'a Module> for DamlModulePayload<'a> {
             .map(DamlTemplatePayload::try_from)
             .map(|tr| tr.map(|t| (t.name, t)))
             .collect::<DamlLfConvertResult<_>>()?;
+        let exceptions =
+            module.exceptions.iter().map(DamlDefExceptionPayload::try_from).collect::<DamlLfConvertResult<Vec<_>>>()?;
         let data_types =
             module.data_types.iter().map(DamlDataPayload::try_from).collect::<DamlLfConvertResult<Vec<_>>>()?;
         #[cfg(feature = "full")]
@@ -101,6 +122,7 @@ impl<'a> TryFrom<&'a Module> for DamlModulePayload<'a> {
             synonyms,
             data_types,
             templates,
+            exceptions,
             #[cfg(feature = "full")]
             values,
             path,
@@ -179,5 +201,39 @@ impl From<&FeatureFlags> for DamlFeatureFlagsPayload {
             dont_disclose_non_consuming_choices_to_observers: feature_flags
                 .dont_disclose_non_consuming_choices_to_observers,
         }
+    }
+}
+
+pub type DamlDefExceptionWrapper<'a> = PayloadElementWrapper<'a, &'a DamlDefExceptionPayload<'a>>;
+
+#[derive(Debug)]
+pub struct DamlDefExceptionPayload<'a> {
+    pub name: InternableDottedName<'a>,
+    #[cfg(feature = "full")]
+    pub message: DamlExprPayload<'a>,
+}
+
+impl<'a> DamlDefExceptionPayload<'a> {
+    pub fn new(name: InternableDottedName<'a>, #[cfg(feature = "full")] message: DamlExprPayload<'a>) -> Self {
+        Self {
+            name,
+            #[cfg(feature = "full")]
+            message,
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a DefException> for DamlDefExceptionPayload<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(def_exception: &'a DefException) -> DamlLfConvertResult<Self> {
+        let name = InternableDottedName::InternedDottedName(def_exception.name_interned_dname);
+        #[cfg(feature = "full")]
+        let message = DamlExprPayload::try_from(def_exception.message.as_ref().req()?)?;
+        Ok(Self::new(
+            name,
+            #[cfg(feature = "full")]
+            message,
+        ))
     }
 }

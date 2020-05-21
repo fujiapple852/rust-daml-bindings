@@ -2,7 +2,7 @@ use crate::convert::archive_payload::DamlArchivePayload;
 use crate::convert::data_payload::DamlDataPayload;
 #[cfg(feature = "full")]
 use crate::convert::defvalue_payload::DamlDefValuePayload;
-use crate::convert::module_payload::{DamlDefTypeSynPayload, DamlModulePayload};
+use crate::convert::module_payload::{DamlDefExceptionPayload, DamlDefTypeSynPayload, DamlModulePayload};
 use crate::convert::package_payload::DamlPackagePayload;
 
 #[derive(Debug, Clone, Copy)]
@@ -45,6 +45,7 @@ pub struct DamlPayloadParentContext<'a> {
 pub enum DamlPayloadParentContextType<'a> {
     Data(&'a DamlDataPayload<'a>),
     DefTypeSyn(&'a DamlDefTypeSynPayload<'a>),
+    DefException(&'a DamlDefExceptionPayload<'a>),
     #[cfg(feature = "full")]
     Value(&'a DamlDefValuePayload<'a>),
 }
