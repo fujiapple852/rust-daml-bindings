@@ -492,14 +492,14 @@ fn make_tycon_name<'a>(
     data_name: InternableDottedName<'a>,
 ) -> DamlLfConvertResult<DamlTyConName<'a>> {
     let source_resolver = context.package;
+    let source_package_id = context.package.package_id;
+    let source_package_name = context.package.name.as_str();
+    let source_module_path = context.module.path.resolve(source_resolver)?;
     let target_package_id = package_ref.resolve(source_resolver)?;
     let target_package: &DamlPackagePayload<'_> = context
         .archive
         .package_by_id(target_package_id)
         .ok_or_else(|| DamlLfConvertError::UnknownPackage(target_package_id.to_owned()))?;
-    let source_package_id = context.package.package_id;
-    let source_package_name = context.package.name.as_str();
-    let source_module_path = context.module.path.resolve(source_resolver)?;
     let target_package_name = target_package.name.as_str();
     let target_module_path = module_path.resolve(source_resolver)?;
     let data_name = data_name.resolve_last(source_resolver)?;

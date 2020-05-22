@@ -1,3 +1,4 @@
+#![allow(clippy::used_underscore_binding)]
 use thiserror::Error;
 
 /// Represents `DAML-LF` specific errors.
@@ -5,10 +6,8 @@ use thiserror::Error;
 pub enum DamlLfError {
     #[error("failed to parse DAML LF: {0}")]
     DamlLfParseError(#[from] prost::DecodeError),
-
     #[error("failed to encode DAML LF: {0}")]
     DamlLfEncodingError(#[from] prost::EncodeError),
-
     #[error("failed to parse dar file: {0}")]
     DarParseError(String),
     #[error("failed to convert DAML LF: {0}")]

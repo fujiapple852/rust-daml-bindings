@@ -27,7 +27,7 @@ impl ExtendedPackageInfo {
     /// Extract extended information about the packages in a `DarFile`.
     ///
     /// This is a relatively expensive operation as it involves creating a full `DamlArchive` representation of the
-    /// given `DarFIle`.
+    /// given `DarFile`.
     ///
     /// This is useful when examining a `DarFile` which has been constructed from a collection of packages (i.e. dalf
     /// files or packages downloaded from a ledger) which do not have metadata.
