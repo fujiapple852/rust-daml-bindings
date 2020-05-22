@@ -80,12 +80,12 @@ impl<'a> From<&'a AttrType> for DamlType<'a> {
             AttrType::TyCon(data_name, path, type_arguments) =>
                 if path.is_empty() {
                     DamlType::TyCon(DamlTyCon::new(
-                        DamlTyConName::Local(DamlLocalTyCon::new(data_name, "", to_vec_str(path))),
+                        DamlTyConName::Local(DamlLocalTyCon::new(data_name, "", "", to_vec_str(path))),
                         type_arguments.iter().map(DamlType::from).collect(),
                     ))
                 } else {
                     DamlType::TyCon(DamlTyCon::new(
-                        DamlTyConName::Absolute(DamlAbsoluteTyCon::new(data_name, "", to_vec_str(path))),
+                        DamlTyConName::Absolute(DamlAbsoluteTyCon::new(data_name, "", "", to_vec_str(path))),
                         type_arguments.iter().map(DamlType::from).collect(),
                     ))
                 },

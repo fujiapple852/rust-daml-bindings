@@ -487,27 +487,35 @@ impl<'a> TryFrom<&DamlTyConWrapper<'a>> for DamlTyCon<'a> {
 fn make_tycon_name<'a>(
     context: DamlPayloadParentContext<'a>,
     package_ref: &'a DamlPackageRefPayload<'a>,
-    source_module_path: InternableDottedName<'a>,
-    source_data_name: InternableDottedName<'a>,
+    module_path: InternableDottedName<'a>,
+    data_name: InternableDottedName<'a>,
 ) -> DamlLfConvertResult<DamlTyConName<'a>> {
     let source_resolver = context.package;
+    let source_package_id = context.package.package_id;
+    let source_package_name = context.package.name.as_str();
+    let source_module_path = context.module.path.resolve(source_resolver)?;
     let target_package_id = package_ref.resolve(source_resolver)?;
     let target_package: &DamlPackagePayload<'_> = context
         .archive
         .package_by_id(target_package_id)
         .ok_or_else(|| DamlLfConvertError::UnknownPackage(target_package_id.to_owned()))?;
-    let current_package_name = context.package.name.as_str();
-    let current_module_path = context.module.path.resolve(source_resolver)?;
     let target_package_name = target_package.name.as_str();
-    let target_module_path = source_module_path.resolve(source_resolver)?;
-    let data_name = source_data_name.resolve_last(source_resolver)?;
-    if target_package_name == current_package_name && target_module_path == current_module_path {
-        Ok(DamlTyConName::Local(DamlLocalTyCon::new(data_name, target_package_name, target_module_path)))
+    let target_module_path = module_path.resolve(source_resolver)?;
+    let data_name = data_name.resolve_last(source_resolver)?;
+    if target_package_name == source_package_name && target_module_path == source_module_path {
+        Ok(DamlTyConName::Local(DamlLocalTyCon::new(
+            data_name,
+            target_package_id,
+            target_package_name,
+            target_module_path,
+        )))
     } else {
         Ok(DamlTyConName::NonLocal(DamlNonLocalTyCon::new(
             data_name,
-            current_package_name,
-            current_module_path,
+            source_package_id,
+            source_package_name,
+            source_module_path,
+            target_package_id,
             target_package_name,
             target_module_path,
         )))

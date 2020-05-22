@@ -1,19 +1,20 @@
+#![allow(clippy::used_underscore_binding)]
 use thiserror::Error;
 
 /// Represents `DAML-LF` specific errors.
 #[derive(Error, Debug)]
 pub enum DamlLfError {
-    #[error("failed to parse DAML LF")]
+    #[error("failed to parse DAML LF: {0}")]
     DamlLfParseError(#[from] prost::DecodeError),
-    #[error("failed to parse dar file")]
+    #[error("failed to parse dar file: {0}")]
     DarParseError(String),
-    #[error("failed to convert DAML LF")]
+    #[error("failed to convert DAML LF: {0}")]
     DamlLfConvertError(#[from] DamlLfConvertError),
-    #[error("io error")]
+    #[error("io error: {0}")]
     IOError(#[from] std::io::Error),
-    #[error("unknown DAML LF version {0}")]
+    #[error("unknown DAML LF version: {0}")]
     UnknownVersion(String),
-    #[error("unsupported DAML LF version {0}")]
+    #[error("unsupported DAML LF version: {0}")]
     UnsupportedVersion(String),
 }
 

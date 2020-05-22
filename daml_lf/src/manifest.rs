@@ -1,5 +1,8 @@
 use crate::error::{DamlLfError, DamlLfResult};
+use itertools::Itertools;
+use serde::export::Formatter;
 use std::convert::Into;
+use std::fmt::Display;
 use yaml_rust::YamlLoader;
 
 const MANIFEST_VERSION_KEY: &str = "Manifest-Version";
@@ -19,6 +22,14 @@ pub enum DarManifestVersion {
     V1,
 }
 
+impl Display for DarManifestVersion {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DarManifestVersion::V1 | DarManifestVersion::Unknown => VERSION_1_VALUE.fmt(f),
+        }
+    }
+}
+
 /// The format of the archives in a dar file.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum DarManifestFormat {
@@ -26,11 +37,27 @@ pub enum DarManifestFormat {
     DamlLf,
 }
 
+impl Display for DarManifestFormat {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DarManifestFormat::DamlLf | DarManifestFormat::Unknown => DAML_LF_VALUE.fmt(f),
+        }
+    }
+}
+
 /// The encryption type of the archives in a dar file.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum DarEncryptionType {
     Unknown,
     NotEncrypted,
+}
+
+impl Display for DarEncryptionType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DarEncryptionType::NotEncrypted | DarEncryptionType::Unknown => NON_ENCRYPTED_VALUE.fmt(f),
+        }
+    }
 }
 
 /// Represents a manifest file found inside `dar` files.
@@ -180,6 +207,19 @@ impl DarManifest {
         Ok(Self::new(manifest_version, created_by, dalf_main, dalf_dependencies, format, encryption))
     }
 
+    /// Render this `DarManifest`
+    pub fn render(&self) -> String {
+        vec![
+            make_manifest_entry(MANIFEST_VERSION_KEY, self.version().to_string()),
+            make_manifest_entry(CREATED_BY_KEY, self.created_by()),
+            make_manifest_entry(DALF_MAIN_KEY, self.dalf_main()),
+            make_manifest_entry(DALFS_KEY, self.dalf_dependencies().iter().join(", ")),
+            make_manifest_entry(FORMAT_KEY, self.format().to_string()),
+            make_manifest_entry(ENCRYPTION_KEY, self.encryption().to_string()),
+        ]
+        .join("\n")
+    }
+
     /// The version of the manifest.
     pub const fn version(&self) -> DarManifestVersion {
         self.version
@@ -215,11 +255,47 @@ fn strip_string(s: impl AsRef<str>) -> String {
     s.as_ref().chars().filter(|&c| !char::is_whitespace(c)).collect()
 }
 
+fn make_manifest_entry(key: impl AsRef<str>, value: impl AsRef<str>) -> String {
+    split_manifest_string(format!("{}: {}", key.as_ref(), value.as_ref()))
+}
+
+// see https://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html#JAR_Manifest
+// TODO split Jar manifest handling to a utility module or crate
+fn split_manifest_string(s: impl AsRef<str>) -> String {
+    let split_lines: Vec<String> =
+        s.as_ref().as_bytes().chunks(71).map(String::from_utf8_lossy).map(String::from).collect();
+    match split_lines.as_slice() {
+        [] => "".to_owned(),
+        [head] => head.to_owned(),
+        [head, tail @ ..] => {
+            let new_tail: String = tail.iter().map(|s| format!(" {}", s)).join("\n");
+            format!("{}\n{}", head, new_tail)
+        },
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::error::{DamlLfError, DamlLfResult};
-    use crate::manifest::{DarEncryptionType, DarManifest, DarManifestFormat, DarManifestVersion};
+    use crate::manifest::{
+        split_manifest_string, DarEncryptionType, DarManifest, DarManifestFormat, DarManifestVersion,
+    };
     use trim_margin::MarginTrimmable;
+
+    #[test]
+    fn test_split_manifest_line() {
+        let long = "Main-Dalf: \
+                    TestingTypes-1.0.0-6c314cb04bcb26cb62aa6ebf0f8ed4bdc3cbf709847be908c9920df5574daacc/\
+                    TestingTypes-1.0.0-6c314cb04bcb26cb62aa6ebf0f8ed4bdc3cbf709847be908c9920df5574daacc.dalf";
+        let expected = "
+            |Main-Dalf: TestingTypes-1.0.0-6c314cb04bcb26cb62aa6ebf0f8ed4bdc3cbf7098
+            | 47be908c9920df5574daacc/TestingTypes-1.0.0-6c314cb04bcb26cb62aa6ebf0f8e
+            | d4bdc3cbf709847be908c9920df5574daacc.dalf"
+            .trim_margin()
+            .expect("invalid test string");
+        let split = split_manifest_string(long);
+        assert_eq!(split, expected);
+    }
 
     #[test]
     pub fn test_split_dalfs() -> DamlLfResult<()> {

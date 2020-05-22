@@ -91,7 +91,7 @@ impl<'a> DamlModule<'a> {
         self.path.last().unwrap_or_else(|| &"root")
     }
 
-    /// Return the immediate child module `name` or `None` if no such module exists.
+    /// Retrieve a child model by relative path or `None` if no such module exists.
     pub fn child_module(&self, name: &str) -> Option<&DamlModule<'_>> {
         self.child_modules.get(name)
     }

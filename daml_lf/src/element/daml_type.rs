@@ -285,14 +285,16 @@ impl<'a> DamlVisitableElement<'a> for DamlTyConName<'a> {
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlLocalTyCon<'a> {
     data_name: &'a str,
+    package_id: &'a str,
     package_name: &'a str,
     module_path: Vec<&'a str>,
 }
 
 impl<'a> DamlLocalTyCon<'a> {
-    pub fn new(data_name: &'a str, package_name: &'a str, module_path: Vec<&'a str>) -> Self {
+    pub fn new(data_name: &'a str, package_id: &'a str, package_name: &'a str, module_path: Vec<&'a str>) -> Self {
         Self {
             data_name,
+            package_id,
             package_name,
             module_path,
         }
@@ -300,6 +302,10 @@ impl<'a> DamlLocalTyCon<'a> {
 
     pub const fn data_name(&self) -> &str {
         self.data_name
+    }
+
+    pub const fn package_id(&self) -> &str {
+        self.package_id
     }
 
     pub const fn package_name(&self) -> &str {
@@ -322,8 +328,10 @@ impl<'a> DamlVisitableElement<'a> for DamlLocalTyCon<'a> {
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlNonLocalTyCon<'a> {
     data_name: &'a str,
+    source_package_id: &'a str,
     source_package_name: &'a str,
     source_module_path: Vec<&'a str>,
+    target_package_id: &'a str,
     target_package_name: &'a str,
     target_module_path: Vec<&'a str>,
 }
@@ -331,15 +339,19 @@ pub struct DamlNonLocalTyCon<'a> {
 impl<'a> DamlNonLocalTyCon<'a> {
     pub fn new(
         data_name: &'a str,
+        source_package_id: &'a str,
         source_package_name: &'a str,
         source_module_path: Vec<&'a str>,
+        target_package_id: &'a str,
         target_package_name: &'a str,
         target_module_path: Vec<&'a str>,
     ) -> Self {
         Self {
             data_name,
+            source_package_id,
             source_package_name,
             source_module_path,
+            target_package_id,
             target_package_name,
             target_module_path,
         }
@@ -349,12 +361,20 @@ impl<'a> DamlNonLocalTyCon<'a> {
         self.data_name
     }
 
+    pub const fn source_package_id(&self) -> &str {
+        self.source_package_id
+    }
+
     pub const fn source_package_name(&self) -> &str {
         self.source_package_name
     }
 
     pub fn source_module_path(&self) -> &[&str] {
         &self.source_module_path
+    }
+
+    pub const fn target_package_id(&self) -> &str {
+        self.target_package_id
     }
 
     pub const fn target_package_name(&self) -> &str {
@@ -377,14 +397,16 @@ impl<'a> DamlVisitableElement<'a> for DamlNonLocalTyCon<'a> {
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlAbsoluteTyCon<'a> {
     data_name: &'a str,
+    package_id: &'a str,
     package_name: &'a str,
     module_path: Vec<&'a str>,
 }
 
 impl<'a> DamlAbsoluteTyCon<'a> {
-    pub fn new(data_name: &'a str, package_name: &'a str, module_path: Vec<&'a str>) -> Self {
+    pub fn new(data_name: &'a str, package_id: &'a str, package_name: &'a str, module_path: Vec<&'a str>) -> Self {
         Self {
             data_name,
+            package_id,
             package_name,
             module_path,
         }
@@ -392,6 +414,10 @@ impl<'a> DamlAbsoluteTyCon<'a> {
 
     pub const fn data_name(&self) -> &str {
         self.data_name
+    }
+
+    pub const fn package_id(&self) -> &str {
+        self.package_id
     }
 
     pub const fn package_name(&self) -> &str {
