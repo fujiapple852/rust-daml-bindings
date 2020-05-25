@@ -5,18 +5,6 @@ parties:
   - Alice
   - Bob
 version: 1.0.0
-exposed-modules:
-  - DA.Shape
-  - DA.VariantExamples
-  - DA.GenericTypes
-  - DA.Nested
-  - DA.RentDemo
-  - DA.PingPong
-  - DA.Vehicle
-  - DA.MyVar
-  - DA.NumericTest
-  - DA.HigherKindTest
-  - LibraryModules
 dependencies:
   - daml-prim
   - daml-stdlib

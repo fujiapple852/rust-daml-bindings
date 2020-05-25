@@ -1,0 +1,6 @@
+module DA.NestedModuleTest.Parent where
+
+import DA.NestedModuleTest.Parent.Child
+
+data ParentData = ParentData with value : ChildData
+
