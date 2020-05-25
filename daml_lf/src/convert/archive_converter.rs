@@ -46,88 +46,49 @@ impl<'a> TryFrom<DamlPackageWrapper<'a>> for DamlPackage<'a> {
     type Error = DamlLfConvertError;
 
     fn try_from(package: DamlPackageWrapper<'a>) -> DamlLfConvertResult<Self> {
-        fn from_modules<'a, T: Iterator<Item = DamlModuleWrapper<'a>>>(
-            modules: T,
-        ) -> DamlLfConvertResult<DamlModule<'a>> {
-            Ok(modules.fold(Ok(DamlModule::new_root()), |mut root, module| {
-                if let Ok(r) = root.as_mut() {
-                    let flags = DamlFeatureFlags::from(&module.module.flags);
-                    let path = module.module.path.resolve(module.package)?;
-                    let synonyms: Vec<_> = module
-                        .module
-                        .synonyms
-                        .iter()
-                        .map(|syn| DamlDefTypeSyn::try_from(module.wrap_def_type_syn(syn)))
-                        .collect::<DamlLfConvertResult<_>>()?;
-                    let data_types: Vec<_> = module
-                        .module
-                        .data_types
-                        .iter()
-                        .map(|dt| DamlData::try_from(enriched_data(module.wrap_data(dt))?))
-                        .collect::<DamlLfConvertResult<_>>()?;
-                    #[cfg(feature = "full")]
-                    let values: Vec<_> = module
-                        .module
-                        .values
-                        .iter()
-                        .map(|val| DamlDefValue::try_from(&module.wrap_value(val)))
-                        .collect::<DamlLfConvertResult<_>>()?;
-                    add_module_to_tree(
-                        r,
-                        data_types,
-                        #[cfg(feature = "full")]
-                        values,
-                        flags,
-                        synonyms,
-                        path.clone(),
-                        &path,
-                    );
-                }
-                root
-            })?)
-        }
-
-        fn add_module_to_tree<'a>(
-            node: &mut DamlModule<'a>,
-            data_types: Vec<DamlData<'a>>,
-            #[cfg(feature = "full")] values: Vec<DamlDefValue<'a>>,
-            flags: DamlFeatureFlags,
-            synonyms: Vec<DamlDefTypeSyn<'a>>,
-            full_path: Vec<&'a str>,
-            remaining_path: &[&'a str],
-        ) {
-            if let Some(&child_mod_name) = remaining_path.first() {
-                let child_mod_path = &full_path[..=full_path.len() - remaining_path.len()];
-                let entry = node
-                    .child_modules_mut()
-                    .entry(child_mod_name)
-                    .or_insert_with(|| DamlModule::new(child_mod_path.to_vec()));
-                add_module_to_tree(
-                    entry,
-                    data_types,
-                    #[cfg(feature = "full")]
-                    values,
-                    flags,
-                    synonyms,
-                    full_path,
-                    &remaining_path[1..],
-                )
-            } else {
-                node.update_from_parts(
-                    flags,
-                    synonyms,
-                    data_types.into_iter().map(|dt| (dt.name(), dt)).collect(),
-                    #[cfg(feature = "full")]
-                    values,
-                );
-            }
-        }
         Ok(DamlPackage::new(
             &package.package.name,
             package.package.package_id,
             package.package.version.as_ref().map(AsRef::as_ref),
             package.package.language_version,
             from_modules(package.package.modules.values().map(|module| package.with_module(module)))?,
+        ))
+    }
+}
+
+/// Convert from `DamlModuleWrapper` to `DamlModule`.
+impl<'a> TryFrom<&DamlModuleWrapper<'a>> for DamlModule<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(module: &DamlModuleWrapper<'a>) -> DamlLfConvertResult<Self> {
+        let flags = DamlFeatureFlags::from(&module.module.flags);
+        let path = module.module.path.resolve(module.package)?;
+        let synonyms: Vec<_> = module
+            .module
+            .synonyms
+            .iter()
+            .map(|syn| DamlDefTypeSyn::try_from(module.wrap_def_type_syn(syn)))
+            .collect::<DamlLfConvertResult<_>>()?;
+        let data_types: Vec<_> = module
+            .module
+            .data_types
+            .iter()
+            .map(|dt| DamlData::try_from(enriched_data(module.wrap_data(dt))?))
+            .collect::<DamlLfConvertResult<_>>()?;
+        #[cfg(feature = "full")]
+        let values: Vec<_> = module
+            .module
+            .values
+            .iter()
+            .map(|val| DamlDefValue::try_from(&module.wrap_value(val)))
+            .collect::<DamlLfConvertResult<_>>()?;
+        Ok(DamlModule::new_leaf(
+            path,
+            flags,
+            synonyms,
+            data_types.into_iter().map(|dt| (dt.name(), dt)).collect(),
+            #[cfg(feature = "full")]
+            values,
         ))
     }
 }
@@ -481,6 +442,43 @@ impl<'a> TryFrom<&DamlTyConWrapper<'a>> for DamlTyCon<'a> {
         )?;
         let type_arguments = convert_type_arguments(*tycon, &tycon.payload.type_arguments)?;
         Ok(DamlTyCon::new(tycon_name, type_arguments))
+    }
+}
+
+/// Construct a `DamlModule` tree from a list of `DamlModuleWrapper`.
+///
+/// Each `DamlModulePayload` contains a `path` which indicates its position within the module namespace of a given
+/// package.  Starting from a synthetic root, we use the module path information to construct a tree of modules to match
+/// the shape of the namespace.
+fn from_modules<'a, T: Iterator<Item = DamlModuleWrapper<'a>>>(modules: T) -> DamlLfConvertResult<DamlModule<'a>> {
+    let mut root_module = DamlModule::new_root();
+    for next_module in modules {
+        let path = next_module.module.path.resolve(next_module.package)?;
+        let converted_module = DamlModule::try_from(&next_module)?;
+        add_module_to_tree(&mut root_module, converted_module, path.clone(), &path);
+    }
+    Ok(root_module)
+}
+
+/// Add a module to the module tree.
+///
+/// Traverses the module tree by following the `full_path` (creating intermediate module nodes as we go) and sets the
+/// `node_to_add` node as the leaf node.
+fn add_module_to_tree<'a>(
+    node: &mut DamlModule<'a>,
+    node_to_add: DamlModule<'a>,
+    full_path: Vec<&'a str>,
+    remaining_path: &[&'a str],
+) {
+    if let Some(&child_mod_name) = remaining_path.first() {
+        let child_mod_path = &full_path[..=full_path.len() - remaining_path.len()];
+        let entry = node
+            .child_modules_mut()
+            .entry(child_mod_name)
+            .or_insert_with(|| DamlModule::new_empty(child_mod_path.to_vec()));
+        add_module_to_tree(entry, node_to_add, full_path, &remaining_path[1..])
+    } else {
+        node.take_from(node_to_add);
     }
 }
 
