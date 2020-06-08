@@ -8,27 +8,38 @@
 )]
 #![forbid(unsafe_code)]
 
+use crate::command_package::CommandPackage;
+use crate::command_token::CommandToken;
 use anyhow::Result;
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{crate_description, crate_name, crate_version, App, AppSettings, ArgMatches};
+use std::collections::HashMap;
 
 pub mod command_package;
+pub mod command_token;
+
+pub trait DarnCommand {
+    fn name(&self) -> &str;
+    fn args<'a, 'b>(&self) -> App<'a, 'b>;
+    fn execute(&self, matches: &ArgMatches<'_>) -> Result<()>;
+}
+
+macro_rules! command {
+    ($id:ident) => {
+        Box::new($id {})
+    };
+}
 
 #[tokio::main(core_threads = 4)]
 async fn main() -> Result<()> {
-    let matches = App::new("darn")
-        .version("0.1.0")
-        .about("DAML dar tool")
+    let commands: Vec<Box<dyn DarnCommand>> = vec![command!(CommandPackage), command!(CommandToken)];
+    let command_map: HashMap<_, _> = commands.into_iter().map(|cmd| (cmd.name().to_owned(), cmd)).collect();
+    let matches = App::new(crate_name!())
+        .version(crate_version!())
+        .about(crate_description!())
         .setting(AppSettings::ArgRequiredElseHelp)
-        .subcommand(
-            SubCommand::with_name("package")
-                .about("show dar package details")
-                .arg(Arg::with_name("dar").help("Sets the input dar file to use").required(true).index(1)),
-        )
+        .subcommands(command_map.values().map(|cmd| cmd.args()))
         .get_matches();
-
-    if let Some(inspect_matches) = matches.subcommand_matches("package") {
-        let dar_path = inspect_matches.value_of("dar").unwrap();
-        command_package::package(dar_path)?;
-    }
+    let (sub, args) = matches.subcommand();
+    command_map[sub].execute(args.unwrap())?;
     Ok(())
 }
