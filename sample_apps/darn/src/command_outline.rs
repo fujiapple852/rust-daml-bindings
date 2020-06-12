@@ -37,7 +37,7 @@ pub fn outline(dar_path: &str, package_opt: Option<&str>, module_opt: Option<&st
 
         fn pre_visit_module<'a>(&mut self, module: &'a DamlModule<'a>) {
             if !module.is_root() {
-                self.tree.begin_child(module.name().to_string());
+                self.tree.begin_child(module.local_name().to_string());
             }
         }
 

@@ -42,6 +42,7 @@ mod codegen {
         pub mod generic_tests;
         pub mod higher_kinded_tests;
         pub mod nested_datatypes_tests;
+        pub mod nested_module_tests;
         pub mod ping_pong_tests;
         pub mod rent_tests;
     }

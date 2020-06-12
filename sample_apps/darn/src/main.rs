@@ -18,7 +18,6 @@ pub mod command_json;
 pub mod command_list;
 pub mod command_module;
 pub mod command_outline;
-pub mod command_package;
 pub mod command_upload;
 pub mod error;
 pub mod package_common;
@@ -41,11 +40,6 @@ async fn main() -> Result<()> {
                         .required(true)
                         .help("the string intern index"),
                 ),
-        )
-        .subcommand(
-            SubCommand::with_name("package")
-                .about("show dar package details")
-                .arg(Arg::with_name("dar").help("Sets the input dar file to use").required(true).index(1)),
         )
         .subcommand(
             SubCommand::with_name("module")
@@ -153,13 +147,9 @@ async fn main() -> Result<()> {
     // sandbox token gen
     // raw - spit our raw LF proto
 
-    if let Some(inspect_matches) = matches.subcommand_matches("package") {
-        let dar_path = inspect_matches.value_of("dar").unwrap();
-        command_package::package(dar_path)?;
-    }
     if let Some(inspect_matches) = matches.subcommand_matches("intern") {
         let dar_path = inspect_matches.value_of("dar").unwrap();
-        let index = inspect_matches.value_of("index").unwrap();
+        // let index = inspect_matches.value_of("index").unwrap();
         command_intern::intern_all_dotted(dar_path, false, SortOrder::ByIndex)?;
     }
     if let Some(inspect_matches) = matches.subcommand_matches("module") {

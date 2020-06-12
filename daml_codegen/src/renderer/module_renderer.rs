@@ -19,7 +19,7 @@ pub fn quote_module_tree(
     let all_children: Vec<_> = module
         .child_modules()
         .values()
-        .map(|child| quote_module_tree(ctx, child.name(), child, module_matcher, render_method))
+        .map(|child| quote_module_tree(ctx, child.local_name(), child, module_matcher, render_method))
         .collect();
     let all_empty_children = all_children.iter().all(TokenStream::is_empty);
     if !is_included_module && all_empty_children {

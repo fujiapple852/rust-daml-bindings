@@ -75,7 +75,7 @@ use serde::{Deserialize, Serialize};
 /// ```
 ///
 /// [`DamlLedgerClientBuilder`]: crate::DamlLedgerClientBuilder
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct DamlSandboxTokenBuilder {
     ledger_id: Option<String>,
     participant_id: Option<String>,
@@ -169,6 +169,11 @@ impl DamlSandboxTokenBuilder {
     pub fn new_ec256_token(self, ec_pem: impl AsRef<[u8]>) -> DamlResult<String> {
         let encoding_key = &EncodingKey::from_ec_pem(ec_pem.as_ref()).map_err(|e| DamlError::Other(e.to_string()))?;
         self.generate_token(Algorithm::ES256, encoding_key)
+    }
+
+    /// Render the token claims as a JSON string.
+    pub fn claims_json(&self) -> DamlResult<String> {
+        Ok(serde_json::to_string(&(*self).clone().into_token()).map_err(|e| DamlError::Other(e.to_string()))?)
     }
 
     fn generate_token(self, algorithm: Algorithm, encoding_key: &EncodingKey) -> DamlResult<String> {

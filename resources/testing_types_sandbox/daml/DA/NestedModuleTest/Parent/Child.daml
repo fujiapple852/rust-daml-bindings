@@ -1,0 +1,3 @@
+module DA.NestedModuleTest.Parent.Child where
+
+data ChildData = ChildData with value : Text

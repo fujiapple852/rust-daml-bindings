@@ -6,7 +6,7 @@ use daml::lf::DamlLfArchivePayload;
 use daml::lf::{
     DamlLfArchive, DamlLfHashFunction, DarEncryptionType, DarFile, DarManifest, DarManifestFormat, DarManifestVersion,
 };
-use daml::lf::element::{DamlArchive, DamlElementVisitor, DamlNonLocalTyCon, DamlAbsoluteTyCon};
+use daml::lf::element::{DamlElementVisitor, DamlNonLocalTyCon, DamlAbsoluteTyCon};
 
 use daml::util::archive::ExtendedPackageInfo;
 use std::collections::{HashMap, HashSet};
@@ -14,8 +14,8 @@ use std::io::Write;
 use std::path::PathBuf;
 use zip::write::FileOptions;
 use zip::CompressionMethod;
-use std::iter::FromIterator;
-use daml::lf::element::DamlVisitableElement;
+// use std::iter::FromIterator;
+// use daml::lf::element::DamlVisitableElement;
 
 const UNKNOWN_LF_ARCHIVE_PREFIX: &str = "dep";
 const MANIFEST_FILE_PATH: &str = "META-INF/MANIFEST.MF";

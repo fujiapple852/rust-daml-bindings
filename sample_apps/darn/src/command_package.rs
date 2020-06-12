@@ -1,10 +1,31 @@
+use crate::DarnCommand;
 use anyhow::Result;
+use clap::{App, Arg, ArgMatches, SubCommand};
 use daml::lf::DarFile;
 use itertools::Itertools;
 use prettytable::format;
 use prettytable::{color, Attr, Cell, Row, Table};
 
-pub fn package(dar_path: &str) -> Result<()> {
+pub struct CommandPackage {}
+
+impl DarnCommand for CommandPackage {
+    fn name(&self) -> &str {
+        "package"
+    }
+
+    fn args<'a, 'b>(&self) -> App<'a, 'b> {
+        SubCommand::with_name("package")
+            .about("show dar package details")
+            .arg(Arg::with_name("dar").help("Sets the input dar file to use").required(true).index(1))
+    }
+
+    fn execute(&self, matches: &ArgMatches<'_>) -> Result<()> {
+        let dar_path = matches.value_of("dar").unwrap();
+        execute(dar_path)
+    }
+}
+
+fn execute(dar_path: &str) -> Result<()> {
     let dar = DarFile::from_file(dar_path)?;
     Ok(dar.apply(|archive| {
         let mut table = Table::new();
