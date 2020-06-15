@@ -9,6 +9,7 @@
 //! | [daml]         | Daml prelude & common entry point           | alpha       |
 //! | [daml_grpc]    | Daml Ledger GRPC API bindings               | beta        |
 //! | [daml_json]    | Daml Ledger JSON API bindings               | alpha       |
+//! | [daml_bridge]  | Daml JSON<>GRPC Ledger bridge               | alpha       |
 //! | [daml_codegen] | Rust codegen for Daml archives              | beta        |
 //! | [daml_derive]  | Custom attributes for Rust<>Daml conversion | beta        |
 //! | [daml_macro]   | Macros to create and extract Daml value     | beta        |
@@ -18,6 +19,7 @@
 //! [daml]: index.html
 //! [daml_grpc]: ../daml_grpc/index.html
 //! [daml_json]: ../daml_json/index.html
+//! [daml_bridge]: ../daml_bridge/index.html
 //! [daml_codegen]: ../daml_codegen/index.html
 //! [daml_derive]: ../daml_derive/index.html
 //! [daml_macro]: ../daml_macro/index.html

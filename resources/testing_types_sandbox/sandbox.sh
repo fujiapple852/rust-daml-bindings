@@ -30,6 +30,20 @@ function make_auth_params() {
   esac
 }
 
+function make_logging_params() {
+  case $1 in
+  info)
+    echo "--log-level info"
+    ;;
+  debug)
+    echo "--log-level debug"
+    ;;
+  trace)
+    echo "--log-level trace"
+    ;;
+  esac
+}
+
 function make_seeding_params() {
   echo "--contract-id-seeding=$1"
 }
@@ -49,7 +63,7 @@ SANDBOX_EARLY_ACCESS_ENABLED=false
 SANDBOX_SEEDING_MODE="testing-weak"
 SANDBOX_CLIENT_AUTH="none"
 
-while getopts "h:p:l:m:a:s:c:tde" opt; do
+while getopts "h:p:i:m:a:s:c:tdl:e" opt; do
   case ${opt} in
     h )
       SANDBOX_HOST=$OPTARG
@@ -57,7 +71,7 @@ while getopts "h:p:l:m:a:s:c:tde" opt; do
     p )
       SANDBOX_PORT=$OPTARG
       ;;
-    l )
+    i )
       SANDBOX_LEDGER_ID=$OPTARG
       ;;
     m )
@@ -78,6 +92,9 @@ while getopts "h:p:l:m:a:s:c:tde" opt; do
     d )
       SANDBOX_DATABASE_ENABLED=true
       ;;
+    l )
+      SANDBOX_LOG_LEVEL=$OPTARG
+      ;;
     e )
       SANDBOX_EARLY_ACCESS_ENABLED=true
       ;;
@@ -85,7 +102,7 @@ while getopts "h:p:l:m:a:s:c:tde" opt; do
 done
 
 if [[ ${SANDBOX_HOST} == "" ]] || [[ ${SANDBOX_PORT} == "" ]] || [[ ${SANDBOX_TIME_MODE} == "" ]]; then
-    echo "usage: sandbox.sh -h <hostname> -p <port> -l <ledger_id> -m <static|wallclock> [-a <es256|rs256|hs256-unsafe>] [-s <seeding_mode>] [-c <client_auth_mode>] [-t] [-d] [-e]"
+    echo "usage: sandbox.sh -h <hostname> -p <port> -i <ledger_id> -m <static|wallclock> [-a <es256|rs256|hs256-unsafe>] [-s <seeding_mode>] [-c <client_auth_mode>] [-t] [-d] [-e] [-l <log_level>]"
     exit
 fi
 
@@ -94,6 +111,8 @@ if [[ ${SANDBOX_TLS_ENABLED} == true ]]; then
   tls_params=$(make_tls_params ${SANDBOX_CLIENT_AUTH})
 fi
 auth_params=$(make_auth_params $SANDBOX_AUTH_MODE)
+logging_params=$(make_logging_params $SANDBOX_LOG_LEVEL)
+
 if [[ ${SANDBOX_DATABASE_ENABLED} == true ]]; then
   database_params=$(make_database_params ${SANDBOX_TIME_MODE})
 fi
@@ -103,5 +122,5 @@ if [[ ${SANDBOX_EARLY_ACCESS_ENABLED} == true ]]; then
   early_access_params=$(make_early_access_params)
 fi
 
-echo "nohup daml sandbox ${core_params} ${tls_params} ${auth_params} ${seeding_params} ${database_params} ${early_access_params} .daml/dist/* > ${log_file} 2>&1 &"
-nohup daml sandbox ${core_params} ${tls_params} ${auth_params} ${seeding_params} ${database_params} ${early_access_params} .daml/dist/* > ${log_file} 2>&1 &
+echo "nohup daml sandbox ${core_params} ${tls_params} ${auth_params} ${logging_params} ${seeding_params} ${database_params} ${early_access_params} .daml/dist/* > ${log_file} 2>&1 &"
+nohup daml sandbox ${core_params} ${tls_params} ${auth_params} ${logging_params} ${seeding_params} ${database_params} ${early_access_params} .daml/dist/* > ${log_file} 2>&1 &

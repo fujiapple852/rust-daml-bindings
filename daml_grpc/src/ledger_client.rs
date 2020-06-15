@@ -329,7 +329,7 @@ impl DamlGrpcClient {
             channel = channel.rate_limit(limit, duration);
         }
         if let Some(size) = config.initial_stream_window_size {
-            channel = channel.initial_connection_window_size(size);
+            channel = channel.initial_stream_window_size(size);
         }
         if let Some(size) = config.initial_connection_window_size {
             channel = channel.initial_connection_window_size(size);
@@ -406,7 +406,7 @@ impl DamlGrpcClient {
         let start = Instant::now();
         let mut ledger_identity: DamlResult<String> = ledger_identity_service.get_ledger_identity().await;
         while let Err(e) = ledger_identity {
-            if let DamlError::GprcPermissionError(_) = e {
+            if let DamlError::GrpcPermissionError(_) = e {
                 return Err(e);
             }
             if start.elapsed() > *reset_timeout {

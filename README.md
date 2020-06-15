@@ -8,7 +8,8 @@ The project is in an early development stage and the API is unstable.  It has no
 The status of the feature set:
 
 - [x] Support for Daml Ledger GRPC API
-- [ ] Support for Daml Ledger JSON API
+- [X] Support for Daml Ledger JSON API
+- [X] Support for Daml JSON<>GRPC Ledger bridge
 - [X] Support for http & https (TLS)
 - [X] Support for passing JWT bearer tokens (HS256/RS256/EC256 Daml Sandbox token builder provided)
 - [X] Fully async API (via `async`/`await`, `std::futures` & `futures` [0.3.x](https://docs.rs/futures/0.3.1/futures/))
@@ -39,6 +40,7 @@ The project provides the following crates:
 | daml         | Daml prelude & common entry point           | alpha       |
 | daml_grpc    | Daml Ledger GRPC API bindings               | beta        |
 | daml_json    | Daml Ledger JSON API bindings               | alpha       |
+| daml_bridge  | Daml JSON<>GRPC Ledger bridge               | alpha       |
 | daml_codegen | Rust codegen for Daml archives              | beta        |
 | daml_derive  | Custom attributes for Rust<>Daml conversion | beta        |
 | daml_macro   | Macros to create and extract Daml value     | beta        |

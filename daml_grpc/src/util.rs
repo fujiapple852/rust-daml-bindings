@@ -67,3 +67,8 @@ impl<T> Required<T> for Option<T> {
         self.ok_or(DamlError::MissingRequiredField)
     }
 }
+
+/// Returns true if the given value is equal to the default value for the type.
+pub fn is_default<T: Default + PartialEq + Eq>(value: &T) -> bool {
+    *value == T::default()
+}

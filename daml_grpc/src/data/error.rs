@@ -8,8 +8,8 @@ use tonic::codegen::http;
 pub enum DamlError {
     TimeoutError(Box<DamlError>),
     GrpcTransportError(tonic::transport::Error),
-    GprcStatusError(tonic::Status),
-    GprcPermissionError(tonic::Status),
+    GrpcStatusError(tonic::Status),
+    GrpcPermissionError(tonic::Status),
     InvalidUriError(http::uri::InvalidUri),
     StdError(Error),
     UnexpectedType(String, String),
@@ -37,8 +37,8 @@ impl fmt::Display for DamlError {
         match self {
             DamlError::InvalidUriError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
             DamlError::GrpcTransportError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
-            DamlError::GprcStatusError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
-            DamlError::GprcPermissionError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
+            DamlError::GrpcStatusError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
+            DamlError::GrpcPermissionError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
             DamlError::StdError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
             DamlError::UnexpectedType(expected, actual) =>
                 write!(fmt, "unexpected type, expected {} but found {}", expected, actual),
@@ -60,8 +60,8 @@ impl error::Error for DamlError {}
 impl From<tonic::Status> for DamlError {
     fn from(e: tonic::Status) -> Self {
         match e.code() {
-            tonic::Code::Unauthenticated => DamlError::GprcPermissionError(e),
-            _ => DamlError::GprcStatusError(e),
+            tonic::Code::PermissionDenied | tonic::Code::Unauthenticated => DamlError::GrpcPermissionError(e),
+            _ => DamlError::GrpcStatusError(e),
         }
     }
 }

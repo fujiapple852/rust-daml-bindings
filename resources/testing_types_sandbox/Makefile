@@ -7,6 +7,7 @@ WALLCLOCK_PORT = 8080
 STATIC_PORT = 8081
 WALLCLOCK_UNSECURED_PORT = 8085
 JSON_BRIDGE_PORT = 7575
+LOG_LEVEL = info
 
 SDK_VERSION := $(shell daml version | grep project | cut -d" " -f 3)
 DAR_VERSION := $(shell egrep "^version" daml.yaml | cut -d" " -f 2)
@@ -29,13 +30,13 @@ inspect:
 	daml damlc inspect-dar .daml/dist/*
 
 run-wallclock:
-	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_PORT} -l wallclock-sandbox -m wallclock -a es256
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_PORT} -l ${LOG_LEVEL} -i wallclock-sandbox -m wallclock -a es256
 
 run-static:
-	./sandbox.sh -h ${SANDBOX_HOST} -p ${STATIC_PORT} -l static-sandbox -m static -a es256
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${STATIC_PORT} -l ${LOG_LEVEL} -i static-sandbox -m static -a es256
 
 run-wallclock-unsecured:
-	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_UNSECURED_PORT} -l wallclock-unsecured-sandbox -m wallclock
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_UNSECURED_PORT} -l ${LOG_LEVEL} -i wallclock-unsecured-sandbox -m wallclock
 
 run-json-bridge:
 	./json_bridge.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_UNSECURED_PORT} -b ${JSON_BRIDGE_PORT}

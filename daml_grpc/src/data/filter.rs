@@ -37,9 +37,7 @@ impl DamlTransactionFilter {
     pub const fn filters_by_party(&self) -> &HashMap<String, DamlFilters> {
         &self.filters_by_party
     }
-}
 
-impl DamlTransactionFilter {
     pub fn for_parties<P, S>(parties: P) -> Self
     where
         P: Into<Vec<S>>,
