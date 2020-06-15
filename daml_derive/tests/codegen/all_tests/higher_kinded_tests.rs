@@ -1,5 +1,6 @@
 use crate::common::test_utils::TestResult;
-use daml::prelude::*;
+use daml::grpc_api::data::value::DamlValue;
+use daml::grpc_api::serialize::{DamlDeserializeInto, DamlSerializeFrom};
 use daml_derive::daml_codegen;
 
 daml_codegen!(

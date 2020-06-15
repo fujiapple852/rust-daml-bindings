@@ -35,7 +35,7 @@ impl<'a> TryFrom<DamlArchiveWrapper<'a>> for DamlArchive<'a> {
             .archive
             .packages
             .values()
-            .map(|package| Ok((package.name.as_str(), DamlPackage::try_from(archive.with_package(package))?)))
+            .map(|package| Ok((package.package_id, DamlPackage::try_from(archive.with_package(package))?)))
             .collect::<DamlLfConvertResult<_>>()?;
         Ok(DamlArchive::new(archive.archive.name, packages))
     }

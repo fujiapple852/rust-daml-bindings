@@ -3,7 +3,8 @@ DAML_LF_VERSION = 1.8
 SANDBOX_HOST = 127.0.0.1
 WALLCLOCK_PORT = 8080
 STATIC_PORT = 8081
-
+WALLCLOCK_UNSECURED_PORT = 8085
+JSON_BRIDGE_PORT = 7575
 build:
 	daml build --target ${DAML_LF_VERSION}
 
@@ -11,12 +12,19 @@ inspect:
 	daml damlc inspect-dar .daml/dist/*
 
 run-wallclock:
-	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_PORT} -m wallclock -a es256
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_PORT} -l wallclock-sandbox -m wallclock -a es256
 
 run-static:
-	./sandbox.sh -h ${SANDBOX_HOST} -p ${STATIC_PORT} -m static -a es256
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${STATIC_PORT} -l static-sandbox -m static -a es256
 
-run-all: build gen-certs run-wallclock run-static
+run-wallclock-unsecured:
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_UNSECURED_PORT} -l wallclock-unsecured-sandbox -m wallclock
+
+run-json-bridge:
+	sleep 10
+	nohup daml json-api --ledger-host ${SANDBOX_HOST} --ledger-port ${WALLCLOCK_UNSECURED_PORT} --http-port ${JSON_BRIDGE_PORT} --allow-insecure-tokens --package-reload-interval 1d > json-api.log 2>&1 &
+
+run-all: build run-wallclock-unsecured gen-certs run-wallclock run-static run-json-bridge
 
 run: kill run-all
 

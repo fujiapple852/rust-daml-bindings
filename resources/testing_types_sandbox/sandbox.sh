@@ -9,8 +9,7 @@ function make_core_params() {
     time_mode="--wall-clock-time"
     ;;
   esac
-  ledger_id="sandbox-$3"
-  echo "--address $1 --port $2 $time_mode --ledgerid ${ledger_id}"
+  echo "--address $1 --port $2 $time_mode --ledgerid $4"
 }
 
 function make_tls_params() {
@@ -45,13 +44,16 @@ SANDBOX_DATABASE_ENABLED=false
 SANDBOX_SEEDING_MODE="testing-weak"
 SANDBOX_CLIENT_AUTH="none"
 
-while getopts "h:p:m:a:s:c:td" opt; do
+while getopts "h:p:l:m:a:s:c:td" opt; do
   case ${opt} in
     h )
       SANDBOX_HOST=$OPTARG
       ;;
     p )
       SANDBOX_PORT=$OPTARG
+      ;;
+    l )
+      SANDBOX_LEDGER_ID=$OPTARG
       ;;
     m )
       SANDBOX_TIME_MODE=$OPTARG
@@ -75,11 +77,11 @@ while getopts "h:p:m:a:s:c:td" opt; do
 done
 
 if [[ ${SANDBOX_HOST} == "" ]] || [[ ${SANDBOX_PORT} == "" ]] || [[ ${SANDBOX_TIME_MODE} == "" ]]; then
-    echo "usage: sandbox.sh -h <hostname> -p <port> -m <static|wallclock> [-a <es256|rs256|hs256-unsafe>] [-s <seeding_mode>] [-c <client_auth_mode>] [-t] [-d]"
+    echo "usage: sandbox.sh -h <hostname> -p <port> -l <ledger_id> -m <static|wallclock> [-a <es256|rs256|hs256-unsafe>] [-s <seeding_mode>] [-c <client_auth_mode>] [-t] [-d]"
     exit
 fi
 
-core_params=$(make_core_params ${SANDBOX_HOST} ${SANDBOX_PORT} ${SANDBOX_TIME_MODE})
+core_params=$(make_core_params ${SANDBOX_HOST} ${SANDBOX_PORT} ${SANDBOX_TIME_MODE} ${SANDBOX_LEDGER_ID})
 if [[ ${SANDBOX_TLS_ENABLED} == true ]]; then
   tls_params=$(make_tls_params ${SANDBOX_CLIENT_AUTH})
 fi
@@ -89,7 +91,7 @@ if [[ ${SANDBOX_DATABASE_ENABLED} == true ]]; then
   database_params=$(make_database_params ${SANDBOX_TIME_MODE})
 fi
 seeding_params=$(make_seeding_params ${SANDBOX_SEEDING_MODE})
-log_file="sandbox_${SANDBOX_TIME_MODE}.log"
+log_file="sandbox_${SANDBOX_LEDGER_ID}.log"
 
 echo "nohup daml sandbox ${core_params} ${tls_params} ${auth_params} ${seeding_params} ${database_params} .daml/dist/* > ${log_file} 2>&1 &"
 nohup daml sandbox ${core_params} ${tls_params} ${auth_params} ${seeding_params} ${database_params} .daml/dist/* > ${log_file} 2>&1 &

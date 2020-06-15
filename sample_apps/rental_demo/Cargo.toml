@@ -11,7 +11,7 @@ edition = "2018"
 build = "build.rs"
 
 [dependencies]
-daml = { path = "../../daml", features = [ "prelude", "api", "sandbox" ] }
+daml = { path = "../../daml", features = [ "prelude", "grpc", "sandbox" ] }
 tokio = { version = "0.2", features = [ "macros" ] }
 log = "0.4"
 log4rs = "0.12"

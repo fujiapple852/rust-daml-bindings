@@ -94,8 +94,8 @@
 /// # Examples
 ///
 /// ```
-/// # use daml::api::data::value::{DamlRecord, DamlValue};
-/// # use daml::api::data::{DamlResult, DamlError};
+/// # use daml_grpc::data::value::{DamlRecord, DamlValue};
+/// # use daml_grpc::data::{DamlResult, DamlError};
 /// # use daml::macros::{daml_value, daml_path};
 /// # use bigdecimal::BigDecimal;
 /// # fn main() -> DamlResult<()> {
@@ -121,32 +121,32 @@
 /// # Ok(())
 /// # }
 /// ```
-/// [`DamlValue::extract`]: ../../doc/daml_api/data/value/enum.DamlValue.html#method.extract
-/// [`DamlRecord::extract`]: ../../doc/daml_api/data/value/struct.DamlRecord.html#method.extract
-/// [`DamlValue`]: ../../doc/daml_api/data/value/enum.DamlValue.html
-/// [`DamlValue`]: daml_api::data::value::DamlValue
-/// [`DamlRecord`]: ../../doc/daml_api/data/value/struct.DamlRecord.html
-/// [`DamlRecordField`]: ../../doc/daml_api/data/value/struct.DamlRecordField.html
-/// [`DamlValue::List`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.List
-/// [`DamlValue::Optional`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Optional
-/// [`DamlValue::Record`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Record
-/// [`DamlValue::Variant`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Variant
-/// [`DamlValue::Int64`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Int64
-/// [`DamlValue::ContractId`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.ContractId
-/// [`DamlValue::Unit`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Unit
-/// [`DamlValue::Party`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Party
-/// [`DamlValue::Numeric`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Numeric
-/// [`DamlValue::Text`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Text
-/// [`DamlValue::Timestamp`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Timestamp
-/// [`DamlValue::Bool`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Bool
-/// [`DamlValue::Date`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Date
-/// [`DamlValue::Map`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Map
-/// [`DamlValue::GenMap`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.GenMap
-/// [`DamlValue::Enum`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Enum
-/// [`ListIndexOutOfRange`]: ../../doc/daml_api/data/enum.Error.html#variant.ListIndexOutOfRange
-/// [`MissingRequiredField`]: ../../doc/daml_api/data/enum.Error.html#variant.MissingRequiredField
-/// [`UnknownField`]: ../../doc/daml_api/data/enum.Error.html#variant.UnknownField
-/// [`UnexpectedVariant`]: ../../doc/daml_api/data/enum.Error.html#variant.UnexpectedVariant
+/// [`DamlValue::extract`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#method.extract
+/// [`DamlRecord::extract`]: ../../doc/daml_grpc/data/value/struct.DamlRecord.html#method.extract
+/// [`DamlValue`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html
+/// [`DamlValue`]: daml_grpc::data::value::DamlValue
+/// [`DamlRecord`]: ../../doc/daml_grpc/data/value/struct.DamlRecord.html
+/// [`DamlRecordField`]: ../../doc/daml_grpc/data/value/struct.DamlRecordField.html
+/// [`DamlValue::List`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.List
+/// [`DamlValue::Optional`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Optional
+/// [`DamlValue::Record`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Record
+/// [`DamlValue::Variant`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Variant
+/// [`DamlValue::Int64`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Int64
+/// [`DamlValue::ContractId`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.ContractId
+/// [`DamlValue::Unit`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Unit
+/// [`DamlValue::Party`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Party
+/// [`DamlValue::Numeric`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Numeric
+/// [`DamlValue::Text`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Text
+/// [`DamlValue::Timestamp`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Timestamp
+/// [`DamlValue::Bool`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Bool
+/// [`DamlValue::Date`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Date
+/// [`DamlValue::Map`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Map
+/// [`DamlValue::GenMap`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.GenMap
+/// [`DamlValue::Enum`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Enum
+/// [`ListIndexOutOfRange`]: ../../doc/daml_grpc/data/enum.Error.html#variant.ListIndexOutOfRange
+/// [`MissingRequiredField`]: ../../doc/daml_grpc/data/enum.Error.html#variant.MissingRequiredField
+/// [`UnknownField`]: ../../doc/daml_grpc/data/enum.Error.html#variant.UnknownField
+/// [`UnexpectedVariant`]: ../../doc/daml_grpc/data/enum.Error.html#variant.UnexpectedVariant
 #[macro_export]
 macro_rules! daml_path {
 
@@ -338,7 +338,8 @@ macro_rules! daml_path {
     // the public entry point to this macro
     ( $($rest:tt)* ) => {
         {
-            use ::daml::api::data::DamlResult;
+            use $crate::daml_grpc::data::DamlResult;
+            use $crate::daml_grpc::data::value::DamlRecord;
             let func: fn(&DamlRecord) -> DamlResult<&_> = | rec_ref: &DamlRecord | {
                 daml_path!( @priv rec_ref / $($rest)* )
             };
@@ -353,9 +354,8 @@ mod test {
     use crate::test_util::TestResult;
     use crate::test_util::{make_date, make_timestamp};
     use bigdecimal::BigDecimal;
-    use chrono::{Date, DateTime, NaiveDate, Utc};
-    use daml::api::data::value::{DamlRecord, DamlValue, DamlVariant};
-    use daml::api::data::DamlError;
+    use daml_grpc::data::value::{DamlRecord, DamlValue, DamlVariant};
+    use daml_grpc::data::DamlError;
 
     #[test]
     pub fn test_top_party() -> TestResult {

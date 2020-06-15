@@ -4,9 +4,9 @@ use crate::common::test_utils::{
     TestResult, SANDBOX_LOCK,
 };
 use chrono::{DateTime, Utc};
-use daml::api::data::event::DamlEvent;
-use daml::api::{CommandExecutor, DamlSimpleExecutorBuilder};
-use daml::prelude::DamlCommand;
+use daml::grpc_api::data::command::DamlCommand;
+use daml::grpc_api::data::event::DamlEvent;
+use daml::grpc_api::{CommandExecutor, DamlSimpleExecutorBuilder};
 use std::convert::TryInto;
 
 #[tokio::test]

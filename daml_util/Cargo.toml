@@ -9,6 +9,17 @@ keywords = ["daml", "api", "ledger"]
 categories = ["development-tools"]
 edition = "2018"
 
+[features]
+sandbox = []
+
 [dependencies]
-daml_api = { path = "../daml_api" }
+daml_grpc = { path = "../daml_grpc" }
 daml_lf = { path = "../daml_lf" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+jsonwebtoken = "7"
+chrono = "0.4"
+thiserror = "1.0"
+
+[dev-dependencies]
+tokio = { version = "0.2", features = [ "macros" ] }

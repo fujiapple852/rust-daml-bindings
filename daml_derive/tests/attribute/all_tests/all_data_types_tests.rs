@@ -1,7 +1,9 @@
 use crate::attribute::test_types::all_data_types::{AllDataTypes, AllListDataTypes, MyData, ScalarsAndLists};
 use crate::common::test_utils::TestResult;
 use chrono::{DateTime, Utc};
-use daml::prelude::{DamlContractId, DamlDeserializeInto, DamlParty, DamlSerializeInto, DamlValue};
+use daml::grpc_api::data::value::DamlValue;
+use daml::grpc_api::primitive_types::{DamlContractId, DamlParty};
+use daml::grpc_api::serialize::{DamlDeserializeInto, DamlSerializeInto};
 
 #[test]
 fn test_all_data_types() -> TestResult {

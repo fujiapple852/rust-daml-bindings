@@ -22,7 +22,8 @@ darling = "0.10.0"
 itertools = "0.9"
 
 [dev-dependencies]
-daml = { path = "../daml", features = [ "prelude", "api", "sandbox", "util", "macros" ] }
+daml = { path = "../daml", features = [ "prelude", "grpc", "sandbox", "util", "macros" ] }
 chrono = "0.4"
 lazy_static = "1.3"
 tokio = { version = "0.2", features = [ "macros" ] }
+anyhow = "1.0"

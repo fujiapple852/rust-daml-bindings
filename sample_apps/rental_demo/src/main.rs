@@ -2,7 +2,7 @@ use daml::prelude::*;
 
 include!("autogen/rental_0_0_1.rs");
 
-use daml::api::{DamlLedgerClientBuilder, DamlSimpleExecutorBuilder};
+use daml::grpc_api::{CommandExecutor, DamlGrpcClientBuilder, DamlSimpleExecutorBuilder};
 use rental::da::rental::*;
 use std::convert::TryFrom;
 
@@ -10,7 +10,7 @@ use std::convert::TryFrom;
 async fn main() -> DamlResult<()> {
     log4rs::init_file("resources/log4rs.yml", log4rs::file::Deserializers::default())
         .map_err(|e| DamlError::Other(e.to_string()))?;
-    let client = DamlLedgerClientBuilder::uri("http://localhost:8082").connect().await?.reset_and_wait().await?;
+    let client = DamlGrpcClientBuilder::uri("http://localhost:8082").connect().await?.reset_and_wait().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let bob_executor = DamlSimpleExecutorBuilder::new(&client, "Bob").build();
     let proposal_data = RentalProposal::new("Alice", "Bob", "test");

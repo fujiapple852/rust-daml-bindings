@@ -2,8 +2,8 @@ use crate::attribute::test_types::recursive_types::{
     BoxedOuterType, ConcreteData, GenericData, GenericVariant, InnerType, ListItem, MyList, OuterType,
 };
 use crate::common::test_utils::TestResult;
-use daml::api::data::value::DamlValue;
-use daml::prelude::{DamlDeserializeInto, DamlSerializeInto};
+use daml::grpc_api::data::value::DamlValue;
+use daml::grpc_api::serialize::{DamlDeserializeInto, DamlSerializeInto};
 
 #[test]
 pub fn test_mutual_recursive_type() -> TestResult {

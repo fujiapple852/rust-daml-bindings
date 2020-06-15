@@ -377,13 +377,13 @@
 //! [`DamlList<T>`]: ../daml/prelude/type.DamlList.html
 //! [`DamlTextMap<T>`]: ../daml/prelude/type.DamlTextMap.html
 //! [`DamlOptional<T>`]: ../daml/prelude/type.DamlOptional.html
-//! [`DamlCreateCommand`]: ../daml_api/data/command/struct.DamlCreateCommand.html
-//! [`DamlExerciseCommand`]: ../daml_api/data/command/struct.DamlExerciseCommand.html
-//! [`DamlCommandService`]: ../daml_api/service/struct.DamlCommandService.html
-//! [`DamlCommandSubmissionService`]: ../daml_api/service/struct.DamlCommandSubmissionService.html
-//! [`DamlCreatedEvent`]: ../daml_api/data/event/struct.DamlCreatedEvent.html
-//! [`DamlError`]: ../daml_api/data/enum.DamlError.html
-//! [`DamlValue`]: ../daml_api/data/value/enum.DamlValue.html
+//! [`DamlCreateCommand`]: ../daml_grpc/data/command/struct.DamlCreateCommand.html
+//! [`DamlExerciseCommand`]: ../daml_grpc/data/command/struct.DamlExerciseCommand.html
+//! [`DamlCommandService`]: ../daml_grpc/service/struct.DamlCommandService.html
+//! [`DamlCommandSubmissionService`]: ../daml_grpc/service/struct.DamlCommandSubmissionService.html
+//! [`DamlCreatedEvent`]: ../daml_grpc/data/event/struct.DamlCreatedEvent.html
+//! [`DamlError`]: ../daml_grpc/data/enum.DamlError.html
+//! [`DamlValue`]: ../daml_grpc/data/value/enum.DamlValue.html
 //! [DAML Template]: https://docs.daml.com/daml/reference/templates.html
 //! [DAML Template Choices]: https://docs.daml.com/daml/reference/choices.html
 //! [DAML Data (Record)]: https://docs.daml.com/daml/reference/data-types.html

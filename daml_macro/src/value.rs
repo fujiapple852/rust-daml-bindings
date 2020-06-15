@@ -55,8 +55,8 @@
 /// # Examples
 ///
 /// ```
-/// # use daml::api::data::value::{DamlRecord, DamlValue, DamlVariant};
-/// # use daml::api::data::{DamlResult, DamlError};
+/// # use daml_grpc::data::value::{DamlRecord, DamlValue, DamlVariant};
+/// # use daml_grpc::data::{DamlResult, DamlError};
 /// # use daml::macros::daml_value;
 /// # fn main() -> DamlResult<()> {
 /// let value = daml_value![
@@ -103,15 +103,15 @@
 /// # Ok(())
 /// # }
 /// ```
-/// [`DamlValue`]: ../../doc/daml_api/data/value/enum.DamlValue.html
-/// [`DamlValue::Record`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Record
-/// [`DamlValue::Party`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Party
-/// [`DamlValue::ContractId`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.ContractId
-/// [`DamlValue::Text`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Text
-/// [`DamlValue::Map`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Map
-/// [`DamlValue::GenMap`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.GenMap
-/// [`DamlValue::Enum`]: ../../doc/daml_api/data/value/enum.DamlValue.html#variant.Enum
-/// [`DamlRecord`]: ../../doc/daml_api/data/value/struct.DamlRecord.html
+/// [`DamlValue`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html
+/// [`DamlValue::Record`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Record
+/// [`DamlValue::Party`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Party
+/// [`DamlValue::ContractId`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.ContractId
+/// [`DamlValue::Text`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Text
+/// [`DamlValue::Map`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Map
+/// [`DamlValue::GenMap`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.GenMap
+/// [`DamlValue::Enum`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html#variant.Enum
+/// [`DamlRecord`]: ../../doc/daml_grpc/data/value/struct.DamlRecord.html
 #[macro_export]
 macro_rules! daml_value {
 
@@ -127,6 +127,7 @@ macro_rules! daml_value {
     //
     ([ $( $value:tt $( # $type:ident )? ),* ]) => {
         {
+            use $crate::daml_grpc::data::value::DamlValue;
             #[allow(unused_mut)]
             let mut list = vec![];
             $(
@@ -141,8 +142,9 @@ macro_rules! daml_value {
     //
     ( { $( $label:ident : $value:tt $( # $type:ident )? ),* } ) => {
         {
+            use $crate::daml_grpc::data::value::{DamlValue, DamlRecordBuilder};
             #[allow(unused_mut)]
-            let mut rec_builder = daml::api::data::value::DamlRecordBuilder::new();
+            let mut rec_builder = DamlRecordBuilder::new();
             $(
                 rec_builder = rec_builder.add_field(stringify![$label], daml_value!($( @priv $type )? $value));
             )*
@@ -155,6 +157,7 @@ macro_rules! daml_value {
     //
     ( { => $variant:ident $($value:tt)* } ) => {
         {
+            use $crate::daml_grpc::data::value::{DamlValue, DamlVariant};
             let val = daml_value!($($value)*);
             let variant = DamlVariant::new(stringify!($variant), Box::new(val), None);
             DamlValue::new_variant(variant)
@@ -166,6 +169,7 @@ macro_rules! daml_value {
     //
     ( { ?= $($value:tt)* } ) => {
         {
+            use $crate::daml_grpc::data::value::DamlValue;
             let val = daml_value!($($value)*);
             DamlValue::new_optional(Some(val))
         }
@@ -176,6 +180,7 @@ macro_rules! daml_value {
     //
     ( { ?! } ) => {
         {
+            use $crate::daml_grpc::data::value::DamlValue;
             DamlValue::new_optional(None)
         }
     };
@@ -184,7 +189,7 @@ macro_rules! daml_value {
     // Covers DamlValue::Bool, DamlValue::Text, DamlValue::Int64 & DamlValue::Numeric cases
     //
     ($prim:expr) => {
-        DamlValue::from($prim)
+        $crate::daml_grpc::data::value::DamlValue::from($prim)
     };
 
     //
@@ -207,17 +212,17 @@ macro_rules! daml_value {
     // These cases will only be called from within the macro and so we prefix with @priv to indicate they are private
     //
     (@priv p $party:expr) => {
-        DamlValue::new_party($party)
+        $crate::daml_grpc::data::value::DamlValue::new_party($party)
     };
     (@priv c $contract:expr) => {
-        DamlValue::new_contract_id($contract)
+        $crate::daml_grpc::data::value::DamlValue::new_contract_id($contract)
     };
     (@priv t $timestamp:expr) => {
-        DamlValue::new_timestamp($timestamp.parse::<DateTime<Utc>>().unwrap()) // TODO shouldn't unwrap here!
+        $crate::daml_grpc::data::value::DamlValue::new_timestamp($timestamp.parse::<$crate::chrono::DateTime<$crate::chrono::Utc>>().unwrap()) // TODO shouldn't unwrap here!
     };
     (@priv d $date:expr) => {
         // TODO date parsing should be flexible and performed in DamlValue, not here!
-        DamlValue::new_date(Date::<Utc>::from_utc(NaiveDate::parse_from_str($date, "%Y-%m-%d").unwrap(), Utc))
+        $crate::daml_grpc::data::value::DamlValue::new_date($crate::chrono::Date::<$crate::chrono::Utc>::from_utc($crate::chrono::NaiveDate::parse_from_str($date, "%Y-%m-%d").unwrap(), $crate::chrono::Utc))
     };
 }
 
@@ -226,8 +231,7 @@ mod test {
     use crate::test_util::TestResult;
     use crate::test_util::{make_date, make_timestamp};
     use bigdecimal::BigDecimal;
-    use chrono::{Date, DateTime, NaiveDate, Utc};
-    use daml::api::data::value::{DamlValue, DamlVariant};
+    use daml_grpc::data::value::DamlValue;
 
     #[test]
     pub fn test_unit_value() -> TestResult {

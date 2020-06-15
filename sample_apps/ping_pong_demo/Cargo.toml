@@ -10,7 +10,7 @@ categories = ["development-tools"]
 edition = "2018"
 
 [dependencies]
-daml = { path = "../../daml", features = [ "api", "sandbox", "util", "macros" ] }
+daml = { path = "../../daml", features = [ "grpc", "sandbox", "util", "macros" ] }
 tokio = { version = "0.2", features = [ "macros" ] }
 futures = "0.3"
 chrono = "0.4"

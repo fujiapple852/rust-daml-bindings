@@ -1,6 +1,12 @@
 daml 1.2
 module DA.PingPong where
 
+data PingPongKey = PingPongKey
+  with
+    sender : Party
+    count : Int
+  deriving (Eq, Show)
+
 data UserData = UserData
   with
     name: Party
@@ -15,6 +21,8 @@ template Ping
   where
     signatory sender
     observer receiver
+    key PingPongKey with .. : PingPongKey
+    maintainer key.sender
 
     controller receiver can
       RespondPong : ()
@@ -45,6 +53,8 @@ template Pong
   where
     signatory sender
     observer receiver
+    key PingPongKey with .. : PingPongKey
+    maintainer key.sender
 
     controller receiver can
       RespondPing : ()

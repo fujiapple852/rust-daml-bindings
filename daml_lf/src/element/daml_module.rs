@@ -129,10 +129,10 @@ impl<'a> DamlModule<'a> {
     }
 
     /// Retrieve a child `DamlModule` by relative path or `None` if no such module exists.
-    pub fn child_module_path<'b>(&'a self, relative_path: &'b [&'b str]) -> Option<&'a DamlModule<'a>> {
+    pub fn child_module_path<'b, S: AsRef<str>>(&'a self, relative_path: &'b [S]) -> Option<&'a DamlModule<'a>> {
         match relative_path {
             [] => Some(self),
-            [head, tail @ ..] => match self.child_module(head) {
+            [head, tail @ ..] => match self.child_module(head.as_ref()) {
                 Some(m) => m.child_module_path(tail),
                 None => None,
             },
