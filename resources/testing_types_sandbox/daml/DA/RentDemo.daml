@@ -1,5 +1,7 @@
 module DA.RentDemo where
 
+data CloneReturn = CloneReturn with value : Text; code : Int
+
 template RentalProposal
   with
     landlord : Party
@@ -13,7 +15,14 @@ template RentalProposal
           foo : Text
           bar : Int
         do create RentalAgreement with landlord; tenant; terms
-          
+    controller landlord can
+      nonconsuming Clone : CloneReturn
+        with
+          new_tenant : Party
+        do
+          create this with tenant = new_tenant
+          return CloneReturn with value = "test"; code = 0
+
 template RentalAgreement
   with
     landlord : Party

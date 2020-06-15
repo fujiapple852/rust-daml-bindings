@@ -4,6 +4,7 @@ members = [
   "daml",
   "daml_grpc",
   "daml_json",
+  "daml_bridge",
   "daml_macro",
   "daml_codegen",
   "daml_derive",

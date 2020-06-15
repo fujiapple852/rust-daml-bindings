@@ -6,6 +6,7 @@ use crate::data::value::DamlValue;
 use crate::data::{
     DamlCommandsDeduplicationPeriod, DamlError, DamlMinLedgerTime, DamlResult, DamlTransaction, DamlTransactionTree,
 };
+use crate::service::DamlCommandService;
 use crate::util::Required;
 use crate::{DamlCommandFactory, DamlGrpcClient};
 
@@ -17,6 +18,7 @@ pub struct DamlSimpleExecutorBuilder<'a> {
     application_id: Option<&'a str>,
     deduplication_period: Option<DamlCommandsDeduplicationPeriod>,
     min_ledger_time: Option<DamlMinLedgerTime>,
+    auth_token: Option<&'a str>,
 }
 
 impl<'a> DamlSimpleExecutorBuilder<'a> {
@@ -29,6 +31,7 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
             application_id: None,
             deduplication_period: None,
             min_ledger_time: None,
+            auth_token: None,
         }
     }
 
@@ -88,6 +91,14 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
         }
     }
 
+    /// Override any JWT token enabled in the `DamlGrpcClient`.
+    pub fn auth_token(self, auth_token: &'a str) -> Self {
+        Self {
+            auth_token: Some(auth_token),
+            ..self
+        }
+    }
+
     pub fn build(self) -> DamlResult<DamlSimpleExecutor<'a>> {
         if self.has_parties() {
             Ok(DamlSimpleExecutor::new(
@@ -98,6 +109,7 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
                 self.application_id.unwrap_or("default-application"),
                 self.deduplication_period,
                 self.min_ledger_time,
+                self.auth_token,
             ))
         } else {
             Err(DamlError::InsufficientParties)
@@ -132,9 +144,11 @@ pub trait CommandExecutor {
 pub struct DamlSimpleExecutor<'a> {
     ledger_client: &'a DamlGrpcClient,
     command_factory: DamlCommandFactory,
+    auth_token: Option<&'a str>,
 }
 
 impl<'a> DamlSimpleExecutor<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         ledger_client: &'a DamlGrpcClient,
         act_as: Vec<String>,
@@ -143,6 +157,7 @@ impl<'a> DamlSimpleExecutor<'a> {
         application_id: &str,
         deduplication_period: Option<DamlCommandsDeduplicationPeriod>,
         min_ledger_time: Option<DamlMinLedgerTime>,
+        auth_token: Option<&'a str>,
     ) -> Self {
         let command_factory = DamlCommandFactory::new(
             workflow_id,
@@ -155,6 +170,7 @@ impl<'a> DamlSimpleExecutor<'a> {
         Self {
             ledger_client,
             command_factory,
+            auth_token,
         }
     }
 
@@ -168,12 +184,19 @@ impl<'a> DamlSimpleExecutor<'a> {
 
     async fn submit_and_wait_for_transaction(&self, command: DamlCommand) -> DamlResult<DamlTransaction> {
         let commands = self.command_factory.make_command(command);
-        Ok(self.ledger_client.command_service().submit_and_wait_for_transaction(commands).await?.0)
+        Ok(self.client().submit_and_wait_for_transaction(commands).await?.0)
     }
 
     async fn submit_and_wait_for_transaction_tree(&self, command: DamlCommand) -> DamlResult<DamlTransactionTree> {
         let commands = self.command_factory.make_command(command);
-        Ok(self.ledger_client.command_service().submit_and_wait_for_transaction_tree(commands).await?.0)
+        Ok(self.client().submit_and_wait_for_transaction_tree(commands).await?.0)
+    }
+
+    fn client(&self) -> DamlCommandService<'_> {
+        match self.auth_token {
+            Some(token) => self.ledger_client.command_service().with_token(token),
+            None => self.ledger_client.command_service(),
+        }
     }
 }
 

@@ -12,8 +12,10 @@
 
 // TODO annoying having to specify both "util" and "sandbox" features to be able to use sandbox.
 
-pub mod package;
 #[cfg(feature = "sandbox")]
 mod sandbox_auth;
+
+pub mod package;
+
 #[cfg(feature = "sandbox")]
-pub use sandbox_auth::{DamlSandboxAuthError, DamlSandboxAuthResult, DamlSandboxTokenBuilder};
+pub use sandbox_auth::{DamlSandboxAuthError, DamlSandboxAuthResult, DamlSandboxAuthToken, DamlSandboxTokenBuilder};

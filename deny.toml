@@ -5,8 +5,8 @@ allow = [
     "Apache-2.0",
     "ISC",
     "OpenSSL",
-    "MPL-2.0",
-    "BSD-3-Clause"
+    "BSD-3-Clause",
+    "MPL-2.0"
 ]
 copyleft = "deny"
 allow-osi-fsf-free = "neither"

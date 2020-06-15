@@ -19,6 +19,12 @@ pub enum DamlJsonError {
     UrlParseError(#[from] url::ParseError),
     #[error("DamlJsonError: unhandled http response code: {0}")]
     UnhandledHttpResponse(String),
+    #[error("DamlJsonError: unexpected GRPC event")]
+    UnexpectedGrpcEvent,
+
+    // TODO move to bridge crate
+    #[error("DamlJsonError: Transaction tree did not contain an exercised event")]
+    MissingExercisedEvent,
 }
 
 /// Daml JSON Request/Response Converter Result.

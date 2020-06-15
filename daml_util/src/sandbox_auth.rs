@@ -1,5 +1,6 @@
 use chrono::Utc;
-use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
+use itertools::Itertools;
+use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -99,6 +100,7 @@ impl DamlSandboxTokenBuilder {
         }
     }
 
+    /// DOCME
     pub fn ledger_id(self, ledger_id: impl Into<String>) -> Self {
         Self {
             ledger_id: Some(ledger_id.into()),
@@ -106,6 +108,7 @@ impl DamlSandboxTokenBuilder {
         }
     }
 
+    /// DOCME
     pub fn participant_id(self, participant_id: impl Into<String>) -> Self {
         Self {
             participant_id: Some(participant_id.into()),
@@ -113,6 +116,7 @@ impl DamlSandboxTokenBuilder {
         }
     }
 
+    /// DOCME
     pub fn application_id(self, application_id: impl Into<String>) -> Self {
         Self {
             application_id: Some(application_id.into()),
@@ -120,6 +124,7 @@ impl DamlSandboxTokenBuilder {
         }
     }
 
+    /// DOCME
     pub fn admin(self, admin: bool) -> Self {
         Self {
             admin,
@@ -127,6 +132,7 @@ impl DamlSandboxTokenBuilder {
         }
     }
 
+    /// DOCME
     pub fn act_as(self, act_as: Vec<String>) -> Self {
         Self {
             act_as,
@@ -134,6 +140,7 @@ impl DamlSandboxTokenBuilder {
         }
     }
 
+    /// DOCME
     pub fn read_as(self, read_as: Vec<String>) -> Self {
         Self {
             read_as,
@@ -173,7 +180,7 @@ impl DamlSandboxTokenBuilder {
     }
 
     fn generate_token(self, algorithm: Algorithm, encoding_key: &EncodingKey) -> DamlSandboxAuthResult<String> {
-        Ok(encode(&Header::new(algorithm), &self.into_token(), encoding_key)?)
+        Ok(jsonwebtoken::encode(&Header::new(algorithm), &self.into_token(), encoding_key)?)
     }
 
     fn into_token(self) -> DamlSandboxAuthToken {
@@ -201,16 +208,90 @@ pub enum DamlSandboxAuthError {
     JsonWebTokenError(#[from] jsonwebtoken::errors::Error),
     #[error("failed to serialize JSON Web Token: {0}")]
     JsonSerializeError(#[from] serde_json::error::Error),
+    #[error("unsupported algorithm")]
+    UnsupportedAlgorithm,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct DamlSandboxAuthToken {
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+pub struct DamlSandboxAuthToken {
     #[serde(rename = "https://daml.com/ledger-api")]
     details: DamlSandboxAuthDetails,
     exp: i64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+impl DamlSandboxAuthToken {
+    /// Parse and validate a [`DamlSandboxAuthToken`] from a JWT token string.
+    pub fn parse_jwt(token: &str, key: impl AsRef<[u8]>) -> DamlSandboxAuthResult<Self> {
+        let algorithm = jsonwebtoken::decode_header(token)?.alg;
+        let decoding_key = match algorithm {
+            Algorithm::ES256 => DecodingKey::from_ec_pem(key.as_ref())?,
+            Algorithm::RS256 => DecodingKey::from_rsa_pem(key.as_ref())?,
+            Algorithm::HS256 => DecodingKey::from_secret(key.as_ref()),
+            _ => return Err(DamlSandboxAuthError::UnsupportedAlgorithm),
+        };
+        Ok(jsonwebtoken::decode::<Self>(token, &decoding_key, &Validation::new(algorithm))?.claims)
+    }
+
+    /// Parse a [`DamlSandboxAuthToken`] from a JWT token string (without validating).
+    pub fn parse_jwt_no_validation(token: &str) -> DamlSandboxAuthResult<Self> {
+        Ok(jsonwebtoken::dangerous_insecure_decode_with_validation::<Self>(
+            token,
+            &Validation::new(jsonwebtoken::decode_header(token)?.alg),
+        )?
+        .claims)
+    }
+
+    /// The token expiry time (unix timestamp).
+    pub fn expiry(&self) -> i64 {
+        self.exp
+    }
+
+    /// The ledger id for which this token was issued.
+    pub fn ledger_id(&self) -> Option<&str> {
+        self.details.ledger_id.as_deref()
+    }
+
+    /// The participant id for which this token was issued.
+    pub fn participant_id(&self) -> Option<&str> {
+        self.details.participant_id.as_deref()
+    }
+
+    /// The application id for which this token was issued.
+    pub fn application_id(&self) -> Option<&str> {
+        self.details.application_id.as_deref()
+    }
+
+    /// Whether this token has admin privilege.
+    pub fn admin(&self) -> bool {
+        self.details.admin
+    }
+
+    /// The parties the bearer of this token claims to read & execute on behalf of.
+    pub fn act_as(&self) -> &[String] {
+        self.details.act_as.as_slice()
+    }
+
+    /// The parties the bearer of this token claims to read data on behalf of.
+    pub fn read_as(&self) -> &[String] {
+        self.details.read_as.as_slice()
+    }
+
+    /// The distinct parties which claim read or execute permissions in the token.
+    pub fn parties(&self) -> impl Iterator<Item = &str> {
+        self.details.read_as.iter().chain(self.details.act_as.iter()).map(AsRef::as_ref).unique()
+    }
+
+    /// Return the single party with read or execute permissions otherwise None.
+    pub fn single_party(&self) -> Option<&str> {
+        match (self.details.act_as.as_slice(), self.details.read_as.as_slice()) {
+            ([p], []) | ([], [p]) => Some(p),
+            ([p1], [p2]) if p1 == p2 => Some(p1),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 struct DamlSandboxAuthDetails {
     ledger_id: Option<String>,
@@ -237,11 +318,11 @@ mod tests {
                 act_as: vec!["Alice".to_owned(), "Bob".to_owned()],
                 read_as: vec!["Alice".to_owned(), "Bob".to_owned()],
             },
-            exp: 1_581_292_002,
+            exp: 1_804_287_349,
         };
         let serialized = serde_json::to_string(&token).unwrap();
         assert_eq!(
-            r#"{"https://daml.com/ledger-api":{"ledgerId":"test-sandbox","participantId":null,"applicationId":null,"admin":true,"actAs":["Alice","Bob"],"readAs":["Alice","Bob"]},"exp":1581292002}"#,
+            r#"{"https://daml.com/ledger-api":{"ledgerId":"test-sandbox","participantId":null,"applicationId":null,"admin":true,"actAs":["Alice","Bob"],"readAs":["Alice","Bob"]},"exp":1804287349}"#,
             serialized
         );
     }
@@ -257,28 +338,74 @@ mod tests {
                 act_as: vec!["Alice".to_owned(), "Bob".to_owned()],
                 read_as: vec!["Alice".to_owned(), "Bob".to_owned()],
             },
-            exp: 1_581_292_002,
+            exp: 1_804_287_349,
         };
         let token_str =
             encode(&Header::default(), &token, &EncodingKey::from_secret("testsecret".as_ref())).expect("token");
         assert_eq!(
-            r#"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJodHRwczovL2RhbWwuY29tL2xlZGdlci1hcGkiOnsibGVkZ2VySWQiOiJzYW5kYm94IiwicGFydGljaXBhbnRJZCI6bnVsbCwiYXBwbGljYXRpb25JZCI6bnVsbCwiYWRtaW4iOnRydWUsImFjdEFzIjpbIkFsaWNlIiwiQm9iIl0sInJlYWRBcyI6WyJBbGljZSIsIkJvYiJdfSwiZXhwIjoxNTgxMjkyMDAyfQ.Y-3GYosItlnhTXOTgwE_TjP_D_Q0Pvw-pqe20OTwnIg"#,
+            r#"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJodHRwczovL2RhbWwuY29tL2xlZGdlci1hcGkiOnsibGVkZ2VySWQiOiJzYW5kYm94IiwicGFydGljaXBhbnRJZCI6bnVsbCwiYXBwbGljYXRpb25JZCI6bnVsbCwiYWRtaW4iOnRydWUsImFjdEFzIjpbIkFsaWNlIiwiQm9iIl0sInJlYWRBcyI6WyJBbGljZSIsIkJvYiJdfSwiZXhwIjoxODA0Mjg3MzQ5fQ.Y5hlJvK7h_9rancE_iO_3tGKWl8xsFVNLPJw9iNBreY"#,
             token_str
         );
     }
 
     #[test]
     fn test_builder_with_secret() -> DamlSandboxAuthResult<()> {
-        let token_str = DamlSandboxTokenBuilder::new_with_expiry(1_581_292_002)
+        let token_str = DamlSandboxTokenBuilder::new_with_expiry(1_804_287_349)
             .ledger_id("sandbox")
             .admin(true)
             .act_as(vec!["Alice".to_owned(), "Bob".to_owned()])
             .read_as(vec!["Alice".to_owned(), "Bob".to_owned()])
             .new_hs256_unsafe_token("testsecret")?;
         assert_eq!(
-            r#"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJodHRwczovL2RhbWwuY29tL2xlZGdlci1hcGkiOnsibGVkZ2VySWQiOiJzYW5kYm94IiwicGFydGljaXBhbnRJZCI6bnVsbCwiYXBwbGljYXRpb25JZCI6bnVsbCwiYWRtaW4iOnRydWUsImFjdEFzIjpbIkFsaWNlIiwiQm9iIl0sInJlYWRBcyI6WyJBbGljZSIsIkJvYiJdfSwiZXhwIjoxNTgxMjkyMDAyfQ.Y-3GYosItlnhTXOTgwE_TjP_D_Q0Pvw-pqe20OTwnIg"#,
+            r#"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJodHRwczovL2RhbWwuY29tL2xlZGdlci1hcGkiOnsibGVkZ2VySWQiOiJzYW5kYm94IiwicGFydGljaXBhbnRJZCI6bnVsbCwiYXBwbGljYXRpb25JZCI6bnVsbCwiYWRtaW4iOnRydWUsImFjdEFzIjpbIkFsaWNlIiwiQm9iIl0sInJlYWRBcyI6WyJBbGljZSIsIkJvYiJdfSwiZXhwIjoxODA0Mjg3MzQ5fQ.Y5hlJvK7h_9rancE_iO_3tGKWl8xsFVNLPJw9iNBreY"#,
             token_str
         );
+        Ok(())
+    }
+
+    #[test]
+    fn test_decode_no_validation() -> DamlSandboxAuthResult<()> {
+        let jwt_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJodHRwczovL2RhbWwuY29tL2xlZGdlci1hcGkiOnsibGVkZ2VySWQiOiJ3YWxsY2xvY2stdW5zZWN1cmVkLXNhbmRib3giLCJwYXJ0aWNpcGFudElkIjoiQWxpY2UiLCJhcHBsaWNhdGlvbklkIjoiZGVtbyIsImFkbWluIjpmYWxzZSwiYWN0QXMiOlsiQWxpY2UiXSwicmVhZEFzIjpbXX0sImV4cCI6MTgwNDI4NzM0OX0.dlJ0dxeOwEYfAmuuKngRNsibci-w0TSdn1NZRmFjHT9aoW8wsAeuYuLXjtx7e6oQaT-m_rlJqgDdmfTXHhE_t9LkngtpgcG8g0h7sCEq7O-SYGiB1B1jzTX2ZO0QHp6Xdes7QkVnyMn2vwaDv8KWAurchGOJUwDVpgU7k2JKpnFh1ui-AMf0rmP7yu7rSZchD-NTg_1_-RL0rgbwzmWJWL81n2zz213yQW5w_dqhitueFeluyppuZgzNQfni8jtdZF32trHwocg8C6zI9DdqmJSl-TsykQPV8z5wLSOSKCCFwnecEZ0QvZSxEWycNAQvNJTAMiKFcagiYGEeIDc4yQ";
+        let decoded = DamlSandboxAuthToken::parse_jwt_no_validation(jwt_token)?;
+        let token = DamlSandboxAuthToken {
+            details: DamlSandboxAuthDetails {
+                ledger_id: Some("wallclock-unsecured-sandbox".to_owned()),
+                participant_id: Some("Alice".to_owned()),
+                application_id: Some("demo".to_owned()),
+                admin: false,
+                act_as: vec!["Alice".to_owned()],
+                read_as: vec![],
+            },
+            exp: 1_804_287_349,
+        };
+        assert_eq!(decoded, token);
+        Ok(())
+    }
+
+    #[test]
+    fn test_decode() -> DamlSandboxAuthResult<()> {
+        let jwt_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJodHRwczovL2RhbWwuY29tL2xlZGdlci1hcGkiOnsibGVkZ2VySWQiOiJzYW5kYm94IiwicGFydGljaXBhbnRJZCI6bnVsbCwiYXBwbGljYXRpb25JZCI6bnVsbCwiYWRtaW4iOnRydWUsImFjdEFzIjpbIkFsaWNlIiwiQm9iIl0sInJlYWRBcyI6WyJBbGljZSIsIkJvYiJdfSwiZXhwIjoxODA0Mjg3MzQ5fQ.Y5hlJvK7h_9rancE_iO_3tGKWl8xsFVNLPJw9iNBreY";
+        let decoded = DamlSandboxAuthToken::parse_jwt(jwt_token, "testsecret")?;
+        let token = DamlSandboxAuthToken {
+            details: DamlSandboxAuthDetails {
+                ledger_id: Some("sandbox".to_owned()),
+                participant_id: None,
+                application_id: None,
+                admin: true,
+                act_as: vec!["Alice".to_owned(), "Bob".to_owned()],
+                read_as: vec!["Alice".to_owned(), "Bob".to_owned()],
+            },
+            exp: 1_804_287_349,
+        };
+        assert_eq!(decoded, token);
+        Ok(())
+    }
+
+    #[test]
+    fn test_parties() -> DamlSandboxAuthResult<()> {
+        let jwt_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJodHRwczovL2RhbWwuY29tL2xlZGdlci1hcGkiOnsibGVkZ2VySWQiOiJzYW5kYm94LXN0YXRpYyIsInBhcnRpY2lwYW50SWQiOm51bGwsImFwcGxpY2F0aW9uSWQiOm51bGwsImFkbWluIjpmYWxzZSwiYWN0QXMiOlsiQWxpY2UiLCJCb2IiXSwicmVhZEFzIjpbXX0sImV4cCI6MTgwNDI4NzM0OX0.EnjK8is1g0I8BGVu1ZPgSSFRW0WKEGcwdIBLiPPQmo_xcMngu_KzOKADezRJap6B_10IMwRn95b9A3vpBT_E8fZQ95BTMbL8yaODrSjus6feLuKxPhZMy0UgPZjReuPu2x1BsjNWZvl5UXGNz8NMs21X7Uh4fEk5ehdLqctiTzsrjUjVCz-KJSjsJafU-F0VnJJgvb3A2QQprfDg5L7_-yv7HsEZxJov-nJ29ycsYfPfQ1JlwetNoBgCPA2C3QZLusvHhGGJPuot2cw1JG43VxpOTYc9slqSWuC5gZhGDAOEEsslb0LeQU_JjLh4JjFT4iROEyj9ARdqD7tCxm0h2A";
+        let token = DamlSandboxAuthToken::parse_jwt_no_validation(jwt_token)?;
+        assert_eq!(token.parties().collect::<Vec<_>>(), vec!["Alice", "Bob"]);
         Ok(())
     }
 }

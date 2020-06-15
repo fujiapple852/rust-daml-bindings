@@ -37,6 +37,6 @@ async fn test_allocate_party() -> TestResult {
     let _lock = initialize_wallclock().await;
     let ledger_client = new_wallclock_sandbox().await?;
     let allocated_party = ledger_client.party_management_service().allocate_party("Alice", "Alice Smith").await?;
-    assert_eq!(DamlPartyDetails::new("Alice", "Alice Smith", true), allocated_party);
+    assert_eq!(DamlPartyDetails::new("Alice", Some("Alice Smith"), true), allocated_party);
     Ok(())
 }
