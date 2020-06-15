@@ -1,7 +1,7 @@
 use crate::DarnCommand;
 use anyhow::Result;
 use clap::{App, AppSettings, Arg, ArgGroup, ArgMatches, SubCommand};
-use daml::api::DamlSandboxTokenBuilder;
+use daml::util::DamlSandboxTokenBuilder;
 
 /// Darn command for generating DAML Sandbox auth tokens.
 pub struct CommandToken {}

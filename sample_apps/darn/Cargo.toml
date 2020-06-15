@@ -6,7 +6,7 @@ description = "Tools for working with DAML Archives and ledgers"
 edition = "2018"
 
 [dependencies]
-daml = { path = "../../daml", features = [ "prelude", "api", "sandbox", "lf_full", "util" ] }
+daml = { path = "../../daml", features = [ "grpc", "sandbox", "lf_full", "util" ] }
 futures = "0.3"
 tokio = { version = "0.2", features = [ "rt-threaded", "macros" ] }
 log = "0.4"

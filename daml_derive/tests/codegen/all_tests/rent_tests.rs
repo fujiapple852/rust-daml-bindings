@@ -3,9 +3,9 @@ use crate::common::test_utils::{
     new_static_sandbox, update_create_command_package_id_for_testing, update_exercise_command_package_id_for_testing,
     SANDBOX_LOCK,
 };
-use daml::api::data::command::DamlCommand;
-use daml::api::data::event::DamlEvent;
-use daml::api::{CommandExecutor, DamlSimpleExecutorBuilder};
+use daml::grpc_api::data::command::DamlCommand;
+use daml::grpc_api::data::event::DamlEvent;
+use daml::grpc_api::{CommandExecutor, DamlSimpleExecutorBuilder};
 use daml_derive::daml_codegen;
 use std::convert::TryInto;
 

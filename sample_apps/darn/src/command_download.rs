@@ -1,7 +1,7 @@
 use crate::error::DarnError;
 use crate::package_common::get_all_packages;
 use anyhow::Result;
-use daml::api::data::package::DamlPackage;
+use daml::grpc_api::data::package::DamlPackage;
 use daml::lf::DamlLfArchivePayload;
 use daml::lf::{
     DamlLfArchive, DamlLfHashFunction, DarEncryptionType, DarFile, DarManifest, DarManifestFormat, DarManifestVersion,

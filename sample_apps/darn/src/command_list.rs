@@ -3,10 +3,11 @@
 
 use crate::package_common::get_all_packages;
 use anyhow::Result;
-use daml::api::{DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
+use daml::grpc_api::{DamlGrpcClientBuilder};
+use daml::util::DamlSandboxTokenBuilder;
 use daml::lf::element::{DamlArchive, DamlChoice, DamlElementVisitor, DamlVisitableElement};
 use daml::lf::{DamlLfArchive, DamlLfArchivePayload, DamlLfHashFunction, DarFile, DarManifest};
-use daml::prelude::{DamlError, DamlResult};
+use daml::grpc_api::data::{DamlError, DamlResult};
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
 use itertools::{all, Itertools};

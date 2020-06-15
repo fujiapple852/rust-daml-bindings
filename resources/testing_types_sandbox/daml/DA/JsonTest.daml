@@ -1,0 +1,6 @@
+module DA.JsonTest where
+
+data Depth1 = Depth1 with foo: Optional Int
+data Depth2 = Depth2 with foo: Optional (Optional Int)
+data Foo = Bar Int | Baz | Quux (Optional Int)
+data Status = Enabled | Disabled

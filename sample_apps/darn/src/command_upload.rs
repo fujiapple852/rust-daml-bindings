@@ -1,6 +1,6 @@
 use crate::package_common::make_ec256_token;
 use anyhow::Result;
-use daml::api::DamlLedgerClientBuilder;
+use daml::grpc_api::DamlGrpcClientBuilder;
 use std::io::Read;
 
 pub async fn upload(dar_path: &str, uri: &str, token_key_path: Option<&str>) -> Result<()> {
@@ -9,8 +9,8 @@ pub async fn upload(dar_path: &str, uri: &str, token_key_path: Option<&str>) -> 
     dar.read_to_end(&mut buffer)?;
 
     let ledger_client = match token_key_path {
-        Some(key) => DamlLedgerClientBuilder::uri(uri).with_auth(make_ec256_token(key)?).connect().await?,
-        None => DamlLedgerClientBuilder::uri(uri).connect().await?,
+        Some(key) => DamlGrpcClientBuilder::uri(uri).with_auth(make_ec256_token(key)?).connect().await?,
+        None => DamlGrpcClientBuilder::uri(uri).connect().await?,
     };
 
     // let ledger_client = DamlLedgerClientBuilder::uri(uri).connect().await?;

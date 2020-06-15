@@ -11,10 +11,13 @@ edition = "2018"
 
 [features]
 default = []
-full = [ "api", "macros", "derive", "codegen", "lf_full", "util", "prelude" ]
+full = [ "grpc", "json", "macros", "derive", "codegen", "lf_full", "util", "prelude" ]
 
-# Enable GRPC ledger API feature.
-api = [ "daml_api" ]
+# Enable ledger GRPC API feature.
+grpc = [ "daml_grpc" ]
+
+# Enable ledger JSON API feature.
+json = [ "daml_json" ]
 
 # Enable helper macros feature.
 macros = [ "daml_macro" ]
@@ -35,13 +38,14 @@ lf_full = [ "lf", "daml_lf/full" ]
 util = [ "daml_util" ]
 
 # Enable the DAML prelude feature (required to use code produced by the code generator).
-prelude = [ "daml_api", "daml_derive" ]
+prelude = [ "daml_grpc", "daml_derive" ]
 
 # Enable ledger API features which are only supported on the sandbox.
-sandbox = [ "daml_api/sandbox" ]
+sandbox = [ "daml_util/sandbox", "daml_grpc/sandbox" ]
 
 [dependencies]
-daml_api = { path = "../daml_api", optional = true }
+daml_grpc = { path = "../daml_grpc", optional = true }
+daml_json = { path = "../daml_json", optional = true }
 daml_macro = { path = "../daml_macro", optional = true }
 daml_lf = { path = "../daml_lf", optional = true }
 daml_util = { path = "../daml_util", optional = true }

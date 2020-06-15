@@ -9,7 +9,10 @@ keywords = ["daml", "macro", "api", "ledger"]
 categories = ["development-tools"]
 edition = "2018"
 
-[dev-dependencies]
-daml = { path = "../daml", features = [ "api" ] }
+[dependencies]
+daml_grpc = { path = "../daml_grpc" }
 chrono = "0.4"
 bigdecimal = "0.1"
+
+[dev-dependencies]
+daml = { path = "../daml", features = [ "grpc" ] }

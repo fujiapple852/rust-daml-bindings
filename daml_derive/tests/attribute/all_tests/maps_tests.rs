@@ -1,6 +1,8 @@
 use crate::attribute::test_types::all_map_types::{DataWithMap, MyRecord};
 use crate::common::test_utils::TestResult;
-use daml::prelude::*;
+use daml::grpc_api::data::value::DamlValue;
+use daml::grpc_api::primitive_types::{DamlInt64, DamlList, DamlUnit};
+use daml::grpc_api::serialize::{DamlDeserializeInto, DamlSerializeInto};
 use std::collections::HashMap;
 
 #[test]

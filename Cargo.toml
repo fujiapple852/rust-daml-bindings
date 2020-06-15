@@ -1,7 +1,8 @@
 [workspace]
 members = [
   "daml",
-  "daml_api",
+  "daml_grpc",
+  "daml_json",
   "daml_macro",
   "daml_codegen",
   "daml_derive",

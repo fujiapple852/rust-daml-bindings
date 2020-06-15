@@ -7,7 +7,8 @@ A Rust implementation for the Digital Asset DAML GRPC ledger [API](https://docs.
 The project is in an early development stage and the API is unstable.  It has not yet been published to [crates.io](https://crates.io/).  
 The status of the feature set:
 
-- [x] Support for all DAML Ledger API (v1) GRPC services
+- [x] Support for DAML Ledger GRPC API
+- [ ] Support for DAML Ledger JSON API
 - [X] Support for http & https (TLS)
 - [X] Support for passing JWT bearer tokens (HS256/RS256/EC256 DAML Sandbox token builder provided)
 - [X] Fully async API (via `async`/`await`, `std::futures` & `futures` [0.3.x](https://docs.rs/futures/0.3.1/futures/))
@@ -18,8 +19,6 @@ The status of the feature set:
 - [X] Custom attributes for automatic Rust<>DAML conversions
 - [X] Sample applications
 - [ ] Executor API
-- [ ] Client Authentication
-- [ ] FFI Wrapper (C interface)
 
 ## Dependencies
 These ledger bindings use the [tonic](https://github.com/hyperium/tonic) GRPC library which in turn uses the 
@@ -38,12 +37,13 @@ The project provides the following crates:
 | crate        | description                                 | status      |
 |--------------|---------------------------------------------|-------------|
 | daml         | DAML prelude & common entry point           | alpha       |
-| daml_api     | Basic DAML Ledger API binding in Rust       | alpha       |
-| daml_codegen | Rust codegen for DAML archives              | alpha       |
-| daml_derive  | Custom attributes for Rust<>DAML conversion | alpha       |
-| daml_macro   | Macros to create and extract DAML value     | alpha       |
+| daml_grpc    | DAML Ledger GRPC API bindings               | beta        |
+| daml_json    | Daml Ledger JSON API bindings               | alpha       |
+| daml_codegen | Rust codegen for DAML archives              | beta        |
+| daml_derive  | Custom attributes for Rust<>DAML conversion | beta        |
+| daml_macro   | Macros to create and extract DAML value     | beta        |
 | daml_util    | Utilities to aid working with DAML ledgers  | alpha       |
-| daml_lf      | Read Dar and Dalf files & bytes             | alpha       | 
+| daml_lf      | Read Dar and Dalf files & bytes             | beta        | 
 
 ## Build
 Standard Cargo debug/release build steps:
@@ -53,7 +53,7 @@ $ cd rust-daml-bindings
 $ cargo build
 ```
 
-The build will trigger the generation of the GRPC protobuf code which is included by `daml_api/src/grpc_protobuf.rs`.  The protobuf source files are read from `daml_api/resources/protobuf`.  Note that if you need to rebuild these 
+The build will trigger the generation of the GRPC protobuf code which is included by `daml_grpc/src/grpc_protobuf.rs`.  The protobuf source files are read from `daml_grpc/resources/protobuf`.  Note that if you need to rebuild these 
 Rust source files you can do so by touching `build.rs` and rerunning the cargo build.
 
 ## Features
@@ -61,13 +61,13 @@ The API has a `sandbox` feature flag to control whether the testing-only GRPC se
 built or not.  The feature is disabled by default and must be enabled for integration tests.
 
 ```
-daml_api = { version = "0.1", features = [ "sandbox" ] }
+daml_grpc = { version = "0.1", features = [ "sandbox" ] }
 ```
 
 The `admin` feature flag can be enabled to include the package and party management services.
 
 ```
-daml_api = { version = "0.1", features = [ "admin" ] }
+daml_grpc = { version = "0.1", features = [ "admin" ] }
 ```
 
 ## Run the Integration Tests
@@ -140,7 +140,7 @@ $ cd rust-daml-bindings
 $ cargo test --doc --workspace
 ```
 
-The generated docs can be accessed from `target/doc/daml_api/index.html`
+The generated docs can be accessed from `target/doc/daml_grpc/index.html`
 
 ## Library Upgrade
 To check for outdated dependencies with [cargo outdated](https://github.com/kbknapp/cargo-outdated):

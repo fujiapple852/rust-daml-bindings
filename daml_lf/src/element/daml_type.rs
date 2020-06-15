@@ -259,12 +259,59 @@ pub enum DamlTyConName<'a> {
 }
 
 impl<'a> DamlTyConName<'a> {
+    pub fn package_id(&self) -> &str {
+        match self {
+            DamlTyConName::Local(local) => local.package_id,
+            DamlTyConName::NonLocal(non_local) => non_local.target_package_id,
+            DamlTyConName::Absolute(abs) => abs.package_id,
+        }
+    }
+
+    pub fn package_name(&self) -> &str {
+        match self {
+            DamlTyConName::Local(local) => local.package_name,
+            DamlTyConName::NonLocal(non_local) => non_local.target_package_name,
+            DamlTyConName::Absolute(abs) => abs.package_name,
+        }
+    }
+
+    pub fn module_path(&self) -> &[&str] {
+        match self {
+            DamlTyConName::Local(local) => &local.module_path,
+            DamlTyConName::NonLocal(non_local) => &non_local.target_module_path,
+            DamlTyConName::Absolute(abs) => &abs.module_path,
+        }
+    }
+
+    pub fn data_name(&self) -> &str {
+        match self {
+            DamlTyConName::Local(local) => local.data_name,
+            DamlTyConName::NonLocal(non_local) => non_local.data_name,
+            DamlTyConName::Absolute(abs) => abs.data_name,
+        }
+    }
+
     pub fn reference_parts(&self) -> (&str, &[&str], &str) {
         match self {
-            DamlTyConName::Local(local) => (local.package_name, &local.module_path, local.data_name),
+            DamlTyConName::Local(local) => (local.package_id, &local.module_path, local.data_name),
             DamlTyConName::NonLocal(non_local) =>
-                (non_local.target_package_name, &non_local.target_module_path, non_local.data_name),
-            DamlTyConName::Absolute(abs) => (abs.package_name, &abs.module_path, abs.data_name),
+                (non_local.target_package_id, &non_local.target_module_path, non_local.data_name),
+            DamlTyConName::Absolute(abs) => (abs.package_id, &abs.module_path, abs.data_name),
+        }
+    }
+
+    pub fn rendered_name(&self) -> String {
+        match self {
+            DamlTyConName::Local(local) =>
+                format!("{}:{}:{}", local.package_name, &local.module_path.join("."), local.data_name),
+            DamlTyConName::NonLocal(non_local) => format!(
+                "{}:{}:{}",
+                non_local.target_package_name,
+                &non_local.target_module_path.join("."),
+                non_local.data_name
+            ),
+            DamlTyConName::Absolute(abs) =>
+                format!("{}:{}:{}", abs.package_name, &abs.module_path.join("."), abs.data_name),
         }
     }
 }

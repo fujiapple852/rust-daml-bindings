@@ -3,9 +3,13 @@ use crate::common::test_utils::{
     new_static_sandbox, update_create_command_package_id_for_testing, update_exercise_command_package_id_for_testing,
     TestResult, SANDBOX_LOCK,
 };
-use daml::api::data::event::DamlEvent;
-use daml::api::DamlSimpleExecutorBuilder;
-use daml::prelude::*;
+use daml::grpc_api::data::command::DamlCommand;
+use daml::grpc_api::data::event::DamlEvent;
+use daml::grpc_api::data::value::DamlValue;
+use daml::grpc_api::primitive_types::{DamlText, DamlTextMap};
+use daml::grpc_api::serialize::{DamlDeserializeInto, DamlSerializeInto};
+use daml::grpc_api::CommandExecutor;
+use daml::grpc_api::DamlSimpleExecutorBuilder;
 use std::collections::HashMap;
 use std::convert::TryInto;
 

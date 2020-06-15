@@ -1,7 +1,7 @@
 use anyhow::Result;
-use daml::api::data::package::DamlPackage;
-use daml::api::{DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
-
+use daml::grpc_api::data::package::DamlPackage;
+use daml::grpc_api::{DamlGrpcClientBuilder};
+use daml::util::DamlSandboxTokenBuilder;
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
 use std::sync::Arc;
@@ -9,8 +9,8 @@ use tokio::task::JoinHandle;
 
 pub async fn get_all_packages(uri: &str, token_key_path: Option<&str>) -> Result<Vec<DamlPackage>> {
     let ledger_client = Arc::new(match token_key_path {
-        Some(key) => DamlLedgerClientBuilder::uri(uri).with_auth(make_ec256_token(key)?).connect().await?,
-        None => DamlLedgerClientBuilder::uri(uri).connect().await?,
+        Some(key) => DamlGrpcClientBuilder::uri(uri).with_auth(make_ec256_token(key)?).connect().await?,
+        None => DamlGrpcClientBuilder::uri(uri).connect().await?,
     });
     let packages = ledger_client.package_management_service().list_known_packages().await?;
     let handles: FuturesUnordered<JoinHandle<Result<DamlPackage>>> = packages

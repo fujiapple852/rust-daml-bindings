@@ -4,9 +4,9 @@
 //! [`daml_path!`] macro to simplify the extraction of data from existing [`DamlRecord`]  &
 //! [`DamlValue`] literals.
 //!
-//! [`DamlValue`]: ../../doc/daml_api/data/value/enum.DamlValue.html
-//! [`DamlRecord`]: ../../doc/daml_api/data/value/struct.DamlRecord.html
-//! [DAML Ledger API]: ../../doc/daml_api/index.html
+//! [`DamlValue`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html
+//! [`DamlRecord`]: ../../doc/daml_grpc/data/value/struct.DamlRecord.html
+//! [DAML Ledger API]: ../../doc/daml_grpc/index.html
 //! [`daml_value!`]: macro.daml_value.html
 //! [`daml_path!`]: macro.daml_path.html
 
@@ -18,6 +18,12 @@
 
 mod path;
 mod value;
+
+// Reexport crates as the macros use several types they define.
+// TODO should reference type aliases here rather than raw chrono / bigdecimal but requires some rework in the macros
+pub use bigdecimal;
+pub use chrono;
+pub use daml_grpc;
 
 #[cfg(test)]
 mod test_util;

@@ -4,17 +4,20 @@
 //!
 //! The following crates are provided for working with DAML in Rust:
 //!
-//! | crate          | description                                                  | status      |
-//! |----------------|--------------------------------------------------------------|-------------|
-//! | [daml]         | DAML prelude & common entry point                            | alpha       |
-//! | [daml_api]     | Basic DAML Ledger API binding in Rust                        | alpha       |
-//! | [daml_codegen] | Rust code generator for DAML archives                        | alpha       |
-//! | [daml_derive]  | Procedural macros for converting between DAML and Rust types | alpha       |
-//! | [daml_macro]   | Macros to create and extract DAML value                      | alpha       |
-//! | [daml_util]    | Utilities to aid working with DAML ledgers                   | alpha       |
-//! | [daml_lf]      | Read and interpret Dar and Dalf files & bytes                | alpha       |
+//! | crate          | description                                 | status      |
+//! |----------------|---------------------------------------------|-------------|
+//! | [daml]         | DAML prelude & common entry point           | alpha       |
+//! | [daml_grpc]    | DAML Ledger GRPC API bindings               | beta        |
+//! | [daml_json]    | Daml Ledger JSON API bindings               | alpha       |
+//! | [daml_codegen] | Rust codegen for DAML archives              | beta        |
+//! | [daml_derive]  | Custom attributes for Rust<>DAML conversion | beta        |
+//! | [daml_macro]   | Macros to create and extract DAML value     | beta        |
+//! | [daml_util]    | Utilities to aid working with DAML ledgers  | alpha       |
+//! | [daml_lf]      | Read Dar and Dalf files & bytes             | beta        |
 //!
-//! [daml_api]: ../daml_api/index.html
+//! [daml]: index.html
+//! [daml_grpc]: ../daml_grpc/index.html
+//! [daml_json]: ../daml_json/index.html
 //! [daml_codegen]: ../daml_codegen/index.html
 //! [daml_derive]: ../daml_derive/index.html
 //! [daml_macro]: ../daml_macro/index.html
@@ -38,38 +41,44 @@
 #[cfg(feature = "prelude")]
 pub mod prelude;
 
-///
-#[cfg(feature = "api")]
-pub mod api {
-    pub use daml_api::*;
+#[cfg(feature = "grpc")]
+#[doc(hidden)]
+pub mod grpc_api {
+    pub use daml_grpc::*;
 }
 
-///
+#[cfg(feature = "json")]
+#[doc(hidden)]
+pub mod json_api {
+    pub use daml_json::*;
+}
+
 #[cfg(feature = "codegen")]
+#[doc(hidden)]
 pub mod codegen {
     pub use daml_codegen::*;
 }
 
-///
 #[cfg(feature = "derive")]
+#[doc(hidden)]
 pub mod derive {
     pub use daml_derive::*;
 }
 
-/// DAML LF (ledger fragment).
 #[cfg(feature = "lf")]
+#[doc(hidden)]
 pub mod lf {
     pub use daml_lf::*;
 }
 
-///
 #[cfg(feature = "util")]
+#[doc(hidden)]
 pub mod util {
     pub use daml_util::*;
 }
 
-///
 #[cfg(feature = "macros")]
+#[doc(hidden)]
 pub mod macros {
     pub use daml_macro::*;
 }

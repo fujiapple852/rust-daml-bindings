@@ -35,8 +35,8 @@ impl<'a> DamlArchive<'a> {
     ///
     /// TODO document this
     pub fn data_by_tycon<'b>(&'a self, tycon: &'b DamlTyCon<'_>) -> Option<&'a DamlData<'a>> {
-        let (package_name, module_path, data_name) = tycon.tycon().reference_parts();
-        self.packages.get(package_name)?.root_module().child_module_path(module_path)?.data_types().get(data_name)
+        let (package_id, module_path, data_name) = tycon.tycon().reference_parts();
+        self.packages.get(package_id)?.root_module().child_module_path(module_path)?.data_types().get(data_name)
     }
 }
 

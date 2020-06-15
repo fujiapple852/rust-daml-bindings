@@ -3,19 +3,19 @@
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 
-use daml::api::data::command::{DamlCommand, DamlCreateCommand, DamlExerciseCommand};
-use daml::api::data::event::{DamlCreatedEvent, DamlEvent};
-use daml::api::data::filter::DamlTransactionFilter;
-use daml::api::data::offset::{DamlLedgerOffset, DamlLedgerOffsetBoundary, DamlLedgerOffsetType};
-use daml::api::data::value::{DamlRecord, DamlValue};
-use daml::api::data::DamlIdentifier;
-use daml::api::data::DamlResult;
-use daml::api::{DamlCommandFactory, DamlLedgerClient, DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
-
-use daml::api::data::DamlTransaction;
-use daml::api::service::DamlVerbosity;
+use daml::grpc_api::data::command::{DamlCommand, DamlCreateCommand, DamlExerciseCommand};
+use daml::grpc_api::data::event::{DamlCreatedEvent, DamlEvent};
+use daml::grpc_api::data::filter::DamlTransactionFilter;
+use daml::grpc_api::data::offset::{DamlLedgerOffset, DamlLedgerOffsetBoundary, DamlLedgerOffsetType};
+use daml::grpc_api::data::value::{DamlRecord, DamlValue};
+use daml::grpc_api::data::DamlIdentifier;
+use daml::grpc_api::data::DamlTransaction;
+use daml::grpc_api::data::{DamlError, DamlResult};
+use daml::grpc_api::service::DamlVerbosity;
+use daml::grpc_api::{DamlCommandFactory, DamlGrpcClient, DamlGrpcClientBuilder};
 use daml::macros::{daml_path, daml_value};
 use daml::util::package::find_module_package_id;
+use daml::util::DamlSandboxTokenBuilder;
 use futures::stream::StreamExt;
 use futures::try_join;
 use log::info;
@@ -46,8 +46,8 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn create_connection(uri: &str) -> DamlResult<DamlLedgerClient> {
-    let ledger_client = DamlLedgerClientBuilder::uri(uri)
+async fn create_connection(uri: &str) -> DamlResult<DamlGrpcClient> {
+    let ledger_client = DamlGrpcClientBuilder::uri(uri)
         // .with_tls(std::fs::read_to_string(SERVER_CA_CERT_PATH)?)
         .with_auth(create_ec256_token()?)
         .connect()
@@ -57,7 +57,7 @@ async fn create_connection(uri: &str) -> DamlResult<DamlLedgerClient> {
     Ok(ledger_client)
 }
 
-async fn send_initial_ping(ledger_client: &DamlLedgerClient, package_id: &str, party: &str) -> DamlResult<()> {
+async fn send_initial_ping(ledger_client: &DamlGrpcClient, package_id: &str, party: &str) -> DamlResult<()> {
     let ping_record: DamlRecord = daml_value![{
         sender: PARTY_ALICE#p,
         receiver: PARTY_BOB#p,
@@ -72,7 +72,7 @@ async fn send_initial_ping(ledger_client: &DamlLedgerClient, package_id: &str, p
     Ok(())
 }
 
-async fn process_ping_pong(ledger_client: &DamlLedgerClient, package_id: String, party: String) -> DamlResult<()> {
+async fn process_ping_pong(ledger_client: &DamlGrpcClient, package_id: String, party: String) -> DamlResult<()> {
     let mut transactions_stream = ledger_client
         .transaction_service()
         .get_transactions(
@@ -96,7 +96,7 @@ async fn process_ping_pong(ledger_client: &DamlLedgerClient, package_id: String,
 }
 
 async fn process_event(
-    ledger_client: &DamlLedgerClient,
+    ledger_client: &DamlGrpcClient,
     package_id: &str,
     party: &str,
     created_event: &DamlCreatedEvent,
@@ -117,7 +117,7 @@ async fn process_event(
 }
 
 async fn exercise_choice(
-    ledger_client: &DamlLedgerClient,
+    ledger_client: &DamlGrpcClient,
     package_id: &str,
     entity_name: &str,
     party: &str,
@@ -153,4 +153,5 @@ fn create_ec256_token() -> DamlResult<String> {
         .act_as(vec![String::from(PARTY_ALICE), String::from(PARTY_BOB)])
         .read_as(vec![String::from(PARTY_ALICE), String::from(PARTY_BOB)])
         .new_ec256_token(std::fs::read_to_string(TOKEN_KEY_PATH)?)
+        .map_err(|e| DamlError::Other(e.to_string()))
 }

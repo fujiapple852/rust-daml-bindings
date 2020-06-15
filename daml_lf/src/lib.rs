@@ -6,11 +6,11 @@
 //!
 //! Serialized `DAML-LF` archives may also be retrieved from an existing ledger via the `GetPackage` method of the GRPC
 //! `package_service` (see [here](https://github.com/digital-asset/daml/blob/master/ledger-api/grpc-definitions/com/digitalasset/ledger/api/v1/package_service.proto)).
-//! The `daml_api` create provides an implementation of this service in the [`daml_package_service`] module.
+//! The `daml_grpc` create provides an implementation of this service in the [`daml_package_service`] module.
 //!
 //! See [here](https://github.com/digital-asset/daml/tree/master/daml-lf) for full details of DAML-LF.
 //!
-//! [`daml_package_service`]: ../daml_api/service/struct.DamlPackageService.html
+//! [`daml_package_service`]: ../daml_grpc/service/struct.DamlPackageService.html
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
     clippy::module_name_repetitions,

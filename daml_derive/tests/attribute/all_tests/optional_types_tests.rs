@@ -1,7 +1,8 @@
 use crate::attribute::test_types::all_optional_types::{DataWithOptional, MyData};
 use crate::common::test_utils::TestResult;
-use daml::api::data::value::DamlValue;
-use daml::prelude::{DamlDeserializeInto, DamlParty, DamlSerializeInto};
+use daml::grpc_api::data::value::DamlValue;
+use daml::grpc_api::primitive_types::DamlParty;
+use daml::grpc_api::serialize::{DamlDeserializeInto, DamlSerializeInto};
 
 #[test]
 pub fn test_optionals() -> TestResult {

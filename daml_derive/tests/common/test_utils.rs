@@ -1,8 +1,8 @@
-use daml::api::data::command::DamlCreateCommand;
-use daml::api::data::DamlResult;
-use daml::api::{DamlLedgerClient, DamlLedgerClientBuilder, DamlSandboxTokenBuilder};
-use daml::prelude::{DamlExerciseCommand, DamlIdentifier};
+use daml::grpc_api::data::command::{DamlCreateCommand, DamlExerciseCommand};
+use daml::grpc_api::data::DamlIdentifier;
+use daml::grpc_api::{DamlGrpcClient, DamlGrpcClientBuilder};
 use daml::util::package::find_module_package_id;
+use daml::util::DamlSandboxTokenBuilder;
 use std::error::Error;
 use std::sync::Mutex;
 
@@ -19,17 +19,17 @@ lazy_static! {
     pub static ref SANDBOX_LOCK: Mutex<()> = Mutex::new(());
 }
 
-pub async fn new_static_sandbox() -> DamlResult<DamlLedgerClient> {
-    let client = DamlLedgerClientBuilder::uri(SANDBOX_URI)
+pub async fn new_static_sandbox() -> anyhow::Result<DamlGrpcClient> {
+    let client = DamlGrpcClientBuilder::uri(SANDBOX_URI)
         // .with_tls(std::fs::read_to_string(SERVER_CA_CERT_PATH)?) // TODO re-enable when CI issue resolved
         .with_auth(make_ec256_token()?)
         .connect()
         .await?;
-    client.reset_and_wait().await
+    Ok(client.reset_and_wait().await?)
 }
 
 pub async fn update_exercise_command_package_id_for_testing(
-    ledger_client: &DamlLedgerClient,
+    ledger_client: &DamlGrpcClient,
     exercise_command: DamlExerciseCommand,
 ) -> std::result::Result<DamlExerciseCommand, Box<dyn Error>> {
     let new_template_id = find_and_replace_package_id(ledger_client, exercise_command.template_id()).await?;
@@ -43,7 +43,7 @@ pub async fn update_exercise_command_package_id_for_testing(
 }
 
 pub async fn update_create_command_package_id_for_testing(
-    ledger_client: &DamlLedgerClient,
+    ledger_client: &DamlGrpcClient,
     create_command: DamlCreateCommand,
 ) -> std::result::Result<DamlCreateCommand, Box<dyn Error>> {
     let new_template_id = find_and_replace_package_id(ledger_client, create_command.template_id()).await?;
@@ -52,17 +52,17 @@ pub async fn update_create_command_package_id_for_testing(
 }
 
 async fn find_and_replace_package_id(
-    ledger_client: &DamlLedgerClient,
+    ledger_client: &DamlGrpcClient,
     template_id: &DamlIdentifier,
 ) -> std::result::Result<DamlIdentifier, Box<dyn Error>> {
     let module_package_id = find_module_package_id(ledger_client, template_id.module_name()).await?;
     Ok(DamlIdentifier::new(module_package_id, template_id.module_name(), template_id.entity_name()))
 }
 
-fn make_ec256_token() -> DamlResult<String> {
-    DamlSandboxTokenBuilder::new_with_duration_secs(TOKEN_VALIDITY_SECS)
+fn make_ec256_token() -> anyhow::Result<String> {
+    Ok(DamlSandboxTokenBuilder::new_with_duration_secs(TOKEN_VALIDITY_SECS)
         .admin(true)
         .act_as(vec![String::from(ALICE_PARTY), String::from(BOB_PARTY)])
         .read_as(vec![String::from(ALICE_PARTY), String::from(BOB_PARTY)])
-        .new_ec256_token(std::fs::read_to_string(TOKEN_KEY_PATH)?)
+        .new_ec256_token(std::fs::read_to_string(TOKEN_KEY_PATH)?)?)
 }

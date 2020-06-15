@@ -3,13 +3,13 @@ use crate::common::test_utils::{
     new_static_sandbox, update_create_command_package_id_for_testing, update_exercise_command_package_id_for_testing,
     TestResult, SANDBOX_LOCK,
 };
-use daml::api::data::command::DamlCommand;
-use daml::api::data::event::DamlEvent;
-use daml::api::data::value::{DamlRecord, DamlValue};
-use daml::api::data::DamlIdentifier;
-use daml::api::{CommandExecutor, DamlSimpleExecutorBuilder};
+use daml::grpc_api::data::command::DamlCommand;
+use daml::grpc_api::data::event::DamlEvent;
+use daml::grpc_api::data::value::DamlValue;
+use daml::grpc_api::data::DamlIdentifier;
+use daml::grpc_api::serialize::{DamlDeserializeInto, DamlSerializeInto};
+use daml::grpc_api::{CommandExecutor, DamlSimpleExecutorBuilder};
 use daml::macros::daml_path;
-use daml::prelude::{DamlDeserializeInto, DamlSerializeInto};
 use std::convert::TryInto;
 
 #[test]
