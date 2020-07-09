@@ -21,8 +21,7 @@ run-wallclock-unsecured:
 	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_UNSECURED_PORT} -l wallclock-unsecured-sandbox -m wallclock
 
 run-json-bridge:
-	sleep 10
-	nohup daml json-api --ledger-host ${SANDBOX_HOST} --ledger-port ${WALLCLOCK_UNSECURED_PORT} --http-port ${JSON_BRIDGE_PORT} --allow-insecure-tokens --package-reload-interval 1d > json-api.log 2>&1 &
+	./json_bridge.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_UNSECURED_PORT} -b ${JSON_BRIDGE_PORT}
 
 run-all: build run-wallclock-unsecured gen-certs run-wallclock run-static run-json-bridge
 
@@ -32,6 +31,7 @@ run-ci: run-all
 
 kill:
 	jps | grep daml-sdk | cut -d" " -f 1 | xargs kill
+	ps | grep json_bridge | grep -v grep | cut -d" " -f 1 | xargs kill
 
 show:
 	jps | grep daml-sdk
