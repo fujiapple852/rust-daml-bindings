@@ -1,23 +1,25 @@
 use crate::element::daml_module::DamlModule;
 use crate::element::visitor::DamlElementVisitor;
 use crate::element::DamlVisitableElement;
+use crate::owned::ToStatic;
 use crate::LanguageVersion;
 use serde::Serialize;
+use std::borrow::Cow;
 
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlPackage<'a> {
-    name: &'a str,
-    package_id: &'a str,
-    version: Option<&'a str>,
+    name: Cow<'a, str>,
+    package_id: Cow<'a, str>,
+    version: Option<Cow<'a, str>>,
     language_version: LanguageVersion,
     root_module: DamlModule<'a>,
 }
 
 impl<'a> DamlPackage<'a> {
     pub const fn new(
-        name: &'a str,
-        package_id: &'a str,
-        version: Option<&'a str>,
+        name: Cow<'a, str>,
+        package_id: Cow<'a, str>,
+        version: Option<Cow<'a, str>>,
         language_version: LanguageVersion,
         root_module: DamlModule<'a>,
     ) -> Self {
@@ -30,16 +32,16 @@ impl<'a> DamlPackage<'a> {
         }
     }
 
-    pub const fn name(&self) -> &str {
-        self.name
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
-    pub const fn package_id(&self) -> &str {
-        self.package_id
+    pub fn package_id(&self) -> &str {
+        &self.package_id
     }
 
-    pub const fn version(&self) -> Option<&'a str> {
-        self.version
+    pub fn version(&self) -> Option<&str> {
+        self.version.as_ref().map(AsRef::as_ref)
     }
 
     pub const fn language_version(&self) -> LanguageVersion {
@@ -56,5 +58,19 @@ impl<'a> DamlVisitableElement<'a> for DamlPackage<'a> {
         visitor.pre_visit_package(self);
         self.root_module.accept(visitor);
         visitor.post_visit_package(self);
+    }
+}
+
+impl ToStatic for DamlPackage<'_> {
+    type Static = DamlPackage<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlPackage::new(
+            self.name.to_static(),
+            self.package_id.to_static(),
+            self.version.as_ref().map(ToStatic::to_static),
+            self.language_version,
+            self.root_module.to_static(),
+        )
     }
 }

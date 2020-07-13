@@ -1,6 +1,8 @@
 use crate::element::visitor::DamlElementVisitor;
 use crate::element::{DamlField, DamlTypeVarWithKind, DamlVisitableElement};
+use crate::owned::ToStatic;
 use serde::Serialize;
+use std::borrow::Cow;
 
 /// Representation of a DAML type.
 #[derive(Debug, Serialize, Clone)]
@@ -64,7 +66,7 @@ impl<'a> DamlType<'a> {
     /// Returns true if this [`DamlType`] contain a reference to `type_var`, false otherwise.
     pub fn contains_type_var(&self, type_var: &str) -> bool {
         match self {
-            &DamlType::Var(DamlVar {
+            DamlType::Var(DamlVar {
                 var,
                 ..
             }) => var == type_var,
@@ -125,6 +127,40 @@ impl<'a> DamlVisitableElement<'a> for DamlType<'a> {
     }
 }
 
+impl ToStatic for DamlType<'_> {
+    type Static = DamlType<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        match self {
+            DamlType::ContractId(inner) =>
+                DamlType::ContractId(inner.as_ref().map(|ty| Box::new(DamlType::to_static(ty)))),
+            DamlType::Int64 => DamlType::Int64,
+            DamlType::Numeric(inner) => DamlType::Numeric(Box::new(inner.to_static())),
+            DamlType::Text => DamlType::Text,
+            DamlType::Timestamp => DamlType::Timestamp,
+            DamlType::Party => DamlType::Party,
+            DamlType::Bool => DamlType::Bool,
+            DamlType::Unit => DamlType::Unit,
+            DamlType::Date => DamlType::Date,
+            DamlType::List(args) => DamlType::List(args.iter().map(DamlType::to_static).collect()),
+            DamlType::TextMap(args) => DamlType::TextMap(args.iter().map(DamlType::to_static).collect()),
+            DamlType::Optional(args) => DamlType::Optional(args.iter().map(DamlType::to_static).collect()),
+            DamlType::TyCon(tycon) => DamlType::TyCon(tycon.to_static()),
+            DamlType::BoxedTyCon(tycon) => DamlType::BoxedTyCon(tycon.to_static()),
+            DamlType::Var(var) => DamlType::Var(var.to_static()),
+            DamlType::Nat(nat) => DamlType::Nat(*nat),
+            DamlType::Arrow => DamlType::Arrow,
+            DamlType::Any => DamlType::Any,
+            DamlType::TypeRep => DamlType::TypeRep,
+            DamlType::Update => DamlType::Update,
+            DamlType::Scenario => DamlType::Scenario,
+            DamlType::Forall(forall) => DamlType::Forall(forall.to_static()),
+            DamlType::Struct(tuple) => DamlType::Struct(tuple.to_static()),
+            DamlType::Syn(syn) => DamlType::Syn(syn.to_static()),
+        }
+    }
+}
+
 /// `DamlTypeSynName` is aliases from `DamlTypeConName` as they are currently identical.
 pub type DamlTypeSynName<'a> = DamlTyConName<'a>;
 
@@ -160,6 +196,14 @@ impl<'a> DamlVisitableElement<'a> for DamlSyn<'a> {
     }
 }
 
+impl ToStatic for DamlSyn<'_> {
+    type Static = DamlSyn<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlSyn::new(self.tysyn.to_static(), self.args.iter().map(DamlType::to_static).collect())
+    }
+}
+
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlStruct<'a> {
     pub fields: Vec<DamlField<'a>>,
@@ -182,6 +226,14 @@ impl<'a> DamlVisitableElement<'a> for DamlStruct<'a> {
         visitor.pre_visit_struct(self);
         self.fields.iter().for_each(|field| field.accept(visitor));
         visitor.post_visit_struct(self);
+    }
+}
+
+impl ToStatic for DamlStruct<'_> {
+    type Static = DamlStruct<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlStruct::new(self.fields.iter().map(DamlField::to_static).collect())
     }
 }
 
@@ -214,6 +266,14 @@ impl<'a> DamlVisitableElement<'a> for DamlForall<'a> {
         self.vars.iter().for_each(|var| var.accept(visitor));
         self.body.accept(visitor);
         visitor.post_visit_forall(self);
+    }
+}
+
+impl ToStatic for DamlForall<'_> {
+    type Static = DamlForall<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlForall::new(self.vars.iter().map(DamlTypeVarWithKind::to_static).collect(), Box::new(self.body.to_static()))
     }
 }
 
@@ -250,6 +310,14 @@ impl<'a> DamlVisitableElement<'a> for DamlTyCon<'a> {
     }
 }
 
+impl ToStatic for DamlTyCon<'_> {
+    type Static = DamlTyCon<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlTyCon::new(self.tycon.to_static(), self.type_arguments.iter().map(DamlType::to_static).collect())
+    }
+}
+
 /// DOCME
 #[derive(Debug, Serialize, Clone)]
 pub enum DamlTyConName<'a> {
@@ -261,42 +329,33 @@ pub enum DamlTyConName<'a> {
 impl<'a> DamlTyConName<'a> {
     pub fn package_id(&self) -> &str {
         match self {
-            DamlTyConName::Local(local) => local.package_id,
-            DamlTyConName::NonLocal(non_local) => non_local.target_package_id,
-            DamlTyConName::Absolute(abs) => abs.package_id,
+            DamlTyConName::Local(local) => &local.package_id,
+            DamlTyConName::NonLocal(non_local) => &non_local.target_package_id,
+            DamlTyConName::Absolute(abs) => &abs.package_id,
         }
     }
 
     pub fn package_name(&self) -> &str {
         match self {
-            DamlTyConName::Local(local) => local.package_name,
-            DamlTyConName::NonLocal(non_local) => non_local.target_package_name,
-            DamlTyConName::Absolute(abs) => abs.package_name,
+            DamlTyConName::Local(local) => &local.package_name,
+            DamlTyConName::NonLocal(non_local) => &non_local.target_package_name,
+            DamlTyConName::Absolute(abs) => &abs.package_name,
         }
     }
 
-    pub fn module_path(&self) -> &[&str] {
+    pub fn module_path(&self) -> impl Iterator<Item = &str> {
         match self {
-            DamlTyConName::Local(local) => &local.module_path,
-            DamlTyConName::NonLocal(non_local) => &non_local.target_module_path,
-            DamlTyConName::Absolute(abs) => &abs.module_path,
+            DamlTyConName::Local(local) => local.module_path.iter().map(AsRef::as_ref),
+            DamlTyConName::NonLocal(non_local) => non_local.target_module_path.iter().map(AsRef::as_ref),
+            DamlTyConName::Absolute(abs) => abs.module_path.iter().map(AsRef::as_ref),
         }
     }
 
     pub fn data_name(&self) -> &str {
         match self {
-            DamlTyConName::Local(local) => local.data_name,
-            DamlTyConName::NonLocal(non_local) => non_local.data_name,
-            DamlTyConName::Absolute(abs) => abs.data_name,
-        }
-    }
-
-    pub fn reference_parts(&self) -> (&str, &[&str], &str) {
-        match self {
-            DamlTyConName::Local(local) => (local.package_id, &local.module_path, local.data_name),
-            DamlTyConName::NonLocal(non_local) =>
-                (non_local.target_package_id, &non_local.target_module_path, non_local.data_name),
-            DamlTyConName::Absolute(abs) => (abs.package_id, &abs.module_path, abs.data_name),
+            DamlTyConName::Local(local) => &local.data_name,
+            DamlTyConName::NonLocal(non_local) => &non_local.data_name,
+            DamlTyConName::Absolute(abs) => &abs.data_name,
         }
     }
 
@@ -314,6 +373,17 @@ impl<'a> DamlTyConName<'a> {
                 format!("{}:{}:{}", abs.package_name, &abs.module_path.join("."), abs.data_name),
         }
     }
+
+    /// Extract the package id, module path and data name.
+    #[doc(hidden)]
+    pub(crate) fn reference_parts(&self) -> (&str, &[Cow<'_, str>], &str) {
+        match self {
+            DamlTyConName::Local(local) => (&local.package_id, &local.module_path, &local.data_name),
+            DamlTyConName::NonLocal(non_local) =>
+                (&non_local.target_package_id, &non_local.target_module_path, &non_local.data_name),
+            DamlTyConName::Absolute(abs) => (&abs.package_id, &abs.module_path, &abs.data_name),
+        }
+    }
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlTyConName<'a> {
@@ -328,17 +398,34 @@ impl<'a> DamlVisitableElement<'a> for DamlTyConName<'a> {
     }
 }
 
+impl ToStatic for DamlTyConName<'_> {
+    type Static = DamlTyConName<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        match self {
+            DamlTyConName::Local(local) => DamlTyConName::Local(local.to_static()),
+            DamlTyConName::NonLocal(non_local) => DamlTyConName::NonLocal(non_local.to_static()),
+            DamlTyConName::Absolute(absolute) => DamlTyConName::Absolute(absolute.to_static()),
+        }
+    }
+}
+
 /// DOCME
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlLocalTyCon<'a> {
-    data_name: &'a str,
-    package_id: &'a str,
-    package_name: &'a str,
-    module_path: Vec<&'a str>,
+    data_name: Cow<'a, str>,
+    package_id: Cow<'a, str>,
+    package_name: Cow<'a, str>,
+    module_path: Vec<Cow<'a, str>>,
 }
 
 impl<'a> DamlLocalTyCon<'a> {
-    pub fn new(data_name: &'a str, package_id: &'a str, package_name: &'a str, module_path: Vec<&'a str>) -> Self {
+    pub fn new(
+        data_name: Cow<'a, str>,
+        package_id: Cow<'a, str>,
+        package_name: Cow<'a, str>,
+        module_path: Vec<Cow<'a, str>>,
+    ) -> Self {
         Self {
             data_name,
             package_id,
@@ -347,20 +434,20 @@ impl<'a> DamlLocalTyCon<'a> {
         }
     }
 
-    pub const fn data_name(&self) -> &str {
-        self.data_name
+    pub fn data_name(&self) -> &str {
+        &self.data_name
     }
 
-    pub const fn package_id(&self) -> &str {
-        self.package_id
+    pub fn package_id(&self) -> &str {
+        &self.package_id
     }
 
-    pub const fn package_name(&self) -> &str {
-        self.package_name
+    pub fn package_name(&self) -> &str {
+        &self.package_name
     }
 
-    pub fn module_path(&self) -> &[&str] {
-        &self.module_path
+    pub fn module_path(&self) -> impl Iterator<Item = &str> {
+        self.module_path.iter().map(AsRef::as_ref)
     }
 }
 
@@ -371,27 +458,40 @@ impl<'a> DamlVisitableElement<'a> for DamlLocalTyCon<'a> {
     }
 }
 
+impl ToStatic for DamlLocalTyCon<'_> {
+    type Static = DamlLocalTyCon<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlLocalTyCon::new(
+            self.data_name.to_static(),
+            self.package_id.to_static(),
+            self.package_name.to_static(),
+            self.module_path.iter().map(ToStatic::to_static).collect(),
+        )
+    }
+}
+
 /// DOCME
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlNonLocalTyCon<'a> {
-    data_name: &'a str,
-    source_package_id: &'a str,
-    source_package_name: &'a str,
-    source_module_path: Vec<&'a str>,
-    target_package_id: &'a str,
-    target_package_name: &'a str,
-    target_module_path: Vec<&'a str>,
+    data_name: Cow<'a, str>,
+    source_package_id: Cow<'a, str>,
+    source_package_name: Cow<'a, str>,
+    source_module_path: Vec<Cow<'a, str>>,
+    target_package_id: Cow<'a, str>,
+    target_package_name: Cow<'a, str>,
+    target_module_path: Vec<Cow<'a, str>>,
 }
 
 impl<'a> DamlNonLocalTyCon<'a> {
     pub fn new(
-        data_name: &'a str,
-        source_package_id: &'a str,
-        source_package_name: &'a str,
-        source_module_path: Vec<&'a str>,
-        target_package_id: &'a str,
-        target_package_name: &'a str,
-        target_module_path: Vec<&'a str>,
+        data_name: Cow<'a, str>,
+        source_package_id: Cow<'a, str>,
+        source_package_name: Cow<'a, str>,
+        source_module_path: Vec<Cow<'a, str>>,
+        target_package_id: Cow<'a, str>,
+        target_package_name: Cow<'a, str>,
+        target_module_path: Vec<Cow<'a, str>>,
     ) -> Self {
         Self {
             data_name,
@@ -404,32 +504,32 @@ impl<'a> DamlNonLocalTyCon<'a> {
         }
     }
 
-    pub const fn data_name(&self) -> &str {
-        self.data_name
+    pub fn data_name(&self) -> &str {
+        &self.data_name
     }
 
-    pub const fn source_package_id(&self) -> &str {
-        self.source_package_id
+    pub fn source_package_id(&self) -> &str {
+        &self.source_package_id
     }
 
-    pub const fn source_package_name(&self) -> &str {
-        self.source_package_name
+    pub fn source_package_name(&self) -> &str {
+        &self.source_package_name
     }
 
-    pub fn source_module_path(&self) -> &[&str] {
-        &self.source_module_path
+    pub fn source_module_path(&self) -> impl Iterator<Item = &str> {
+        self.source_module_path.iter().map(AsRef::as_ref)
     }
 
-    pub const fn target_package_id(&self) -> &str {
-        self.target_package_id
+    pub fn target_package_id(&self) -> &str {
+        &self.target_package_id
     }
 
-    pub const fn target_package_name(&self) -> &str {
-        self.target_package_name
+    pub fn target_package_name(&self) -> &str {
+        &self.target_package_name
     }
 
-    pub fn target_module_path(&self) -> &[&str] {
-        &self.target_module_path
+    pub fn target_module_path(&self) -> impl Iterator<Item = &str> {
+        self.target_module_path.iter().map(AsRef::as_ref)
     }
 }
 
@@ -440,17 +540,38 @@ impl<'a> DamlVisitableElement<'a> for DamlNonLocalTyCon<'a> {
     }
 }
 
+impl ToStatic for DamlNonLocalTyCon<'_> {
+    type Static = DamlNonLocalTyCon<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlNonLocalTyCon::new(
+            self.data_name.to_static(),
+            self.source_package_id.to_static(),
+            self.source_package_name.to_static(),
+            self.source_module_path.iter().map(ToStatic::to_static).collect(),
+            self.target_package_id.to_static(),
+            self.target_package_name.to_static(),
+            self.target_module_path.iter().map(ToStatic::to_static).collect(),
+        )
+    }
+}
+
 /// DOCME
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlAbsoluteTyCon<'a> {
-    data_name: &'a str,
-    package_id: &'a str,
-    package_name: &'a str,
-    module_path: Vec<&'a str>,
+    data_name: Cow<'a, str>,
+    package_id: Cow<'a, str>,
+    package_name: Cow<'a, str>,
+    module_path: Vec<Cow<'a, str>>,
 }
 
 impl<'a> DamlAbsoluteTyCon<'a> {
-    pub fn new(data_name: &'a str, package_id: &'a str, package_name: &'a str, module_path: Vec<&'a str>) -> Self {
+    pub fn new(
+        data_name: Cow<'a, str>,
+        package_id: Cow<'a, str>,
+        package_name: Cow<'a, str>,
+        module_path: Vec<Cow<'a, str>>,
+    ) -> Self {
         Self {
             data_name,
             package_id,
@@ -459,20 +580,20 @@ impl<'a> DamlAbsoluteTyCon<'a> {
         }
     }
 
-    pub const fn data_name(&self) -> &str {
-        self.data_name
+    pub fn data_name(&self) -> &str {
+        &self.data_name
     }
 
-    pub const fn package_id(&self) -> &str {
-        self.package_id
+    pub fn package_id(&self) -> &str {
+        &self.package_id
     }
 
-    pub const fn package_name(&self) -> &str {
-        self.package_name
+    pub fn package_name(&self) -> &str {
+        &self.package_name
     }
 
-    pub fn module_path(&self) -> &[&str] {
-        &self.module_path
+    pub fn module_path(&self) -> impl Iterator<Item = &str> {
+        self.module_path.iter().map(AsRef::as_ref)
     }
 }
 
@@ -483,23 +604,36 @@ impl<'a> DamlVisitableElement<'a> for DamlAbsoluteTyCon<'a> {
     }
 }
 
+impl ToStatic for DamlAbsoluteTyCon<'_> {
+    type Static = DamlAbsoluteTyCon<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlAbsoluteTyCon::new(
+            self.data_name.to_static(),
+            self.package_id.to_static(),
+            self.package_name.to_static(),
+            self.module_path.iter().map(ToStatic::to_static).collect(),
+        )
+    }
+}
+
 /// DOCME
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlVar<'a> {
-    var: &'a str,
+    var: Cow<'a, str>,
     type_arguments: Vec<DamlType<'a>>,
 }
 
 impl<'a> DamlVar<'a> {
-    pub fn new(var: &'a str, type_arguments: Vec<DamlType<'a>>) -> Self {
+    pub fn new(var: Cow<'a, str>, type_arguments: Vec<DamlType<'a>>) -> Self {
         Self {
             var,
             type_arguments,
         }
     }
 
-    pub const fn var(&self) -> &str {
-        self.var
+    pub fn var(&self) -> &str {
+        &self.var
     }
 
     pub fn type_arguments(&self) -> &[DamlType<'a>] {
@@ -512,5 +646,13 @@ impl<'a> DamlVisitableElement<'a> for DamlVar<'a> {
         visitor.pre_visit_var(self);
         self.type_arguments.iter().for_each(|arg| arg.accept(visitor));
         visitor.post_visit_var(self);
+    }
+}
+
+impl ToStatic for DamlVar<'_> {
+    type Static = DamlVar<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlVar::new(self.var.to_static(), self.type_arguments.iter().map(DamlType::to_static).collect())
     }
 }

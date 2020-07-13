@@ -77,12 +77,15 @@ impl DamlLfArchivePayload {
         }
     }
 
-    /// Convert a [`DamlLfArchivePayload`] to a [`DamlPackage`] and map function `f` over it.
+    /// Create a [`DamlArchive`] from this [`DamlLfArchivePayload`] and apply it to `f`.
     ///
-    /// TODO document this with example
+    /// See [`DarFile::apply`] for details.
+    ///
+    /// [`DamlArchive`]: crate::element::DamlArchive
+    /// [`DarFile::apply`]: crate::dar::DarFile::apply
     pub fn apply<R, F>(self, f: F) -> DamlLfResult<R>
     where
-        F: FnMut(&DamlPackage<'_>) -> R,
+        F: FnOnce(&DamlPackage<'_>) -> R,
     {
         convert::apply_payload(self, f)
     }

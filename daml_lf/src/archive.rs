@@ -154,12 +154,15 @@ impl DamlLfArchive {
         Ok(Self::from_bytes_named(archive_name_stem, buffer)?)
     }
 
-    /// Convert a [`DamlLfArchive`] to a [`DamlPackage`] and map function `f` over it.
+    /// Create a [`DamlArchive`] from a [`DamlLfArchive`] and apply it to `f`.
     ///
-    /// TODO document this with example
+    /// See [`DarFile::apply`] for details.
+    ///
+    /// [`DamlArchive`]: crate::element::DamlArchive
+    /// [`DarFile::apply`]: crate::dar::DarFile::apply
     pub fn apply<R, F>(&self, f: F) -> DamlLfResult<R>
     where
-        F: FnMut(&DamlPackage<'_>) -> R,
+        F: FnOnce(&DamlPackage<'_>) -> R,
     {
         convert::apply_dalf(self, f)
     }

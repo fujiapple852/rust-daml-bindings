@@ -31,7 +31,7 @@ fn execute(dar_path: &str) -> Result<()> {
         let mut table = Table::new();
         table.set_titles(Row::new(vec!["name", "version", "package_id", "lf"].into_iter().map(Cell::new).collect()));
         table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-        archive.packages().iter().sorted_by_key(|(&k, &_)| k).map(|(_, v)| v).for_each(|package| {
+        archive.packages().sorted_by_key(|&p| p.package_id()).for_each(|package| {
             let name = package.name();
             let version = package.version().unwrap_or_else(|| "n/a");
             let package_id = package.package_id();

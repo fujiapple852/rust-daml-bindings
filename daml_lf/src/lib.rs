@@ -30,6 +30,7 @@ mod dar;
 mod error;
 mod lf_protobuf;
 mod manifest;
+mod owned;
 mod payload;
 mod version;
 

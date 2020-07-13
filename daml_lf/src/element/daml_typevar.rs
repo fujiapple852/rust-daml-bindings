@@ -1,24 +1,26 @@
 use crate::element::visitor::DamlElementVisitor;
 use crate::element::DamlVisitableElement;
+use crate::owned::ToStatic;
 use serde::Serialize;
+use std::borrow::Cow;
 
 /// DOCME
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlTypeVarWithKind<'a> {
-    var: &'a str,
+    var: Cow<'a, str>,
     kind: DamlKind,
 }
 
 impl<'a> DamlTypeVarWithKind<'a> {
-    pub const fn new(var: &'a str, kind: DamlKind) -> Self {
+    pub const fn new(var: Cow<'a, str>, kind: DamlKind) -> Self {
         Self {
             var,
             kind,
         }
     }
 
-    pub const fn var(&self) -> &str {
-        self.var
+    pub fn var(&self) -> &str {
+        &self.var
     }
 
     pub const fn kind(&self) -> &DamlKind {
@@ -31,6 +33,14 @@ impl<'a> DamlVisitableElement<'a> for DamlTypeVarWithKind<'a> {
         visitor.pre_visit_type_var(self);
         self.kind.accept(visitor);
         visitor.post_visit_type_var(self);
+    }
+}
+
+impl ToStatic for DamlTypeVarWithKind<'_> {
+    type Static = DamlTypeVarWithKind<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlTypeVarWithKind::new(self.var.to_static(), self.kind.clone())
     }
 }
 

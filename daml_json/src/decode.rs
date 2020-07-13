@@ -4,6 +4,7 @@ use chrono::{offset, Date, DateTime, NaiveDate};
 use daml_grpc::data::value::{DamlEnum, DamlRecord, DamlRecordField, DamlValue, DamlVariant};
 use daml_grpc::data::DamlIdentifier;
 use daml_grpc::primitive_types::{DamlInt64, DamlNumeric};
+use daml_lf::element;
 use daml_lf::element::{DamlArchive, DamlData, DamlField, DamlType};
 use serde_json::{Map, Value};
 use std::collections::HashMap;
@@ -150,14 +151,14 @@ impl<'a> JsonDecoder<'a> {
             DamlData::Template(template) => self.decode_record(json, template.fields()),
             DamlData::Record(record) => self.decode_record(json, record.fields()),
             DamlData::Variant(variant) => self.decode_variant(json, variant.fields()),
-            DamlData::Enum(data_enum) => Self::decode_enum(json, data_enum.constructors()),
+            DamlData::Enum(data_enum) => Self::decode_enum(json, data_enum),
         }
     }
 
     /// Decode a `DamlValue::Enum` from a JSON `Value` and `DamlEnum` fields.
-    fn decode_enum(json: &Value, constructors: &[&str]) -> DamlJsonCodecResult<DamlValue> {
+    fn decode_enum(json: &Value, data_enum: &element::DamlEnum<'_>) -> DamlJsonCodecResult<DamlValue> {
         let constructor = json.try_string()?;
-        if constructors.contains(&constructor) {
+        if data_enum.constructors().any(|c| c == constructor) {
             Ok(DamlValue::Enum(DamlEnum::new(constructor, None::<DamlIdentifier>)))
         } else {
             Err(DamlJsonCodecError::UnknownEnumConstructor(constructor.to_owned()))
@@ -292,6 +293,7 @@ mod tests {
     use daml_lf::DarFile;
     use maplit::hashmap;
     use serde_json::json;
+    use std::borrow::Cow;
 
     static TESTING_TYPES_DAR_PATH: &str =
         "../resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_1_1-lf_1_8.dar";
@@ -1147,7 +1149,12 @@ mod tests {
 
     fn make_tycon<'a>(data_name: &'a str, package_id: &'a str, module_path: Vec<&'a str>) -> DamlType<'a> {
         DamlType::TyCon(DamlTyCon::new(
-            DamlTyConName::Absolute(DamlAbsoluteTyCon::new(data_name, package_id, "", module_path)),
+            DamlTyConName::Absolute(DamlAbsoluteTyCon::new(
+                Cow::from(data_name),
+                Cow::from(package_id),
+                Cow::from(""),
+                module_path.into_iter().map(Cow::from).collect(),
+            )),
             vec![],
         ))
     }

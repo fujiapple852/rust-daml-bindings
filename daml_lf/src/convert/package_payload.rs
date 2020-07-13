@@ -124,7 +124,7 @@ impl<'a> TryFrom<&'a DamlLfArchive> for DamlPackagePayload<'a> {
                     let metadata = package.metadata.as_ref().req()?;
                     let meta_name = self_resolver.resolve_string(metadata.name_interned_str)?;
                     let meta_version = self_resolver.resolve_string(metadata.version_interned_str)?;
-                    (meta_name.to_owned(), Some(meta_version.to_owned()))
+                    (meta_name.to_string(), Some(meta_version.to_string()))
                 } else {
                     let name = daml_lf_archive.name.as_str();
                     (name.to_owned(), None)

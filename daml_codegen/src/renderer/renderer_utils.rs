@@ -20,8 +20,8 @@ pub fn make_ignored_ident(value: impl AsRef<str>) -> String {
 }
 
 /// Convert module path to a String.
-pub fn to_module_path(path: &[&str]) -> String {
-    path.iter().join(".")
+pub fn to_module_path<'a, I: IntoIterator<Item = &'a str>>(path: I) -> String {
+    path.into_iter().join(".")
 }
 
 /// Convert a string to a valid rust identifier.
