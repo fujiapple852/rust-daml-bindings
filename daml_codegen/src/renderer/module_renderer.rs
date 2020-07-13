@@ -18,7 +18,6 @@ pub fn quote_module_tree(
     let is_included_module = module_matcher.matches(&to_module_path(module.path()));
     let all_children: Vec<_> = module
         .child_modules()
-        .values()
         .map(|child| quote_module_tree(ctx, child.local_name(), child, module_matcher, render_method))
         .collect();
     let all_empty_children = all_children.iter().all(TokenStream::is_empty);
@@ -26,7 +25,7 @@ pub fn quote_module_tree(
         quote!()
     } else {
         let module_tokens = if is_included_module {
-            quote_all_data(ctx, module.data_types().values().collect::<Vec<_>>().as_slice(), render_method)
+            quote_all_data(ctx, module.data_types().collect::<Vec<_>>().as_slice(), render_method)
         } else {
             quote!()
         };

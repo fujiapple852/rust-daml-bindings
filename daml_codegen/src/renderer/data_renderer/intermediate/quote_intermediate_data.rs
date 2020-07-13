@@ -88,7 +88,7 @@ fn quote_variant_field(field: &DamlField<'_>) -> TokenStream {
 
 pub fn quote_daml_enum(_ctx: &RenderContext<'_>, data_enum: &DamlEnum<'_>) -> TokenStream {
     let name_tokens = quote_escaped_ident(data_enum.name());
-    let all_enum_constructors: Vec<_> = data_enum.constructors().iter().map(|field| quote_enum_field(field)).collect();
+    let all_enum_constructors: Vec<_> = data_enum.constructors().map(|field| quote_enum_field(field)).collect();
     quote!(
         #[DamlEnum]
         pub enum #name_tokens {

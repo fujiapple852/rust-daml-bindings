@@ -39,6 +39,7 @@ mod intermediate {
     pub use quote_intermediate_data::*;
 }
 
+// TODO make this take an iterator
 pub fn quote_all_data(
     ctx: &RenderContext<'_>,
     all_data: &[&DamlData<'_>],

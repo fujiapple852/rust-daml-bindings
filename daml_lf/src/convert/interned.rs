@@ -8,6 +8,7 @@ use crate::lf_protobuf::com::digitalasset::daml_lf_1::{
     template_choice, type_con_name, type_syn_name, type_var_with_kind, update, var_with_type,
 };
 use crate::{LanguageFeatureVersion, LanguageVersion};
+use std::borrow::Cow;
 use std::fmt;
 use std::fmt::{Error, Formatter};
 
@@ -18,23 +19,38 @@ pub trait PackageInternedResolver {
     fn interned_strings(&self) -> &[String];
     fn interned_dotted_names(&self) -> &[&[i32]];
 
-    /// Resolve an interned string by index.
-    fn resolve_string(&self, index: i32) -> DamlLfConvertResult<&str> {
-        Ok(self.interned_strings().get(index as usize).map(AsRef::as_ref).req()?)
-    }
-
-    /// Resolve multiple interned strings by indices.
-    fn resolve_strings(&self, indices: &[i32]) -> DamlLfConvertResult<Vec<&str>> {
-        Ok(indices.iter().map(|&i| self.resolve_string(i)).collect::<DamlLfConvertResult<_>>()?)
-    }
-
     /// Partially resolve an interned dotted name by index to interned string indices.
     fn resolve_dotted_to_indices(&self, index: i32) -> DamlLfConvertResult<&[i32]> {
         Ok(self.interned_dotted_names().get(index as usize).req()?)
     }
 
-    /// Fully resolve an interned dotted name by index.
-    fn resolve_dotted(&self, index: i32) -> DamlLfConvertResult<Vec<&str>> {
+    /// Resolve an interned string to a `&str` by index.
+    fn resolve_string_raw(&self, index: i32) -> DamlLfConvertResult<&str> {
+        Ok(self.interned_strings().get(index as usize).req()?)
+    }
+
+    /// Resolve multiple interned strings to a `Vec<&str>` by indices.
+    fn resolve_strings_raw(&self, indices: &[i32]) -> DamlLfConvertResult<Vec<&str>> {
+        Ok(indices.iter().map(|&i| self.resolve_string_raw(i)).collect::<DamlLfConvertResult<_>>()?)
+    }
+
+    /// Fully resolve an interned dotted name to a `Vec<&str>` by index.
+    fn resolve_dotted_raw(&self, index: i32) -> DamlLfConvertResult<Vec<&str>> {
+        Ok(self.resolve_strings_raw(self.resolve_dotted_to_indices(index)?)?)
+    }
+
+    /// Resolve an interned string to a `Cow<str>` by index.
+    fn resolve_string(&self, index: i32) -> DamlLfConvertResult<Cow<'_, str>> {
+        Ok(Cow::from(self.resolve_string_raw(index)?))
+    }
+
+    /// Resolve multiple interned strings to a `Vec<Cow<str>>` by indices.
+    fn resolve_strings(&self, indices: &[i32]) -> DamlLfConvertResult<Vec<Cow<'_, str>>> {
+        Ok(indices.iter().map(|&i| self.resolve_string_raw(i).map(Cow::from)).collect::<DamlLfConvertResult<_>>()?)
+    }
+
+    /// Fully resolve an interned dotted name to a `Vec<Cow<str>>` by index.
+    fn resolve_dotted(&self, index: i32) -> DamlLfConvertResult<Vec<Cow<'_, str>>> {
         Ok(self.resolve_strings(self.resolve_dotted_to_indices(index)?)?)
     }
 }
@@ -55,11 +71,11 @@ impl<'a> fmt::Display for InternableString<'a> {
 }
 
 impl<'a> InternableString<'a> {
-    pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> DamlLfConvertResult<&'a str> {
+    pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> DamlLfConvertResult<Cow<'a, str>> {
         Ok(match *self {
             InternableString::LiteralString(s) => {
                 check_does_not_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_STRINGS)?;
-                s
+                Cow::from(s)
             },
             InternableString::InternedString(i) => {
                 check_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_STRINGS)?;
@@ -90,7 +106,42 @@ impl<'a> InternableDottedName<'a> {
         }
     }
 
-    pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> DamlLfConvertResult<Vec<&'a str>> {
+    /// Resolve all items in an `InternableDottedName` to a `Vec<Cow<str>>`.
+    pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> DamlLfConvertResult<Vec<Cow<'a, str>>> {
+        Ok(match *self {
+            InternableDottedName::LiteralDottedName(dn) => {
+                check_does_not_support_feature(
+                    resolver.language_version(),
+                    &LanguageFeatureVersion::INTERNED_DOTTED_NAMES,
+                )?;
+                dn.iter().map(Cow::from).collect()
+            },
+            InternableDottedName::InternedDottedName(i) => {
+                check_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_DOTTED_NAMES)?;
+                resolver.resolve_dotted(i)?
+            },
+        })
+    }
+
+    /// Resolve the last items in an `InternableDottedName` to a `Cow<'a, str>`.
+    pub fn resolve_last(&self, resolver: &'a impl PackageInternedResolver) -> DamlLfConvertResult<Cow<'a, str>> {
+        Ok(match *self {
+            InternableDottedName::LiteralDottedName(dn) => {
+                check_does_not_support_feature(
+                    resolver.language_version(),
+                    &LanguageFeatureVersion::INTERNED_DOTTED_NAMES,
+                )?;
+                dn.last().map(Cow::from).req()?
+            },
+            InternableDottedName::InternedDottedName(i) => {
+                check_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_DOTTED_NAMES)?;
+                resolver.resolve_dotted_to_indices(i)?.last().req().and_then(|&s| resolver.resolve_string(s))?
+            },
+        })
+    }
+
+    /// Resolve all items in an `InternableDottedName` to a `Vec<&str>`.
+    pub fn resolve_raw(&self, resolver: &'a impl PackageInternedResolver) -> DamlLfConvertResult<Vec<&'a str>> {
         Ok(match *self {
             InternableDottedName::LiteralDottedName(dn) => {
                 check_does_not_support_feature(
@@ -101,23 +152,7 @@ impl<'a> InternableDottedName<'a> {
             },
             InternableDottedName::InternedDottedName(i) => {
                 check_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_DOTTED_NAMES)?;
-                resolver.resolve_dotted(i)?
-            },
-        })
-    }
-
-    pub fn resolve_last(&self, resolver: &'a impl PackageInternedResolver) -> DamlLfConvertResult<&'a str> {
-        Ok(match *self {
-            InternableDottedName::LiteralDottedName(dn) => {
-                check_does_not_support_feature(
-                    resolver.language_version(),
-                    &LanguageFeatureVersion::INTERNED_DOTTED_NAMES,
-                )?;
-                dn.last().map(String::as_str).req()?
-            },
-            InternableDottedName::InternedDottedName(i) => {
-                check_support_feature(resolver.language_version(), &LanguageFeatureVersion::INTERNED_DOTTED_NAMES)?;
-                resolver.resolve_dotted_to_indices(i)?.last().req().and_then(|&j| resolver.resolve_string(j))?
+                resolver.resolve_dotted_raw(i)?
             },
         })
     }

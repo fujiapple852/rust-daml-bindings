@@ -7,6 +7,7 @@ use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::r#type::{Con, Forall, Struct, Sum, Syn, Var};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::{package_ref, PrimType, TypeSynName};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::{ModuleRef, PackageRef, Type, TypeConName};
+use std::borrow::Cow;
 use std::convert::{TryFrom, TryInto};
 
 ///
@@ -358,10 +359,10 @@ pub enum DamlPackageRefPayload<'a> {
 }
 
 impl<'a> DamlPackageRefPayload<'a> {
-    pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> DamlLfConvertResult<&'a str> {
+    pub fn resolve(&self, resolver: &'a impl PackageInternedResolver) -> DamlLfConvertResult<Cow<'a, str>> {
         Ok(match self {
-            DamlPackageRefPayload::This => resolver.package_id(),
-            &DamlPackageRefPayload::PackageId(s) => s,
+            DamlPackageRefPayload::This => Cow::from(resolver.package_id()),
+            &DamlPackageRefPayload::PackageId(s) => Cow::from(s),
             &DamlPackageRefPayload::InternedId(i) => resolver.resolve_string(i)?,
         })
     }

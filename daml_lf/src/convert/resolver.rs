@@ -48,8 +48,8 @@ fn resolve<'a, R: PackageInternedResolver>(
 
     // Extract the target package from the parent archive
     let target_package: &DamlPackagePayload<'_> = archive
-        .package_by_id(target_package_id)
-        .ok_or_else(|| DamlLfConvertError::UnknownPackage(target_package_id.to_owned()))?;
+        .package_by_id(&target_package_id)
+        .ok_or_else(|| DamlLfConvertError::UnknownPackage(target_package_id.to_string()))?;
 
     // Extract the target module from the target package
     let target_module = target_package

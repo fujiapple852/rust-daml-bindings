@@ -23,41 +23,51 @@ use crate::convert::archive_payload::{DamlArchivePayload, DamlArchiveWrapper};
 use crate::convert::package_payload::DamlPackagePayload;
 use crate::convert::util::Required;
 use crate::element::{DamlArchive, DamlPackage};
-use crate::{DamlLfArchive, DamlLfArchivePayload, DamlLfError, DamlLfHashFunction, DamlLfResult, DarFile};
+use crate::owned::ToStatic;
+use crate::{DamlLfArchive, DamlLfArchivePayload, DamlLfHashFunction, DamlLfResult, DarFile};
 use std::convert::TryFrom;
 
-/// Convert a [`DarFile`] to a [`DamlArchive`] and map function `f` over it.
-pub fn apply_dar<R, F>(dar: &DarFile, mut f: F) -> DamlLfResult<R>
+/// Create an owned [`DamlArchive`] from a [`DarFile`].
+pub fn to_owned_archive(dar: &DarFile) -> DamlLfResult<DamlArchive<'static>> {
+    let archive_payload = DamlArchivePayload::try_from(dar)?;
+    let archive = DamlArchive::try_from(DamlArchiveWrapper::new(&archive_payload))?;
+    Ok(archive.to_static())
+}
+
+/// Create a [`DamlArchive`] from a [`DarFile`] and apply it to `f`.
+pub fn apply_dar<R, F>(dar: &DarFile, f: F) -> DamlLfResult<R>
 where
-    F: FnMut(&DamlArchive<'_>) -> R,
+    F: FnOnce(&DamlArchive<'_>) -> R,
 {
-    let archive_payload = DamlArchivePayload::try_from(dar).map_err(DamlLfError::DamlLfConvertError)?;
+    let archive_payload = DamlArchivePayload::try_from(dar)?;
     let archive_wrapper = DamlArchiveWrapper::new(&archive_payload);
-    let archive = DamlArchive::try_from(archive_wrapper).map_err(DamlLfError::DamlLfConvertError)?;
+    let archive = DamlArchive::try_from(archive_wrapper)?;
     Ok(f(&archive))
 }
 
-/// Convert a [`DamlLfArchive`] to a [`DamlPackage`] and map function `f` over it.
-pub fn apply_dalf<R, F>(dalf: &DamlLfArchive, mut f: F) -> DamlLfResult<R>
+/// Create a [`DamlArchive`] from a [`DamlLfArchive`] and apply it to `f`.
+pub fn apply_dalf<R, F>(dalf: &DamlLfArchive, f: F) -> DamlLfResult<R>
 where
-    F: FnMut(&DamlPackage<'_>) -> R,
+    F: FnOnce(&DamlPackage<'_>) -> R,
 {
-    let package_payload = DamlPackagePayload::try_from(dalf).map_err(DamlLfError::DamlLfConvertError)?;
+    let package_payload = DamlPackagePayload::try_from(dalf)?;
     let archive_payload = DamlArchivePayload::from_single_package(package_payload);
     let archive_wrapper = DamlArchiveWrapper::new(&archive_payload);
-    let archive = DamlArchive::try_from(archive_wrapper).map_err(DamlLfError::DamlLfConvertError)?;
-    Ok(f(archive.packages().values().next().req()?))
+    let archive = DamlArchive::try_from(archive_wrapper)?;
+    let package = archive.packages().next().req()?;
+    Ok(f(package))
 }
 
-/// Convert a [`DamlLfArchivePayload`] to a [`DamlPackage`] and map function `f` over it.
-pub fn apply_payload<R, F>(payload: DamlLfArchivePayload, mut f: F) -> DamlLfResult<R>
+/// Create a [`DamlArchive`] from a [`DamlLfArchivePayload`] and apply it to `f`.
+pub fn apply_payload<R, F>(payload: DamlLfArchivePayload, f: F) -> DamlLfResult<R>
 where
-    F: FnMut(&DamlPackage<'_>) -> R,
+    F: FnOnce(&DamlPackage<'_>) -> R,
 {
     let dalf = DamlLfArchive::new("unnamed", payload, DamlLfHashFunction::SHA256, "");
-    let package_payload = DamlPackagePayload::try_from(&dalf).map_err(DamlLfError::DamlLfConvertError)?;
+    let package_payload = DamlPackagePayload::try_from(&dalf)?;
     let archive_payload = DamlArchivePayload::from_single_package(package_payload);
     let archive_wrapper = DamlArchiveWrapper::new(&archive_payload);
-    let archive = DamlArchive::try_from(archive_wrapper).map_err(DamlLfError::DamlLfConvertError)?;
-    Ok(f(archive.packages().values().next().req()?))
+    let archive = DamlArchive::try_from(archive_wrapper)?;
+    let package = archive.packages().next().req()?;
+    Ok(f(package))
 }

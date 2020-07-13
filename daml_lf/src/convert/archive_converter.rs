@@ -23,6 +23,7 @@ use crate::element::{
 use crate::element::{DamlDefKey, DamlExpr};
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use crate::LanguageFeatureVersion;
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 
@@ -35,9 +36,9 @@ impl<'a> TryFrom<DamlArchiveWrapper<'a>> for DamlArchive<'a> {
             .archive
             .packages
             .values()
-            .map(|package| Ok((package.package_id, DamlPackage::try_from(archive.with_package(package))?)))
+            .map(|package| Ok((Cow::from(package.package_id), DamlPackage::try_from(archive.with_package(package))?)))
             .collect::<DamlLfConvertResult<_>>()?;
-        Ok(DamlArchive::new(archive.archive.name, packages))
+        Ok(DamlArchive::new(Cow::from(archive.archive.name), packages))
     }
 }
 
@@ -47,9 +48,9 @@ impl<'a> TryFrom<DamlPackageWrapper<'a>> for DamlPackage<'a> {
 
     fn try_from(package: DamlPackageWrapper<'a>) -> DamlLfConvertResult<Self> {
         Ok(DamlPackage::new(
-            &package.package.name,
-            package.package.package_id,
-            package.package.version.as_ref().map(AsRef::as_ref),
+            Cow::from(&package.package.name),
+            Cow::from(package.package.package_id),
+            package.package.version.as_ref().map(Cow::from),
             package.package.language_version,
             from_modules(package.package.modules.values().map(|module| package.with_module(module)))?,
         ))
@@ -69,7 +70,7 @@ impl<'a> TryFrom<&DamlModuleWrapper<'a>> for DamlModule<'a> {
             .iter()
             .map(|syn| DamlDefTypeSyn::try_from(module.wrap_def_type_syn(syn)))
             .collect::<DamlLfConvertResult<_>>()?;
-        let data_types: Vec<_> = module
+        let data_types: Vec<DamlData<'_>> = module
             .module
             .data_types
             .iter()
@@ -86,7 +87,7 @@ impl<'a> TryFrom<&DamlModuleWrapper<'a>> for DamlModule<'a> {
             path,
             flags,
             synonyms,
-            data_types.into_iter().map(|dt| (dt.name(), dt)).collect(),
+            data_types.into_iter().map(|dt| (dt.name_clone(), dt)).collect(),
             #[cfg(feature = "full")]
             values,
         ))
@@ -162,7 +163,7 @@ impl<'a> TryFrom<DamlDataWrapper<'a>> for DamlData<'a> {
                 let serializable = parent_data.serializable;
                 DamlData::Template(Box::new(DamlTemplate::new(
                     name,
-                    data.context.package.package_id,
+                    Cow::from(data.context.package.package_id),
                     module_path,
                     fields,
                     choices,
@@ -190,7 +191,7 @@ impl<'a> TryFrom<DamlDataWrapper<'a>> for DamlData<'a> {
             DamlDataEnrichedPayload::Enum(data_enum) => {
                 let name = data_enum.name.resolve_last(resolver)?;
                 let type_arguments = convert_type_var_arguments(data, &data_enum.type_arguments)?;
-                let constructors: Vec<&str> = if data
+                let constructors: Vec<Cow<'_, str>> = if data
                     .context
                     .package
                     .language_version
@@ -203,7 +204,7 @@ impl<'a> TryFrom<DamlDataWrapper<'a>> for DamlData<'a> {
                         data_enum.constructors_interned_str.is_empty(),
                         "constructors_interned_str should be empty!"
                     );
-                    data_enum.constructors_str.iter().map(AsRef::as_ref).collect()
+                    data_enum.constructors_str.iter().map(Cow::from).collect()
                 };
                 let serializable = data_enum.serializable;
                 DamlData::Enum(DamlEnum::new(name, constructors, type_arguments, serializable))
@@ -453,30 +454,21 @@ impl<'a> TryFrom<&DamlTyConWrapper<'a>> for DamlTyCon<'a> {
 fn from_modules<'a, T: Iterator<Item = DamlModuleWrapper<'a>>>(modules: T) -> DamlLfConvertResult<DamlModule<'a>> {
     let mut root_module = DamlModule::new_root();
     for next_module in modules {
-        let path = next_module.module.path.resolve(next_module.package)?;
+        let next_module: DamlModuleWrapper<'a> = next_module;
+        let path = next_module.module.path.resolve_raw(next_module.package)?;
         let converted_module = DamlModule::try_from(&next_module)?;
-        add_module_to_tree(&mut root_module, converted_module, path.clone(), &path);
+        add_module_to_tree(&mut root_module, converted_module, &path);
     }
     Ok(root_module)
 }
 
 /// Add a module to the module tree.
 ///
-/// Traverses the module tree by following the `full_path` (creating intermediate module nodes as we go) and sets the
-/// `node_to_add` node as the leaf node.
-fn add_module_to_tree<'a>(
-    node: &mut DamlModule<'a>,
-    node_to_add: DamlModule<'a>,
-    full_path: Vec<&'a str>,
-    remaining_path: &[&'a str],
-) {
+/// Traverses the module tree from `node` by following the `remaining_path`, creating intermediate module nodes as we
+/// go, and adds the `node_to_add` node as the leaf node.
+fn add_module_to_tree<'a>(node: &mut DamlModule<'a>, node_to_add: DamlModule<'a>, remaining_path: &[&'a str]) {
     if let Some(&child_mod_name) = remaining_path.first() {
-        let child_mod_path = &full_path[..=full_path.len() - remaining_path.len()];
-        let entry = node
-            .child_modules_mut()
-            .entry(child_mod_name)
-            .or_insert_with(|| DamlModule::new_empty(child_mod_path.to_vec()));
-        add_module_to_tree(entry, node_to_add, full_path, &remaining_path[1..])
+        add_module_to_tree(node.child_module_or_new(child_mod_name), node_to_add, &remaining_path[1..])
     } else {
         node.take_from(node_to_add);
     }
@@ -489,15 +481,15 @@ fn make_tycon_name<'a>(
     data_name: InternableDottedName<'a>,
 ) -> DamlLfConvertResult<DamlTyConName<'a>> {
     let source_resolver = context.package;
-    let source_package_id = context.package.package_id;
-    let source_package_name = context.package.name.as_str();
+    let source_package_id = Cow::from(context.package.package_id);
+    let source_package_name = Cow::from(context.package.name.as_str());
     let source_module_path = context.module.path.resolve(source_resolver)?;
     let target_package_id = package_ref.resolve(source_resolver)?;
     let target_package: &DamlPackagePayload<'_> = context
         .archive
-        .package_by_id(target_package_id)
-        .ok_or_else(|| DamlLfConvertError::UnknownPackage(target_package_id.to_owned()))?;
-    let target_package_name = target_package.name.as_str();
+        .package_by_id(&target_package_id)
+        .ok_or_else(|| DamlLfConvertError::UnknownPackage(target_package_id.to_string()))?;
+    let target_package_name = Cow::from(target_package.name.as_str());
     let target_module_path = module_path.resolve(source_resolver)?;
     let data_name = data_name.resolve_last(source_resolver)?;
     if target_package_name == source_package_name && target_module_path == source_module_path {

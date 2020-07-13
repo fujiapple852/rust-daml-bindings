@@ -113,6 +113,14 @@ fn test_apply_payload() -> DamlLfResult<()> {
 }
 
 #[test]
+fn test_convert_dar() -> DamlLfResult<()> {
+    let dar = DarFile::from_file("test_resources/TestingTypes-1_0_0-sdk_1_1_1-lf_1_8.dar")?;
+    let archive = dar.to_owned_archive()?;
+    assert_eq!("TestingTypes-1.0.0", archive.name());
+    Ok(())
+}
+
+#[test]
 fn test_visitor() -> DamlLfResult<()> {
     #[derive(Default)]
     pub struct GatherEnumsVisitor(HashSet<String>);

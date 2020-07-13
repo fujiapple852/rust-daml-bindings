@@ -99,6 +99,11 @@ impl DarFile {
         Ok(Self::new(manifest, dalf_main, dalf_dependencies))
     }
 
+    /// Create a [`DamlArchive`] from this [`DarFile`] and apply it to `f`.
+    ///
+    /// The created [`DamlArchive`] borrows all interned string data from this [`DarFile`] and is therefore tied to the
+    /// lifetime of the [`DarFile`] and so cannot be returned from this scope.  The [`DamlArchive`] can be accessed from
+    /// the supplied closure `f` which may return owned data.
     /// Write this `DarFile` to a `dar` file.
     ///
     /// TODO document
@@ -125,13 +130,52 @@ impl DarFile {
 
     /// Convert a [`DarFile`] to a [`DamlArchive`] and map function `f` over it.
     ///
-    /// TODO document this with example
-    /// TODO do we need _mut / _into variants?
+    /// Use [`DarFile::to_owned_archive`] to create a [`DamlArchive`] which does not borrow any data from the generating
+    /// [`DarFile`].
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use daml_lf::DarFile;
+    /// # use daml_lf::DamlLfResult;
+    /// # fn main() -> DamlLfResult<()> {
+    /// let dar = DarFile::from_file("Example.dar")?;
+    /// // create a DamlArchive from this DarFile and extract the (owned) name.
+    /// let name = dar.apply(|archive| archive.name().to_owned())?;
+    /// assert_eq!("Example-1.0.0", name);
+    /// Ok(())
+    /// # }
+    /// ```
     pub fn apply<R, F>(&self, f: F) -> DamlLfResult<R>
     where
-        F: FnMut(&DamlArchive<'_>) -> R,
+        F: FnOnce(&DamlArchive<'_>) -> R,
     {
         convert::apply_dar(self, f)
+    }
+
+    /// Create an owned [`DamlArchive`] from this [`DarFile`].
+    ///
+    /// This is an expensive operation as it involves both a conversion of the [`DarFile`] to a [`DamlArchive`] (which
+    /// borrows all interned strings) and a subsequent conversion to an owned [`DamlArchive`] which clones all interned
+    /// strings.
+    ///
+    /// Use this when an owned instance of a [`DamlArchive`] is required, such as for passing to a thread.  For other
+    /// cases consider using the [`DarFile::apply`] method which does not require the second conversion.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use daml_lf::DarFile;
+    /// # use daml_lf::DamlLfResult;
+    /// # fn main() -> DamlLfResult<()> {
+    /// let dar = DarFile::from_file("Example.dar")?;
+    /// let archive = dar.to_owned_archive()?;
+    /// assert_eq!("TestingTypes-1.0.0", archive.name());
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn to_owned_archive(&self) -> DamlLfResult<DamlArchive<'static>> {
+        convert::to_owned_archive(self)
     }
 
     /// The `manifest` information contained within this `DarFile`.

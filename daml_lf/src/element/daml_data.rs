@@ -3,7 +3,9 @@ use crate::element::visitor::DamlElementVisitor;
 #[cfg(feature = "full")]
 use crate::element::{DamlDefKey, DamlExpr, DamlPrimLit};
 use crate::element::{DamlType, DamlTypeVarWithKind, DamlVisitableElement};
+use crate::owned::ToStatic;
 use serde::Serialize;
+use std::borrow::Cow;
 
 #[derive(Debug, Serialize, Clone)]
 pub enum DamlData<'a> {
@@ -14,15 +16,17 @@ pub enum DamlData<'a> {
 }
 
 impl<'a> DamlData<'a> {
-    pub fn name(&self) -> &'a str {
+    /// The name of this data type.
+    pub fn name(&self) -> &str {
         match self {
-            DamlData::Record(record) => record.name,
-            DamlData::Template(template) => template.name,
-            DamlData::Variant(variant) => variant.name,
-            DamlData::Enum(data_enum) => data_enum.name,
+            DamlData::Record(record) => &record.name,
+            DamlData::Template(template) => &template.name,
+            DamlData::Variant(variant) => &variant.name,
+            DamlData::Enum(data_enum) => &data_enum.name,
         }
     }
 
+    /// The fields of this data type.
     pub fn fields(&self) -> &[DamlField<'_>] {
         match self {
             DamlData::Record(record) => &record.fields,
@@ -32,6 +36,7 @@ impl<'a> DamlData<'a> {
         }
     }
 
+    /// The type arguments applied to this data type.
     pub fn type_arguments(&self) -> &[DamlTypeVarWithKind<'_>] {
         match self {
             DamlData::Record(record) => &record.type_arguments,
@@ -41,12 +46,26 @@ impl<'a> DamlData<'a> {
         }
     }
 
+    /// Is this data type serializable?
     pub fn serializable(&self) -> bool {
         match self {
             DamlData::Record(record) => record.serializable,
             DamlData::Template(template) => template.serializable,
             DamlData::Variant(variant) => variant.serializable,
             DamlData::Enum(data_enum) => data_enum.serializable,
+        }
+    }
+
+    /// The name of this data type.
+    ///
+    /// This is a clone of a `Cow<str>` which is cheap for the borrowed case used within the library.
+    #[doc(hidden)]
+    pub(crate) fn name_clone(&self) -> Cow<'a, str> {
+        match self {
+            DamlData::Record(record) => record.name.clone(),
+            DamlData::Template(template) => template.name.clone(),
+            DamlData::Variant(variant) => variant.name.clone(),
+            DamlData::Enum(data_enum) => data_enum.name.clone(),
         }
     }
 }
@@ -64,14 +83,27 @@ impl<'a> DamlVisitableElement<'a> for DamlData<'a> {
     }
 }
 
+impl ToStatic for DamlData<'_> {
+    type Static = DamlData<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        match self {
+            DamlData::Record(record) => DamlData::Record(record.to_static()),
+            DamlData::Template(template) => DamlData::Template(Box::new(template.as_ref().to_static())),
+            DamlData::Variant(variant) => DamlData::Variant(variant.to_static()),
+            DamlData::Enum(data_enum) => DamlData::Enum(data_enum.to_static()),
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlTemplate<'a> {
-    name: &'a str,
-    package_id: &'a str,
-    module_path: Vec<&'a str>,
+    name: Cow<'a, str>,
+    package_id: Cow<'a, str>,
+    module_path: Vec<Cow<'a, str>>,
     fields: Vec<DamlField<'a>>,
     choices: Vec<DamlChoice<'a>>,
-    param: &'a str,
+    param: Cow<'a, str>,
     #[cfg(feature = "full")]
     precond: Option<DamlExpr<'a>>,
     #[cfg(feature = "full")]
@@ -88,12 +120,12 @@ pub struct DamlTemplate<'a> {
 impl<'a> DamlTemplate<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        name: &'a str,
-        package_id: &'a str,
-        module_path: Vec<&'a str>,
+        name: Cow<'a, str>,
+        package_id: Cow<'a, str>,
+        module_path: Vec<Cow<'a, str>>,
         fields: Vec<DamlField<'a>>,
         choices: Vec<DamlChoice<'a>>,
-        param: &'a str,
+        param: Cow<'a, str>,
         #[cfg(feature = "full")] precond: Option<DamlExpr<'a>>,
         #[cfg(feature = "full")] signatories: DamlExpr<'a>,
         #[cfg(feature = "full")] agreement: DamlExpr<'a>,
@@ -122,11 +154,10 @@ impl<'a> DamlTemplate<'a> {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn new_with_defaults(
-        name: &'a str,
-        package_id: &'a str,
-        module_path: Vec<&'a str>,
+        name: Cow<'a, str>,
+        package_id: Cow<'a, str>,
+        module_path: Vec<Cow<'a, str>>,
         fields: Vec<DamlField<'a>>,
     ) -> Self {
         Self {
@@ -135,13 +166,13 @@ impl<'a> DamlTemplate<'a> {
             module_path,
             fields,
             choices: vec![],
-            param: "",
+            param: Cow::default(),
             #[cfg(feature = "full")]
             precond: None,
             #[cfg(feature = "full")]
             signatories: DamlExpr::Nil(DamlType::List(vec![DamlType::Party])),
             #[cfg(feature = "full")]
-            agreement: DamlExpr::PrimLit(DamlPrimLit::Text("")),
+            agreement: DamlExpr::PrimLit(DamlPrimLit::Text(Cow::default())),
             #[cfg(feature = "full")]
             observers: DamlExpr::Nil(DamlType::List(vec![DamlType::Party])),
             #[cfg(feature = "full")]
@@ -150,16 +181,16 @@ impl<'a> DamlTemplate<'a> {
         }
     }
 
-    pub const fn name(&self) -> &str {
-        self.name
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
-    pub const fn package_id(&self) -> &str {
-        self.package_id
+    pub fn package_id(&self) -> &str {
+        &self.package_id
     }
 
-    pub fn module_path(&self) -> &[&str] {
-        &self.module_path
+    pub fn module_path(&self) -> impl Iterator<Item = &str> {
+        self.module_path.iter().map(AsRef::as_ref)
     }
 
     pub fn fields(&self) -> &[DamlField<'a>] {
@@ -170,8 +201,8 @@ impl<'a> DamlTemplate<'a> {
         &self.choices
     }
 
-    pub const fn param(&self) -> &str {
-        self.param
+    pub fn param(&self) -> &str {
+        &self.param
     }
 
     #[cfg(feature = "full")]
@@ -223,15 +254,41 @@ impl<'a> DamlVisitableElement<'a> for DamlTemplate<'a> {
     }
 }
 
+impl ToStatic for DamlTemplate<'_> {
+    type Static = DamlTemplate<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlTemplate::new(
+            self.name.to_static(),
+            self.package_id.to_static(),
+            self.module_path.iter().map(ToStatic::to_static).collect(),
+            self.fields.iter().map(DamlField::to_static).collect(),
+            self.choices.iter().map(DamlChoice::to_static).collect(),
+            self.param.to_static(),
+            #[cfg(feature = "full")]
+            self.precond.as_ref().map(DamlExpr::to_static),
+            #[cfg(feature = "full")]
+            self.signatories.to_static(),
+            #[cfg(feature = "full")]
+            self.agreement.to_static(),
+            #[cfg(feature = "full")]
+            self.observers.to_static(),
+            #[cfg(feature = "full")]
+            self.key.as_ref().map(DamlDefKey::to_static),
+            self.serializable,
+        )
+    }
+}
+
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlChoice<'a> {
-    name: &'a str,
+    name: Cow<'a, str>,
     fields: Vec<DamlField<'a>>,
     return_type: DamlType<'a>,
 }
 
 impl<'a> DamlChoice<'a> {
-    pub fn new(name: &'a str, fields: Vec<DamlField<'a>>, return_type: DamlType<'a>) -> Self {
+    pub fn new(name: Cow<'a, str>, fields: Vec<DamlField<'a>>, return_type: DamlType<'a>) -> Self {
         Self {
             name,
             fields,
@@ -239,8 +296,8 @@ impl<'a> DamlChoice<'a> {
         }
     }
 
-    pub const fn name(&self) -> &str {
-        self.name
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     pub fn fields(&self) -> &[DamlField<'a>] {
@@ -261,9 +318,21 @@ impl<'a> DamlVisitableElement<'a> for DamlChoice<'a> {
     }
 }
 
+impl ToStatic for DamlChoice<'_> {
+    type Static = DamlChoice<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlChoice::new(
+            self.name.to_static(),
+            self.fields.iter().map(DamlField::to_static).collect(),
+            self.return_type.to_static(),
+        )
+    }
+}
+
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlRecord<'a> {
-    name: &'a str,
+    name: Cow<'a, str>,
     fields: Vec<DamlField<'a>>,
     type_arguments: Vec<DamlTypeVarWithKind<'a>>,
     serializable: bool,
@@ -271,7 +340,7 @@ pub struct DamlRecord<'a> {
 
 impl<'a> DamlRecord<'a> {
     pub fn new(
-        name: &'a str,
+        name: Cow<'a, str>,
         fields: Vec<DamlField<'a>>,
         type_arguments: Vec<DamlTypeVarWithKind<'a>>,
         serializable: bool,
@@ -284,8 +353,8 @@ impl<'a> DamlRecord<'a> {
         }
     }
 
-    pub const fn name(&self) -> &str {
-        self.name
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     pub fn fields(&self) -> &[DamlField<'a>] {
@@ -310,9 +379,22 @@ impl<'a> DamlVisitableElement<'a> for DamlRecord<'a> {
     }
 }
 
+impl ToStatic for DamlRecord<'_> {
+    type Static = DamlRecord<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlRecord::new(
+            self.name.to_static(),
+            self.fields.iter().map(DamlField::to_static).collect(),
+            self.type_arguments.iter().map(DamlTypeVarWithKind::to_static).collect(),
+            self.serializable,
+        )
+    }
+}
+
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlVariant<'a> {
-    name: &'a str,
+    name: Cow<'a, str>,
     fields: Vec<DamlField<'a>>,
     type_arguments: Vec<DamlTypeVarWithKind<'a>>,
     serializable: bool,
@@ -320,7 +402,7 @@ pub struct DamlVariant<'a> {
 
 impl<'a> DamlVariant<'a> {
     pub fn new(
-        name: &'a str,
+        name: Cow<'a, str>,
         fields: Vec<DamlField<'a>>,
         type_arguments: Vec<DamlTypeVarWithKind<'a>>,
         serializable: bool,
@@ -333,8 +415,8 @@ impl<'a> DamlVariant<'a> {
         }
     }
 
-    pub const fn name(&self) -> &str {
-        self.name
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     pub fn fields(&self) -> &[DamlField<'a>] {
@@ -359,18 +441,31 @@ impl<'a> DamlVisitableElement<'a> for DamlVariant<'a> {
     }
 }
 
+impl ToStatic for DamlVariant<'_> {
+    type Static = DamlVariant<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlVariant::new(
+            self.name.to_static(),
+            self.fields.iter().map(DamlField::to_static).collect(),
+            self.type_arguments.iter().map(DamlTypeVarWithKind::to_static).collect(),
+            self.serializable,
+        )
+    }
+}
+
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlEnum<'a> {
-    name: &'a str,
-    constructors: Vec<&'a str>,
+    name: Cow<'a, str>,
+    constructors: Vec<Cow<'a, str>>,
     type_arguments: Vec<DamlTypeVarWithKind<'a>>,
     serializable: bool,
 }
 
 impl<'a> DamlEnum<'a> {
     pub fn new(
-        name: &'a str,
-        constructors: Vec<&'a str>,
+        name: Cow<'a, str>,
+        constructors: Vec<Cow<'a, str>>,
         type_arguments: Vec<DamlTypeVarWithKind<'a>>,
         serializable: bool,
     ) -> Self {
@@ -382,12 +477,12 @@ impl<'a> DamlEnum<'a> {
         }
     }
 
-    pub const fn name(&self) -> &str {
-        self.name
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
-    pub fn constructors(&self) -> &[&str] {
-        &self.constructors
+    pub fn constructors(&self) -> impl Iterator<Item = &str> {
+        self.constructors.iter().map(AsRef::as_ref)
     }
 
     pub fn type_arguments(&self) -> &[DamlTypeVarWithKind<'a>] {
@@ -404,5 +499,18 @@ impl<'a> DamlVisitableElement<'a> for DamlEnum<'a> {
         visitor.pre_visit_enum(self);
         self.type_arguments.iter().for_each(|arg| arg.accept(visitor));
         visitor.post_visit_enum(self);
+    }
+}
+
+impl ToStatic for DamlEnum<'_> {
+    type Static = DamlEnum<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlEnum::new(
+            self.name.to_static(),
+            self.constructors.iter().map(ToStatic::to_static).collect(),
+            self.type_arguments.iter().map(DamlTypeVarWithKind::to_static).collect(),
+            self.serializable,
+        )
     }
 }

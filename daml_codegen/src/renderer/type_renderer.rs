@@ -91,9 +91,9 @@ fn quote_generic_type_arguments(type_arguments: &[DamlType<'_>]) -> TokenStream 
 
 fn quote_absolute_tycon(abs_tycon: &DamlAbsoluteTyCon<'_>) -> TokenStream {
     let path: Vec<&str> = if abs_tycon.package_name().is_empty() {
-        abs_tycon.module_path().iter().map(AsRef::as_ref).collect()
+        abs_tycon.module_path().map(AsRef::as_ref).collect()
     } else {
-        iter::once(abs_tycon.package_name()).chain(abs_tycon.module_path().iter().map(AsRef::as_ref)).collect()
+        iter::once(abs_tycon.package_name()).chain(abs_tycon.module_path().map(AsRef::as_ref)).collect()
     };
     let target_path_tokens: Vec<_> = path.into_iter().map(SnakeCase::to_snake_case).map(quote_escaped_ident).collect();
     quote!(
@@ -103,11 +103,11 @@ fn quote_absolute_tycon(abs_tycon: &DamlAbsoluteTyCon<'_>) -> TokenStream {
 
 fn quote_non_local_path(tycon: &DamlNonLocalTyCon<'_>) -> TokenStream {
     let current_full_path: Vec<_> = iter::once(tycon.source_package_name())
-        .chain(tycon.source_module_path().iter().map(AsRef::as_ref))
+        .chain(tycon.source_module_path().map(AsRef::as_ref))
         .map(SnakeCase::to_snake_case)
         .collect();
     let target_full_path: Vec<_> = iter::once(tycon.target_package_name())
-        .chain(tycon.target_module_path().iter().map(AsRef::as_ref))
+        .chain(tycon.target_module_path().map(AsRef::as_ref))
         .map(SnakeCase::to_snake_case)
         .collect();
     let common_prefix_length =

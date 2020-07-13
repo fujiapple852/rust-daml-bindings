@@ -77,6 +77,7 @@ impl DamlLfArchivePayload {
         }
     }
 
+    /// Create a [`DamlArchive`] from this [`DamlLfArchivePayload`] and apply it to `f`.
     /// consume and serialize this `DamlLfArchivePayload` to a byte buffer.
     ///
     /// TODO documentation
@@ -98,10 +99,13 @@ impl DamlLfArchivePayload {
 
     /// Convert a [`DamlLfArchivePayload`] to a [`DamlPackage`] and map function `f` over it.
     ///
-    /// TODO document this with example
+    /// See [`DarFile::apply`] for details.
+    ///
+    /// [`DamlArchive`]: crate::element::DamlArchive
+    /// [`DarFile::apply`]: crate::dar::DarFile::apply
     pub fn apply<R, F>(self, f: F) -> DamlLfResult<R>
     where
-        F: FnMut(&DamlPackage<'_>) -> R,
+        F: FnOnce(&DamlPackage<'_>) -> R,
     {
         convert::apply_payload(self, f)
     }
