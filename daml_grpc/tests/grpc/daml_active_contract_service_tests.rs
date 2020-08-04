@@ -12,7 +12,7 @@ use futures::StreamExt;
 
 #[tokio::test]
 async fn test_get_active_contracts() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock();
+    let _lock = STATIC_SANDBOX_LOCK.lock().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let application_id = create_test_uuid(APPLICATION_ID_PREFIX);

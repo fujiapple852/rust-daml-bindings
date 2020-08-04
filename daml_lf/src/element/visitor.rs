@@ -90,9 +90,9 @@ pub trait DamlElementVisitor {
     #[cfg(feature = "full")]
     fn post_visit_builtin_function(&mut self, builtin: &DamlBuiltinFunction) {}
     #[cfg(feature = "full")]
-    fn pre_visit_prim_con(&mut self, prim_con: &DamlPrimCon) {}
+    fn pre_visit_prim_con(&mut self, prim_con: DamlPrimCon) {}
     #[cfg(feature = "full")]
-    fn post_visit_prim_con(&mut self, prim_con: &DamlPrimCon) {}
+    fn post_visit_prim_con(&mut self, prim_con: DamlPrimCon) {}
     #[cfg(feature = "full")]
     fn pre_visit_prim_lit<'a>(&mut self, prim_lit: &DamlPrimLit<'a>) {}
     #[cfg(feature = "full")]

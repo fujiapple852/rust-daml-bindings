@@ -5,6 +5,7 @@ pub mod daml_command_submission_service_tests;
 pub mod daml_config_management_service;
 pub mod daml_ledger_configuration_service_tests;
 pub mod daml_ledger_identity_service_tests;
+pub mod daml_override_tests;
 pub mod daml_package_management_service;
 pub mod daml_package_service_tests;
 pub mod daml_party_management_service;

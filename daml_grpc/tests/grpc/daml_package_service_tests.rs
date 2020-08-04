@@ -5,7 +5,7 @@ use daml_grpc::data::package::{DamlHashFunction, DamlPackageStatus};
 
 #[tokio::test]
 async fn test_list_packages() -> TestResult {
-    let _lock = WALLCLOCK_SANDBOX_LOCK.lock();
+    let _lock = WALLCLOCK_SANDBOX_LOCK.lock().await;
     let ledger_client = new_wallclock_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let is_found = ledger_client.package_service().list_packages().await?.iter().any(|p| p == &package_id);
@@ -15,7 +15,7 @@ async fn test_list_packages() -> TestResult {
 
 #[tokio::test]
 async fn test_get_package() -> TestResult {
-    let _lock = WALLCLOCK_SANDBOX_LOCK.lock();
+    let _lock = WALLCLOCK_SANDBOX_LOCK.lock().await;
     let ledger_client = new_wallclock_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let daml_package = ledger_client.package_service().get_package(&package_id).await?;
@@ -27,7 +27,7 @@ async fn test_get_package() -> TestResult {
 
 #[tokio::test]
 async fn test_get_package_status() -> TestResult {
-    let _lock = WALLCLOCK_SANDBOX_LOCK.lock();
+    let _lock = WALLCLOCK_SANDBOX_LOCK.lock().await;
     let ledger_client = new_wallclock_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let daml_package_status = ledger_client.package_service().get_package_status(package_id).await?;

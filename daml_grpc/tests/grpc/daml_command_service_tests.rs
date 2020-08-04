@@ -16,7 +16,7 @@ use futures::TryStreamExt;
 
 #[tokio::test]
 async fn test_submit_and_wait_for_create() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock();
+    let _lock = STATIC_SANDBOX_LOCK.lock().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
@@ -28,7 +28,7 @@ async fn test_submit_and_wait_for_create() -> TestResult {
 
 #[tokio::test]
 async fn test_submit_and_wait_for_transaction_id() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock();
+    let _lock = STATIC_SANDBOX_LOCK.lock().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
@@ -39,7 +39,7 @@ async fn test_submit_and_wait_for_transaction_id() -> TestResult {
 
 #[tokio::test]
 async fn test_submit_and_wait_for_transaction() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock();
+    let _lock = STATIC_SANDBOX_LOCK.lock().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
@@ -55,7 +55,7 @@ async fn test_submit_and_wait_for_transaction() -> TestResult {
 
 #[tokio::test]
 async fn test_submit_and_wait_for_transaction_tree() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock();
+    let _lock = STATIC_SANDBOX_LOCK.lock().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
@@ -72,7 +72,7 @@ async fn test_submit_and_wait_for_transaction_tree() -> TestResult {
 /// Test that we are able to retrieve the current ledger offset.
 #[tokio::test]
 async fn test_completion_end_after_no_commands() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock();
+    let _lock = STATIC_SANDBOX_LOCK.lock().await;
     let ledger_client = new_static_sandbox().await?;
     let completion_offset = ledger_client.command_completion_service().get_completion_end().await?;
     assert!(matches!(completion_offset, DamlLedgerOffset::Absolute(_)));
@@ -83,7 +83,7 @@ async fn test_completion_end_after_no_commands() -> TestResult {
 /// of the Ping contract and the creation of the Pong contract.
 #[tokio::test]
 async fn test_create_contract_and_exercise_choice() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock();
+    let _lock = STATIC_SANDBOX_LOCK.lock().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let application_id = create_test_uuid(APPLICATION_ID_PREFIX);
@@ -136,7 +136,7 @@ async fn test_create_contract_and_exercise_choice() -> TestResult {
 
 #[tokio::test]
 async fn test_combined_create_and_exercise() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock();
+    let _lock = STATIC_SANDBOX_LOCK.lock().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let application_id = create_test_uuid(APPLICATION_ID_PREFIX);

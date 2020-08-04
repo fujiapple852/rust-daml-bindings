@@ -64,7 +64,7 @@ async fn test_create_contract_with_generic() -> TestResult {
         ConcreteDataRecord, GenericDataRecord, GenericWrapperRecord, PatternVariant, TemplateWithGeneric,
         TemplateWithGenericContract,
     };
-    let _lock = SANDBOX_LOCK.lock()?;
+    let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let template_with_generic = TemplateWithGeneric::new(
@@ -81,7 +81,7 @@ async fn test_create_contract_with_generic() -> TestResult {
     let event: DamlEvent = create_result.take_events().swap_remove(0);
     let contract: TemplateWithGenericContract = match event {
         DamlEvent::Created(e) => (*e).try_into()?,
-        _ => panic!(),
+        DamlEvent::Archived(_) => panic!(),
     };
     assert_eq!(&template_with_generic, contract.data());
     Ok(())

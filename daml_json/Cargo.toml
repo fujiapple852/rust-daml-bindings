@@ -26,5 +26,4 @@ daml = { path = "../daml", features = [ "macros", "util" ,"sandbox", "grpc" ] }
 tokio = { version = "0.2", features = [ "macros" ] }
 maplit = "1.0"
 anyhow = "1.0"
-parking_lot = "0.11"
 lazy_static = "1.3"

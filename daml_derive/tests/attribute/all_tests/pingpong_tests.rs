@@ -31,7 +31,7 @@ fn test_local_round_trip() -> TestResult {
 
 #[tokio::test]
 async fn test_ledger_create() -> TestResult {
-    let _lock = SANDBOX_LOCK.lock()?;
+    let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let ping = Ping::new("Alice", "Bob", 0);
@@ -41,7 +41,7 @@ async fn test_ledger_create() -> TestResult {
     let event: DamlEvent = ping_result.take_events().swap_remove(0);
     let ping_contract: PingContract = match event {
         DamlEvent::Created(e) => (*e).try_into()?,
-        _ => panic!(),
+        DamlEvent::Archived(_) => panic!(),
     };
     assert_eq!(&ping, ping_contract.data());
     Ok(())
@@ -49,7 +49,7 @@ async fn test_ledger_create() -> TestResult {
 
 #[tokio::test]
 async fn test_ledger_create_and_exercise_with_nested() -> TestResult {
-    let _lock = SANDBOX_LOCK.lock()?;
+    let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
 

@@ -19,7 +19,7 @@ use futures::prelude::*;
 /// expect.
 #[tokio::test]
 async fn test_command_submission_and_completion() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock();
+    let _lock = STATIC_SANDBOX_LOCK.lock().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let command_id = create_test_uuid(COMMAND_ID_PREFIX);

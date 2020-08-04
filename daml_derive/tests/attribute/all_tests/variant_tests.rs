@@ -15,7 +15,7 @@ use std::convert::TryInto;
 
 #[tokio::test]
 async fn test_circle_variant() -> TestResult {
-    let _lock = SANDBOX_LOCK.lock()?;
+    let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let circle_template =
@@ -42,7 +42,7 @@ async fn test_circle_variant() -> TestResult {
 
 #[tokio::test]
 async fn test_all_variant_types() -> TestResult {
-    let _lock = SANDBOX_LOCK.lock()?;
+    let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let mut map_of_party: HashMap<String, DamlParty> = HashMap::new();

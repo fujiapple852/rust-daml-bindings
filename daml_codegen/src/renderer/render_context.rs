@@ -18,7 +18,7 @@ impl Default for RenderContext<'_> {
 
 impl<'a> RenderContext<'a> {
     /// Create a new `RenderContext` with a `DamlArchive`.
-    pub fn with_archive(archive: &'a DamlArchive<'a>, filter_mode: RenderFilterMode) -> Self {
+    pub const fn with_archive(archive: &'a DamlArchive<'a>, filter_mode: RenderFilterMode) -> Self {
         Self {
             mode: RenderMode::Full(archive),
             filter_mode,

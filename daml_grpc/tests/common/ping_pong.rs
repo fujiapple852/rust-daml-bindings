@@ -6,6 +6,7 @@ use daml_grpc::DamlGrpcClient;
 use daml_grpc::{DamlCommandFactory, DamlGrpcClientBuilder};
 use std::error::Error;
 use std::time::Duration;
+use tokio::sync::Mutex;
 use uuid::Uuid;
 
 pub type TestResult = ::std::result::Result<(), Box<dyn Error>>;
@@ -27,8 +28,8 @@ pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/.auth_certs
 // pub const SERVER_CA_CERT_PATH: &str = "../resources/testing_types_sandbox/.tls_certs/ca.cert";
 
 lazy_static! {
-    pub static ref STATIC_SANDBOX_LOCK: parking_lot::Mutex<()> = parking_lot::Mutex::new(());
-    pub static ref WALLCLOCK_SANDBOX_LOCK: parking_lot::Mutex<()> = parking_lot::Mutex::new(());
+    pub static ref STATIC_SANDBOX_LOCK: Mutex<()> = Mutex::new(());
+    pub static ref WALLCLOCK_SANDBOX_LOCK: Mutex<()> = Mutex::new(());
 }
 
 pub async fn new_wallclock_sandbox() -> anyhow::Result<DamlGrpcClient> {
@@ -126,6 +127,14 @@ pub async fn test_create_ping_and_exercise_reset_ping(
     Ok(())
 }
 
+pub fn make_ec256_token() -> anyhow::Result<String> {
+    Ok(DamlSandboxTokenBuilder::new_with_duration_secs(TOKEN_VALIDITY_SECS)
+        .admin(true)
+        .act_as(vec![String::from(ALICE_PARTY), String::from(BOB_PARTY)])
+        .read_as(vec![String::from(ALICE_PARTY), String::from(BOB_PARTY)])
+        .new_ec256_token(std::fs::read_to_string(TOKEN_KEY_PATH)?)?)
+}
+
 async fn new_sandbox(uri: &str) -> anyhow::Result<DamlGrpcClient> {
     let client = DamlGrpcClientBuilder::uri(uri)
         .timeout(Duration::from_millis(CONNECT_TIMEOUT_MS))
@@ -134,12 +143,4 @@ async fn new_sandbox(uri: &str) -> anyhow::Result<DamlGrpcClient> {
         .connect()
         .await?;
     Ok(client.reset_and_wait().await?)
-}
-
-fn make_ec256_token() -> anyhow::Result<String> {
-    Ok(DamlSandboxTokenBuilder::new_with_duration_secs(TOKEN_VALIDITY_SECS)
-        .admin(true)
-        .act_as(vec![String::from(ALICE_PARTY), String::from(BOB_PARTY)])
-        .read_as(vec![String::from(ALICE_PARTY), String::from(BOB_PARTY)])
-        .new_ec256_token(std::fs::read_to_string(TOKEN_KEY_PATH)?)?)
 }

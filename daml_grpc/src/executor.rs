@@ -148,7 +148,7 @@ impl CommandExecutor for DamlSimpleExecutor<'_> {
                 if id == root_event_id {
                     match e {
                         DamlTreeEvent::Exercised(exercised_event) => Some(exercised_event.take_exercise_result()),
-                        _ => None,
+                        DamlTreeEvent::Created(_) => None,
                     }
                 } else {
                     None
