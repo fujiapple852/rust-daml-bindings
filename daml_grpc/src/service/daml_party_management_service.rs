@@ -5,7 +5,6 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::party_management_se
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::{
     AllocatePartyRequest, GetParticipantIdRequest, GetPartiesRequest, ListKnownPartiesRequest,
 };
-use crate::ledger_client::DamlTokenRefresh;
 use crate::service::common::make_request;
 use crate::util::Required;
 use log::{debug, trace};
@@ -21,16 +20,24 @@ use tonic::transport::Channel;
 /// UNAUTHENTICATED, if the caller fails to provide a valid access token, and will respond with `PERMISSION_DENIED`, if
 /// the claims in the token are insufficient to perform a given operation. Subsequently, only specific errors of
 /// individual calls not related to authorization will be described.
-pub struct DamlPartyManagementService {
+pub struct DamlPartyManagementService<'a> {
     channel: Channel,
-    auth_token: Option<String>,
+    auth_token: Option<&'a str>,
 }
 
-impl DamlPartyManagementService {
-    pub const fn new(channel: Channel, auth_token: Option<String>) -> Self {
+impl<'a> DamlPartyManagementService<'a> {
+    pub fn new(channel: Channel, auth_token: Option<&'a str>) -> Self {
         Self {
             channel,
             auth_token,
+        }
+    }
+
+    /// Override the JWT token to use for this service.
+    pub fn with_token(self, auth_token: &'a str) -> Self {
+        Self {
+            auth_token: Some(auth_token),
+            ..self
         }
     }
 
@@ -46,7 +53,7 @@ impl DamlPartyManagementService {
         debug!("get_participant_id");
         let payload = GetParticipantIdRequest {};
         trace!("get_participant_id payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        let participant = self.client().get_participant_id(make_request(payload, &self.auth_token)?).await?;
+        let participant = self.client().get_participant_id(make_request(payload, self.auth_token.as_deref())?).await?;
         Ok(participant.into_inner().participant_id)
     }
 
@@ -59,7 +66,7 @@ impl DamlPartyManagementService {
             parties: parties.into(),
         };
         trace!("get_parties payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        let parties = self.client().get_parties(make_request(payload, &self.auth_token)?).await?;
+        let parties = self.client().get_parties(make_request(payload, self.auth_token.as_deref())?).await?;
         Ok(parties.into_inner().party_details.into_iter().map(DamlPartyDetails::from).collect())
     }
 
@@ -71,7 +78,8 @@ impl DamlPartyManagementService {
         debug!("list_known_parties");
         let payload = ListKnownPartiesRequest {};
         trace!("list_known_parties payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        let all_known_parties = self.client().list_known_parties(make_request(payload, &self.auth_token)?).await?;
+        let all_known_parties =
+            self.client().list_known_parties(make_request(payload, self.auth_token.as_deref())?).await?;
         Ok(all_known_parties.into_inner().party_details.into_iter().map(DamlPartyDetails::from).collect())
     }
 
@@ -95,17 +103,12 @@ impl DamlPartyManagementService {
             display_name: display_name.into(),
         };
         trace!("allocate_party payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        let allocated_parties = self.client().allocate_party(make_request(payload, &self.auth_token)?).await?;
+        let allocated_parties =
+            self.client().allocate_party(make_request(payload, self.auth_token.as_deref())?).await?;
         Ok(DamlPartyDetails::from(allocated_parties.into_inner().party_details.req()?))
     }
 
     fn client(&self) -> PartyManagementServiceClient<Channel> {
         PartyManagementServiceClient::new(self.channel.clone())
-    }
-}
-
-impl DamlTokenRefresh for DamlPartyManagementService {
-    fn refresh_token(&mut self, auth_token: Option<String>) {
-        self.auth_token = auth_token
     }
 }

@@ -255,8 +255,8 @@ pub enum DamlPrimCon {
 
 impl<'a> DamlVisitableElement<'a> for DamlPrimCon {
     fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
-        visitor.pre_visit_prim_con(self);
-        visitor.post_visit_prim_con(self);
+        visitor.pre_visit_prim_con(*self);
+        visitor.post_visit_prim_con(*self);
     }
 }
 
@@ -1115,7 +1115,8 @@ impl ToStatic for DamlCaseAlt<'_> {
         DamlCaseAlt::new(self.body.to_static(), self.sum.to_static())
     }
 }
-
+// TODO box DamlCaseAltVariant ?
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Serialize, Clone)]
 pub enum DamlCaseAltSum<'a> {
     Default,

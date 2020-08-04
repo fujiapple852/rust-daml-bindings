@@ -15,14 +15,14 @@ impl DamlEvent {
     pub fn try_created(self) -> DamlResult<DamlCreatedEvent> {
         match self {
             DamlEvent::Created(e) => Ok(*e),
-            _ => Err(self.make_unexpected_type_error("Created")),
+            DamlEvent::Archived(_) => Err(self.make_unexpected_type_error("Created")),
         }
     }
 
     pub fn try_archived(self) -> DamlResult<DamlArchivedEvent> {
         match self {
             DamlEvent::Archived(e) => Ok(*e),
-            _ => Err(self.make_unexpected_type_error("Archived")),
+            DamlEvent::Created(_) => Err(self.make_unexpected_type_error("Archived")),
         }
     }
 

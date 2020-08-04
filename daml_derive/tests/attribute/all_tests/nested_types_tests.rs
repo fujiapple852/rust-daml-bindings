@@ -28,7 +28,7 @@ pub fn test_round_trip() -> TestResult {
 
 #[tokio::test]
 pub async fn test_complex_create_and_exercise() -> TestResult {
-    let _lock = SANDBOX_LOCK.lock()?;
+    let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
 
@@ -46,7 +46,7 @@ pub async fn test_complex_create_and_exercise() -> TestResult {
     let event: DamlEvent = command_result.take_events().swap_remove(0);
     let nested_contract: NestedTemplateContract = match event {
         DamlEvent::Created(e) => (*e).try_into()?,
-        _ => panic!(),
+        DamlEvent::Archived(_) => panic!(),
     };
     assert_eq!(&nested_template, nested_contract.data());
 

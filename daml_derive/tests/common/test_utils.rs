@@ -4,7 +4,7 @@ use daml::grpc_api::{DamlGrpcClient, DamlGrpcClientBuilder};
 use daml::util::package::find_module_package_id;
 use daml::util::DamlSandboxTokenBuilder;
 use std::error::Error;
-use std::sync::Mutex;
+use tokio::sync::Mutex;
 
 pub type TestResult = ::std::result::Result<(), Box<dyn Error>>;
 

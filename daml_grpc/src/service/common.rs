@@ -2,7 +2,7 @@ use crate::data::{DamlError, DamlResult};
 use tonic::metadata::MetadataValue;
 use tonic::Request;
 
-pub fn make_request<T>(payload: T, auth_token: &Option<String>) -> DamlResult<Request<T>> {
+pub fn make_request<T>(payload: T, auth_token: Option<&str>) -> DamlResult<Request<T>> {
     let mut request = Request::new(payload);
     if let Some(token) = auth_token {
         let token =

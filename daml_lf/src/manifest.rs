@@ -185,14 +185,14 @@ impl DarManifest {
                     }
                 })
                 .collect()),
-            _ => Err(DamlLfError::new_dar_parse_error(format!("key {} not found", DALFS_KEY))),
+            None => Err(DamlLfError::new_dar_parse_error(format!("key {} not found", DALFS_KEY))),
         }?;
 
         let format = match doc[FORMAT_KEY].as_str() {
             Some(s) if s.to_lowercase() == DAML_LF_VALUE => Ok(DarManifestFormat::DamlLf),
             Some(s) =>
                 Err(DamlLfError::new_dar_parse_error(format!("unexpected value for {}, found {}", DAML_LF_VALUE, s))),
-            _ => Err(DamlLfError::new_dar_parse_error(format!("key {} not found", DAML_LF_VALUE))),
+            None => Err(DamlLfError::new_dar_parse_error(format!("key {} not found", DAML_LF_VALUE))),
         }?;
 
         let encryption = match doc[ENCRYPTION_KEY].as_str() {
@@ -201,7 +201,7 @@ impl DarManifest {
                 "unexpected value for {}, found {}",
                 NON_ENCRYPTED_VALUE, s
             ))),
-            _ => Err(DamlLfError::new_dar_parse_error(format!("key {} not found", NON_ENCRYPTED_VALUE))),
+            None => Err(DamlLfError::new_dar_parse_error(format!("key {} not found", NON_ENCRYPTED_VALUE))),
         }?;
 
         Ok(Self::new(manifest_version, created_by, dalf_main, dalf_dependencies, format, encryption))

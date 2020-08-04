@@ -4,25 +4,40 @@ use crate::data::DamlResult;
 use crate::data::DamlTraceContext;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::command_submission_service_client::CommandSubmissionServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{Commands, SubmitRequest, TraceContext};
-use crate::ledger_client::DamlTokenRefresh;
 use crate::service::common::make_request;
 use log::{debug, trace};
 use std::convert::TryFrom;
 use tonic::transport::Channel;
 
 /// Advance the state of a DAML ledger by submitting commands.
-pub struct DamlCommandSubmissionService {
+pub struct DamlCommandSubmissionService<'a> {
     channel: Channel,
-    ledger_id: String,
-    auth_token: Option<String>,
+    ledger_id: &'a str,
+    auth_token: Option<&'a str>,
 }
 
-impl DamlCommandSubmissionService {
-    pub fn new(channel: Channel, ledger_id: impl Into<String>, auth_token: Option<String>) -> Self {
+impl<'a> DamlCommandSubmissionService<'a> {
+    pub fn new(channel: Channel, ledger_id: &'a str, auth_token: Option<&'a str>) -> Self {
         Self {
             channel,
-            ledger_id: ledger_id.into(),
+            ledger_id,
             auth_token,
+        }
+    }
+
+    /// Override the JWT token to use for this service.
+    pub fn with_token(self, auth_token: &'a str) -> Self {
+        Self {
+            auth_token: Some(auth_token),
+            ..self
+        }
+    }
+
+    /// Override the ledger id to use for this service.
+    pub fn with_ledger_id(self, ledger_id: &'a str) -> Self {
+        Self {
+            ledger_id,
+            ..self
         }
     }
 
@@ -44,7 +59,7 @@ impl DamlCommandSubmissionService {
             trace_context: trace_context.into().map(TraceContext::from),
         };
         trace!("submit_request payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        self.client().submit(make_request(payload, &self.auth_token)?).await.map_err(DamlError::from)?;
+        self.client().submit(make_request(payload, self.auth_token.as_deref())?).await.map_err(DamlError::from)?;
         Ok(command_id)
     }
 
@@ -55,13 +70,7 @@ impl DamlCommandSubmissionService {
     // Convert into a GRPC `Commands` and inject the ledger id
     fn create_ledger_commands(&self, commands: DamlCommands) -> DamlResult<Commands> {
         let mut commands = Commands::try_from(commands)?;
-        commands.ledger_id = self.ledger_id.clone();
+        commands.ledger_id = self.ledger_id.to_string();
         Ok(commands)
-    }
-}
-
-impl DamlTokenRefresh for DamlCommandSubmissionService {
-    fn refresh_token(&mut self, auth_token: Option<String>) {
-        self.auth_token = auth_token
     }
 }

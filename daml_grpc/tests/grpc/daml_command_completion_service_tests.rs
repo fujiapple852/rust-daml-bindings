@@ -8,7 +8,7 @@ use daml_grpc::data::offset::DamlLedgerOffset;
 /// Submit a create command (blocking server side until complete) and then verify the offset reflects this.
 #[tokio::test]
 async fn test_completion_end_after_single_create_command() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock();
+    let _lock = STATIC_SANDBOX_LOCK.lock().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
 

@@ -252,6 +252,7 @@ impl<'a> TryFrom<DamlFieldWrapper<'a>> for DamlField<'a> {
 }
 
 /// Convert from `DamlTypeWrapper` to `DamlType`.
+#[allow(clippy::match_same_arms)]
 impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
     type Error = DamlLfConvertError;
 
@@ -299,7 +300,9 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
                         }
                     },
                     // We are not in a context with a DamlDataPayload and so we do not need to Box this reference
-                    _ => DamlType::TyCon(tycon),
+                    DamlPayloadParentContextType::DefTypeSyn(_) => DamlType::TyCon(tycon),
+                    #[cfg(feature = "full")]
+                    DamlPayloadParentContextType::Value(_) => DamlType::TyCon(tycon),
                 }
             },
             DamlTypePayload::Var(var) => DamlType::Var(DamlVar::try_from(&daml_type.wrap(var))?),

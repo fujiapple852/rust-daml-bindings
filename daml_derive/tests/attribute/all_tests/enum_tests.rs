@@ -11,7 +11,7 @@ use std::convert::TryInto;
 
 #[tokio::test]
 async fn test_using_enum() -> TestResult {
-    let _lock = SANDBOX_LOCK.lock()?;
+    let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let car = Car::new(

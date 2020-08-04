@@ -152,25 +152,8 @@ impl DamlGrpcClientBuilder {
 /// DAML ledger client connection.
 pub struct DamlGrpcClient {
     config: DamlGrpcClientConfig,
+    channel: Channel,
     ledger_identity: String,
-    ledger_identity_service: DamlLedgerIdentityService,
-    ledger_configuration_service: DamlLedgerConfigurationService,
-    package_service: DamlPackageService,
-    command_submission_service: DamlCommandSubmissionService,
-    command_completion_service: DamlCommandCompletionService,
-    command_service: DamlCommandService,
-    transaction_service: DamlTransactionService,
-    active_contract_service: DamlActiveContractsService,
-    #[cfg(feature = "admin")]
-    package_management_service: DamlPackageManagementService,
-    #[cfg(feature = "admin")]
-    party_management_service: DamlPartyManagementService,
-    #[cfg(feature = "admin")]
-    config_management_service: DamlConfigManagementService,
-    #[cfg(feature = "sandbox")]
-    reset_service: DamlResetService,
-    #[cfg(feature = "sandbox")]
-    time_service: DamlTimeService,
 }
 
 impl DamlGrpcClient {
@@ -178,21 +161,16 @@ impl DamlGrpcClient {
     pub async fn connect(config: DamlGrpcClientConfig) -> DamlResult<Self> {
         debug!("connecting to {}", config.uri);
         let channel = Self::open_channel(&config).await?;
-        Self::make_client_from_channel(&channel, config).await
+        Self::make_client_from_channel(channel, config).await
     }
 
     /// Reset the ledger and reconnect.
     #[cfg(feature = "sandbox")]
     pub async fn reset_and_wait(self) -> DamlResult<Self> {
         debug!("resetting Sandbox");
-        self.reset_service.reset().await?;
+        self.reset_service().reset().await?;
         let channel = Self::open_channel(&self.config).await?;
-        Self::make_client_from_channel(&channel, self.config).await
-    }
-
-    /// Refresh the authentication token used by this client.
-    pub fn refresh_token(self, new_token: impl Into<String>) -> Self {
-        self.refresh_token_for_services(new_token)
+        Self::make_client_from_channel(channel, self.config).await
     }
 
     /// Return the current configuration.
@@ -206,67 +184,85 @@ impl DamlGrpcClient {
     }
 
     /// DOCME
-    pub const fn ledger_identity_service(&self) -> &DamlLedgerIdentityService {
-        &self.ledger_identity_service
+    pub fn ledger_identity_service(&self) -> DamlLedgerIdentityService<'_> {
+        DamlLedgerIdentityService::new(self.channel.clone(), self.config.auth_token.as_deref())
     }
 
     /// DOCME
-    pub const fn ledger_configuration_service(&self) -> &DamlLedgerConfigurationService {
-        &self.ledger_configuration_service
+    pub fn ledger_configuration_service(&self) -> DamlLedgerConfigurationService<'_> {
+        DamlLedgerConfigurationService::new(
+            self.channel.clone(),
+            &self.ledger_identity,
+            self.config.auth_token.as_deref(),
+        )
     }
 
     /// DOCME
-    pub const fn package_service(&self) -> &DamlPackageService {
-        &self.package_service
+    pub fn package_service(&self) -> DamlPackageService<'_> {
+        DamlPackageService::new(self.channel.clone(), &self.ledger_identity, self.config.auth_token.as_deref())
     }
 
     /// DOCME
-    pub const fn command_submission_service(&self) -> &DamlCommandSubmissionService {
-        &self.command_submission_service
+    pub fn command_submission_service(&self) -> DamlCommandSubmissionService<'_> {
+        DamlCommandSubmissionService::new(
+            self.channel.clone(),
+            &self.ledger_identity,
+            self.config.auth_token.as_deref(),
+        )
     }
 
     /// DOCME
-    pub const fn command_completion_service(&self) -> &DamlCommandCompletionService {
-        &self.command_completion_service
+    pub fn command_completion_service(&self) -> DamlCommandCompletionService<'_> {
+        DamlCommandCompletionService::new(
+            self.channel.clone(),
+            &self.ledger_identity,
+            self.config.auth_token.as_deref(),
+        )
     }
 
     /// DOCME
-    pub const fn command_service(&self) -> &DamlCommandService {
-        &self.command_service
+    pub fn command_service(&self) -> DamlCommandService<'_> {
+        DamlCommandService::new(self.channel.clone(), &self.ledger_identity, self.config.auth_token.as_deref())
     }
 
     /// DOCME
-    pub const fn transaction_service(&self) -> &DamlTransactionService {
-        &self.transaction_service
+    pub fn transaction_service(&self) -> DamlTransactionService<'_> {
+        DamlTransactionService::new(self.channel.clone(), &self.ledger_identity, self.config.auth_token.as_deref())
     }
 
     /// DOCME
-    pub const fn active_contract_service(&self) -> &DamlActiveContractsService {
-        &self.active_contract_service
+    pub fn active_contract_service(&self) -> DamlActiveContractsService<'_> {
+        DamlActiveContractsService::new(self.channel.clone(), &self.ledger_identity, self.config.auth_token.as_deref())
     }
 
     /// DOCME
     #[cfg(feature = "admin")]
-    pub const fn package_management_service(&self) -> &DamlPackageManagementService {
-        &self.package_management_service
+    pub fn package_management_service(&self) -> DamlPackageManagementService<'_> {
+        DamlPackageManagementService::new(self.channel.clone(), self.config.auth_token.as_deref())
     }
 
     /// DOCME
     #[cfg(feature = "admin")]
-    pub const fn party_management_service(&self) -> &DamlPartyManagementService {
-        &self.party_management_service
+    pub fn party_management_service(&self) -> DamlPartyManagementService<'_> {
+        DamlPartyManagementService::new(self.channel.clone(), self.config.auth_token.as_deref())
     }
 
     /// DOCME
     #[cfg(feature = "admin")]
-    pub const fn config_management_service(&self) -> &DamlConfigManagementService {
-        &self.config_management_service
+    pub fn config_management_service(&self) -> DamlConfigManagementService<'_> {
+        DamlConfigManagementService::new(self.channel.clone(), self.config.auth_token.as_deref())
     }
 
     /// DOCME
     #[cfg(feature = "sandbox")]
-    pub const fn time_service(&self) -> &DamlTimeService {
-        &self.time_service
+    pub fn reset_service(&self) -> DamlResetService<'_> {
+        DamlResetService::new(self.channel.clone(), &self.ledger_identity, self.config.auth_token.as_deref())
+    }
+
+    /// DOCME
+    #[cfg(feature = "sandbox")]
+    pub fn time_service(&self) -> DamlTimeService<'_> {
+        DamlTimeService::new(self.channel.clone(), &self.ledger_identity, self.config.auth_token.as_deref())
     }
 
     async fn open_channel(config: &DamlGrpcClientConfig) -> DamlResult<Channel> {
@@ -303,12 +299,12 @@ impl DamlGrpcClient {
             Some(DamlGrpcTlsConfig {
                 ca_cert: Some(cert),
             }) => {
-                channel = channel.tls_config(ClientTlsConfig::new().ca_certificate(Certificate::from_pem(cert)))?;
+                channel = channel.tls_config(ClientTlsConfig::new().ca_certificate(Certificate::from_pem(cert)));
             },
             Some(DamlGrpcTlsConfig {
                 ca_cert: None,
             }) => {
-                channel = channel.tls_config(ClientTlsConfig::new())?;
+                channel = channel.tls_config(ClientTlsConfig::new());
             },
             _ => {},
         }
@@ -317,7 +313,7 @@ impl DamlGrpcClient {
 
     async fn query_ledger_identity(
         timeout: &Duration,
-        ledger_identity_service: &DamlLedgerIdentityService,
+        ledger_identity_service: &DamlLedgerIdentityService<'_>,
     ) -> DamlResult<String> {
         let start = Instant::now();
         let mut ledger_identity: DamlResult<String> = ledger_identity_service.get_ledger_identity().await;
@@ -333,78 +329,13 @@ impl DamlGrpcClient {
         ledger_identity
     }
 
-    async fn make_client_from_channel(channel: &Channel, config: DamlGrpcClientConfig) -> DamlResult<Self> {
-        let auth_token = config.auth_token.clone();
-        let ledger_identity_service = DamlLedgerIdentityService::new(channel.clone(), config.auth_token.clone());
+    async fn make_client_from_channel(channel: Channel, config: DamlGrpcClientConfig) -> DamlResult<Self> {
+        let ledger_identity_service = DamlLedgerIdentityService::new(channel.clone(), config.auth_token.as_deref());
         let ledger_identity = Self::query_ledger_identity(&config.timeout, &ledger_identity_service).await?;
         Ok(Self {
             config,
-            ledger_identity: ledger_identity.clone(),
-            ledger_identity_service,
-            ledger_configuration_service: DamlLedgerConfigurationService::new(
-                channel.clone(),
-                &ledger_identity,
-                auth_token.clone(),
-            ),
-            package_service: DamlPackageService::new(channel.clone(), &ledger_identity, auth_token.clone()),
-            command_submission_service: DamlCommandSubmissionService::new(
-                channel.clone(),
-                &ledger_identity,
-                auth_token.clone(),
-            ),
-            transaction_service: DamlTransactionService::new(channel.clone(), &ledger_identity, auth_token.clone()),
-            command_service: DamlCommandService::new(channel.clone(), &ledger_identity, auth_token.clone()),
-            command_completion_service: DamlCommandCompletionService::new(
-                channel.clone(),
-                &ledger_identity,
-                auth_token.clone(),
-            ),
-            active_contract_service: DamlActiveContractsService::new(
-                channel.clone(),
-                &ledger_identity,
-                auth_token.clone(),
-            ),
-            #[cfg(feature = "admin")]
-            package_management_service: DamlPackageManagementService::new(channel.clone(), auth_token.clone()),
-            #[cfg(feature = "admin")]
-            party_management_service: DamlPartyManagementService::new(channel.clone(), auth_token.clone()),
-            #[cfg(feature = "admin")]
-            config_management_service: DamlConfigManagementService::new(channel.clone(), auth_token.clone()),
-            #[cfg(feature = "sandbox")]
-            reset_service: DamlResetService::new(channel.clone(), &ledger_identity, auth_token.clone()),
-            #[cfg(feature = "sandbox")]
-            time_service: DamlTimeService::new(channel.clone(), &ledger_identity, auth_token.clone()),
+            channel: channel.clone(),
+            ledger_identity,
         })
     }
-
-    // TODO maybe we wrap the token in a Cell?
-    #[allow(clippy::redundant_clone)]
-    fn refresh_token_for_services(mut self, new_token: impl Into<String>) -> Self {
-        let new_token = new_token.into();
-        self.config.auth_token = Some(new_token.clone());
-        self.ledger_identity_service.refresh_token(Some(new_token.clone()));
-        self.ledger_configuration_service.refresh_token(Some(new_token.clone()));
-        self.package_service.refresh_token(Some(new_token.clone()));
-        self.command_submission_service.refresh_token(Some(new_token.clone()));
-        self.command_completion_service.refresh_token(Some(new_token.clone()));
-        self.command_service.refresh_token(Some(new_token.clone()));
-        self.transaction_service.refresh_token(Some(new_token.clone()));
-        self.active_contract_service.refresh_token(Some(new_token.clone()));
-        #[cfg(feature = "admin")]
-        self.package_management_service.refresh_token(Some(new_token.clone()));
-        #[cfg(feature = "admin")]
-        self.party_management_service.refresh_token(Some(new_token.clone()));
-        #[cfg(feature = "admin")]
-        self.config_management_service.refresh_token(Some(new_token.clone()));
-        #[cfg(feature = "sandbox")]
-        self.reset_service.refresh_token(Some(new_token.clone()));
-        #[cfg(feature = "sandbox")]
-        self.time_service.refresh_token(Some(new_token));
-        self
-    }
-}
-
-/// Refresh the token used by a ledger API service.
-pub trait DamlTokenRefresh {
-    fn refresh_token(&mut self, auth_token: Option<String>);
 }

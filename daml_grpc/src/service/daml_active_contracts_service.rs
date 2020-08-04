@@ -4,10 +4,8 @@ use crate::data::DamlResult;
 use crate::data::{DamlActiveContracts, DamlTraceContext};
 use crate::grpc_protobuf::com::daml::ledger::api::v1::active_contracts_service_client::ActiveContractsServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{GetActiveContractsRequest, TraceContext, TransactionFilter};
-use crate::service::DamlVerbosity;
-
-use crate::ledger_client::DamlTokenRefresh;
 use crate::service::common::make_request;
+use crate::service::DamlVerbosity;
 use futures::Stream;
 use futures::StreamExt;
 use log::{debug, trace};
@@ -24,18 +22,34 @@ use tonic::transport::Channel;
 /// reflects the state at the ledger end.
 ///
 /// [`DamlLedgerOffsetBoundary::Begin`]: crate::data::offset::DamlLedgerOffsetBoundary::Begin
-pub struct DamlActiveContractsService {
+pub struct DamlActiveContractsService<'a> {
     channel: Channel,
-    ledger_id: String,
-    auth_token: Option<String>,
+    ledger_id: &'a str,
+    auth_token: Option<&'a str>,
 }
 
-impl DamlActiveContractsService {
-    pub fn new(channel: Channel, ledger_id: impl Into<String>, auth_token: Option<String>) -> Self {
+impl<'a> DamlActiveContractsService<'a> {
+    pub fn new(channel: Channel, ledger_id: &'a str, auth_token: Option<&'a str>) -> Self {
         Self {
             channel,
-            ledger_id: ledger_id.into(),
+            ledger_id,
             auth_token,
+        }
+    }
+
+    /// Override the JWT token to use for this service.
+    pub fn with_token(self, auth_token: &'a str) -> Self {
+        Self {
+            auth_token: Some(auth_token),
+            ..self
+        }
+    }
+
+    /// Override the ledger id to use for this service.
+    pub fn with_ledger_id(self, ledger_id: &'a str) -> Self {
+        Self {
+            ledger_id,
+            ..self
         }
     }
 
@@ -55,14 +69,14 @@ impl DamlActiveContractsService {
     ) -> DamlResult<impl Stream<Item = DamlResult<DamlActiveContracts>>> {
         debug!("get_active_contracts");
         let payload = GetActiveContractsRequest {
-            ledger_id: self.ledger_id.clone(),
+            ledger_id: self.ledger_id.to_string(),
             filter: Some(TransactionFilter::from(filter.into())),
             verbose: bool::from(verbose.into()),
             trace_context: trace_context.into().map(TraceContext::from),
         };
         trace!("get_active_contracts payload = {:?}, auth_token = {:?}", payload, self.auth_token);
         let active_contract_stream =
-            self.client().get_active_contracts(make_request(payload, &self.auth_token)?).await?.into_inner();
+            self.client().get_active_contracts(make_request(payload, self.auth_token.as_deref())?).await?.into_inner();
         Ok(active_contract_stream.map(|c| match c {
             Ok(c) => DamlActiveContracts::try_from(c),
             Err(e) => Err(DamlError::from(e)),
@@ -71,11 +85,5 @@ impl DamlActiveContractsService {
 
     fn client(&self) -> ActiveContractsServiceClient<Channel> {
         ActiveContractsServiceClient::new(self.channel.clone())
-    }
-}
-
-impl DamlTokenRefresh for DamlActiveContractsService {
-    fn refresh_token(&mut self, auth_token: Option<String>) {
-        self.auth_token = auth_token
     }
 }

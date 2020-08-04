@@ -1,9 +1,7 @@
 use crate::data::package::DamlPackageDetails;
-
 use crate::data::DamlResult;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::package_management_service_client::PackageManagementServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::{ListKnownPackagesRequest, UploadDarFileRequest};
-use crate::ledger_client::DamlTokenRefresh;
 use crate::service::common::make_request;
 use bytes::buf::Buf;
 use bytes::Bytes;
@@ -20,16 +18,24 @@ use tonic::transport::Channel;
 /// When the participant is run in mode requiring authentication, all the calls in this interface will respond with
 /// `UNAUTHENTICATED`, if the caller fails to provide a valid access token, and will respond with `PERMISSION_DENIED`,
 /// if the claims in the token are insufficient to perform a given operation.
-pub struct DamlPackageManagementService {
+pub struct DamlPackageManagementService<'a> {
     channel: Channel,
-    auth_token: Option<String>,
+    auth_token: Option<&'a str>,
 }
 
-impl DamlPackageManagementService {
-    pub const fn new(channel: Channel, auth_token: Option<String>) -> Self {
+impl<'a> DamlPackageManagementService<'a> {
+    pub fn new(channel: Channel, auth_token: Option<&'a str>) -> Self {
         Self {
             channel,
             auth_token,
+        }
+    }
+
+    /// Override the JWT token to use for this service.
+    pub fn with_token(self, auth_token: &'a str) -> Self {
+        Self {
+            auth_token: Some(auth_token),
+            ..self
         }
     }
 
@@ -38,7 +44,8 @@ impl DamlPackageManagementService {
         debug!("list_known_packages");
         let payload = ListKnownPackagesRequest {};
         trace!("list_known_packages payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        let all_known_packages = self.client().list_known_packages(make_request(payload, &self.auth_token)?).await?;
+        let all_known_packages =
+            self.client().list_known_packages(make_request(payload, self.auth_token.as_deref())?).await?;
         all_known_packages.into_inner().package_details.into_iter().map(DamlPackageDetails::try_from).collect()
     }
 
@@ -64,16 +71,14 @@ impl DamlPackageManagementService {
             submission_id: submission_id.unwrap_or_default(),
         };
         trace!("upload_dar_file payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        self.client().upload_dar_file(make_request(payload, &self.auth_token)?).await.map_err(Into::into).map(|_| ())
+        self.client()
+            .upload_dar_file(make_request(payload, self.auth_token.as_deref())?)
+            .await
+            .map_err(Into::into)
+            .map(|_| ())
     }
 
     fn client(&self) -> PackageManagementServiceClient<Channel> {
         PackageManagementServiceClient::new(self.channel.clone())
-    }
-}
-
-impl DamlTokenRefresh for DamlPackageManagementService {
-    fn refresh_token(&mut self, auth_token: Option<String>) {
-        self.auth_token = auth_token
     }
 }
