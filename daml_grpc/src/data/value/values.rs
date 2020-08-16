@@ -244,7 +244,7 @@ impl DamlValue {
 
     pub fn try_optional(&self) -> DamlResult<Option<&Self>> {
         match self {
-            DamlValue::Optional(opt) => Ok(opt.as_ref().map(AsRef::as_ref)),
+            DamlValue::Optional(opt) => Ok(opt.as_deref()),
             _ => Err(self.make_unexpected_type_error("Optional")),
         }
     }
@@ -379,7 +379,7 @@ impl DamlValue {
     /// ```
     pub fn extract<'a, R, F>(&'a self, f: F) -> DamlResult<R>
     where
-        F: Fn(&'a DamlRecord) -> DamlResult<R>,
+        F: FnOnce(&'a DamlRecord) -> DamlResult<R>,
     {
         f(self.try_record()?)
     }
