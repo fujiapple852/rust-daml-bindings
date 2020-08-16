@@ -97,12 +97,12 @@ pub fn outline(dar_path: &str, package_opt: Option<&str>, module_opt: Option<&st
     dar.apply(|archive| match (package_opt, module_opt) {
         (Some(search_package), Some(search_module)) => archive
             .packages()
-            .get(search_package)
+            .find(|p| p.name() == search_package)
             .and_then(|p| p.root_module().child_module_path(&search_module.split('.').collect::<Vec<_>>()))
             .iter()
             .for_each(|m| m.accept(&mut visitor)),
         (Some(search_package), None) =>
-            archive.packages().get(search_package).iter().for_each(|&p| p.accept(&mut visitor)),
+            archive.packages().find(|p| p.name() == search_package).iter().for_each(|&p| p.accept(&mut visitor)),
         (None, _) => archive.accept(&mut visitor),
     })?;
 
