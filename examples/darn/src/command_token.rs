@@ -38,7 +38,7 @@ enum OutputFormat {
 
 fn args<'a, 'b>() -> App<'a, 'b> {
     SubCommand::with_name("token")
-        .about("generate a DAML sandbox token")
+        .about("Generate a DAML sandbox token")
         .setting(AppSettings::DeriveDisplayOrder)
         .arg(
             Arg::with_name("expiry")

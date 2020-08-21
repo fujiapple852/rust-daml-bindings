@@ -8,12 +8,14 @@
 )]
 #![forbid(unsafe_code)]
 
+use crate::command_intern::CommandIntern;
 use crate::command_package::CommandPackage;
 use crate::command_token::CommandToken;
 use anyhow::Result;
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, ArgMatches};
 use std::collections::HashMap;
 
+pub mod command_intern;
 pub mod command_package;
 pub mod command_token;
 
@@ -31,7 +33,8 @@ macro_rules! command {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let commands: Vec<Box<dyn DarnCommand>> = vec![command!(CommandPackage), command!(CommandToken)];
+    let commands: Vec<Box<dyn DarnCommand>> =
+        vec![command!(CommandPackage), command!(CommandToken), command!(CommandIntern)];
     let command_map: HashMap<_, _> = commands.into_iter().map(|cmd| (cmd.name().to_owned(), cmd)).collect();
     let matches = App::new(crate_name!())
         .version(crate_version!())
