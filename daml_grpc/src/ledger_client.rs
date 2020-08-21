@@ -299,12 +299,12 @@ impl DamlGrpcClient {
             Some(DamlGrpcTlsConfig {
                 ca_cert: Some(cert),
             }) => {
-                channel = channel.tls_config(ClientTlsConfig::new().ca_certificate(Certificate::from_pem(cert)));
+                channel = channel.tls_config(ClientTlsConfig::new().ca_certificate(Certificate::from_pem(cert)))?;
             },
             Some(DamlGrpcTlsConfig {
                 ca_cert: None,
             }) => {
-                channel = channel.tls_config(ClientTlsConfig::new());
+                channel = channel.tls_config(ClientTlsConfig::new())?;
             },
             _ => {},
         }

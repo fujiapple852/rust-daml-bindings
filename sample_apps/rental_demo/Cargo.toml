@@ -14,7 +14,7 @@ build = "build.rs"
 daml = { path = "../../daml", features = [ "prelude", "grpc", "sandbox" ] }
 tokio = { version = "0.2", features = [ "macros" ] }
 log = "0.4"
-log4rs = "0.12"
+log4rs = "0.13"
 
 [build-dependencies]
 daml = { path = "../../daml", features = [ "codegen" ] }
