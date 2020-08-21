@@ -3,14 +3,15 @@
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 
+use anyhow::{Context, Result};
 use daml::grpc_api::data::command::{DamlCommand, DamlCreateCommand, DamlExerciseCommand};
 use daml::grpc_api::data::event::{DamlCreatedEvent, DamlEvent};
 use daml::grpc_api::data::filter::DamlTransactionFilter;
 use daml::grpc_api::data::offset::{DamlLedgerOffset, DamlLedgerOffsetBoundary, DamlLedgerOffsetType};
 use daml::grpc_api::data::value::{DamlRecord, DamlValue};
+use daml::grpc_api::data::DamlError;
 use daml::grpc_api::data::DamlIdentifier;
 use daml::grpc_api::data::DamlTransaction;
-use daml::grpc_api::data::{DamlError, DamlResult};
 use daml::grpc_api::service::DamlVerbosity;
 use daml::grpc_api::{DamlCommandFactory, DamlGrpcClient, DamlGrpcClientBuilder};
 use daml::macros::{daml_path, daml_value};
@@ -31,12 +32,13 @@ const PARTY_BOB: &str = "Bob";
 const CHOICE_RESPOND_PING: &str = "RespondPing";
 const CHOICE_RESPOND_PONG: &str = "RespondPong";
 const TOKEN_VALIDITY_SECS: i64 = 60;
-// const SERVER_CA_CERT_PATH: &str = "../../resources/testing_types_sandbox/.tls_certs/ca.cert";
+// const SERVER_CA_CERT_PATH: &str = "resources/testing_types_sandbox/.tls_certs/ca.cert";
 const TOKEN_KEY_PATH: &str = "../../resources/testing_types_sandbox/.auth_certs/es256.key";
+const LOGGER_CONFIG: &str = "log4rs.yml";
 
 #[tokio::main]
-async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    log4rs::init_file("log4rs.yml", log4rs::file::Deserializers::default())?;
+async fn main() -> Result<()> {
+    log4rs::init_file(LOGGER_CONFIG, log4rs::file::Deserializers::default()).context(LOGGER_CONFIG)?;
     let ledger_client = create_connection("https://localhost:8080").await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     send_initial_ping(&ledger_client, &package_id, PARTY_ALICE).await?;
@@ -46,7 +48,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn create_connection(uri: &str) -> DamlResult<DamlGrpcClient> {
+async fn create_connection(uri: &str) -> Result<DamlGrpcClient> {
     let ledger_client = DamlGrpcClientBuilder::uri(uri)
         // .with_tls(std::fs::read_to_string(SERVER_CA_CERT_PATH)?)
         .with_auth(create_ec256_token()?)
@@ -57,7 +59,7 @@ async fn create_connection(uri: &str) -> DamlResult<DamlGrpcClient> {
     Ok(ledger_client)
 }
 
-async fn send_initial_ping(ledger_client: &DamlGrpcClient, package_id: &str, party: &str) -> DamlResult<()> {
+async fn send_initial_ping(ledger_client: &DamlGrpcClient, package_id: &str, party: &str) -> Result<()> {
     let ping_record: DamlRecord = daml_value![{
         sender: PARTY_ALICE#p,
         receiver: PARTY_BOB#p,
@@ -72,7 +74,7 @@ async fn send_initial_ping(ledger_client: &DamlGrpcClient, package_id: &str, par
     Ok(())
 }
 
-async fn process_ping_pong(ledger_client: &DamlGrpcClient, package_id: String, party: String) -> DamlResult<()> {
+async fn process_ping_pong(ledger_client: &DamlGrpcClient, package_id: String, party: String) -> Result<()> {
     let mut transactions_stream = ledger_client
         .transaction_service()
         .get_transactions(
@@ -100,7 +102,7 @@ async fn process_event(
     package_id: &str,
     party: &str,
     created_event: &DamlCreatedEvent,
-) -> DamlResult<Option<()>> {
+) -> Result<Option<()>> {
     let entity_name = created_event.template_id().entity_name();
     let contract_id = created_event.contract_id();
     let receiver = created_event.create_arguments().extract(daml_path![receiver#p])?;
@@ -123,7 +125,7 @@ async fn exercise_choice(
     party: &str,
     contract_id: &str,
     choice: &str,
-) -> DamlResult<String> {
+) -> Result<String> {
     let commands_factory = create_command_factory(PINGPONG_WORKFLOW_ID, PINGPONG_APP_ID, party);
     let exercise_command = DamlCommand::Exercise(DamlExerciseCommand::new(
         DamlIdentifier::new(package_id, PINGPONG_MODULE_NAME, entity_name),
@@ -132,7 +134,7 @@ async fn exercise_choice(
         DamlValue::new_record(DamlRecord::empty()),
     ));
     let exercise_commands = commands_factory.make_command(exercise_command);
-    ledger_client.command_service().submit_and_wait(exercise_commands).await
+    Ok(ledger_client.command_service().submit_and_wait(exercise_commands).await?)
 }
 
 fn create_command_factory(workflow_id: &str, application_id: &str, sending_party: &str) -> DamlCommandFactory {
@@ -147,11 +149,11 @@ fn response(entity_name: &str) -> &str {
     }
 }
 
-fn create_ec256_token() -> DamlResult<String> {
-    DamlSandboxTokenBuilder::new_with_duration_secs(TOKEN_VALIDITY_SECS)
+fn create_ec256_token() -> Result<String> {
+    Ok(DamlSandboxTokenBuilder::new_with_duration_secs(TOKEN_VALIDITY_SECS)
         .admin(true)
         .act_as(vec![String::from(PARTY_ALICE), String::from(PARTY_BOB)])
         .read_as(vec![String::from(PARTY_ALICE), String::from(PARTY_BOB)])
-        .new_ec256_token(std::fs::read_to_string(TOKEN_KEY_PATH)?)
-        .map_err(|e| DamlError::Other(e.to_string()))
+        .new_ec256_token(std::fs::read_to_string(TOKEN_KEY_PATH).context(TOKEN_KEY_PATH)?)
+        .map_err(|e| DamlError::Other(e.to_string()))?)
 }

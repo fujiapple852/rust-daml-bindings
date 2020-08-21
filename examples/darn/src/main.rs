@@ -29,7 +29,7 @@ macro_rules! command {
     };
 }
 
-#[tokio::main(core_threads = 4)]
+#[tokio::main]
 async fn main() -> Result<()> {
     let commands: Vec<Box<dyn DarnCommand>> = vec![command!(CommandPackage), command!(CommandToken)];
     let command_map: HashMap<_, _> = commands.into_iter().map(|cmd| (cmd.name().to_owned(), cmd)).collect();

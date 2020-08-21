@@ -1,22 +1,19 @@
 [package]
-name = "rental_demo"
+name = "ping_pong_demo"
 version = "0.1.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
-description = "Rental demo application"
+description = "Ping Pong demo application"
 repository = "https://github.com/fujiapple852/rust-daml-bindings"
 license = "Apache-2.0"
 keywords = ["daml", "api", "ledger"]
 categories = ["development-tools"]
 edition = "2018"
-build = "build.rs"
 
 [dependencies]
-daml = { path = "../../daml", features = [ "prelude", "grpc", "sandbox" ] }
+daml = { path = "../../daml", features = [ "grpc", "sandbox", "util", "macros" ] }
 tokio = { version = "0.2", features = [ "macros" ] }
+futures = "0.3"
+chrono = "0.4"
 log = "0.4"
 log4rs = "0.13"
-
-[build-dependencies]
-daml = { path = "../../daml", features = [ "codegen" ] }
-
-[workspace]
+anyhow = "1.0"

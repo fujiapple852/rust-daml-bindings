@@ -8,5 +8,7 @@ members = [
   "daml_derive",
   "daml_util",
   "daml_lf",
+  "examples/ping_pong_demo",
+  "examples/rental_demo"
 ]
-exclude = ["sample_apps/*"]
+exclude = ["examples/darn"]
