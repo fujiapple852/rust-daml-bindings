@@ -6,6 +6,7 @@ use itertools::Itertools;
 use prettytable::format;
 use prettytable::{color, Attr, Cell, Row, Table};
 
+/// Darn command for displaying packages.
 pub struct CommandPackage {}
 
 impl DarnCommand for CommandPackage {
@@ -15,7 +16,7 @@ impl DarnCommand for CommandPackage {
 
     fn args<'a, 'b>(&self) -> App<'a, 'b> {
         SubCommand::with_name("package")
-            .about("show dar package details")
+            .about("Show dar package details")
             .arg(Arg::with_name("dar").help("Sets the input dar file to use").required(true).index(1))
     }
 

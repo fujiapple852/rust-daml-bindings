@@ -1,15 +1,15 @@
-use daml::prelude::*;
-
 include!("autogen/rental_0_0_1.rs");
 
+use anyhow::{Context, Result};
 use daml::grpc_api::{CommandExecutor, DamlGrpcClientBuilder, DamlSimpleExecutorBuilder};
 use rental::da::rental::*;
 use std::convert::TryFrom;
 
+const LOGGER_CONFIG: &str = "resources/log4rs.yml";
+
 #[tokio::main]
-async fn main() -> DamlResult<()> {
-    log4rs::init_file("resources/log4rs.yml", log4rs::file::Deserializers::default())
-        .map_err(|e| DamlError::Other(e.to_string()))?;
+async fn main() -> Result<()> {
+    log4rs::init_file(LOGGER_CONFIG, log4rs::file::Deserializers::default()).context(LOGGER_CONFIG)?;
     let client = DamlGrpcClientBuilder::uri("http://localhost:8082").connect().await?.reset_and_wait().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
     let bob_executor = DamlSimpleExecutorBuilder::new(&client, "Bob").build();

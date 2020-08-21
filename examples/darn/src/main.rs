@@ -10,10 +10,8 @@
 
 use anyhow::Result;
 use clap::{App, AppSettings, Arg, SubCommand};
-use crate::command_intern::SortOrder;
 
 pub mod command_download;
-pub mod command_intern;
 pub mod command_json;
 pub mod command_list;
 pub mod command_module;
@@ -28,19 +26,6 @@ async fn main() -> Result<()> {
         .version("0.1.0")
         .about("DAML dar tool")
         .setting(AppSettings::ArgRequiredElseHelp)
-        .subcommand(
-            SubCommand::with_name("intern")
-                .about("show dar package details")
-                .arg(Arg::with_name("dar").help("Sets the input dar file to use").required(true).index(1))
-                .arg(
-                    Arg::with_name("index")
-                        .short("i")
-                        .long("index")
-                        .takes_value(true)
-                        .required(true)
-                        .help("the string intern index"),
-                ),
-        )
         .subcommand(
             SubCommand::with_name("module")
                 .about("show dar package module details")
@@ -147,11 +132,6 @@ async fn main() -> Result<()> {
     // sandbox token gen
     // raw - spit our raw LF proto
 
-    if let Some(inspect_matches) = matches.subcommand_matches("intern") {
-        let dar_path = inspect_matches.value_of("dar").unwrap();
-        // let index = inspect_matches.value_of("index").unwrap();
-        command_intern::intern_all_dotted(dar_path, false, SortOrder::ByIndex)?;
-    }
     if let Some(inspect_matches) = matches.subcommand_matches("module") {
         let dar_path = inspect_matches.value_of("dar").unwrap();
         command_module::module(dar_path, inspect_matches.value_of("package"))?;
