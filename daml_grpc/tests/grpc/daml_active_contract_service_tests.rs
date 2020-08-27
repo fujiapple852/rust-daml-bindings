@@ -48,10 +48,7 @@ async fn test_get_active_contracts() -> TestResult {
         .create_arguments()
         .fields()
         .iter()
-        .filter(|rec| match rec.label() {
-            Some(label) if label == "count" => true,
-            _ => false,
-        })
+        .filter(|rec| matches!(rec.label(), Some(label) if label == "count"))
         .collect();
     let create_count2: Vec<&DamlRecordField> = active_contracts[1]
         .active_contracts()
@@ -60,10 +57,7 @@ async fn test_get_active_contracts() -> TestResult {
         .create_arguments()
         .fields()
         .iter()
-        .filter(|rec| match rec.label() {
-            Some(label) if label == "count" => true,
-            _ => false,
-        })
+        .filter(|rec| matches!(rec.label(), Some(label) if label == "count"))
         .collect();
     let create_count1_val = match *create_count1.first().ok_or(ERR_STR)?.value() {
         DamlValue::Int64(i) => i,

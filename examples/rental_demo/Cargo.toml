@@ -19,3 +19,5 @@ anyhow = "1.0"
 
 [build-dependencies]
 daml = { path = "../../daml", features = [ "codegen" ] }
+
+[workspace]

@@ -17,3 +17,5 @@ chrono = "0.4"
 log = "0.4"
 log4rs = "0.13"
 anyhow = "1.0"
+
+[workspace]
