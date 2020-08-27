@@ -25,7 +25,7 @@ impl<'a> RenderContext<'a> {
         }
     }
 
-    pub fn archive(&self) -> &DamlArchive<'_> {
+    pub const fn archive(&self) -> &DamlArchive<'_> {
         match &self.mode {
             RenderMode::Intermediate(archive) => archive,
             RenderMode::Full(archive) => archive,

@@ -72,10 +72,7 @@ async fn test_get_transaction_trees() -> TestResult {
         .create_arguments()
         .fields()
         .iter()
-        .filter(|rec| match rec.label() {
-            Some(label) if label == "count" => true,
-            _ => false,
-        })
+        .filter(|rec| matches!(rec.label(), Some(label) if label == "count"))
         .collect();
     let count_field = count_fields.first().ok_or(ERR_STR)?;
     let count_field_val = match *count_field.value() {

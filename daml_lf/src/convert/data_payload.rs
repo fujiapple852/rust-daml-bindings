@@ -101,11 +101,9 @@ impl<'a> DamlDataEnrichedPayload<'a> {
     pub fn from_data_wrapper(data: DamlPayloadParentContext<'a>) -> DamlLfConvertResult<Self> {
         match &data.parent {
             DamlPayloadParentContextType::Data(DamlDataPayload::Record(record)) =>
-                if let Some(template) = data.module.template(&record.name) {
+                data.module.template(&record.name).map_or(Ok(DamlDataEnrichedPayload::Record(record)), |template| {
                     Ok(DamlDataEnrichedPayload::Template(template))
-                } else {
-                    Ok(DamlDataEnrichedPayload::Record(record))
-                },
+                }),
             DamlPayloadParentContextType::Data(DamlDataPayload::Variant(variant)) =>
                 Ok(DamlDataEnrichedPayload::Variant(variant)),
             DamlPayloadParentContextType::Data(DamlDataPayload::Enum(data_enum)) =>

@@ -7,7 +7,6 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
     clippy::module_name_repetitions,
-    clippy::default_trait_access,
     clippy::needless_pass_by_value,
     clippy::use_self,
     clippy::cast_sign_loss,

@@ -23,7 +23,7 @@ pub struct IsRenderable<'a> {
 }
 
 impl<'a> IsRenderable<'a> {
-    pub fn new(ctx: &'a RenderContext<'a>) -> Self {
+    pub const fn new(ctx: &'a RenderContext<'a>) -> Self {
         Self {
             archive: ctx.archive(),
             filter_mode: ctx.filter_mode(),
