@@ -189,7 +189,10 @@ macro_rules! daml_value {
     // Covers DamlValue::Bool, DamlValue::Text, DamlValue::Int64 & DamlValue::Numeric cases
     //
     ($prim:expr) => {
-        $crate::daml_grpc::data::value::DamlValue::from($prim)
+        {
+            use std::convert::TryFrom;
+            $crate::daml_grpc::data::value::DamlValue::try_from($prim).expect("invalid numeric")
+        }
     };
 
     //
@@ -232,6 +235,7 @@ mod test {
     use crate::test_util::{make_date, make_timestamp};
     use bigdecimal::BigDecimal;
     use daml_grpc::data::value::DamlValue;
+    use std::convert::TryFrom;
 
     #[test]
     pub fn test_unit_value() -> TestResult {
@@ -292,7 +296,7 @@ mod test {
     #[test]
     pub fn test_numeric_value() -> TestResult {
         let value: DamlValue = daml_value![1.23];
-        assert_eq!(&BigDecimal::from(1.23), value.try_numeric()?);
+        assert_eq!(&BigDecimal::try_from(1.23).unwrap(), value.try_numeric()?);
         Ok(())
     }
 

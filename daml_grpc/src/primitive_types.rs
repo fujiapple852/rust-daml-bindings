@@ -1,11 +1,14 @@
-use crate::data::DamlError;
-use crate::nat::{Nat, Nat10};
-use bigdecimal::BigDecimal;
-use chrono::{Date, DateTime, Utc};
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::fmt::Formatter;
 use std::marker::PhantomData;
 use std::str::FromStr;
+
+use bigdecimal::BigDecimal;
+use chrono::{Date, DateTime, Utc};
+
+use crate::data::DamlError;
+use crate::nat::{Nat, Nat10};
 
 /// Type alias for a DAML `Int`.
 pub type DamlInt64 = i64;
@@ -174,12 +177,25 @@ impl<T: Nat> DamlFixedNumeric<T> {
             value,
         }
     }
+    pub fn try_new(f: f64) -> Result<Self, DamlError> {
+        Ok(Self::new(BigDecimal::try_from(f)?))
+    }
 }
 
-// TODO to make this a proper newtype what other methods do we want to add?
+/// Convert a f64 to a `DamlFixedNumeric`.
+///
+/// Note that this is not a fallible conversion and instead panics if the conversion fails.  Use
+/// `DamlFixedNumeric::try_new` instead to construct a `DamlFixedNumerical` with returns an error on invalid input.
+///
+/// Arguable we could use the `TryFrom` trait here however the code generate currently produces entries such as
+/// `my_numeric: impl Into<DamlNumeric10>` rather than `TryInto` which has the nice property of avoiding fallible cases.
+#[allow(clippy::fallible_impl_from)]
 impl<T: Nat> From<f64> for DamlFixedNumeric<T> {
     fn from(f: f64) -> Self {
-        Self::new(f.into())
+        Self::new(match BigDecimal::try_from(f) {
+            Ok(bd) => bd,
+            Err(err) => panic!(format!("invalid f64: {}", err)),
+        })
     }
 }
 
@@ -188,5 +204,34 @@ impl<T: Nat> FromStr for DamlFixedNumeric<T> {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self::new(FromStr::from_str(s)?))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_numeric_try_new() {
+        let num = DamlNumeric10::try_new(1.2_f64).unwrap();
+        assert_eq!(DamlNumeric10::new(BigDecimal::try_from(1.2_f64).unwrap()), num);
+    }
+
+    #[test]
+    fn test_numeric_try_new_nan() {
+        let num = DamlNumeric10::try_new(1_f64 / 0_f64);
+        assert!(num.is_err());
+    }
+
+    #[test]
+    fn test_numeric_from() {
+        let num = DamlNumeric10::from(1.2_f64);
+        assert_eq!(DamlNumeric10::new(BigDecimal::try_from(1.2_f64).unwrap()), num);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_numeric_from_should_panic() {
+        let _ = DamlNumeric10::from(1_f64 / 0_f64);
     }
 }

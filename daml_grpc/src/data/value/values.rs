@@ -444,14 +444,18 @@ impl From<i64> for DamlValue {
         Self::new_int64(i)
     }
 }
-impl From<f32> for DamlValue {
-    fn from(d: f32) -> Self {
-        Self::new_numeric(d)
+impl TryFrom<f32> for DamlValue {
+    type Error = DamlError;
+
+    fn try_from(d: f32) -> DamlResult<Self> {
+        Ok(Self::new_numeric(DamlNumeric::try_from(d)?))
     }
 }
-impl From<f64> for DamlValue {
-    fn from(d: f64) -> Self {
-        Self::new_numeric(d)
+impl TryFrom<f64> for DamlValue {
+    type Error = DamlError;
+
+    fn try_from(d: f64) -> DamlResult<Self> {
+        Ok(Self::new_numeric(DamlNumeric::try_from(d)?))
     }
 }
 

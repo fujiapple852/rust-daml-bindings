@@ -12,7 +12,7 @@ edition = "2018"
 [dependencies]
 daml_grpc = { path = "../daml_grpc" }
 chrono = "0.4"
-bigdecimal = "0.1"
+bigdecimal = "0.2"
 
 [dev-dependencies]
 daml = { path = "../daml", features = [ "grpc" ] }

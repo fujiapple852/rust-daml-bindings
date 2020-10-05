@@ -94,6 +94,7 @@
 /// # Examples
 ///
 /// ```
+/// # use std::convert::TryFrom;
 /// # use daml_grpc::data::value::{DamlRecord, DamlValue};
 /// # use daml_grpc::data::{DamlResult, DamlError};
 /// # use daml::macros::{daml_value, daml_path};
@@ -115,7 +116,7 @@
 /// assert_eq!(123, *value.extract(daml_path![trade/trade_id#i])?);
 /// assert_eq!("Bob", value.extract(daml_path![trade/counterparty#p])?);
 /// assert_eq!("GOOG", value.extract(daml_path![trade/trade_details/ticker#t])?);
-/// assert_eq!(&BigDecimal::from(1234.85),
+/// assert_eq!(&BigDecimal::try_from(1234.85).unwrap(),
 ///                 value.extract(daml_path![trade/trade_details/prices[1]#f])?);
 /// assert_eq!("MarketOrder", value.extract(daml_path![trade/order_type?#t])?);
 /// # Ok(())
@@ -356,6 +357,7 @@ mod test {
     use bigdecimal::BigDecimal;
     use daml_grpc::data::value::{DamlRecord, DamlValue, DamlVariant};
     use daml_grpc::data::DamlError;
+    use std::convert::TryFrom;
 
     #[test]
     pub fn test_top_party() -> TestResult {
@@ -417,7 +419,7 @@ mod test {
     #[test]
     pub fn test_top_numeric() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(&BigDecimal::from(1.23), value.extract(daml_path![height#f])?);
+        assert_eq!(&BigDecimal::try_from(1.23).unwrap(), value.extract(daml_path![height#f])?);
         Ok(())
     }
 

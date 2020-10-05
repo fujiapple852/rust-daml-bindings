@@ -9,6 +9,7 @@ use daml_lf::element::{DamlArchive, DamlData, DamlField, DamlType};
 use serde_json::{Map, Value};
 use std::collections::HashMap;
 use std::str::FromStr;
+use std::convert::TryFrom;
 
 /// DOCME
 #[derive(Debug)]
@@ -116,7 +117,7 @@ impl<'a> JsonDecoder<'a> {
 
     fn decode_numeric(json: &Value) -> DamlJsonCodecResult<DamlValue> {
         match (json.as_f64(), json.as_str()) {
-            (Some(f64), None) => Ok(DamlValue::new_numeric(f64)),
+            (Some(f64), None) => Ok(DamlValue::new_numeric(DamlNumeric::try_from(f64)?)),
             (None, Some(s)) => Ok(DamlValue::new_numeric(DamlNumeric::from_str(s)?)),
             _ => Err(DamlJsonCodecError::UnexpectedJsonType(
                 "f64 or String".to_owned(),
