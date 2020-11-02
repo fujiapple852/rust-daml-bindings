@@ -1,4 +1,3 @@
-daml 1.2
 module DA.Nested where
 
 import DA.TextMap as M
