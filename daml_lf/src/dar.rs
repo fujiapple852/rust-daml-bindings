@@ -284,7 +284,7 @@ impl ZipArchiveEx<File> for ZipArchive<File> {
         let mut paths = Vec::with_capacity(self.len());
         for i in 0..self.len() {
             if let Ok(file) = self.by_index(i) {
-                paths.push(file.sanitized_name())
+                paths.push(PathBuf::from(file.name()))
             }
         }
         paths
