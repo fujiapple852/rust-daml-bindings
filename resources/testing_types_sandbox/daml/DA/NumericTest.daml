@@ -1,4 +1,3 @@
-daml 1.2
 module DA.NumericTest where
 
 newtype MyNumeric abc = MyNumeric with value : Numeric abc deriving (Eq, Show)
