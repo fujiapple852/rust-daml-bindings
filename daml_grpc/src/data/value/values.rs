@@ -874,7 +874,7 @@ mod tests {
         let mut hasher2 = DefaultHasher::new();
         value2.hash(&mut hasher2);
         let hash2 = hasher2.finish();
-        assert_eq!(value1, value1);
+        assert_eq!(value1, value2);
         assert_eq!(hash1, hash2);
     }
 

@@ -7,6 +7,6 @@ pub trait Required<T> {
 
 impl<T> Required<T> for Option<T> {
     fn req(self) -> DamlLfConvertResult<T> {
-        self.ok_or_else(|| DamlLfConvertError::MissingRequiredField)
+        self.ok_or(DamlLfConvertError::MissingRequiredField)
     }
 }

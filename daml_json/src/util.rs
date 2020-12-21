@@ -7,7 +7,7 @@ pub trait Required<T> {
 
 impl<T> Required<T> for Option<T> {
     fn req(self) -> DamlJsonCodecResult<T> {
-        self.ok_or_else(|| DamlJsonCodecError::MissingRequiredField)
+        self.ok_or(DamlJsonCodecError::MissingRequiredField)
     }
 }
 

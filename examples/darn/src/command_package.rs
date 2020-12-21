@@ -34,7 +34,7 @@ fn execute(dar_path: &str) -> Result<()> {
         table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
         archive.packages().sorted_by_key(|&p| p.package_id()).for_each(|package| {
             let name = package.name();
-            let version = package.version().unwrap_or_else(|| "n/a");
+            let version = package.version().unwrap_or("n/a");
             let package_id = package.package_id();
             let language_version = &package.language_version().to_string();
             if package.package_id() == dar.main.hash {
