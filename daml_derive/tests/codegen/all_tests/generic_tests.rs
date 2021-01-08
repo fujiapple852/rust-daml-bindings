@@ -66,7 +66,7 @@ async fn test_create_contract_with_generic() -> TestResult {
     };
     let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
-    let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
+    let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
     let template_with_generic = TemplateWithGeneric::new(
         "Alice",
         GenericDataRecord::new(Some(vec![0, 1, 2]), vec!["first".to_owned(), "second".to_owned()], 10),

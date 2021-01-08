@@ -15,8 +15,8 @@ daml_codegen!(dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-
 async fn test_rent() -> TestResult {
     let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
-    let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
-    let bob_executor = DamlSimpleExecutorBuilder::new(&client, "Bob").build();
+    let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
+    let bob_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Bob").build()?;
     let proposal = testing_types::da::rent_demo::RentalProposal::new("Alice", "Bob", "Some Terms");
     let create_proposal_command = proposal.create_command();
     let create_proposal_command =

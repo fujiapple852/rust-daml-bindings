@@ -11,8 +11,8 @@ const LOGGER_CONFIG: &str = "resources/log4rs.yml";
 async fn main() -> Result<()> {
     log4rs::init_file(LOGGER_CONFIG, log4rs::file::Deserializers::default()).context(LOGGER_CONFIG)?;
     let client = DamlGrpcClientBuilder::uri("http://localhost:8082").connect().await?.reset_and_wait().await?;
-    let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
-    let bob_executor = DamlSimpleExecutorBuilder::new(&client, "Bob").build();
+    let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
+    let bob_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Bob").build()?;
     let proposal_data = RentalProposal::new("Alice", "Bob", "test");
     let proposal_event = alice_executor.execute_create(proposal_data.create_command()).await?;
     let proposal_contract = RentalProposalContract::try_from(proposal_event)?;

@@ -13,7 +13,7 @@ use std::convert::TryInto;
 async fn test_using_enum() -> TestResult {
     let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
-    let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
+    let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
     let car = Car::new(
         "Alice",
         "Bob",

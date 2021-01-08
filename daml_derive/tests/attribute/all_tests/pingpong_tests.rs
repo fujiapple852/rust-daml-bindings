@@ -33,7 +33,7 @@ fn test_local_round_trip() -> TestResult {
 async fn test_ledger_create() -> TestResult {
     let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
-    let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
+    let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
     let ping = Ping::new("Alice", "Bob", 0);
     let create_ping_command = ping.create_command();
     let create_ping_command = update_create_command_package_id_for_testing(&client, create_ping_command).await?;
@@ -51,7 +51,7 @@ async fn test_ledger_create() -> TestResult {
 async fn test_ledger_create_and_exercise_with_nested() -> TestResult {
     let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
-    let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
+    let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
 
     let ping = Ping::new("Alice", "Bob", 0);
     let create_ping_command = ping.create_command();

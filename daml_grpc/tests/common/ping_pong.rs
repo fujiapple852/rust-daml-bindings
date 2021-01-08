@@ -52,7 +52,8 @@ pub fn create_test_command_factory(workflow_id: &str, application_id: &str, send
     DamlCommandFactory::new(
         workflow_id,
         application_id,
-        sending_party,
+        vec![sending_party.into()],
+        vec![],
         None,
         DamlMinLedgerTime::Relative(Duration::from_millis(0)),
     )

@@ -20,7 +20,7 @@ pub async fn test() -> TestResult {
     use testing_types::da::nested::{MyNestedData, NestedTemplate, NestedTemplateContract};
     let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
-    let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
+    let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
 
     // construct dummy data
     let mut my_map: DamlTextMap<MyNestedData> = HashMap::new();

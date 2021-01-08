@@ -14,6 +14,8 @@ pub struct DamlCommands {
     application_id: String,
     command_id: String,
     party: String,
+    act_as: Vec<String>,
+    read_as: Vec<String>,
     commands: Vec<DamlCommand>,
     deduplication_time: Option<Duration>,
     min_ledger_time: Option<DamlMinLedgerTime>,
@@ -26,6 +28,8 @@ impl DamlCommands {
         application_id: impl Into<String>,
         command_id: impl Into<String>,
         party: impl Into<String>,
+        act_as: impl Into<Vec<String>>,
+        read_as: impl Into<Vec<String>>,
         commands: impl Into<Vec<DamlCommand>>,
         deduplication_time: impl Into<Option<Duration>>,
         min_ledger_time: impl Into<Option<DamlMinLedgerTime>>,
@@ -35,6 +39,8 @@ impl DamlCommands {
             application_id: application_id.into(),
             command_id: command_id.into(),
             party: party.into(),
+            act_as: act_as.into(),
+            read_as: read_as.into(),
             commands: commands.into(),
             deduplication_time: deduplication_time.into(),
             min_ledger_time: min_ledger_time.into(),
@@ -55,6 +61,14 @@ impl DamlCommands {
 
     pub fn party(&self) -> &str {
         &self.party
+    }
+
+    pub fn act_as(&self) -> &[String] {
+        &self.act_as
+    }
+
+    pub fn read_as(&self) -> &[String] {
+        &self.read_as
     }
 
     pub fn commands(&self) -> &[DamlCommand] {
@@ -82,6 +96,8 @@ impl TryFrom<DamlCommands> for Commands {
             application_id: daml_commands.application_id,
             command_id: daml_commands.command_id,
             party: daml_commands.party,
+            act_as: daml_commands.act_as,
+            read_as: daml_commands.read_as,
             commands: daml_commands.commands.into_iter().map(Command::from).collect(),
             deduplication_time: daml_commands.deduplication_time.as_ref().map(util::to_grpc_duration).transpose()?,
             min_ledger_time_abs: match daml_commands.min_ledger_time {
