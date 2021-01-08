@@ -138,7 +138,7 @@ async fn exercise_choice(
 }
 
 fn create_command_factory(workflow_id: &str, application_id: &str, sending_party: &str) -> DamlCommandFactory {
-    DamlCommandFactory::new(workflow_id, application_id, sending_party, None, None)
+    DamlCommandFactory::new(workflow_id, application_id, vec![sending_party.into()], vec![], None, None)
 }
 
 fn response(entity_name: &str) -> &str {

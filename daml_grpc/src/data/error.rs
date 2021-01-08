@@ -19,6 +19,7 @@ pub enum DamlError {
     UnexpectedVariant(String, String),
     Other(String),
     FailedConversion(String),
+    InsufficientParties,
 }
 
 impl DamlError {
@@ -49,6 +50,7 @@ impl fmt::Display for DamlError {
             DamlError::Other(e) => write!(fmt, "{}", e),
             DamlError::FailedConversion(e) => write!(fmt, "failed conversion: {}", e),
             DamlError::TimeoutError(e) => write!(fmt, "timeout error: {}", e),
+            DamlError::InsufficientParties => write!(fmt, "insufficient parties"),
         }
     }
 }

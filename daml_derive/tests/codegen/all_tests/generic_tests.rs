@@ -12,7 +12,7 @@ use daml_derive::daml_codegen;
 use std::convert::TryInto;
 
 daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_6_0-lf_1_8.dar",
+    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_8_0-lf_1_8.dar",
     module_filter_regex = "DA.GenericTypes"
 );
 
@@ -66,7 +66,7 @@ async fn test_create_contract_with_generic() -> TestResult {
     };
     let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
-    let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
+    let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
     let template_with_generic = TemplateWithGeneric::new(
         "Alice",
         GenericDataRecord::new(Some(vec![0, 1, 2]), vec!["first".to_owned(), "second".to_owned()], 10),

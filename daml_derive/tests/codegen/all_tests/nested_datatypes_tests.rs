@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 
 daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_6_0-lf_1_8.dar",
+    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_8_0-lf_1_8.dar",
     module_filter_regex = "DA.Nested"
 );
 
@@ -20,7 +20,7 @@ pub async fn test() -> TestResult {
     use testing_types::da::nested::{MyNestedData, NestedTemplate, NestedTemplateContract};
     let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
-    let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
+    let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
 
     // construct dummy data
     let mut my_map: DamlTextMap<MyNestedData> = HashMap::new();

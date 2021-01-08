@@ -54,7 +54,7 @@ fn resolve<'a, R: PackageInternedResolver>(
     // Extract the target module from the target package
     let target_module = target_package
         .module_by_name(&target_module_path)
-        .ok_or_else(|| DamlLfConvertError::UnknownModule(target_module_path))?;
+        .ok_or(DamlLfConvertError::UnknownModule(target_module_path))?;
 
     // Find the target data from the target module
     let data_types_iter =

@@ -75,7 +75,7 @@ impl<'a> DamlCommandService<'a> {
     /// # fn main() -> DamlResult<()> {
     /// futures::executor::block_on(async {
     /// let ledger_client = DamlGrpcClientBuilder::uri("http://127.0.0.1").connect().await?;
-    /// # let commands: DamlCommands = DamlCommands::new("", "", "", "", vec![], None, None);
+    /// # let commands: DamlCommands = DamlCommands::new("", "", "", "", vec![], vec![], vec![], None, None);
     /// let future_command = ledger_client.command_service().submit_and_wait(commands).await;
     /// match future_command {
     ///     Ok(command_id) => assert_eq!("1234", command_id),

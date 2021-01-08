@@ -8,7 +8,8 @@ use uuid::Uuid;
 pub struct DamlCommandFactory {
     workflow_id: String,
     application_id: String,
-    party: String,
+    act_as: Vec<String>,
+    read_as: Vec<String>,
     deduplication_time: Option<Duration>,
     min_ledger_time: Option<DamlMinLedgerTime>,
 }
@@ -17,14 +18,16 @@ impl DamlCommandFactory {
     pub fn new(
         workflow_id: impl Into<String>,
         application_id: impl Into<String>,
-        party: impl Into<String>,
+        act_as: impl Into<Vec<String>>,
+        read_as: impl Into<Vec<String>>,
         deduplication_time: impl Into<Option<Duration>>,
         min_ledger_time: impl Into<Option<DamlMinLedgerTime>>,
     ) -> Self {
         Self {
             workflow_id: workflow_id.into(),
             application_id: application_id.into(),
-            party: party.into(),
+            act_as: act_as.into(),
+            read_as: read_as.into(),
             deduplication_time: deduplication_time.into(),
             min_ledger_time: min_ledger_time.into(),
         }
@@ -38,8 +41,12 @@ impl DamlCommandFactory {
         &self.application_id
     }
 
-    pub fn party(&self) -> &str {
-        &self.party
+    pub fn act_as(&self) -> &[String] {
+        &self.act_as
+    }
+
+    pub fn read_as(&self) -> &[String] {
+        &self.read_as
     }
 
     pub const fn deduplication_time(&self) -> &Option<Duration> {
@@ -67,7 +74,9 @@ impl DamlCommandFactory {
             self.workflow_id.clone(),
             self.application_id.clone(),
             command_id.map_or_else(|| format!("{}", Uuid::new_v4()), Into::into),
-            self.party.clone(),
+            "",
+            self.act_as.clone(),
+            self.read_as.clone(),
             commands.into(),
             self.deduplication_time,
             self.min_ledger_time.clone(),

@@ -1,15 +1,18 @@
+use std::time::Duration;
+
+use async_trait::async_trait;
+
 use crate::data::command::{DamlCommand, DamlCreateCommand, DamlExerciseCommand};
 use crate::data::event::{DamlCreatedEvent, DamlTreeEvent};
 use crate::data::value::DamlValue;
 use crate::data::{DamlError, DamlMinLedgerTime, DamlResult, DamlTransaction, DamlTransactionTree};
 use crate::util::Required;
 use crate::{DamlCommandFactory, DamlGrpcClient};
-use async_trait::async_trait;
-use std::time::Duration;
 
 pub struct DamlSimpleExecutorBuilder<'a> {
     ledger_client: &'a DamlGrpcClient,
-    acting_party: &'a str,
+    act_as: Option<Vec<String>>,
+    read_as: Option<Vec<String>>,
     workflow_id: Option<&'a str>,
     application_id: Option<&'a str>,
     deduplication_time: Option<Duration>,
@@ -17,10 +20,11 @@ pub struct DamlSimpleExecutorBuilder<'a> {
 }
 
 impl<'a> DamlSimpleExecutorBuilder<'a> {
-    pub const fn new(ledger_client: &'a DamlGrpcClient, acting_party: &'a str) -> Self {
+    pub const fn new(ledger_client: &'a DamlGrpcClient) -> Self {
         Self {
             ledger_client,
-            acting_party,
+            act_as: None,
+            read_as: None,
             workflow_id: None,
             application_id: None,
             deduplication_time: None,
@@ -31,6 +35,34 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
     pub fn workflow_id(self, workflow_id: &'a str) -> Self {
         Self {
             workflow_id: Some(workflow_id),
+            ..self
+        }
+    }
+
+    pub fn act_as(self, act_as: impl Into<String>) -> Self {
+        Self {
+            act_as: Some(vec![act_as.into()]),
+            ..self
+        }
+    }
+
+    pub fn act_as_all(self, act_as_all: Vec<String>) -> Self {
+        Self {
+            act_as: Some(act_as_all),
+            ..self
+        }
+    }
+
+    pub fn read_as(self, read_as: impl Into<String>) -> Self {
+        Self {
+            read_as: Some(vec![read_as.into()]),
+            ..self
+        }
+    }
+
+    pub fn read_as_all(self, read_as_all: Vec<String>) -> Self {
+        Self {
+            read_as: Some(read_as_all),
             ..self
         }
     }
@@ -56,15 +88,29 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
         }
     }
 
-    pub fn build(self) -> DamlSimpleExecutor<'a> {
-        DamlSimpleExecutor::new(
-            self.ledger_client,
-            self.acting_party,
-            self.workflow_id.unwrap_or("default-workflow"),
-            self.application_id.unwrap_or("default-application"),
-            self.deduplication_time,
-            self.min_ledger_time,
-        )
+    pub fn build(self) -> DamlResult<DamlSimpleExecutor<'a>> {
+        if self.has_parties() {
+            Ok(DamlSimpleExecutor::new(
+                self.ledger_client,
+                self.act_as.unwrap_or_default(),
+                self.read_as.unwrap_or_default(),
+                self.workflow_id.unwrap_or("default-workflow"),
+                self.application_id.unwrap_or("default-application"),
+                self.deduplication_time,
+                self.min_ledger_time,
+            ))
+        } else {
+            Err(DamlError::InsufficientParties)
+        }
+    }
+
+    fn has_parties(&self) -> bool {
+        match (self.act_as.as_deref(), self.read_as.as_deref()) {
+            (None, None) => false,
+            (Some(act_as), None) => !act_as.is_empty(),
+            (None, Some(read_as)) => !read_as.is_empty(),
+            (Some(act_as), Some(read_as)) => !act_as.is_empty() || !read_as.is_empty(),
+        }
     }
 }
 
@@ -91,18 +137,27 @@ pub struct DamlSimpleExecutor<'a> {
 impl<'a> DamlSimpleExecutor<'a> {
     pub fn new(
         ledger_client: &'a DamlGrpcClient,
-        acting_party: &str,
+        act_as: Vec<String>,
+        read_as: Vec<String>,
         workflow_id: &str,
         application_id: &str,
         deduplication_time: Option<Duration>,
         min_ledger_time: Option<DamlMinLedgerTime>,
     ) -> Self {
         let command_factory =
-            DamlCommandFactory::new(workflow_id, application_id, acting_party, deduplication_time, min_ledger_time);
+            DamlCommandFactory::new(workflow_id, application_id, act_as, read_as, deduplication_time, min_ledger_time);
         Self {
             ledger_client,
             command_factory,
         }
+    }
+
+    pub fn act_as(&self) -> &[String] {
+        self.command_factory.act_as()
+    }
+
+    pub fn read_as(&self) -> &[String] {
+        self.command_factory.read_as()
     }
 
     async fn submit_and_wait_for_transaction(&self, command: DamlCommand) -> DamlResult<DamlTransaction> {
@@ -155,5 +210,80 @@ impl CommandExecutor for DamlSimpleExecutor<'_> {
                 }
             })
             .req()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_act_as() -> DamlResult<()> {
+        let client = DamlGrpcClient::dummy_for_testing().await;
+        let executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
+        assert_eq!(&["Alice"], executor.act_as());
+        assert_eq!(0, executor.read_as().len());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_read_as() -> DamlResult<()> {
+        let client = DamlGrpcClient::dummy_for_testing().await;
+        let executor = DamlSimpleExecutorBuilder::new(&client).read_as("Alice").build()?;
+        assert_eq!(&["Alice"], executor.read_as());
+        assert_eq!(0, executor.act_as().len());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_act_as_and_read_as() -> DamlResult<()> {
+        let client = DamlGrpcClient::dummy_for_testing().await;
+        let executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").read_as("Bob").build()?;
+        assert_eq!(&["Alice"], executor.act_as());
+        assert_eq!(&["Bob"], executor.read_as());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_act_as_all() -> DamlResult<()> {
+        let client = DamlGrpcClient::dummy_for_testing().await;
+        let executor =
+            DamlSimpleExecutorBuilder::new(&client).act_as_all(vec!["Alice".into(), "Bob".into()]).build()?;
+        assert_eq!(&["Alice", "Bob"], executor.act_as());
+        assert_eq!(0, executor.read_as().len());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_read_as_all() -> DamlResult<()> {
+        let client = DamlGrpcClient::dummy_for_testing().await;
+        let executor =
+            DamlSimpleExecutorBuilder::new(&client).read_as_all(vec!["Alice".into(), "Bob".into()]).build()?;
+        assert_eq!(&["Alice", "Bob"], executor.read_as());
+        assert_eq!(0, executor.act_as().len());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_act_as_all_and_read_as_all() -> DamlResult<()> {
+        let client = DamlGrpcClient::dummy_for_testing().await;
+        let executor = DamlSimpleExecutorBuilder::new(&client)
+            .act_as_all(vec!["Alice".into(), "Bob".into()])
+            .read_as_all(vec!["John".into(), "Jill".into()])
+            .build()?;
+        assert_eq!(&["Alice", "Bob"], executor.act_as());
+        assert_eq!(&["John", "Jill"], executor.read_as());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_no_actors_should_fail() -> DamlResult<()> {
+        let client = DamlGrpcClient::dummy_for_testing().await;
+        let executor = DamlSimpleExecutorBuilder::new(&client).build();
+        match executor {
+            Err(DamlError::InsufficientParties) => (),
+            _ => panic!("expected DamlError::InsufficientParties"),
+        };
+        Ok(())
     }
 }

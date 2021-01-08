@@ -1,4 +1,4 @@
-sdk-version: 1.6.0
+sdk-version: 1.8.0
 name: TestingTypes
 source: daml/LibraryModules.daml
 parties:

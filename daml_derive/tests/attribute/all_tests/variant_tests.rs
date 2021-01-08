@@ -17,7 +17,7 @@ use std::convert::TryInto;
 async fn test_circle_variant() -> TestResult {
     let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
-    let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
+    let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
     let circle_template =
         CircleTemplate::new("Alice", Circle::new(1.223_000_000_1, Color::Other(RGBA::new(255, 0, 100, 99))));
     let create_command = circle_template.create_command();
@@ -44,7 +44,7 @@ async fn test_circle_variant() -> TestResult {
 async fn test_all_variant_types() -> TestResult {
     let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
-    let alice_executor = DamlSimpleExecutorBuilder::new(&client, "Alice").build();
+    let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
     let mut map_of_party: HashMap<String, DamlParty> = HashMap::new();
     map_of_party.insert("sender".to_owned(), DamlParty::new("Alice"));
     map_of_party.insert("receiver".to_owned(), DamlParty::new("Bob"));

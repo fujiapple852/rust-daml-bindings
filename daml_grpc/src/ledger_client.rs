@@ -1,7 +1,8 @@
 use crate::data::{DamlError, DamlResult};
 use crate::service::{
     DamlActiveContractsService, DamlCommandCompletionService, DamlCommandService, DamlCommandSubmissionService,
-    DamlLedgerConfigurationService, DamlLedgerIdentityService, DamlPackageService, DamlTransactionService,
+    DamlLedgerConfigurationService, DamlLedgerIdentityService, DamlPackageService, DamlParticipantPruningService,
+    DamlTransactionService, DamlVersionService,
 };
 #[cfg(feature = "admin")]
 use crate::service::{DamlConfigManagementService, DamlPackageManagementService, DamlPartyManagementService};
@@ -10,6 +11,9 @@ use crate::service::{DamlResetService, DamlTimeService};
 use log::debug;
 use std::time::{Duration, Instant};
 use tonic::transport::{Certificate, Channel, ClientTlsConfig};
+
+#[cfg(test)]
+use tonic::transport::Uri;
 
 const DEFAULT_TIMEOUT_SECS: u64 = 5;
 
@@ -236,6 +240,11 @@ impl DamlGrpcClient {
     }
 
     /// DOCME
+    pub fn version_service(&self) -> DamlVersionService<'_> {
+        DamlVersionService::new(self.channel.clone(), &self.ledger_identity, self.config.auth_token.as_deref())
+    }
+
+    /// DOCME
     #[cfg(feature = "admin")]
     pub fn package_management_service(&self) -> DamlPackageManagementService<'_> {
         DamlPackageManagementService::new(self.channel.clone(), self.config.auth_token.as_deref())
@@ -251,6 +260,12 @@ impl DamlGrpcClient {
     #[cfg(feature = "admin")]
     pub fn config_management_service(&self) -> DamlConfigManagementService<'_> {
         DamlConfigManagementService::new(self.channel.clone(), self.config.auth_token.as_deref())
+    }
+
+    /// DOCME
+    #[cfg(feature = "admin")]
+    pub fn participant_pruning_service(&self) -> DamlParticipantPruningService<'_> {
+        DamlParticipantPruningService::new(self.channel.clone(), self.config.auth_token.as_deref())
     }
 
     /// DOCME
@@ -337,5 +352,14 @@ impl DamlGrpcClient {
             channel: channel.clone(),
             ledger_identity,
         })
+    }
+
+    #[cfg(test)]
+    pub(crate) async fn dummy_for_testing() -> Self {
+        DamlGrpcClient {
+            config: DamlGrpcClientConfig::default(),
+            channel: Channel::builder(Uri::from_static("http://dummy.for.testing")).connect_lazy().unwrap(),
+            ledger_identity: String::default(),
+        }
     }
 }

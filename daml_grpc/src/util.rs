@@ -68,6 +68,6 @@ pub trait Required<T> {
 
 impl<T> Required<T> for Option<T> {
     fn req(self) -> DamlResult<T> {
-        self.ok_or_else(|| DamlError::MissingRequiredField)
+        self.ok_or(DamlError::MissingRequiredField)
     }
 }
