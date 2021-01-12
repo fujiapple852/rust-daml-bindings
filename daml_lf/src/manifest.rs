@@ -1,8 +1,7 @@
 use crate::error::{DamlLfError, DamlLfResult};
 use itertools::Itertools;
-use serde::export::Formatter;
 use std::convert::Into;
-use std::fmt::Display;
+use std::fmt::{Display, Formatter};
 use yaml_rust::YamlLoader;
 
 const MANIFEST_VERSION_KEY: &str = "Manifest-Version";

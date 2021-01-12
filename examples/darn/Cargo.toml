@@ -10,7 +10,7 @@ daml = { path = "../../daml", features = [ "grpc", "sandbox", "lf_full", "util" 
 tokio = { version = "0.2", features = [ "rt-threaded", "macros" ] }
 clap = "2.33"
 prettytable-rs = "0.8"
-itertools = "0.9"
+itertools = "0.10"
 anyhow = "1.0"
 thiserror = "1.0"
 

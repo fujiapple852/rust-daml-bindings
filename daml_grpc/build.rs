@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 }
 
 fn get_all_protos(src_paths: &[&str]) -> Result<Vec<PathBuf>, Error> {
-    src_paths.iter().map(Path::new).map(get_protos_from_dir).fold_results(vec![], |mut acc: Vec<PathBuf>, v| {
+    src_paths.iter().map(Path::new).map(get_protos_from_dir).fold_ok(vec![], |mut acc: Vec<PathBuf>, v| {
         acc.extend(v);
         acc
     })

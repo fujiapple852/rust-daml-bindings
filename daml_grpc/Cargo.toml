@@ -36,4 +36,4 @@ anyhow = "1.0"
 
 [build-dependencies]
 tonic-build = "0.3"
-itertools = "0.9"
+itertools = "0.10"
