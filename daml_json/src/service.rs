@@ -169,7 +169,7 @@ impl DamlJsonClient {
             .connect_timeout(config.connect_timeout)
             .timeout(config.timeout)
             .pool_idle_timeout(config.keepalive)
-            .tcp_nodelay_(config.nodelay)
+            .tcp_nodelay(config.nodelay)
             .pool_max_idle_per_host(config.max_idle_connection_per_host)
             .use_rustls_tls();
         if let Some(cc) = &config.tls_config {

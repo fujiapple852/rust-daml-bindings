@@ -3,7 +3,6 @@ use crate::data::DamlResult;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::package_management_service_client::PackageManagementServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::{ListKnownPackagesRequest, UploadDarFileRequest};
 use crate::service::common::make_request;
-use bytes::buf::Buf;
 use bytes::Bytes;
 use log::{debug, trace};
 use std::convert::TryFrom;
@@ -67,7 +66,7 @@ impl<'a> DamlPackageManagementService<'a> {
     pub async fn upload_dar_file(&self, bytes: impl Into<Bytes>, submission_id: Option<String>) -> DamlResult<()> {
         debug!("upload_dar_file");
         let payload = UploadDarFileRequest {
-            dar_file: bytes.into().bytes().to_vec(),
+            dar_file: bytes.into().to_vec(),
             submission_id: submission_id.unwrap_or_default(),
         };
         trace!("upload_dar_file payload = {:?}, auth_token = {:?}", payload, self.auth_token);

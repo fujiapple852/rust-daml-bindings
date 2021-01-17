@@ -15,9 +15,9 @@ default = []
 full = []
 
 [dependencies]
-bytes = "0.5"
-prost = { version = "0.6", features = [ "no-recursion-limit" ] }
-prost-derive = "0.6"
+bytes = "1"
+prost = { version = "0.7", features = [ "no-recursion-limit" ] }
+prost-derive = "0.7"
 zip = "0.5"
 yaml-rust = "0.4"
 itertools = "0.10"
@@ -28,5 +28,5 @@ thiserror = "1.0"
 trim-margin = "0.1"
 
 [build-dependencies]
-prost-build = "0.6"
+prost-build = "0.7"
 itertools = "0.10"

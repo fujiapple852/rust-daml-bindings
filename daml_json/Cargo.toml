@@ -12,18 +12,18 @@ edition = "2018"
 [dependencies]
 daml_grpc = { path = "../daml_grpc" }
 daml_lf = { path = "../daml_lf" }
-reqwest = { version = "0.10", default-features = false, features = [ "json", "rustls-tls" ] }
+reqwest = { version = "0.11", default-features = false, features = [ "json", "rustls-tls" ] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "1.0"
 bigdecimal = "0.1"
 chrono = "0.4"
 url = "2.1"
-bytes = "0.5"
+bytes = "1"
 
 [dev-dependencies]
 daml = { path = "../daml", features = [ "macros", "util" ,"sandbox", "grpc" ] }
-tokio = { version = "0.2", features = [ "macros" ] }
+tokio = { version = "1", features = [ "macros", "rt-multi-thread" ] }
 maplit = "1.0"
 anyhow = "1.0"
 lazy_static = "1.3"
