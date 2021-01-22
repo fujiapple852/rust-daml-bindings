@@ -1,9 +1,7 @@
 module DA.MapTest where
 
 import DA.TextMap as TextMap
-import DA.Next.Map as NextMap
 import DA.Map as GenMap
 
 data Foo = Foo with foo : GenMap.Map Int Text
 data Bar = Bar with bar : TextMap.TextMap Int
-data Baz = Baz with baz : NextMap.Map Int Int
