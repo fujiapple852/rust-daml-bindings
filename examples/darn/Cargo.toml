@@ -1,6 +1,6 @@
 [package]
 name = "darn"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
 description = "Tools for working with DAML Archives and ledgers"
 edition = "2018"
