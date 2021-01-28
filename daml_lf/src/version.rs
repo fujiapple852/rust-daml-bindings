@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 use std::fmt::{Display, Error, Formatter};
 
 /// DAML Ledger Fragment language version.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize)]
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize)]
 pub enum LanguageVersion {
     LV0,
     LV1(LanguageV1MinorVersion),
@@ -140,7 +140,7 @@ impl LanguageFeatureVersion {
 }
 
 /// DAML Ledger Fragment language V1 minor version.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize)]
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize)]
 pub enum LanguageV1MinorVersion {
     V0,
     V1,

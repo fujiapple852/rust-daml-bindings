@@ -40,10 +40,12 @@ impl<'a> DamlPackage<'a> {
         &self.package_id
     }
 
+    /// Package version.
     pub fn version(&self) -> Option<&str> {
         self.version.as_ref().map(AsRef::as_ref)
     }
 
+    /// The Daml LF language version.
     pub const fn language_version(&self) -> LanguageVersion {
         self.language_version
     }
