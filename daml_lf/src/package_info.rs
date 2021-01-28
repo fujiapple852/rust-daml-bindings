@@ -21,7 +21,7 @@ impl PackageInfo {
             package_id: package_id.into(),
             package_name: package_name.into(),
             version: version.into(),
-            language_version: language_version.into(),
+            language_version,
         }
     }
 
