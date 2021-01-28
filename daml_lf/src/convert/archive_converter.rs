@@ -1,6 +1,10 @@
 use crate::convert::archive_payload::DamlArchiveWrapper;
 use crate::convert::data_box_checker::DamlDataBoxChecker;
-use crate::convert::data_payload::{DamlChoiceWrapper, DamlDataEnrichedPayload, DamlDataPayload, DamlDataWrapper};
+use crate::convert::data_payload::{
+    DamlChoiceWrapper, DamlDataEnrichedPayload, DamlDataPayload, DamlDataWrapper, DamlDefKeyWrapper,
+};
+#[cfg(feature = "full")]
+use crate::convert::expr_payload::DamlKeyExprPayload;
 use crate::convert::field_payload::{DamlFieldPayload, DamlFieldWrapper};
 use crate::convert::interned::{InternableDottedName, PackageInternedResolver};
 use crate::convert::module_payload::{DamlDefTypeSynWrapper, DamlFeatureFlagsPayload, DamlModuleWrapper};
@@ -16,13 +20,13 @@ use crate::convert::util::Required;
 use crate::convert::wrapper::{DamlPayloadParentContext, DamlPayloadParentContextType, PayloadElementWrapper};
 #[cfg(feature = "full")]
 use crate::element::DamlDefValue;
+#[cfg(feature = "full")]
+use crate::element::DamlExpr;
 use crate::element::{
-    DamlArchive, DamlArrow, DamlChoice, DamlData, DamlDefTypeSyn, DamlEnum, DamlFeatureFlags, DamlField, DamlForall,
-    DamlKind, DamlLocalTyCon, DamlModule, DamlNonLocalTyCon, DamlPackage, DamlRecord, DamlStruct, DamlSyn,
+    DamlArchive, DamlArrow, DamlChoice, DamlData, DamlDefKey, DamlDefTypeSyn, DamlEnum, DamlFeatureFlags, DamlField,
+    DamlForall, DamlKind, DamlLocalTyCon, DamlModule, DamlNonLocalTyCon, DamlPackage, DamlRecord, DamlStruct, DamlSyn,
     DamlTemplate, DamlTyCon, DamlTyConName, DamlType, DamlTypeSynName, DamlTypeVarWithKind, DamlVar, DamlVariant,
 };
-#[cfg(feature = "full")]
-use crate::element::{DamlDefKey, DamlExpr};
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use crate::LanguageFeatureVersion;
 use std::borrow::Cow;
@@ -160,7 +164,6 @@ impl<'a> TryFrom<DamlDataWrapper<'a>> for DamlData<'a> {
                 let agreement = DamlExpr::try_from(&data.wrap(&template.agreement))?;
                 #[cfg(feature = "full")]
                 let observers = DamlExpr::try_from(&data.wrap(&template.observers))?;
-                #[cfg(feature = "full")]
                 let key = template.key.as_ref().map(|k| DamlDefKey::try_from(&data.wrap(k))).transpose()?;
                 let serializable = parent_data.serializable;
                 DamlData::Template(Box::new(DamlTemplate::new(
@@ -178,7 +181,6 @@ impl<'a> TryFrom<DamlDataWrapper<'a>> for DamlData<'a> {
                     agreement,
                     #[cfg(feature = "full")]
                     observers,
-                    #[cfg(feature = "full")]
                     key,
                     serializable,
                 )))
@@ -266,6 +268,35 @@ impl<'a> TryFrom<DamlChoiceWrapper<'a>> for DamlChoice<'a> {
             controllers,
             #[cfg(feature = "full")]
             observers,
+        ))
+    }
+}
+
+/// Convert from `DamlDefKeyWrapper` to `DamlDefKey`.
+impl<'a> TryFrom<&DamlDefKeyWrapper<'a>> for DamlDefKey<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(def_key: &DamlDefKeyWrapper<'a>) -> DamlLfConvertResult<Self> {
+        let ty = DamlType::try_from(&def_key.wrap(&def_key.payload.ty))?;
+        #[cfg(feature = "full")]
+        let (maintainers, key_expr) = match &def_key.payload.key_expr {
+            DamlKeyExprPayload::ComplexKey(key) => {
+                let maintainers = DamlExpr::try_from(&def_key.wrap(&def_key.payload.maintainers))?;
+                let key_expr = DamlExpr::try_from(&def_key.wrap(key))?;
+                Ok((maintainers, key_expr))
+            },
+            DamlKeyExprPayload::LegacyKey => Err(DamlLfConvertError::UnsupportedFeatureUsed(
+                def_key.context.package.language_version().to_string(),
+                LanguageFeatureVersion::CONTRACT_KEYS.name.to_string(),
+                LanguageFeatureVersion::CONTRACT_KEYS.min_version.to_string(),
+            )),
+        }?;
+        Ok(DamlDefKey::new(
+            ty,
+            #[cfg(feature = "full")]
+            maintainers,
+            #[cfg(feature = "full")]
+            key_expr,
         ))
     }
 }

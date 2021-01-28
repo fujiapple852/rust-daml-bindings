@@ -1,5 +1,5 @@
 #[cfg(feature = "full")]
-use crate::convert::expr_payload::{DamlDefKeyPayload, DamlExprPayload};
+use crate::convert::expr_payload::{DamlExprPayload, DamlKeyExprPayload};
 use crate::convert::field_payload::DamlFieldPayload;
 use crate::convert::interned::{InternableDottedName, InternableString};
 use crate::convert::type_payload::DamlTypePayload;
@@ -8,6 +8,7 @@ use crate::convert::util::Required;
 use crate::convert::wrapper::{DamlPayloadParentContext, DamlPayloadParentContextType, PayloadElementWrapper};
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::def_data_type::DataCons;
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::def_template::DefKey;
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::{DefDataType, DefTemplate, TemplateChoice};
 use std::convert::TryFrom;
 
@@ -138,7 +139,6 @@ pub struct DamlTemplatePayload<'a> {
     pub agreement: DamlExprPayload<'a>,
     #[cfg(feature = "full")]
     pub observers: DamlExprPayload<'a>,
-    #[cfg(feature = "full")]
     pub key: Option<DamlDefKeyPayload<'a>>,
 }
 
@@ -152,7 +152,7 @@ impl<'a> DamlTemplatePayload<'a> {
         #[cfg(feature = "full")] signatories: DamlExprPayload<'a>,
         #[cfg(feature = "full")] agreement: DamlExprPayload<'a>,
         #[cfg(feature = "full")] observers: DamlExprPayload<'a>,
-        #[cfg(feature = "full")] key: Option<DamlDefKeyPayload<'a>>,
+        key: Option<DamlDefKeyPayload<'a>>,
     ) -> Self {
         Self {
             name,
@@ -166,7 +166,6 @@ impl<'a> DamlTemplatePayload<'a> {
             agreement,
             #[cfg(feature = "full")]
             observers,
-            #[cfg(feature = "full")]
             key,
         }
     }
@@ -188,7 +187,6 @@ impl<'a> TryFrom<&'a DefTemplate> for DamlTemplatePayload<'a> {
             DamlExprPayload::try_from(def_template.agreement.as_ref().req()?)?,
             #[cfg(feature = "full")]
             DamlExprPayload::try_from(def_template.observers.as_ref().req()?)?,
-            #[cfg(feature = "full")]
             def_template.key.as_ref().map(DamlDefKeyPayload::try_from).transpose()?,
         ))
     }
@@ -275,6 +273,47 @@ impl<'a> TryFrom<&'a TemplateChoice> for DamlChoicePayload<'a> {
             DamlExprPayload::try_from(controllers)?,
             #[cfg(feature = "full")]
             observers.map(DamlExprPayload::try_from).transpose()?,
+        ))
+    }
+}
+
+pub type DamlDefKeyWrapper<'a> = PayloadElementWrapper<'a, &'a DamlDefKeyPayload<'a>>;
+
+#[derive(Debug)]
+pub struct DamlDefKeyPayload<'a> {
+    pub ty: DamlTypePayload<'a>,
+    #[cfg(feature = "full")]
+    pub maintainers: DamlExprPayload<'a>,
+    #[cfg(feature = "full")]
+    pub key_expr: DamlKeyExprPayload<'a>,
+}
+
+impl<'a> DamlDefKeyPayload<'a> {
+    pub fn new(
+        ty: DamlTypePayload<'a>,
+        #[cfg(feature = "full")] maintainers: DamlExprPayload<'a>,
+        #[cfg(feature = "full")] key_expr: DamlKeyExprPayload<'a>,
+    ) -> Self {
+        Self {
+            ty,
+            #[cfg(feature = "full")]
+            maintainers,
+            #[cfg(feature = "full")]
+            key_expr,
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a DefKey> for DamlDefKeyPayload<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(def_key: &'a DefKey) -> DamlLfConvertResult<Self> {
+        Ok(Self::new(
+            DamlTypePayload::try_from(def_key.r#type.as_ref().req()?)?,
+            #[cfg(feature = "full")]
+            DamlExprPayload::try_from(def_key.maintainers.as_ref().req()?)?,
+            #[cfg(feature = "full")]
+            DamlKeyExprPayload::try_from(def_key.key_expr.as_ref().req()?)?,
         ))
     }
 }

@@ -38,7 +38,24 @@ impl<'a> DamlArchive<'a> {
     /// DOCME
     pub fn data_by_tycon<'b>(&'a self, tycon: &'b DamlTyCon<'_>) -> Option<&'a DamlData<'a>> {
         let (package_id, module_path, data_name) = tycon.tycon().reference_parts();
-        self.packages.get(package_id)?.root_module().child_module_path(module_path)?.data_type(data_name)
+        self.data(package_id, module_path, data_name)
+    }
+
+    /// Retrieve a `DamlData` contained within this `DamlArchive` referred to by the supplied package id, module path &
+    /// name or `None` if not such data item exists.
+    ///
+    /// DOCME
+    pub fn data<P, M, D>(&'a self, package_id: P, module_path: &[M], data_name: D) -> Option<&'a DamlData<'a>>
+    where
+        P: AsRef<str>,
+        M: AsRef<str>,
+        D: AsRef<str>,
+    {
+        self.packages
+            .get(package_id.as_ref())?
+            .root_module()
+            .child_module_path(module_path)?
+            .data_type(data_name.as_ref())
     }
 }
 

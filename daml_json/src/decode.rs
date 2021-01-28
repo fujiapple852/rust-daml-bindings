@@ -90,7 +90,7 @@ impl<'a> JsonDecoder<'a> {
                 json,
                 self.arc
                     .data_by_tycon(tycon)
-                    .ok_or_else(|| DamlJsonCodecError::DataNotFound(tycon.tycon().rendered_name()))?,
+                    .ok_or_else(|| DamlJsonCodecError::DataNotFound(tycon.tycon().to_string()))?,
             ),
             DamlType::Optional(nested) => {
                 let single = nested.as_single()?;

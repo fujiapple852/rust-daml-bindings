@@ -1,7 +1,7 @@
 use crate::element::daml_field::DamlField;
 use crate::element::visitor::DamlElementVisitor;
 #[cfg(feature = "full")]
-use crate::element::{DamlDefKey, DamlExpr, DamlPrimLit};
+use crate::element::{DamlExpr, DamlPrimLit};
 use crate::element::{DamlType, DamlTypeVarWithKind, DamlVisitableElement};
 use crate::owned::ToStatic;
 use serde::Serialize;
@@ -112,7 +112,6 @@ pub struct DamlTemplate<'a> {
     agreement: DamlExpr<'a>,
     #[cfg(feature = "full")]
     observers: DamlExpr<'a>,
-    #[cfg(feature = "full")]
     key: Option<DamlDefKey<'a>>,
     serializable: bool,
 }
@@ -130,7 +129,7 @@ impl<'a> DamlTemplate<'a> {
         #[cfg(feature = "full")] signatories: DamlExpr<'a>,
         #[cfg(feature = "full")] agreement: DamlExpr<'a>,
         #[cfg(feature = "full")] observers: DamlExpr<'a>,
-        #[cfg(feature = "full")] key: Option<DamlDefKey<'a>>,
+        key: Option<DamlDefKey<'a>>,
         serializable: bool,
     ) -> Self {
         Self {
@@ -148,7 +147,6 @@ impl<'a> DamlTemplate<'a> {
             agreement,
             #[cfg(feature = "full")]
             observers,
-            #[cfg(feature = "full")]
             key,
             serializable,
         }
@@ -175,7 +173,6 @@ impl<'a> DamlTemplate<'a> {
             agreement: DamlExpr::PrimLit(DamlPrimLit::Text(Cow::default())),
             #[cfg(feature = "full")]
             observers: DamlExpr::Nil(DamlType::List(vec![DamlType::Party])),
-            #[cfg(feature = "full")]
             key: None,
             serializable: true,
         }
@@ -225,7 +222,6 @@ impl<'a> DamlTemplate<'a> {
         &self.observers
     }
 
-    #[cfg(feature = "full")]
     pub fn key(&self) -> Option<&DamlDefKey<'a>> {
         self.key.as_ref()
     }
@@ -248,7 +244,6 @@ impl<'a> DamlVisitableElement<'a> for DamlTemplate<'a> {
         self.agreement.accept(visitor);
         #[cfg(feature = "full")]
         self.observers.accept(visitor);
-        #[cfg(feature = "full")]
         self.key.iter().for_each(|k| k.accept(visitor));
         visitor.post_visit_template(self);
     }
@@ -273,7 +268,6 @@ impl ToStatic for DamlTemplate<'_> {
             self.agreement.to_static(),
             #[cfg(feature = "full")]
             self.observers.to_static(),
-            #[cfg(feature = "full")]
             self.key.as_ref().map(DamlDefKey::to_static),
             self.serializable,
         )
@@ -405,6 +399,71 @@ impl ToStatic for DamlChoice<'_> {
             self.controllers.to_static(),
             #[cfg(feature = "full")]
             self.observers.to_static(),
+        )
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct DamlDefKey<'a> {
+    pub ty: DamlType<'a>,
+    #[cfg(feature = "full")]
+    pub maintainers: DamlExpr<'a>,
+    #[cfg(feature = "full")]
+    pub key_expr: DamlExpr<'a>,
+}
+
+impl<'a> DamlDefKey<'a> {
+    pub fn new(
+        ty: DamlType<'a>,
+        #[cfg(feature = "full")] maintainers: DamlExpr<'a>,
+        #[cfg(feature = "full")] key_expr: DamlExpr<'a>,
+    ) -> Self {
+        Self {
+            ty,
+            #[cfg(feature = "full")]
+            maintainers,
+            #[cfg(feature = "full")]
+            key_expr,
+        }
+    }
+
+    pub fn ty(&self) -> &DamlType<'a> {
+        &self.ty
+    }
+
+    #[cfg(feature = "full")]
+    pub fn maintainers(&self) -> &DamlExpr<'a> {
+        &self.maintainers
+    }
+
+    #[cfg(feature = "full")]
+    pub fn key_expr(&self) -> &DamlExpr<'a> {
+        &self.key_expr
+    }
+}
+
+impl<'a> DamlVisitableElement<'a> for DamlDefKey<'a> {
+    fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
+        visitor.pre_visit_def_key(self);
+        self.ty.accept(visitor);
+        #[cfg(feature = "full")]
+        self.maintainers.accept(visitor);
+        #[cfg(feature = "full")]
+        self.key_expr.accept(visitor);
+        visitor.post_visit_def_key(self);
+    }
+}
+
+impl ToStatic for DamlDefKey<'_> {
+    type Static = DamlDefKey<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlDefKey::new(
+            self.ty.to_static(),
+            #[cfg(feature = "full")]
+            self.maintainers.to_static(),
+            #[cfg(feature = "full")]
+            self.key_expr.to_static(),
         )
     }
 }

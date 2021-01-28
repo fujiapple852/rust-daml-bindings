@@ -1128,9 +1128,9 @@ impl ToStatic for DamlCaseAlt<'_> {
         DamlCaseAlt::new(self.body.to_static(), self.sum.to_static())
     }
 }
-// TODO box DamlCaseAltVariant ?
-#[allow(clippy::large_enum_variant)]
+
 #[derive(Debug, Serialize, Clone)]
+#[allow(clippy::large_enum_variant)] // TODO look at why DamlCaseAltVariant is so large (280 bytes!)
 pub enum DamlCaseAltSum<'a> {
     Default,
     Variant(DamlCaseAltVariant<'a>),
@@ -1954,52 +1954,5 @@ impl ToStatic for DamlScenarioEmbedExpr<'_> {
 
     fn to_static(&self) -> Self::Static {
         DamlScenarioEmbedExpr::new(self.ty.to_static(), Box::new(self.body.to_static()))
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
-pub struct DamlDefKey<'a> {
-    pub ty: DamlType<'a>,
-    pub maintainers: DamlExpr<'a>,
-    pub key_expr: DamlExpr<'a>,
-}
-
-impl<'a> DamlDefKey<'a> {
-    pub fn new(ty: DamlType<'a>, maintainers: DamlExpr<'a>, key_expr: DamlExpr<'a>) -> Self {
-        Self {
-            ty,
-            maintainers,
-            key_expr,
-        }
-    }
-
-    pub fn ty(&self) -> &DamlType<'a> {
-        &self.ty
-    }
-
-    pub fn maintainers(&self) -> &DamlExpr<'a> {
-        &self.maintainers
-    }
-
-    pub fn key_expr(&self) -> &DamlExpr<'a> {
-        &self.key_expr
-    }
-}
-
-impl<'a> DamlVisitableElement<'a> for DamlDefKey<'a> {
-    fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
-        visitor.pre_visit_def_key(self);
-        self.ty.accept(visitor);
-        self.maintainers.accept(visitor);
-        self.key_expr.accept(visitor);
-        visitor.post_visit_def_key(self);
-    }
-}
-
-impl ToStatic for DamlDefKey<'_> {
-    type Static = DamlDefKey<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlDefKey::new(self.ty.to_static(), self.maintainers.to_static(), self.key_expr.to_static())
     }
 }

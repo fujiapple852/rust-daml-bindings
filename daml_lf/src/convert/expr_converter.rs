@@ -3,28 +3,25 @@ use crate::convert::expr_payload::{
     DamlAbsWrapper, DamlAppWrapper, DamlBindingWrapper, DamlBlockWrapper, DamlBuiltinFunctionPayload,
     DamlCaseAltConsWrapper, DamlCaseAltEnumWrapper, DamlCaseAltOptionalSomeWrapper, DamlCaseAltSumPayload,
     DamlCaseAltSumWrapper, DamlCaseAltVariantWrapper, DamlCaseAltWrapper, DamlCaseWrapper, DamlCommitWrapper,
-    DamlConsWrapper, DamlCreateWrapper, DamlDefKeyWrapper, DamlEnumConWrapper, DamlExerciseByKeyWrapper,
-    DamlExerciseWrapper, DamlExprPayload, DamlExprWrapper, DamlFetchWrapper, DamlFieldWithExprWrapper,
-    DamlFromAnyWrapper, DamlKeyExprPayload, DamlOptionalSomeWrapper, DamlPrimConPayload, DamlPrimLitPayload,
-    DamlPrimLitWrapper, DamlPureWrapper, DamlRecConWrapper, DamlRecProjWrapper, DamlRecUpdWrapper,
-    DamlRetrieveByKeyWrapper, DamlScenarioEmbedExprWrapper, DamlScenarioPayload, DamlScenarioWrapper,
-    DamlStructConWrapper, DamlStructProjWrapper, DamlStructUpdWrapper, DamlToAnyWrapper, DamlTyAbsWrapper,
-    DamlTyAppWrapper, DamlUpdateEmbedExprWrapper, DamlUpdatePayload, DamlUpdateWrapper, DamlValueNameWrapper,
-    DamlVarWithTypeWrapper, DamlVariantConWrapper,
+    DamlConsWrapper, DamlCreateWrapper, DamlEnumConWrapper, DamlExerciseByKeyWrapper, DamlExerciseWrapper,
+    DamlExprPayload, DamlExprWrapper, DamlFetchWrapper, DamlFieldWithExprWrapper, DamlFromAnyWrapper,
+    DamlOptionalSomeWrapper, DamlPrimConPayload, DamlPrimLitPayload, DamlPrimLitWrapper, DamlPureWrapper,
+    DamlRecConWrapper, DamlRecProjWrapper, DamlRecUpdWrapper, DamlRetrieveByKeyWrapper, DamlScenarioEmbedExprWrapper,
+    DamlScenarioPayload, DamlScenarioWrapper, DamlStructConWrapper, DamlStructProjWrapper, DamlStructUpdWrapper,
+    DamlToAnyWrapper, DamlTyAbsWrapper, DamlTyAppWrapper, DamlUpdateEmbedExprWrapper, DamlUpdatePayload,
+    DamlUpdateWrapper, DamlValueNameWrapper, DamlVarWithTypeWrapper, DamlVariantConWrapper,
 };
-use crate::convert::interned::PackageInternedResolver;
 use crate::convert::package_payload::DamlPackagePayload;
 use crate::element::{
     DamlAbs, DamlApp, DamlBinding, DamlBlock, DamlBuiltinFunction, DamlCase, DamlCaseAlt, DamlCaseAltCons,
     DamlCaseAltEnum, DamlCaseAltOptionalSome, DamlCaseAltSum, DamlCaseAltVariant, DamlCommit, DamlCons, DamlCreate,
-    DamlDefKey, DamlDefValue, DamlEnumCon, DamlExercise, DamlExerciseByKey, DamlExpr, DamlFetch, DamlFieldWithExpr,
-    DamlFromAny, DamlLocalTyCon, DamlNonLocalTyCon, DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon,
-    DamlRecProj, DamlRecUpd, DamlRetrieveByKey, DamlScenario, DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj,
-    DamlStructUpd, DamlToAny, DamlTyAbs, DamlTyApp, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind,
-    DamlUpdate, DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
+    DamlDefValue, DamlEnumCon, DamlExercise, DamlExerciseByKey, DamlExpr, DamlFetch, DamlFieldWithExpr, DamlFromAny,
+    DamlLocalTyCon, DamlNonLocalTyCon, DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon, DamlRecProj,
+    DamlRecUpd, DamlRetrieveByKey, DamlScenario, DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj, DamlStructUpd,
+    DamlToAny, DamlTyAbs, DamlTyApp, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind, DamlUpdate,
+    DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
 };
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
-use crate::LanguageFeatureVersion;
 use std::borrow::Cow;
 use std::convert::TryFrom;
 
@@ -733,26 +730,6 @@ impl<'a> TryFrom<&DamlValueNameWrapper<'a>> for DamlValueName<'a> {
                 target_package_name,
                 target_module_path,
             )))
-        }
-    }
-}
-
-impl<'a> TryFrom<&DamlDefKeyWrapper<'a>> for DamlDefKey<'a> {
-    type Error = DamlLfConvertError;
-
-    fn try_from(def_key: &DamlDefKeyWrapper<'a>) -> DamlLfConvertResult<Self> {
-        match &def_key.payload.key_expr {
-            DamlKeyExprPayload::ComplexKey(key) => {
-                let ty = DamlType::try_from(&def_key.wrap(&def_key.payload.ty))?;
-                let maintainers = DamlExpr::try_from(&def_key.wrap(&def_key.payload.maintainers))?;
-                let key_expr = DamlExpr::try_from(&def_key.wrap(key))?;
-                Ok(DamlDefKey::new(ty, maintainers, key_expr))
-            },
-            DamlKeyExprPayload::LegacyKey => Err(DamlLfConvertError::UnsupportedFeatureUsed(
-                def_key.context.package.language_version().to_string(),
-                LanguageFeatureVersion::CONTRACT_KEYS.name.to_string(),
-                LanguageFeatureVersion::CONTRACT_KEYS.min_version.to_string(),
-            )),
         }
     }
 }

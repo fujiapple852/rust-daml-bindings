@@ -5,6 +5,8 @@ use serde::Serialize;
 use crate::element::visitor::DamlElementVisitor;
 use crate::element::{DamlField, DamlTypeVarWithKind, DamlVisitableElement};
 use crate::owned::ToStatic;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 
 /// Representation of a DAML type.
 #[derive(Debug, Serialize, Clone)]
@@ -364,21 +366,6 @@ impl<'a> DamlTyConName<'a> {
         }
     }
 
-    pub fn rendered_name(&self) -> String {
-        match self {
-            DamlTyConName::Local(local) =>
-                format!("{}:{}:{}", local.package_name, &local.module_path.join("."), local.data_name),
-            DamlTyConName::NonLocal(non_local) => format!(
-                "{}:{}:{}",
-                non_local.target_package_name,
-                &non_local.target_module_path.join("."),
-                non_local.data_name
-            ),
-            DamlTyConName::Absolute(abs) =>
-                format!("{}:{}:{}", abs.package_name, &abs.module_path.join("."), abs.data_name),
-        }
-    }
-
     /// Extract the package id, module path and data name.
     #[doc(hidden)]
     pub(crate) fn reference_parts(&self) -> (&str, &[Cow<'_, str>], &str) {
@@ -387,6 +374,24 @@ impl<'a> DamlTyConName<'a> {
             DamlTyConName::NonLocal(non_local) =>
                 (&non_local.target_package_id, &non_local.target_module_path, &non_local.data_name),
             DamlTyConName::Absolute(abs) => (&abs.package_id, &abs.module_path, &abs.data_name),
+        }
+    }
+}
+
+impl Display for DamlTyConName<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            DamlTyConName::Local(local) =>
+                write!(f, "{}:{}:{}", local.package_name, &local.module_path.join("."), local.data_name),
+            DamlTyConName::NonLocal(non_local) => write!(
+                f,
+                "{}:{}:{}",
+                non_local.target_package_name,
+                &non_local.target_module_path.join("."),
+                non_local.data_name
+            ),
+            DamlTyConName::Absolute(abs) =>
+                write!(f, "{}:{}:{}", abs.package_name, &abs.module_path.join("."), abs.data_name),
         }
     }
 }

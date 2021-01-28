@@ -34,7 +34,7 @@ pub fn to_owned_archive(dar: &DarFile) -> DamlLfResult<DamlArchive<'static>> {
     Ok(archive.to_static())
 }
 
-/// Create a [`DamlArchive`] from a [`DarFile`] and apply it to `f`.
+/// Convert a [`DarFile`] to a [`DamlArchive`] and map function `f` over it.
 pub fn apply_dar<R, F>(dar: &DarFile, f: F) -> DamlLfResult<R>
 where
     F: FnOnce(&DamlArchive<'_>) -> R,

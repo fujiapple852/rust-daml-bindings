@@ -7,7 +7,7 @@ use crate::convert::util::Required;
 use crate::convert::wrapper::PayloadElementWrapper;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::case_alt::Sum;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::def_template::{def_key, DefKey};
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::def_template::def_key;
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::expr::{
     Abs, App, Cons, EnumCon, FromAny, OptionalSome, RecCon, RecProj, RecUpd, StructCon, StructProj, StructUpd, ToAny,
     TyAbs, TyApp, VariantCon,
@@ -1566,37 +1566,6 @@ impl<'a> TryFrom<&'a scenario::EmbedExpr> for DamlScenarioEmbedExprPayload<'a> {
         Ok(Self::new(
             DamlTypePayload::try_from(embed_expr.r#type.as_ref().req()?)?,
             Box::new(DamlExprPayload::try_from(embed_expr.body.as_ref().req()?.as_ref())?),
-        ))
-    }
-}
-
-pub type DamlDefKeyWrapper<'a> = PayloadElementWrapper<'a, &'a DamlDefKeyPayload<'a>>;
-
-#[derive(Debug)]
-pub struct DamlDefKeyPayload<'a> {
-    pub ty: DamlTypePayload<'a>,
-    pub maintainers: DamlExprPayload<'a>,
-    pub key_expr: DamlKeyExprPayload<'a>,
-}
-
-impl<'a> DamlDefKeyPayload<'a> {
-    pub fn new(ty: DamlTypePayload<'a>, maintainers: DamlExprPayload<'a>, key_expr: DamlKeyExprPayload<'a>) -> Self {
-        Self {
-            ty,
-            maintainers,
-            key_expr,
-        }
-    }
-}
-
-impl<'a> TryFrom<&'a DefKey> for DamlDefKeyPayload<'a> {
-    type Error = DamlLfConvertError;
-
-    fn try_from(def_key: &'a DefKey) -> DamlLfConvertResult<Self> {
-        Ok(Self::new(
-            DamlTypePayload::try_from(def_key.r#type.as_ref().req()?)?,
-            DamlExprPayload::try_from(def_key.maintainers.as_ref().req()?)?,
-            DamlKeyExprPayload::try_from(def_key.key_expr.as_ref().req()?)?,
         ))
     }
 }
