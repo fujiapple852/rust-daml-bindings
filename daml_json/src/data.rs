@@ -1,7 +1,5 @@
-use crate::error::{DamlJsonError, DamlJsonResult};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::convert::TryFrom;
 
 /// DAML JSON API representation of a ledger event.
 #[derive(Debug, Serialize, Deserialize)]
@@ -9,10 +7,10 @@ pub enum DamlJsonEvent {
     #[serde(rename = "created")]
     Created(DamlJsonCreatedEvent),
     #[serde(rename = "archived")]
-    Archived(DamlJsonExercisedEvent),
+    Archived(DamlJsonArchivedEvent),
 }
 
-/// DAML JSON API representation of a ledger created event.
+/// DAML JSON API representation of a ledger contract created event.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonCreatedEvent {
     pub observers: Vec<String>,
@@ -46,13 +44,22 @@ impl DamlJsonCreatedEvent {
     }
 }
 
-/// DAML JSON API representation of a ledger exercised event.
+/// DAML JSON API representation of a ledger contract archived event.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DamlJsonExercisedEvent {
+pub struct DamlJsonArchivedEvent {
     #[serde(rename = "contractId")]
     pub contract_id: String,
     #[serde(rename = "templateId")]
     pub template_id: String,
+}
+
+impl DamlJsonArchivedEvent {
+    pub const fn new(contract_id: String, template_id: String) -> Self {
+        Self {
+            contract_id,
+            template_id,
+        }
+    }
 }
 
 /// DAML JSON API representation of a ledger exercise result.
@@ -96,47 +103,6 @@ impl DamlJsonQuery {
         Self {
             template_ids,
             query,
-        }
-    }
-}
-
-/// A helper representation of a DAML template id.
-///
-/// This type exists to provide a convenient `TryFrom` impl for converting from a String.
-///
-/// Template ids are represented as JSON strings of the form `[package_id:]module:entity` in the DAML JSON API and as
-/// such this struct does is not required to be `Serialize` or `Deserialize`.
-#[derive(Debug)]
-pub struct DamlJsonTemplateId {
-    pub package_id: Option<String>,
-    pub module: Vec<String>,
-    pub entity: String,
-}
-
-impl DamlJsonTemplateId {
-    pub fn new(package_id: Option<String>, module: Vec<String>, entity: String) -> Self {
-        Self {
-            package_id,
-            module,
-            entity,
-        }
-    }
-}
-
-impl TryFrom<&str> for DamlJsonTemplateId {
-    type Error = DamlJsonError;
-
-    fn try_from(value: &str) -> DamlJsonResult<Self> {
-        let splits: Vec<_> = value.split(':').collect();
-        match *splits.as_slice() {
-            [module, entity] =>
-                Ok(Self::new(None, module.split('.').map(ToOwned::to_owned).collect(), entity.to_owned())),
-            [package_id, module, entity] => Ok(Self::new(
-                Some(package_id.to_owned()),
-                module.split('.').map(ToOwned::to_owned).collect(),
-                entity.to_owned(),
-            )),
-            _ => Err(DamlJsonError::TemplateIdFormatError(value.to_owned())),
         }
     }
 }

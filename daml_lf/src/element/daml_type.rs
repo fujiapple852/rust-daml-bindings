@@ -100,6 +100,19 @@ impl<'a> DamlType<'a> {
             | DamlType::Nat(_) => false,
         }
     }
+
+    /// Convenience method to create a `DamlType::TyCon` for a given package id, module path and entity.
+    pub fn make_tycon<'b, S: AsRef<str> + 'b>(package_id: &'b str, module: &'b [S], entity: &'b str) -> DamlType<'b> {
+        DamlType::TyCon(DamlTyCon::new(
+            DamlTyConName::Absolute(DamlAbsoluteTyCon::new(
+                entity.into(),
+                package_id.into(),
+                Cow::default(),
+                module.iter().map(AsRef::as_ref).map(Into::into).collect(),
+            )),
+            vec![],
+        ))
+    }
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlType<'a> {

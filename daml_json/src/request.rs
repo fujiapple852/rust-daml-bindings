@@ -2,10 +2,12 @@ use crate::data::{DamlJsonCreatedEvent, DamlJsonExerciseResult, DamlJsonParty};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
+use std::iter::once;
 
 /// DAML JSON API request metadata.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonRequestMeta {
+    #[serde(rename = "commandId")]
     pub command_id: String,
 }
 
@@ -51,7 +53,25 @@ impl DamlJsonCreateRequest {
 pub struct DamlJsonCreateResponse {
     pub status: u16,
     pub result: DamlJsonCreatedEvent,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<HashMap<String, Vec<String>>>,
+}
+
+/// Represents either a DAML JSON API [`DamlJsonExerciseRequest`] or [`DamlJsonExerciseByKeyRequest`].
+///
+/// This is required as the DAML JSON API uses the same path (`exercise`) for both request types and the only way
+/// to uniquely identify which case we have been provided is by checking for the `contractId` and `key` fields.
+///
+/// To avoid having to first convert to a generic JSON `Value` to decide check which structure has been provided we
+/// use the `serde` [untagged enum](https://serde.rs/enum-representations.html#untagged) feature and add an
+/// [`DamlJsonInvalidExerciseRequest`] variant which has both `contractId` and `key` fields.  This allow the downstream
+/// hander to rejected the request with a suitable error message.
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum DamlJsonExerciseRequestType {
+    Invalid(DamlJsonInvalidExerciseRequest),
+    Exercise(DamlJsonExerciseRequest),
+    ExerciseByKey(DamlJsonExerciseByKeyRequest),
 }
 
 /// DAML JSON API exercise choice request.
@@ -87,6 +107,7 @@ impl DamlJsonExerciseRequest {
 pub struct DamlJsonExerciseResponse {
     pub status: u16,
     pub result: DamlJsonExerciseResult,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
@@ -118,7 +139,22 @@ impl DamlJsonExerciseByKeyRequest {
 pub struct DamlJsonExerciseByKeyResponse {
     pub status: u16,
     pub result: DamlJsonExerciseResult,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<HashMap<String, Vec<String>>>,
+}
+
+/// An invalid DAML JSON API exercise choice request (`key` and `contractId` are mutually exclusive).
+///
+/// See [`DamlJsonExerciseRequestType`] for details.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DamlJsonInvalidExerciseRequest {
+    #[serde(rename = "templateId")]
+    pub template_id: String,
+    #[serde(rename = "contractId")]
+    pub contract_id: String,
+    pub key: Value,
+    pub choice: String,
+    pub argument: Value,
 }
 
 /// DAML JSON API create contract and exercise choice request.
@@ -149,6 +185,7 @@ impl DamlJsonCreateAndExerciseRequest {
 pub struct DamlJsonCreateAndExerciseResponse {
     pub status: u16,
     pub result: DamlJsonExerciseResult,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
@@ -173,6 +210,7 @@ impl DamlJsonFetchRequest {
 pub struct DamlJsonFetchResponse {
     pub status: u16,
     pub result: DamlJsonCreatedEvent,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
@@ -199,6 +237,7 @@ impl DamlJsonFetchByKeyRequest {
 pub struct DamlJsonFetchByKeyResponse {
     pub status: u16,
     pub result: DamlJsonCreatedEvent,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
@@ -207,12 +246,13 @@ pub struct DamlJsonFetchByKeyResponse {
 pub struct DamlJsonQueryResponse {
     pub status: u16,
     pub result: Vec<DamlJsonCreatedEvent>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
 /// DAML JSON API fetch parties request.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DamlJsonFetchPartiesRequest(Vec<String>);
+pub struct DamlJsonFetchPartiesRequest(pub Vec<String>);
 
 impl DamlJsonFetchPartiesRequest {
     /// Create a new `DamlJsonFetchPartiesRequest` for a given list of party identifiers.
@@ -226,6 +266,7 @@ impl DamlJsonFetchPartiesRequest {
 pub struct DamlJsonFetchPartiesResponse {
     pub status: u16,
     pub result: Vec<DamlJsonParty>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
@@ -253,6 +294,7 @@ impl DamlJsonAllocatePartyRequest {
 pub struct DamlJsonAllocatePartyResponse {
     pub status: u16,
     pub result: DamlJsonParty,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
@@ -261,6 +303,7 @@ pub struct DamlJsonAllocatePartyResponse {
 pub struct DamlJsonListPackagesResponse {
     pub status: u16,
     pub result: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
@@ -269,6 +312,7 @@ pub struct DamlJsonListPackagesResponse {
 pub struct DamlJsonUploadDarResponse {
     pub status: u16,
     pub result: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
@@ -277,5 +321,21 @@ pub struct DamlJsonUploadDarResponse {
 pub struct DamlJsonErrorResponse {
     pub status: u16,
     pub errors: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<HashMap<String, Vec<String>>>,
+}
+
+impl DamlJsonErrorResponse {
+    pub fn single(status: u16, error: String) -> Self {
+        Self {
+            status,
+            errors: vec![error],
+            warnings: None,
+        }
+    }
+}
+
+/// Make a warnings map with a single entry.
+pub fn make_single_warning(name: impl Into<String>, data: Vec<String>) -> HashMap<String, Vec<String>> {
+    once((name.into(), data)).collect::<HashMap<_, _>>()
 }

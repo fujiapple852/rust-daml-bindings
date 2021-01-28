@@ -8,12 +8,13 @@ use crate::request::{
     DamlJsonFetchResponse, DamlJsonListPackagesResponse, DamlJsonQueryResponse, DamlJsonRequestMeta,
     DamlJsonUploadDarResponse,
 };
+use crate::util::Required;
 use bytes::Bytes;
-use reqwest::{Certificate, Client, ClientBuilder, Response};
+use reqwest::{Certificate, Client, ClientBuilder, RequestBuilder, Response};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use url::Url;
 
 static CREATE_REST: &str = "/v1/create";
@@ -163,7 +164,7 @@ impl DamlJsonClient {
         })
     }
 
-    /// Create a new [`DamlJsonClient`] from a [`JsonClientConfig`].
+    /// Create a new [`DamlJsonClient`] from a [`DamlJsonClientConfig`].
     pub fn new_from_config(config: DamlJsonClientConfig) -> DamlJsonResult<Self> {
         let mut builder = ClientBuilder::default()
             .connect_timeout(config.connect_timeout)
@@ -393,35 +394,58 @@ impl DamlJsonClient {
     }
 
     async fn get_json<R: DeserializeOwned>(&self, url: Url) -> DamlJsonResult<R> {
-        let request = match &self.config.auth_token {
-            Some(token) => self.client.get(url).bearer_auth(token),
-            None => self.client.get(url),
-        };
-        self.process_json_response(request.send().await?).await
-    }
-
-    async fn get_bytes(&self, url: Url) -> DamlJsonResult<Bytes> {
-        let request = match &self.config.auth_token {
-            Some(token) => self.client.get(url).bearer_auth(token),
-            None => self.client.get(url),
-        };
-        self.process_bytes_response(request.send().await?).await
+        let request = self.make_get_request(&url);
+        let response = self.execute_with_retry(request).await?;
+        self.process_json_response(response).await
     }
 
     async fn post_json<T: Serialize, R: DeserializeOwned>(&self, url: Url, json: T) -> DamlJsonResult<R> {
-        let request = match &self.config.auth_token {
-            Some(token) => self.client.post(url).bearer_auth(token),
-            None => self.client.post(url),
-        };
-        self.process_json_response(request.json(&json).send().await?).await
+        let request = self.make_post_request(&url).json(&json);
+        let response = self.execute_with_retry(request).await?;
+        self.process_json_response(response).await
+    }
+
+    async fn get_bytes(&self, url: Url) -> DamlJsonResult<Bytes> {
+        let request = self.make_get_request(&url);
+        let response = self.execute_with_retry(request).await?;
+        self.process_bytes_response(response).await
     }
 
     async fn post_bytes<R: DeserializeOwned>(&self, url: Url, bytes: impl Into<Bytes>) -> DamlJsonResult<R> {
-        let request = match &self.config.auth_token {
-            Some(token) => self.client.post(url).bearer_auth(token),
-            None => self.client.post(url),
-        };
-        self.process_json_response(request.body(bytes.into()).send().await?).await
+        let request =
+            self.make_post_request(&url).header("Content-Type", "application/octet-stream").body(bytes.into());
+        let response = self.execute_with_retry(request).await?;
+        self.process_json_response(response).await
+    }
+
+    fn make_post_request(&self, url: &Url) -> RequestBuilder {
+        match self.config.auth_token.as_deref() {
+            Some(token) => self.client.post(url.to_owned()).bearer_auth(token),
+            None => self.client.post(url.to_owned()),
+        }
+    }
+
+    fn make_get_request(&self, url: &Url) -> RequestBuilder {
+        match self.config.auth_token.as_deref() {
+            Some(token) => self.client.get(url.to_owned()).bearer_auth(token),
+            None => self.client.get(url.to_owned()),
+        }
+    }
+
+    // TODO need backoff on retries, but in an executor agnostic way...
+    async fn execute_with_retry(&self, request: RequestBuilder) -> DamlJsonResult<Response> {
+        let mut res = request.try_clone().req()?.send().await;
+        let start = Instant::now();
+        while let Err(e) = &res {
+            if start.elapsed() > self.config.connect_timeout {
+                return Ok(res?);
+            } else if Self::is_retryable_error(e) {
+                res = request.try_clone().req()?.send().await;
+            } else {
+                return Ok(res?);
+            }
+        }
+        Ok(res?)
     }
 
     async fn process_json_response<R: DeserializeOwned>(&self, res: Response) -> DamlJsonResult<R> {
@@ -442,11 +466,21 @@ impl DamlJsonClient {
 
     async fn process_error_response(&self, error_response: Response) -> DamlJsonResult<DamlJsonError> {
         if error_response.status().is_client_error() || error_response.status().is_server_error() {
-            let error_response = error_response.json::<DamlJsonErrorResponse>().await?;
-            Ok(DamlJsonError::ErrorResponse(error_response.status, error_response.errors.join(",")))
+            match error_response.content_length() {
+                Some(length) if length > 0 => {
+                    let error_body = error_response.json::<DamlJsonErrorResponse>().await?;
+                    Ok(DamlJsonError::ErrorResponse(error_body.status, error_body.errors.join(",")))
+                },
+                _ => Ok(DamlJsonError::UnhandledHttpResponse(error_response.status().to_string())),
+            }
         } else {
             Ok(DamlJsonError::UnhandledHttpResponse(error_response.status().to_string()))
         }
+    }
+
+    /// TODO, which errors are retryable?
+    fn is_retryable_error(error: &reqwest::Error) -> bool {
+        error.is_request()
     }
 
     fn url(base: &str, path: &str) -> DamlJsonResult<Url> {

@@ -6,16 +6,42 @@ pub type DamlJsonResult<T> = Result<T, DamlJsonError>;
 /// DAML JSON Error.
 #[derive(Error, Debug)]
 pub enum DamlJsonError {
-    #[error("reqwest error: {0}")]
+    #[error("DamlJsonError: codec error: {0}")]
+    CodecError(#[from] DamlJsonCodecError),
+    #[error("DamlJsonError: GRPC error: {0}")]
     ReqwestError(#[from] reqwest::Error),
-    #[error("error response: {0}, {1}")]
+    #[error("DamlJsonError: error response: {0}, {1}")]
     ErrorResponse(u16, String),
-    #[error("url parse error: {0}")]
+    #[error("DamlJsonError: url parse error: {0}")]
     UrlParseError(#[from] url::ParseError),
-    #[error("Invalid Template Id format: {0}")]
-    TemplateIdFormatError(String),
-    #[error("unhandled http response code: {0}")]
+    #[error("DamlJsonError: unhandled http response code: {0}")]
     UnhandledHttpResponse(String),
+}
+
+/// DAML JSON Request/Response Converter Result.
+pub type DamlJsonReqConResult<T> = Result<T, DamlJsonReqConError>;
+
+/// DAML JSON Request/Response Converter Error.
+#[derive(Error, Debug)]
+pub enum DamlJsonReqConError {
+    #[error("DamlJsonError: codec error: {0}")]
+    CodecError(#[from] DamlJsonCodecError),
+    #[error("DamlJsonError: GRPC error: {0}")]
+    DamlGrpcError(#[from] daml_grpc::data::DamlError),
+    #[error("DamlJsonError: invalid template id format: {0}")]
+    TemplateIdFormatError(String),
+    #[error("DamlJsonError: unknown template id: {0}")]
+    UnknownTemplateId(String),
+    #[error("DamlJsonError: template {0} exists in multiple packages: {0}")]
+    MultipleMatchingTemplates(String, Vec<String>),
+    #[error("DamlJsonError: Expected a template for: {0}")]
+    ExpectedTemplateError(String),
+    #[error("DamlJsonError: template does not have a contract key: {0}")]
+    TemplateNoKeyError(String),
+    #[error("DamlJsonError: expected exactly 1 GRPC event")]
+    UnexpectedGrpcEvent,
+    #[error("DamlJsonError: Transaction tree did not contain an exercised event")]
+    MissingExercisedEvent,
 }
 
 /// DAML JSON Codec Result.

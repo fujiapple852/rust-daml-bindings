@@ -1,4 +1,5 @@
 use crate::grpc_protobuf::com::daml::ledger::api::v1::Identifier;
+use std::fmt::{Display, Formatter, Result};
 
 /// Unique identifier of an entity on a DAML ledger.
 #[derive(Debug, PartialEq, Eq, Default, Clone, Hash, Ord, PartialOrd)]
@@ -27,6 +28,12 @@ impl DamlIdentifier {
 
     pub fn entity_name(&self) -> &str {
         &self.entity_name
+    }
+}
+
+impl Display for DamlIdentifier {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{}:{}:{}", self.package_id, self.module_name, self.entity_name)
     }
 }
 

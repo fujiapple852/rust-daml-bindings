@@ -34,6 +34,13 @@ impl DamlEvent {
         }
     }
 
+    pub fn event_id(&self) -> &str {
+        match self {
+            DamlEvent::Created(c) => c.event_id(),
+            DamlEvent::Archived(a) => a.event_id(),
+        }
+    }
+
     fn make_unexpected_type_error(&self, expected: &str) -> DamlError {
         DamlError::UnexpectedType(expected.to_owned(), self.variant_name().to_owned())
     }
@@ -62,6 +69,15 @@ impl TryFrom<Event> for DamlEvent {
 pub enum DamlTreeEvent {
     Created(DamlCreatedEvent),
     Exercised(DamlExercisedEvent),
+}
+
+impl DamlTreeEvent {
+    pub fn event_id(&self) -> &str {
+        match self {
+            DamlTreeEvent::Created(c) => c.event_id(),
+            DamlTreeEvent::Exercised(e) => e.event_id(),
+        }
+    }
 }
 
 impl TryFrom<TreeEvent> for DamlTreeEvent {

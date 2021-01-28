@@ -1,8 +1,9 @@
+use std::convert::TryFrom;
+
 use crate::data::value::{DamlRecord, DamlValue};
 use crate::data::{DamlError, DamlIdentifier};
 use crate::grpc_protobuf::com::daml::ledger::api::v1::CreatedEvent;
 use crate::util::Required;
-use std::convert::TryFrom;
 
 /// An event which represents creating a contract on a DAML ledger.
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -91,6 +92,11 @@ impl DamlCreatedEvent {
     /// The observers for this contract as specified explicitly by the template or implicitly as choice controllers.
     pub fn observers(&self) -> &[String] {
         &self.observers
+    }
+
+    /// The contract agreement text.
+    pub fn agreement_text(&self) -> &str {
+        &self.agreement_text
     }
 
     /// The arguments that have been used to create the contract.

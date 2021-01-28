@@ -23,7 +23,9 @@
     clippy::module_name_repetitions,
     clippy::filter_map,
     clippy::future_not_send,
-    clippy::missing_const_for_fn
+    clippy::missing_const_for_fn,
+    clippy::match_wildcard_for_single_variants,
+    clippy::similar_names
 )]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
@@ -41,10 +43,16 @@ pub mod data;
 /// DAML JSON API errors.
 pub mod error;
 
-/// DAML JSON decoder.
-pub mod decode;
+/// DAML JSON value decoder.
+pub mod value_decode;
 
-/// DAML JSON encoder.
-pub mod encode;
+/// DAML JSON value encoder.
+pub mod value_encode;
+
+/// DAML JSON request converter.
+pub mod request_converter;
+
+/// DAML JSON response converter.
+pub mod response_converter;
 
 mod util;

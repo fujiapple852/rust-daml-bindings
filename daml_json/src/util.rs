@@ -24,3 +24,8 @@ impl<T> AsSingleSliceExt<T> for Vec<T> {
         }
     }
 }
+
+/// Return A from a tuple of type (A, B)
+pub fn fst<A, B>((a, _): (A, B)) -> A {
+    a
+}
