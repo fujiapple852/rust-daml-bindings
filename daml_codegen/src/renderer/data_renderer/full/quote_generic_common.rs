@@ -25,9 +25,9 @@ pub fn quote_serialize_where(params: &[DamlTypeVarWithKind<'_>]) -> TokenStream 
     quote_where_clause(params, quote!(DamlSerializeInto<DamlValue>))
 }
 
-/// Quote `where A: DamlDeserializeFrom, B: DamlDeserializeFrom + Nat`
+/// Quote `where A: DamlDeserializeFrom + Ord, B: DamlDeserializeFrom + Ord + Nat`
 pub fn quote_deserialize_where(params: &[DamlTypeVarWithKind<'_>]) -> TokenStream {
-    quote_where_clause(params, quote!(DamlDeserializeFrom))
+    quote_where_clause(params, quote!(DamlDeserializeFrom + Ord))
 }
 
 fn quote_where_clause(params: &[DamlTypeVarWithKind<'_>], bound_tokens: TokenStream) -> TokenStream {
