@@ -19,7 +19,7 @@ thiserror = "1.0"
 bigdecimal = "0.2"
 chrono = "0.4"
 url = "2.1"
-itertools = "0.9"
+itertools = "0.10"
 bytes = "1"
 
 [dev-dependencies]
