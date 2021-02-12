@@ -10,6 +10,7 @@ use crate::renderer::render_context::RenderContext;
 use crate::renderer::type_renderer::quote_type;
 use crate::renderer::{make_ignored_ident, normalize_generic_param, quote_escaped_ident, quote_ident, IsRenderable};
 use daml_lf::element::{DamlField, DamlRecord, DamlType, DamlTypeVarWithKind};
+use std::ops::Not;
 
 /// Generate the `Foo` struct and methods.
 pub fn quote_daml_record(ctx: &RenderContext<'_>, daml_record: &DamlRecord<'_>) -> TokenStream {
@@ -216,11 +217,7 @@ fn quote_unused_phantom_params(
     let all_params: Vec<_> = params
         .iter()
         .filter_map(|p| {
-            if struct_fields.iter().any(|&f| f.ty().contains_type_var(p.var())) {
-                None
-            } else {
-                Some(type_var_quoter(p))
-            }
+            struct_fields.iter().any(|&f| f.ty().contains_type_var(p.var())).not().then(|| type_var_quoter(p))
         })
         .collect();
     quote!( #( #all_params ),* )

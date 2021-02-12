@@ -277,7 +277,7 @@ impl<T: Nat> From<f64> for DamlFixedNumeric<T> {
     fn from(f: f64) -> Self {
         Self::new(match BigDecimal::try_from(f) {
             Ok(bd) => bd,
-            Err(err) => panic!(format!("invalid f64: {}", err)),
+            Err(err) => panic!("invalid f64: {}", err),
         })
     }
 }

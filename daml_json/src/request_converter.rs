@@ -137,13 +137,7 @@ impl<'a> JsonToGrpcRequestConverter<'a> {
                 package.root_module().child_module_path(module_path).map(|module| (package.package_id(), module))
             })
             .flat_map(|(package, m)| m.data_types().map(move |data| (package, data)))
-            .filter_map(|(package, data)| {
-                if data.name() == template_entity {
-                    Some((package, data))
-                } else {
-                    None
-                }
-            });
+            .filter_map(|(package, data)| (data.name() == template_entity).then(|| (package, data)));
         match (matcher.next(), matcher.next()) {
             (None, _) => Err(DamlJsonReqConError::UnknownTemplateId(template_entity.to_string())),
             (Some((p, d)), None) => Ok((p, d)),
@@ -381,7 +375,7 @@ mod tests {
         let request = DamlJsonCreateRequest::new("DA.RentDemo:FooTemplate", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::UnknownTemplateId(_)) => Ok(()),
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
     }
@@ -393,7 +387,7 @@ mod tests {
         let request = DamlJsonCreateRequest::new("Foo.RentDemo:RentalAgreement", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::UnknownTemplateId(_)) => Ok(()),
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
     }
@@ -405,7 +399,7 @@ mod tests {
         let request = DamlJsonCreateRequest::new("1234:DA.RentDemo:RentalAgreement", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::UnknownTemplateId(_)) => Ok(()),
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
     }
@@ -417,7 +411,7 @@ mod tests {
         let request = DamlJsonCreateRequest::new("DA.PingPong:UserData", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::ExpectedTemplateError(_)) => Ok(()),
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
     }
@@ -431,7 +425,7 @@ mod tests {
         let request = DamlJsonCreateRequest::new("DA.PingPong:UserData", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::MultipleMatchingTemplates(..)) => Ok(()),
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
     }
@@ -443,7 +437,7 @@ mod tests {
         let request = DamlJsonExerciseRequest::new("DA.RentDemo:RentalAgreement", "#0:0", "UnknownChoice", json!({}));
         match request_converter.convert_exercise_request(&request) {
             Err(DamlJsonReqConError::CodecError(DamlJsonCodecError::DataNotFound(_))) => Ok(()),
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
     }
@@ -455,7 +449,7 @@ mod tests {
         let request = DamlJsonExerciseByKeyRequest::new("DA.RentDemo:RentalAgreement", json!({}), "Dummy", json!({}));
         match request_converter.convert_exercise_by_key_request(&request) {
             Err(DamlJsonReqConError::TemplateNoKeyError(_)) => Ok(()),
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
     }
@@ -475,7 +469,7 @@ mod tests {
         );
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::CodecError(DamlJsonCodecError::MissingJsonRecordObjectField(_))) => Ok(()),
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
     }
@@ -501,7 +495,7 @@ mod tests {
         );
         match request_converter.convert_create_and_exercise_request(&request) {
             Err(DamlJsonReqConError::CodecError(DamlJsonCodecError::MissingJsonRecordObjectField(_))) => Ok(()),
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
     }

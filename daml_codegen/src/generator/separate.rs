@@ -79,7 +79,7 @@ fn quote_module_data_types(ctx: &RenderContext<'_>, module: &DamlModule<'_>, ren
     quote_all_data(ctx, module.data_types().collect::<Vec<_>>().as_slice(), render_method).to_string()
 }
 
-fn create_file(base_dir: &PathBuf, filename: &str) -> io::Result<File> {
+fn create_file(base_dir: &Path, filename: &str) -> io::Result<File> {
     fs::create_dir_all(&base_dir)?;
     File::create(base_dir.join(filename))
 }

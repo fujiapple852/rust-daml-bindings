@@ -3,6 +3,7 @@ use crate::data::DamlError;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{RecordField, Value};
 use crate::util::Required;
 use std::convert::TryFrom;
+use std::ops::Not;
 
 /// A representation of a single field on a DAML record.
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd)]
@@ -34,14 +35,7 @@ impl TryFrom<RecordField> for DamlRecordField {
     fn try_from(field: RecordField) -> Result<Self, Self::Error> {
         let label = field.label;
         let value: DamlValue = field.value.req().and_then(DamlValue::try_from)?;
-        Ok(Self::new(
-            if label.is_empty() {
-                None
-            } else {
-                Some(label)
-            },
-            value,
-        ))
+        Ok(Self::new(label.is_empty().not().then(|| label), value))
     }
 }
 

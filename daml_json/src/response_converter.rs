@@ -129,14 +129,12 @@ impl GrpcToJsonResponseConverter {
 
 /// Derive a [`DamlJsonEvent::Archived`] from a consuming [`DamlExercisedEvent`], return None otherwise.
 fn derive_archived_event(exercise_event: &DamlExercisedEvent) -> Option<DamlJsonEvent> {
-    if exercise_event.consuming() {
-        Some(DamlJsonEvent::Archived(DamlJsonArchivedEvent::new(
+    exercise_event.consuming().then(|| {
+        DamlJsonEvent::Archived(DamlJsonArchivedEvent::new(
             exercise_event.contract_id().to_owned(),
             exercise_event.template_id().to_string(),
-        )))
-    } else {
-        None
-    }
+        ))
+    })
 }
 
 fn first_exercised_event(transaction: &DamlTransactionTree) -> DamlJsonReqConResult<&DamlExercisedEvent> {
@@ -259,7 +257,7 @@ mod tests {
         let dummy_tx_tree = make_dummy_transaction_tree_no_exercised_event()?;
         match converter.convert_exercise_response(&dummy_tx_tree) {
             Err(DamlJsonReqConError::MissingExercisedEvent) => Ok(()),
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
     }
@@ -271,7 +269,7 @@ mod tests {
         let dummy_tx = make_dummy_transaction_empty()?;
         match converter.convert_create_response(&dummy_tx) {
             Err(DamlJsonReqConError::UnexpectedGrpcEvent) => Ok(()),
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
     }
@@ -283,7 +281,7 @@ mod tests {
         let dummy_tx = make_dummy_transaction_two()?;
         match converter.convert_create_response(&dummy_tx) {
             Err(DamlJsonReqConError::UnexpectedGrpcEvent) => Ok(()),
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
     }

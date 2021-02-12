@@ -79,7 +79,7 @@ impl<'a> DamlCommandService<'a> {
     /// let future_command = ledger_client.command_service().submit_and_wait(commands).await;
     /// match future_command {
     ///     Ok(command_id) => assert_eq!("1234", command_id),
-    ///     Err(e) => panic!(format!("submit_and_wait failed, error was {}", e.to_string())),
+    ///     Err(e) => panic!("submit_and_wait failed, error was {}", e.to_string()),
     /// }
     /// # Ok(())
     /// # })

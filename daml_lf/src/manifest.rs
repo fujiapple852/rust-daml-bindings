@@ -177,11 +177,7 @@ impl DarManifest {
                 .split(',')
                 .filter_map(|dalf: &str| {
                     let stripped_dalf = strip_string(dalf);
-                    if stripped_dalf == dalf_main {
-                        None
-                    } else {
-                        Some(stripped_dalf)
-                    }
+                    (stripped_dalf != dalf_main).then(|| stripped_dalf)
                 })
                 .collect()),
             None => Err(DamlLfError::new_dar_parse_error(format!("key {} not found", DALFS_KEY))),

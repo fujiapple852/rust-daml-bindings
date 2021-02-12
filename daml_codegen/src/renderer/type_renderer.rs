@@ -24,7 +24,7 @@ pub fn quote_type(daml_type: &DamlType<'_>) -> TokenStream {
                     #prim_name_tokens<#prim_param_tokens>
                 )
             },
-            _ => panic!(format!("expected exactly 1 type argument for {}, found {:?}", daml_type.name(), args)),
+            _ => panic!("expected exactly 1 type argument for {}, found {:?}", daml_type.name(), args),
         },
         DamlType::GenMap(args) => match args.as_slice() {
             [k, v] => {
@@ -35,7 +35,7 @@ pub fn quote_type(daml_type: &DamlType<'_>) -> TokenStream {
                     #prim_name_tokens<#prim_key_param_tokens, #prim_value_param_tokens>
                 )
             },
-            _ => panic!(format!("expected exactly 2 type argument for {}, found {:?}", daml_type.name(), args)),
+            _ => panic!("expected exactly 2 type argument for {}, found {:?}", daml_type.name(), args),
         },
         // Ignoring ContractId inner type
         DamlType::ContractId(_) => quote_escaped_ident(daml_type.name()),
@@ -63,7 +63,7 @@ pub fn quote_type(daml_type: &DamlType<'_>) -> TokenStream {
         | DamlType::TypeRep
         | DamlType::Forall(_)
         | DamlType::Struct(_)
-        | DamlType::Syn(_) => panic!(format!("cannot render unsupported type: {}", daml_type.name())),
+        | DamlType::Syn(_) => panic!("cannot render unsupported type: {}", daml_type.name()),
     }
 }
 

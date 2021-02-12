@@ -121,10 +121,6 @@ trait TrySwapRemove<T>: Sized {
 
 impl<T> TrySwapRemove<T> for Vec<T> {
     fn try_swap_remove(&mut self, index: usize) -> Option<T> {
-        if index < self.len() {
-            Some(self.swap_remove(index))
-        } else {
-            None
-        }
+        (index < self.len()).then(|| self.swap_remove(index))
     }
 }

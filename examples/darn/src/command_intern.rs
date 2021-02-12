@@ -50,7 +50,7 @@ impl DarnCommand for CommandIntern {
         let filter: Vec<usize> = matches
             .values_of("index")
             .unwrap_or_default()
-            .map(|i| Ok(usize::from_str(i).context(format!("parsing index from '{}'", i))?))
+            .map(|i|usize::from_str(i).context(format!("parsing index from '{}'", i)))
             .collect::<Result<Vec<_>>>()?;
         let show_mangled = matches.is_present("show-mangled");
         let sort = match (matches.is_present("order-by-index"), matches.is_present("order-by-name")) {

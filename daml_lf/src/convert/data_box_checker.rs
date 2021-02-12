@@ -47,7 +47,7 @@ impl<'a> DamlDataBoxChecker<'a> {
 
     fn check_types(&mut self, types: impl Iterator<Item = DamlTypeWrapper<'a>>) -> DamlLfConvertResult<bool> {
         let types_iter = types.map(|ty| self.check_type(ty));
-        Ok(itertools::process_results(types_iter, |mut iter| iter.any(|found| found))?)
+        itertools::process_results(types_iter, |mut iter| iter.any(|found| found))
     }
 
     fn check_type(&mut self, daml_type: DamlTypeWrapper<'a>) -> DamlLfConvertResult<bool> {

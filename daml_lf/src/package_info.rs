@@ -56,12 +56,6 @@ impl PackageInfo {
     where
         F: Fn(&DamlPackage<'_>) -> bool,
     {
-        archive.packages().find_map(|p| {
-            if f(p) {
-                Some(Self::extract_from_package(p))
-            } else {
-                None
-            }
-        })
+        archive.packages().find_map(|p| f(p).then(|| Self::extract_from_package(p)))
     }
 }

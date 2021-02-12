@@ -9,6 +9,7 @@ use crate::renderer::data_renderer::full::{
 use crate::renderer::type_renderer::quote_type;
 use crate::renderer::{normalize_generic_param, quote_escaped_ident, quote_ident, IsRenderable, RenderContext};
 use daml_lf::element::{DamlField, DamlType, DamlTypeVarWithKind, DamlVariant};
+use std::ops::Not;
 
 /// Generate the variant `enum` and the `DamlDeserializeFrom` and `DamlDeserializeFrom` impls.
 pub fn quote_daml_variant(ctx: &RenderContext<'_>, variant: &DamlVariant<'_>) -> TokenStream {
@@ -77,7 +78,7 @@ fn quote_serialize_trait_impl(
             fn serialize_from(value: #variant_name_tokens #unbounded_param_tokens) -> Self {
                 match value {
                     #( #all_match_arms ,)*
-                    _ => panic!(format!("type {} cannot be serialized", stringify!(#variant_name_tokens)))
+                    _ => panic!("type {} cannot be serialized", stringify!(#variant_name_tokens))
                 }
             }
         }
@@ -154,14 +155,10 @@ fn quote_unused_phantom_params(params: &[DamlTypeVarWithKind<'_>], variants: &[&
     let unused_params: Vec<_> = params
         .iter()
         .filter_map(|p| {
-            if variants.iter().any(|&f| f.ty().contains_type_var(p.var())) {
-                None
-            } else {
-                Some({
-                    let param_tokens = quote_ident(normalize_generic_param(p.var()).to_uppercase());
-                    quote!( std::marker::PhantomData < #param_tokens > )
-                })
-            }
+            variants.iter().any(|&f| f.ty().contains_type_var(p.var())).not().then(|| {
+                let param_tokens = quote_ident(normalize_generic_param(p.var()).to_uppercase());
+                quote!( std::marker::PhantomData < #param_tokens > )
+            })
         })
         .collect();
     if unused_params.is_empty() {

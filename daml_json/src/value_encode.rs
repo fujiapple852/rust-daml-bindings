@@ -75,7 +75,7 @@ impl JsonValueEncoder {
             DamlValue::Record(record) => self.do_encode_record(record),
             DamlValue::List(list) => {
                 let items =
-                    list.iter().map(|i| Ok(self.do_encode_value(i, true)?)).collect::<DamlJsonCodecResult<Vec<_>>>()?;
+                    list.iter().map(|i| self.do_encode_value(i, true)).collect::<DamlJsonCodecResult<Vec<_>>>()?;
                 Ok(json!(items))
             },
             DamlValue::Map(map) => {
@@ -116,7 +116,7 @@ impl JsonValueEncoder {
             let fields = record
                 .fields()
                 .iter()
-                .map(|f| Ok(self.do_encode_value(f.value(), true)?))
+                .map(|f| self.do_encode_value(f.value(), true))
                 .collect::<DamlJsonCodecResult<Vec<_>>>()?;
             Ok(json!(fields))
         }
@@ -731,13 +731,13 @@ mod tests {
     }
 
     fn find_genmap_value<'a>(genmap: &'a Value, key: &Value) -> DamlJsonCodecResult<&'a Value> {
-        fn item_with_key<'a>(item: &'a Value, key: &Value) -> Option<&'a Value> {
-            if item.try_array().ok()?.first()? == key {
-                Some(item)
-            } else {
-                None
-            }
-        }
-        genmap.try_array()?.iter().find_map(|item| item_with_key(item, key)).req()?.try_array()?.last().req()
+        genmap
+            .try_array()?
+            .iter()
+            .find_map(|item| (item.try_array().ok()?.first()? == key).then(|| item))
+            .req()?
+            .try_array()?
+            .last()
+            .req()
     }
 }

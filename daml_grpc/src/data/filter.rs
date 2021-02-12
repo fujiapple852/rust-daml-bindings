@@ -1,6 +1,7 @@
 use crate::data::identifier::DamlIdentifier;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{Filters, InclusiveFilters, TransactionFilter};
 use std::collections::hash_map::HashMap;
+use std::ops::Not;
 
 #[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct DamlFilters {
@@ -20,13 +21,9 @@ impl DamlFilters {
 impl From<DamlFilters> for Filters {
     fn from(daml_filters: DamlFilters) -> Self {
         Filters {
-            inclusive: if daml_filters.template_ids.is_empty() {
-                None
-            } else {
-                Some(InclusiveFilters {
-                    template_ids: daml_filters.template_ids.into_iter().map(Into::into).collect(),
-                })
-            },
+            inclusive: daml_filters.template_ids.is_empty().not().then(|| InclusiveFilters {
+                template_ids: daml_filters.template_ids.into_iter().map(Into::into).collect(),
+            }),
         }
     }
 }

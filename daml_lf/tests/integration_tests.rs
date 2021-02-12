@@ -1,5 +1,5 @@
 #![warn(clippy::all, clippy::pedantic)]
-#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
 
 use daml_lf::element::DamlVisitableElement;
 use daml_lf::element::{DamlElementVisitor, DamlEnum};

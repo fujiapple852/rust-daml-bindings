@@ -44,11 +44,11 @@ pub fn data_type_string_from_type(ty: &Type) -> String {
 /// Utility method to get a simple no-parameter type as a String from a Path.
 pub fn data_type_string_from_path(path: &Path) -> String {
     if path.segments.len() != 1 {
-        panic!(format!(
+        panic!(
             "expected exactly 1 segment, found {} in {:?}",
             &path.segments.len(),
             &path.segments.iter().map(|f| f.ident.to_string()).join("::")
-        ))
+        )
     }
     match daml_type_from_path(path) {
         AttrType::TyCon(data, ..) => data,

@@ -167,11 +167,11 @@ impl DarFile {
         &self.dependencies
     }
 
-    fn is_dalf(path: &PathBuf) -> bool {
+    fn is_dalf(path: &Path) -> bool {
         path.extension().and_then(OsStr::to_str).map(str::to_lowercase).map_or(false, |q| q == DALF_FILE_EXTENSION)
     }
 
-    fn is_prim_dalf(path: &PathBuf) -> bool {
+    fn is_prim_dalf(path: &Path) -> bool {
         path.file_stem()
             .and_then(OsStr::to_str)
             .map(str::to_lowercase)
@@ -181,7 +181,7 @@ impl DarFile {
     fn make_manifest_from_archive(zip_archive: &mut ZipArchive<File>) -> DamlLfResult<DarManifest> {
         let dalf_paths = zip_archive.paths();
         let (prim, main): (Vec<PathBuf>, Vec<PathBuf>) =
-            dalf_paths.into_iter().filter(Self::is_dalf).partition(Self::is_prim_dalf);
+            dalf_paths.into_iter().filter(|d| Self::is_dalf(d)).partition(|d| Self::is_prim_dalf(d));
         let (dalf_main_path, dalf_dependencies_paths) = match (prim.as_slice(), main.as_slice()) {
             ([p], [m]) => Ok((p, vec![m])),
             ([p], []) => Ok((p, vec![])),

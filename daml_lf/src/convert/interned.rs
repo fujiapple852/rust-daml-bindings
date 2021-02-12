@@ -33,12 +33,12 @@ pub trait PackageInternedResolver {
 
     /// Resolve multiple interned strings to a `Vec<&str>` by indices.
     fn resolve_strings_raw(&self, indices: &[i32]) -> DamlLfConvertResult<Vec<&str>> {
-        Ok(indices.iter().map(|&i| self.resolve_string_raw(i)).collect::<DamlLfConvertResult<_>>()?)
+        indices.iter().map(|&i| self.resolve_string_raw(i)).collect::<DamlLfConvertResult<_>>()
     }
 
     /// Fully resolve an interned dotted name to a `Vec<&str>` by index.
     fn resolve_dotted_raw(&self, index: i32) -> DamlLfConvertResult<Vec<&str>> {
-        Ok(self.resolve_strings_raw(self.resolve_dotted_to_indices(index)?)?)
+        self.resolve_strings_raw(self.resolve_dotted_to_indices(index)?)
     }
 
     /// Resolve an interned string to a `Cow<str>` by index.
@@ -48,17 +48,17 @@ pub trait PackageInternedResolver {
 
     /// Resolve multiple interned strings to a `Vec<Cow<str>>` by indices.
     fn resolve_strings(&self, indices: &[i32]) -> DamlLfConvertResult<Vec<Cow<'_, str>>> {
-        Ok(indices.iter().map(|&i| self.resolve_string_raw(i).map(Cow::from)).collect::<DamlLfConvertResult<_>>()?)
+        indices.iter().map(|&i| self.resolve_string_raw(i).map(Cow::from)).collect::<DamlLfConvertResult<_>>()
     }
 
     /// Fully resolve an interned dotted name to a `Vec<Cow<str>>` by index.
     fn resolve_dotted(&self, index: i32) -> DamlLfConvertResult<Vec<Cow<'_, str>>> {
-        Ok(self.resolve_strings(self.resolve_dotted_to_indices(index)?)?)
+        self.resolve_strings(self.resolve_dotted_to_indices(index)?)
     }
 
     /// Resolve an interned type to a `DamlTypePayload`
     fn resolve_type(&self, index: i32) -> DamlLfConvertResult<&DamlTypePayload<'_>> {
-        Ok(self.interned_types().get(index as usize).req()?)
+        self.interned_types().get(index as usize).req()
     }
 }
 

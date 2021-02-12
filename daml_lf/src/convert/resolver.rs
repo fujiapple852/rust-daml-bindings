@@ -60,13 +60,7 @@ fn resolve<'a, R: PackageInternedResolver>(
     let data_types_iter =
         target_module.data_types.iter().map(|dt| dt.name().resolve(target_package).map(|name| (name, dt)));
     let target_data_type = itertools::process_results(data_types_iter, |mut iter| {
-        iter.find_map(|(name, dt)| {
-            if name == source_data_type_name {
-                Some(dt)
-            } else {
-                None
-            }
-        })
+        iter.find_map(|(name, dt)| (name == source_data_type_name).then(|| dt))
     })?
     .ok_or_else(|| DamlLfConvertError::UnknownData(source_data_type_name.join(".")))?;
 

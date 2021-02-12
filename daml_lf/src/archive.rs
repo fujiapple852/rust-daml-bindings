@@ -151,7 +151,7 @@ impl DamlLfArchive {
         let mut dalf_file = File::open(dalf_path.as_ref())?;
         dalf_file.read_to_end(&mut buffer)?;
         let archive_name_stem = dalf_path.as_ref().file_stem().and_then(OsStr::to_str).unwrap_or(DEFAULT_ARCHIVE_NAME);
-        Ok(Self::from_bytes_named(archive_name_stem, buffer)?)
+        Self::from_bytes_named(archive_name_stem, buffer)
     }
 
     /// Create a [`DamlArchive`] from a [`DamlLfArchive`] and apply it to `f`.

@@ -388,12 +388,11 @@ mod tests {
 
     /// `4.2` -> `4.2 : Int`
     #[test]
-    fn test_int64_fails() -> DamlJsonCodecResult<()> {
+    fn test_int64_fails() {
         let json_value = json!(4.2);
         let ty = DamlType::Int64;
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty);
         assert!(actual.is_err());
-        Ok(())
     }
 
     /// `1.0` -> `1.0 : Decimal`
@@ -510,22 +509,20 @@ mod tests {
 
     /// `"blah"` -> `n/a : Decimal`
     #[test]
-    fn test_numeric_string_fails_garbage() -> DamlJsonCodecResult<()> {
+    fn test_numeric_string_fails_garbage() {
         let json_value = json!("blah");
         let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty);
         assert!(actual.is_err());
-        Ok(())
     }
 
     /// `"  42  "` -> `n/a : Decimal`
     #[test]
-    fn test_numeric_string_fails_whitespace() -> DamlJsonCodecResult<()> {
+    fn test_numeric_string_fails_whitespace() {
         let json_value = json!("  42  ");
         let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty);
         assert!(actual.is_err());
-        Ok(())
     }
 
     /// `"test"` -> `"test" : Text`
@@ -585,12 +582,11 @@ mod tests {
 
     /// `"9999-99-99"` -> `n/a : Text`
     #[test]
-    fn test_date_invalid_fails() -> DamlJsonCodecResult<()> {
+    fn test_date_invalid_fails() {
         let json_value = json!("9999-99-99");
         let ty = DamlType::Date;
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty);
         assert!(actual.is_err());
-        Ok(())
     }
 
     /// `"1990-11-09T04:30:23.1234569Z"` -> `datetime 1990 Nov 09 04 30 23 xxx : Text`
@@ -683,22 +679,20 @@ mod tests {
 
     /// `[]` -> `None : Optional Int64`
     #[test]
-    fn test_opt_int_null_fails() -> DamlJsonCodecResult<()> {
+    fn test_opt_int_null_fails() {
         let json_value = json!([]);
         let ty = DamlType::Optional(vec![DamlType::Int64]);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty);
         assert!(actual.is_err());
-        Ok(())
     }
 
     /// `[null]` -> `Some None : Optional (Optional Int64)`
     #[test]
-    fn test_opt_opt_int_some_should_fail() -> DamlJsonCodecResult<()> {
+    fn test_opt_opt_int_some_should_fail() {
         let json_value = json!([null]);
         let ty = DamlType::Optional(vec![DamlType::Optional(vec![DamlType::Int64])]);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty);
         assert!(actual.is_err());
-        Ok(())
     }
 
     /// `null` -> `None : Optional (Optional Int64)`
@@ -964,12 +958,11 @@ mod tests {
 
     /// `[42, null, "c"]` -> n/a (error case)
     #[test]
-    fn test_list_opt_mixed_fails() -> DamlJsonCodecResult<()> {
+    fn test_list_opt_mixed_fails() {
         let json_value = json!([42, null, "c"]);
         let ty = DamlType::List(vec![DamlType::Optional(vec![DamlType::Text])]);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty);
         assert!(actual.is_err());
-        Ok(())
     }
 
     /// `[{...}]` -> `[RentalAgreement with landlord = "..."; tenant = "..."; terms = "..."] : [RentalAgreement]`
@@ -1139,12 +1132,11 @@ mod tests {
     }
 
     #[test]
-    fn test_genmap_duplicate_key_should_fail() -> DamlJsonCodecResult<()> {
+    fn test_genmap_duplicate_key_should_fail() {
         let json_value = json!([[42, "foo"], [42, "bar"]]);
         let ty = DamlType::GenMap(vec![DamlType::Int64, DamlType::Text]);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty);
         assert!(actual.is_err());
-        Ok(())
     }
 
     /// `{"tag": "Bar", "value": 42}` -> `Bar 42 : variant Foo = Bar Int64 | Baz | Quux (Optional Int64)`

@@ -434,6 +434,10 @@ use syn::{parse_macro_input, AttributeArgs, DeriveInput, ItemImpl};
 /// ledger.  See below for how these two `struct` types can be used together to create and observe contract instances
 /// on the DAML ledger.
 ///
+/// # Panics
+///
+/// Panics if the template struct cannot be parsed.
+///
 /// # Examples
 ///
 /// Given the following DAML template declared in the `DA.PingPong` module of a given package:
@@ -464,8 +468,8 @@ use syn::{parse_macro_input, AttributeArgs, DeriveInput, ItemImpl};
 /// [DAML primitive type alias]: ../daml_derive/index.html#mapping-daml-data-types-to-rust
 #[proc_macro_attribute]
 pub fn DamlTemplate(attr: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let template_info: DamlTemplateInfo = DamlTemplateInfo::from_list(&parse_macro_input!(attr as AttributeArgs))
-        .unwrap_or_else(|e| panic!(e.to_string()));
+    let template_info: DamlTemplateInfo =
+        DamlTemplateInfo::from_list(&parse_macro_input!(attr as AttributeArgs)).unwrap_or_else(|e| panic!("{}", e));
     let input: DeriveInput = parse_macro_input!(input as DeriveInput);
     generator::generate_template(input, template_info.package_id, template_info.module_name)
 }
