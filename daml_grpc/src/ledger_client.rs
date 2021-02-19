@@ -12,16 +12,23 @@ use log::debug;
 use std::time::{Duration, Instant};
 use tonic::transport::{Certificate, Channel, ClientTlsConfig};
 
+use hyper::client::HttpConnector;
 #[cfg(test)]
 use tonic::transport::Uri;
 
 const DEFAULT_TIMEOUT_SECS: u64 = 5;
+const DEFAULT_CONNECT_TIMEOUT_SECS: u64 = 5;
+#[cfg(feature = "sandbox")]
+const DEFAULT_RESET_TIMEOUT_SECS: u64 = 5;
 
 /// DOCME
 #[derive(Debug, Default)]
 pub struct DamlGrpcClientConfig {
     uri: String,
     timeout: Duration,
+    connect_timeout: Option<Duration>,
+    #[cfg(feature = "sandbox")]
+    reset_timeout: Duration,
     concurrency_limit: Option<usize>,
     rate_limit: Option<(u64, Duration)>,
     initial_stream_window_size: Option<u32>,
@@ -50,16 +57,40 @@ impl DamlGrpcClientBuilder {
             config: DamlGrpcClientConfig {
                 uri: uri.into(),
                 timeout: Duration::from_secs(DEFAULT_TIMEOUT_SECS),
+                connect_timeout: Some(Duration::from_secs(DEFAULT_CONNECT_TIMEOUT_SECS)),
+                #[cfg(feature = "sandbox")]
+                reset_timeout: Duration::from_secs(DEFAULT_RESET_TIMEOUT_SECS),
                 ..DamlGrpcClientConfig::default()
             },
         }
     }
 
-    /// DOCME
+    /// The network timeout.
     pub fn timeout(self, timeout: Duration) -> Self {
         Self {
             config: DamlGrpcClientConfig {
                 timeout,
+                ..self.config
+            },
+        }
+    }
+
+    /// The connection timeout.
+    pub fn connect_timeout(self, connect_timeout: Option<Duration>) -> Self {
+        Self {
+            config: DamlGrpcClientConfig {
+                connect_timeout,
+                ..self.config
+            },
+        }
+    }
+
+    #[cfg(feature = "sandbox")]
+    /// The sandbox reset timeout.
+    pub fn reset_timeout(self, reset_timeout: Duration) -> Self {
+        Self {
+            config: DamlGrpcClientConfig {
+                reset_timeout,
                 ..self.config
             },
         }
@@ -173,7 +204,7 @@ impl DamlGrpcClient {
     pub async fn reset_and_wait(self) -> DamlResult<Self> {
         debug!("resetting Sandbox");
         self.reset_service().reset().await?;
-        let channel = Self::open_channel(&self.config).await?;
+        let channel = Self::open_channel_and_wait(&self.config).await?;
         Self::make_client_from_channel(channel, self.config).await
     }
 
@@ -281,10 +312,15 @@ impl DamlGrpcClient {
     }
 
     async fn open_channel(config: &DamlGrpcClientConfig) -> DamlResult<Channel> {
+        Self::make_channel(config).await
+    }
+
+    #[cfg(feature = "sandbox")]
+    async fn open_channel_and_wait(config: &DamlGrpcClientConfig) -> DamlResult<Channel> {
         let mut channel = Self::make_channel(config).await;
         let start = Instant::now();
         while let Err(e) = channel {
-            if start.elapsed() > config.timeout {
+            if start.elapsed() > config.reset_timeout {
                 return Err(DamlError::new_timeout_error(e));
             }
             channel = Self::make_channel(config).await;
@@ -323,7 +359,15 @@ impl DamlGrpcClient {
             },
             _ => {},
         }
-        channel.connect().await.map_err(DamlError::from)
+
+        // Tonic does not current allow us to set a connect timeout (see https://github.com/hyperium/tonic/issues/498)
+        // directly and so we workaround this by creating the Hyper HttpConnector directly.
+        let mut http = HttpConnector::new();
+        http.enforce_http(false);
+        http.set_nodelay(config.tcp_nodelay);
+        http.set_keepalive(config.tcp_keepalive);
+        http.set_connect_timeout(config.connect_timeout);
+        channel.connect_with_connector(http).await.map_err(DamlError::from)
     }
 
     async fn query_ledger_identity(

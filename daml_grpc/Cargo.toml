@@ -23,6 +23,7 @@ bigdecimal = "0.2"
 log = "0.4"
 bytes = "1"
 tonic = { version = "0.4", features = [ "tls", "tls-roots" ] }
+hyper = { version = "0.14", features = ["full"] } # TODO remove when tonic support connect timeout
 prost = "0.7"
 prost-derive = "0.7"
 prost-types = "0.7"
