@@ -32,7 +32,7 @@ pub enum DamlJsonReqConError {
     TemplateIdFormatError(String),
     #[error("DamlJsonError: unknown template id: {0}")]
     UnknownTemplateId(String),
-    #[error("DamlJsonError: template {0} exists in multiple packages: {0}")]
+    #[error("DamlJsonError: template {0} exists in multiple packages: {1:#?}")]
     MultipleMatchingTemplates(String, Vec<String>),
     #[error("DamlJsonError: Expected a template for: {0}")]
     ExpectedTemplateError(String),
