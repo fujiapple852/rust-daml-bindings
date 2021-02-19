@@ -205,7 +205,7 @@ impl DamlGrpcClient {
         debug!("resetting Sandbox");
         self.reset_service().reset().await?;
         let channel = Self::open_channel_and_wait(&self.config).await?;
-        Self::make_client_from_channel(channel, self.config).await
+        Self::make_client_from_channel_and_wait(channel, self.config).await
     }
 
     /// Return the current configuration.
@@ -315,19 +315,6 @@ impl DamlGrpcClient {
         Self::make_channel(config).await
     }
 
-    #[cfg(feature = "sandbox")]
-    async fn open_channel_and_wait(config: &DamlGrpcClientConfig) -> DamlResult<Channel> {
-        let mut channel = Self::make_channel(config).await;
-        let start = Instant::now();
-        while let Err(e) = channel {
-            if start.elapsed() > config.reset_timeout {
-                return Err(DamlError::new_timeout_error(e));
-            }
-            channel = Self::make_channel(config).await;
-        }
-        channel
-    }
-
     async fn make_channel(config: &DamlGrpcClientConfig) -> DamlResult<Channel> {
         let mut channel = Channel::from_shared(config.uri.to_owned())?;
         if let Some(limit) = config.concurrency_limit {
@@ -370,8 +357,43 @@ impl DamlGrpcClient {
         channel.connect_with_connector(http).await.map_err(DamlError::from)
     }
 
-    async fn query_ledger_identity(
-        timeout: &Duration,
+    async fn make_client_from_channel(channel: Channel, config: DamlGrpcClientConfig) -> DamlResult<Self> {
+        let ledger_identity_service = DamlLedgerIdentityService::new(channel.clone(), config.auth_token.as_deref());
+        let ledger_identity = ledger_identity_service.get_ledger_identity().await?;
+        Ok(Self {
+            config,
+            channel: channel.clone(),
+            ledger_identity,
+        })
+    }
+
+    #[cfg(feature = "sandbox")]
+    async fn open_channel_and_wait(config: &DamlGrpcClientConfig) -> DamlResult<Channel> {
+        let mut channel = Self::make_channel(config).await;
+        let start = Instant::now();
+        while let Err(e) = channel {
+            if start.elapsed() > config.reset_timeout {
+                return Err(DamlError::new_timeout_error(e));
+            }
+            channel = Self::make_channel(config).await;
+        }
+        channel
+    }
+
+    #[cfg(feature = "sandbox")]
+    async fn make_client_from_channel_and_wait(channel: Channel, config: DamlGrpcClientConfig) -> DamlResult<Self> {
+        let ledger_identity_service = DamlLedgerIdentityService::new(channel.clone(), config.auth_token.as_deref());
+        let ledger_identity = Self::query_ledger_identity_and_wait(&config.reset_timeout, &ledger_identity_service).await?;
+        Ok(Self {
+            config,
+            channel: channel.clone(),
+            ledger_identity,
+        })
+    }
+
+    #[cfg(feature = "sandbox")]
+    async fn query_ledger_identity_and_wait(
+        reset_timeout: &Duration,
         ledger_identity_service: &DamlLedgerIdentityService<'_>,
     ) -> DamlResult<String> {
         let start = Instant::now();
@@ -380,22 +402,12 @@ impl DamlGrpcClient {
             if let DamlError::GRPCPermissionError(_) = e {
                 return Err(e);
             }
-            if start.elapsed() > *timeout {
+            if start.elapsed() > *reset_timeout {
                 return Err(DamlError::new_timeout_error(e));
             }
             ledger_identity = ledger_identity_service.get_ledger_identity().await;
         }
         ledger_identity
-    }
-
-    async fn make_client_from_channel(channel: Channel, config: DamlGrpcClientConfig) -> DamlResult<Self> {
-        let ledger_identity_service = DamlLedgerIdentityService::new(channel.clone(), config.auth_token.as_deref());
-        let ledger_identity = Self::query_ledger_identity(&config.timeout, &ledger_identity_service).await?;
-        Ok(Self {
-            config,
-            channel: channel.clone(),
-            ledger_identity,
-        })
     }
 
     #[cfg(test)]
