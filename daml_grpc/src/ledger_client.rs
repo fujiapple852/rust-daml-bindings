@@ -8,9 +8,9 @@ use crate::service::{
 use crate::service::{DamlConfigManagementService, DamlPackageManagementService, DamlPartyManagementService};
 #[cfg(feature = "sandbox")]
 use crate::service::{DamlResetService, DamlTimeService};
-use log::debug;
 use std::time::{Duration, Instant};
 use tonic::transport::{Certificate, Channel, ClientTlsConfig};
+use tracing::{debug, instrument};
 
 use hyper::client::HttpConnector;
 #[cfg(test)]
@@ -185,6 +185,7 @@ impl DamlGrpcClientBuilder {
 }
 
 /// DAML ledger client connection.
+#[derive(Debug)]
 pub struct DamlGrpcClient {
     config: DamlGrpcClientConfig,
     channel: Channel,
@@ -193,6 +194,7 @@ pub struct DamlGrpcClient {
 
 impl DamlGrpcClient {
     /// Create a channel and connect.
+    #[instrument]
     pub async fn connect(config: DamlGrpcClientConfig) -> DamlResult<Self> {
         debug!("connecting to {}", config.uri);
         let channel = Self::open_channel(&config).await?;
@@ -201,6 +203,7 @@ impl DamlGrpcClient {
 
     /// Reset the ledger and reconnect.
     #[cfg(feature = "sandbox")]
+    #[instrument(skip(self))]
     pub async fn reset_and_wait(self) -> DamlResult<Self> {
         debug!("resetting Sandbox");
         self.reset_service().reset().await?;
@@ -383,7 +386,8 @@ impl DamlGrpcClient {
     #[cfg(feature = "sandbox")]
     async fn make_client_from_channel_and_wait(channel: Channel, config: DamlGrpcClientConfig) -> DamlResult<Self> {
         let ledger_identity_service = DamlLedgerIdentityService::new(channel.clone(), config.auth_token.as_deref());
-        let ledger_identity = Self::query_ledger_identity_and_wait(&config.reset_timeout, &ledger_identity_service).await?;
+        let ledger_identity =
+            Self::query_ledger_identity_and_wait(&config.reset_timeout, &ledger_identity_service).await?;
         Ok(Self {
             config,
             channel: channel.clone(),

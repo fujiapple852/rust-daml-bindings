@@ -2,10 +2,11 @@ use crate::data::DamlResult;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::testing::reset_service_client::ResetServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::testing::ResetRequest;
 use crate::service::common::make_request;
-use log::{debug, trace};
 use tonic::transport::Channel;
+use tracing::{instrument, trace};
 
 /// Reset the state of a DAML ledger (requires `testing` feature).
+#[derive(Debug)]
 pub struct DamlResetService<'a> {
     channel: Channel,
     ledger_id: &'a str,
@@ -37,13 +38,13 @@ impl<'a> DamlResetService<'a> {
         }
     }
 
+    #[instrument(skip(self))]
     pub async fn reset(&self) -> DamlResult<()> {
-        debug!("reset");
         let payload = ResetRequest {
             ledger_id: self.ledger_id.to_string(),
         };
-        trace!("reset payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        self.client().reset(make_request(payload, self.auth_token.as_deref())?).await?;
+        trace!(payload = ?payload, token = ?self.auth_token);
+        self.client().reset(make_request(payload, self.auth_token)?).await?;
         Ok(())
     }
 

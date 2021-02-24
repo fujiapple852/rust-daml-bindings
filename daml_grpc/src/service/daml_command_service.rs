@@ -5,14 +5,16 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::command_service_client::Co
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{Commands, SubmitAndWaitRequest, TraceContext};
 use crate::service::common::make_request;
 use crate::util::Required;
-use log::{debug, trace};
 use std::convert::TryFrom;
+use std::fmt::Debug;
 use tonic::transport::Channel;
+use tracing::{instrument, trace};
 
 /// Submit commands to a DAML ledger and await the completion.
 ///
 /// The Command Service is able to correlate submitted commands with completion data, identify timeouts, and return
 /// contextual information with each tracking result. This supports the implementation of stateless clients.
+#[derive(Debug)]
 pub struct DamlCommandService<'a> {
     channel: Channel,
     ledger_id: &'a str,
@@ -92,7 +94,8 @@ impl<'a> DamlCommandService<'a> {
     /// [`DamlTraceContext`]: crate::data::trace::DamlTraceContext
     /// [`GRPCTransportError`]: crate::data::error::DamlError::GRPCTransportError
     /// [`GRPCStatusError`]: crate::data::error::DamlError::GRPCStatusError
-    pub async fn submit_and_wait(&self, commands: impl Into<DamlCommands>) -> DamlResult<String> {
+    #[instrument(skip(self, commands))]
+    pub async fn submit_and_wait(&self, commands: impl Into<DamlCommands> + Debug) -> DamlResult<String> {
         self.submit_and_wait_with_trace(commands, None).await
     }
 
@@ -101,24 +104,28 @@ impl<'a> DamlCommandService<'a> {
     /// See [`submit_and_wait`] for details of the behaviour and example usage.
     ///
     /// [`submit_and_wait`]: DamlCommandService::submit_and_wait
+    #[instrument(skip(self))]
     pub async fn submit_and_wait_with_trace(
         &self,
-        commands: impl Into<DamlCommands>,
-        trace_context: impl Into<Option<DamlTraceContext>>,
+        commands: impl Into<DamlCommands> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<String> {
-        debug!("submit_and_wait");
         let commands = commands.into();
         let command_id = commands.command_id().to_owned();
         let payload = self.make_payload(commands, trace_context)?;
-        trace!("submit_and_wait payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        self.client().submit_and_wait(make_request(payload, self.auth_token.as_deref())?).await?;
+        trace!(payload = ?payload, token = ?self.auth_token);
+        self.client().submit_and_wait(make_request(payload, self.auth_token)?).await?;
         Ok(command_id)
     }
 
     /// Submits a composite [`DamlCommands`] and returns the resulting transaction id.
     ///
     /// DOCME fully document this
-    pub async fn submit_and_wait_for_transaction_id(&self, commands: impl Into<DamlCommands>) -> DamlResult<String> {
+    #[instrument(skip(self, commands))]
+    pub async fn submit_and_wait_for_transaction_id(
+        &self,
+        commands: impl Into<DamlCommands> + Debug,
+    ) -> DamlResult<String> {
         self.submit_and_wait_for_transaction_id_with_trace(commands, None).await
     }
 
@@ -127,28 +134,30 @@ impl<'a> DamlCommandService<'a> {
     /// See [`submit_and_wait_for_transaction_id`] for details of the behaviour and example usage.
     ///
     /// [`submit_and_wait_for_transaction_id`]: DamlCommandService::submit_and_wait_for_transaction_id
+    #[instrument(skip(self))]
     pub async fn submit_and_wait_for_transaction_id_with_trace(
         &self,
-        commands: impl Into<DamlCommands>,
-        trace_context: impl Into<Option<DamlTraceContext>>,
+        commands: impl Into<DamlCommands> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<String> {
-        debug!("submit_and_wait_for_transaction_id");
         let payload = self.make_payload(commands, trace_context)?;
-        trace!("submit_and_wait_for_transaction_id payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        Ok(self
+        trace!(payload = ?payload, token = ?self.auth_token);
+        let response = self
             .client()
-            .submit_and_wait_for_transaction_id(make_request(payload, self.auth_token.as_deref())?)
+            .submit_and_wait_for_transaction_id(make_request(payload, self.auth_token)?)
             .await?
-            .into_inner()
-            .transaction_id)
+            .into_inner();
+        trace!(?response);
+        Ok(response.transaction_id)
     }
 
     /// Submits a composite [`DamlCommands`] and returns the resulting [`DamlTransaction`].
     ///
     /// DOCME fully document this
+    #[instrument(skip(self, commands))]
     pub async fn submit_and_wait_for_transaction(
         &self,
-        commands: impl Into<DamlCommands>,
+        commands: impl Into<DamlCommands> + Debug,
     ) -> DamlResult<DamlTransaction> {
         self.submit_and_wait_for_transaction_with_trace(commands, None).await
     }
@@ -158,28 +167,26 @@ impl<'a> DamlCommandService<'a> {
     /// See [`submit_and_wait_for_transaction`] for details of the behaviour and example usage.
     ///
     /// [`submit_and_wait_for_transaction`]: DamlCommandService::submit_and_wait_for_transaction
+    #[instrument(skip(self))]
     pub async fn submit_and_wait_for_transaction_with_trace(
         &self,
-        commands: impl Into<DamlCommands>,
-        trace_context: impl Into<Option<DamlTraceContext>>,
+        commands: impl Into<DamlCommands> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<DamlTransaction> {
-        debug!("submit_and_wait_for_transaction");
         let payload = self.make_payload(commands, trace_context)?;
-        trace!("submit_and_wait_for_transaction payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        self.client()
-            .submit_and_wait_for_transaction(make_request(payload, self.auth_token.as_deref())?)
-            .await?
-            .into_inner()
-            .transaction
-            .req()
-            .and_then(DamlTransaction::try_from)
+        trace!(payload = ?payload, token = ?self.auth_token);
+        let response =
+            self.client().submit_and_wait_for_transaction(make_request(payload, self.auth_token)?).await?.into_inner();
+        trace!(?response);
+        response.transaction.req().and_then(DamlTransaction::try_from)
     }
 
     /// Submits a composite [`DamlCommands`] and returns the resulting [`DamlTransactionTree`].
     /// DOCME fully document this
+    #[instrument(skip(self, commands))]
     pub async fn submit_and_wait_for_transaction_tree(
         &self,
-        commands: impl Into<DamlCommands>,
+        commands: impl Into<DamlCommands> + Debug,
     ) -> DamlResult<DamlTransactionTree> {
         self.submit_and_wait_for_transaction_tree_with_trace(commands, None).await
     }
@@ -189,21 +196,21 @@ impl<'a> DamlCommandService<'a> {
     /// See [`submit_and_wait_for_transaction_tree`] for details of the behaviour and example usage.
     ///
     /// [`submit_and_wait_for_transaction_tree`]: DamlCommandService::submit_and_wait_for_transaction_tree
+    #[instrument(skip(self))]
     pub async fn submit_and_wait_for_transaction_tree_with_trace(
         &self,
-        commands: impl Into<DamlCommands>,
-        trace_context: impl Into<Option<DamlTraceContext>>,
+        commands: impl Into<DamlCommands> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<DamlTransactionTree> {
-        debug!("submit_and_wait_for_transaction_tree");
         let payload = self.make_payload(commands, trace_context)?;
-        trace!("submit_and_wait_for_transaction_tree payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        self.client()
-            .submit_and_wait_for_transaction_tree(make_request(payload, self.auth_token.as_deref())?)
+        trace!(payload = ?payload, token = ?self.auth_token);
+        let response = self
+            .client()
+            .submit_and_wait_for_transaction_tree(make_request(payload, self.auth_token)?)
             .await?
-            .into_inner()
-            .transaction
-            .req()
-            .and_then(DamlTransactionTree::try_from)
+            .into_inner();
+        trace!(?response);
+        response.transaction.req().and_then(DamlTransactionTree::try_from)
     }
 
     fn client(&self) -> CommandServiceClient<Channel> {

@@ -1,6 +1,6 @@
 use crate::common::ping_pong::{
-    create_ping_contract, create_test_uuid, new_static_sandbox, TestResult, ALICE_PARTY, APPLICATION_ID_PREFIX,
-    BOB_PARTY, COMMAND_ID_PREFIX, ERR_STR, PINGPONG_MODULE_NAME, STATIC_SANDBOX_LOCK, WORKFLOW_ID_PREFIX,
+    create_ping_contract, create_test_uuid, initialize_static, new_static_sandbox, TestResult, ALICE_PARTY,
+    APPLICATION_ID_PREFIX, BOB_PARTY, COMMAND_ID_PREFIX, ERR_STR, PINGPONG_MODULE_NAME, WORKFLOW_ID_PREFIX,
 };
 
 use daml::util::package::find_module_package_id;
@@ -12,7 +12,7 @@ use futures::StreamExt;
 
 #[tokio::test]
 async fn test_get_active_contracts() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock().await;
+    let _lock = initialize_static().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let application_id = create_test_uuid(APPLICATION_ID_PREFIX);

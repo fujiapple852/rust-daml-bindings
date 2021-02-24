@@ -14,7 +14,9 @@ use reqwest::{Certificate, Client, ClientBuilder, RequestBuilder, Response};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
+use std::fmt::Debug;
 use std::time::{Duration, Instant};
+use tracing::{instrument, trace};
 use url::Url;
 
 static CREATE_REST: &str = "/v1/create";
@@ -188,11 +190,13 @@ impl DamlJsonClient {
     }
 
     /// Create a new `DAML` contract.
+    #[instrument(skip(self))]
     pub async fn create(&self, template_id: &str, payload: Value) -> DamlJsonResult<DamlJsonCreatedEvent> {
         Ok(self.create_request(&DamlJsonCreateRequest::new(template_id, payload)).await?.result)
     }
 
     /// Create a new `DAML` Contract with optional meta field.
+    #[instrument(skip(self))]
     pub async fn create_with_meta(
         &self,
         template_id: &str,
@@ -203,6 +207,7 @@ impl DamlJsonClient {
     }
 
     /// Exercise a `DAML` choice by contract id.
+    #[instrument(skip(self))]
     pub async fn exercise(
         &self,
         template_id: &str,
@@ -217,6 +222,7 @@ impl DamlJsonClient {
     }
 
     /// Exercise a `DAML` choice by contract key.
+    #[instrument(skip(self))]
     pub async fn exercise_by_key(
         &self,
         template_id: &str,
@@ -231,6 +237,7 @@ impl DamlJsonClient {
     }
 
     /// Create and exercise a `DAML` choice.
+    #[instrument(skip(self))]
     pub async fn create_and_exercise(
         &self,
         template_id: &str,
@@ -245,22 +252,26 @@ impl DamlJsonClient {
     }
 
     /// Fetch a `DAML` contract by id.
+    #[instrument(skip(self))]
     pub async fn fetch(&self, contract_id: &str) -> DamlJsonResult<DamlJsonCreatedEvent> {
         Ok(self.fetch_request(&DamlJsonFetchRequest::new(contract_id)).await?.result)
     }
 
     /// Fetch a `DAML` contract by key.
+    #[instrument(skip(self))]
     pub async fn fetch_by_key(&self, template_id: &str, key: Value) -> DamlJsonResult<DamlJsonCreatedEvent> {
         Ok(self.fetch_by_key_request(&DamlJsonFetchByKeyRequest::new(template_id, key)).await?.result)
     }
 
     /// List all currently active contracts for all known templates.
+    #[instrument(skip(self))]
     pub async fn query_all(&self) -> DamlJsonResult<Vec<DamlJsonCreatedEvent>> {
         Ok(self.query_all_request().await?.result)
     }
 
     /// List currently active contracts that match a given query.
-    pub async fn query<S: Into<String>>(
+    #[instrument(skip(self))]
+    pub async fn query<S: Into<String> + Debug>(
         &self,
         template_ids: Vec<S>,
         query: Value,
@@ -273,7 +284,8 @@ impl DamlJsonClient {
     ///
     /// Retrieve the [`DamlJsonParty`] entries for the given `parties` identifiers.  Unknown parties are silently
     /// discarded.
-    pub async fn fetch_parties<S: Into<String>>(&self, parties: Vec<S>) -> DamlJsonResult<Vec<DamlJsonParty>> {
+    #[instrument(skip(self))]
+    pub async fn fetch_parties<S: Into<String> + Debug>(&self, parties: Vec<S>) -> DamlJsonResult<Vec<DamlJsonParty>> {
         Ok(self
             .fetch_parties_request(&DamlJsonFetchPartiesRequest::new(parties.into_iter().map(Into::into).collect()))
             .await?
@@ -283,7 +295,8 @@ impl DamlJsonClient {
     /// Fetch `DAML` Parties and unknown `DAML` Parties by identifiers.
     ///
     /// Retrieve the [`DamlJsonParty`] entries for the given `parties` identifiers and unknown party identifiers.
-    pub async fn fetch_parties_with_unknown<S: Into<String>>(
+    #[instrument(skip(self))]
+    pub async fn fetch_parties_with_unknown<S: Into<String> + Debug>(
         &self,
         parties: Vec<S>,
     ) -> DamlJsonResult<(Vec<DamlJsonParty>, Vec<String>)> {
@@ -296,11 +309,13 @@ impl DamlJsonClient {
     }
 
     /// Fetch all known Parties.
+    #[instrument(skip(self))]
     pub async fn fetch_all_parties(&self) -> DamlJsonResult<Vec<DamlJsonParty>> {
         Ok(self.fetch_all_parties_request().await?.result)
     }
 
     /// Allocate Party.
+    #[instrument(skip(self))]
     pub async fn allocate_party(
         &self,
         identifier_hint: Option<&str>,
@@ -310,29 +325,35 @@ impl DamlJsonClient {
     }
 
     /// List All `DALF` packages
+    #[instrument(skip(self))]
     pub async fn list_packages(&self) -> DamlJsonResult<Vec<String>> {
         Ok(self.list_packages_request().await?.result)
     }
 
     /// Download a `DALF` package.
+    #[instrument(skip(self))]
     pub async fn download_package(&self, package_id: &str) -> DamlJsonResult<Vec<u8>> {
         self.download_package_request(package_id).await
     }
 
     /// Upload a `DAR` file.
+    #[instrument(skip(self))]
     pub async fn upload_dar(&self, content: Vec<u8>) -> DamlJsonResult<()> {
         self.upload_dar_request(content).await?;
         Ok(())
     }
 
+    #[instrument(skip(self))]
     async fn create_request(&self, request: &DamlJsonCreateRequest) -> DamlJsonResult<DamlJsonCreateResponse> {
         self.post_json(Self::url(&self.config.url, CREATE_REST)?, request).await
     }
 
+    #[instrument(skip(self))]
     async fn exercise_request(&self, request: &DamlJsonExerciseRequest) -> DamlJsonResult<DamlJsonExerciseResponse> {
         self.post_json(Self::url(&self.config.url, EXERCISE_REST)?, request).await
     }
 
+    #[instrument(skip(self))]
     async fn exercise_by_key_request(
         &self,
         request: &DamlJsonExerciseByKeyRequest,
@@ -340,6 +361,7 @@ impl DamlJsonClient {
         self.post_json(Self::url(&self.config.url, EXERCISE_REST)?, request).await
     }
 
+    #[instrument(skip(self))]
     async fn create_and_exercise_request(
         &self,
         request: &DamlJsonCreateAndExerciseRequest,
@@ -347,22 +369,27 @@ impl DamlJsonClient {
         self.post_json(Self::url(&self.config.url, CREATE_AND_EXERCISE_REST)?, request).await
     }
 
+    #[instrument(skip(self))]
     async fn fetch_request(&self, request: &DamlJsonFetchRequest) -> DamlJsonResult<DamlJsonFetchResponse> {
         self.post_json(Self::url(&self.config.url, FETCH_REST)?, request).await
     }
 
+    #[instrument(skip(self))]
     async fn fetch_by_key_request(&self, request: &DamlJsonFetchByKeyRequest) -> DamlJsonResult<DamlJsonFetchResponse> {
         self.post_json(Self::url(&self.config.url, FETCH_REST)?, request).await
     }
 
+    #[instrument(skip(self))]
     async fn query_all_request(&self) -> DamlJsonResult<DamlJsonQueryResponse> {
         self.get_json(Self::url(&self.config.url, QUERY_REST)?).await
     }
 
+    #[instrument(skip(self))]
     async fn query_request(&self, request: &DamlJsonQuery) -> DamlJsonResult<DamlJsonQueryResponse> {
         self.post_json(Self::url(&self.config.url, QUERY_REST)?, request).await
     }
 
+    #[instrument(skip(self))]
     async fn fetch_parties_request(
         &self,
         request: &DamlJsonFetchPartiesRequest,
@@ -370,10 +397,12 @@ impl DamlJsonClient {
         self.post_json(Self::url(&self.config.url, PARTIES_REST)?, request).await
     }
 
+    #[instrument(skip(self))]
     async fn fetch_all_parties_request(&self) -> DamlJsonResult<DamlJsonFetchPartiesResponse> {
         self.get_json(Self::url(&self.config.url, PARTIES_REST)?).await
     }
 
+    #[instrument(skip(self))]
     async fn allocate_party_request(
         &self,
         request: &DamlJsonAllocatePartyRequest,
@@ -381,40 +410,55 @@ impl DamlJsonClient {
         self.post_json(Self::url(&self.config.url, ALLOCATE_PARTY_REST)?, request).await
     }
 
+    #[instrument(skip(self))]
     async fn list_packages_request(&self) -> DamlJsonResult<DamlJsonListPackagesResponse> {
         self.get_json(Self::url(&self.config.url, PACKAGES_REST)?).await
     }
 
+    #[instrument(skip(self))]
     async fn download_package_request(&self, package_id: &str) -> DamlJsonResult<Vec<u8>> {
         Ok(self.get_bytes(Self::url(&self.config.url, &format!("{}/{}", PACKAGES_REST, package_id))?).await?.to_vec())
     }
 
+    #[instrument(skip(self))]
     async fn upload_dar_request(&self, bytes: Vec<u8>) -> DamlJsonResult<DamlJsonUploadDarResponse> {
         Ok(self.post_bytes(Self::url(&self.config.url, PACKAGES_REST)?, bytes).await?)
     }
 
+    #[instrument(skip(self))]
     async fn get_json<R: DeserializeOwned>(&self, url: Url) -> DamlJsonResult<R> {
         let request = self.make_get_request(&url);
+        trace!(?request);
         let response = self.execute_with_retry(request).await?;
+        trace!(?response);
         self.process_json_response(response).await
     }
 
-    async fn post_json<T: Serialize, R: DeserializeOwned>(&self, url: Url, json: T) -> DamlJsonResult<R> {
+    #[instrument(skip(self))]
+    async fn post_json<T: Serialize + Debug, R: DeserializeOwned>(&self, url: Url, json: T) -> DamlJsonResult<R> {
         let request = self.make_post_request(&url).json(&json);
+        trace!(?request);
         let response = self.execute_with_retry(request).await?;
+        trace!(?response);
         self.process_json_response(response).await
     }
 
+    #[instrument(skip(self))]
     async fn get_bytes(&self, url: Url) -> DamlJsonResult<Bytes> {
         let request = self.make_get_request(&url);
+        trace!(?request);
         let response = self.execute_with_retry(request).await?;
+        trace!(?response);
         self.process_bytes_response(response).await
     }
 
-    async fn post_bytes<R: DeserializeOwned>(&self, url: Url, bytes: impl Into<Bytes>) -> DamlJsonResult<R> {
+    #[instrument(skip(self))]
+    async fn post_bytes<R: DeserializeOwned>(&self, url: Url, bytes: impl Into<Bytes> + Debug) -> DamlJsonResult<R> {
         let request =
             self.make_post_request(&url).header("Content-Type", "application/octet-stream").body(bytes.into());
+        trace!(?request);
         let response = self.execute_with_retry(request).await?;
+        trace!(?response);
         self.process_json_response(response).await
     }
 

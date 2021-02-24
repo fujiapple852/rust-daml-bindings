@@ -5,13 +5,15 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::{GetTimeModelReques
 use crate::service::common::make_request;
 use crate::util::{to_grpc_timestamp, Required};
 use chrono::{DateTime, Utc};
-use log::{debug, trace};
 use std::convert::TryFrom;
+use std::fmt::Debug;
 use tonic::transport::Channel;
+use tracing::{instrument, trace};
 
 /// Provides methods for the ledger administrator to change the current ledger configuration.
 ///
 /// The services provides methods to modify different aspects of the configuration.
+#[derive(Debug)]
 pub struct DamlConfigManagementService<'a> {
     channel: Channel,
     auth_token: Option<&'a str>,
@@ -37,12 +39,13 @@ impl<'a> DamlConfigManagementService<'a> {
     ///
     /// The current configuration generation. The generation is a monotonically increasing integer that is incremented
     /// on each change. Used when setting the time model.
+    #[instrument(skip(self))]
     pub async fn get_time_model(&self) -> DamlResult<(i64, DamlTimeModel)> {
-        debug!("get_time_model");
         let payload = GetTimeModelRequest {};
-        trace!("get_time_model payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        trace!(payload = ?payload, token = ?self.auth_token);
         let response =
             self.client().get_time_model(make_request(payload, self.auth_token.as_deref())?).await?.into_inner();
+        trace!(?response);
         Ok((response.configuration_generation, DamlTimeModel::try_from(response.time_model.req()?)?))
     }
 
@@ -62,23 +65,24 @@ impl<'a> DamlConfigManagementService<'a> {
     ///   time model before retrying.
     ///
     /// `UNIMPLEMENTED` if this method is not supported by the backing ledger.
+    #[instrument(skip(self))]
     pub async fn set_time_model(
         &self,
-        submission_id: impl Into<String>,
-        maximum_record_time: impl Into<DateTime<Utc>>,
+        submission_id: impl Into<String> + Debug,
+        maximum_record_time: impl Into<DateTime<Utc>> + Debug,
         configuration_generation: i64,
-        new_time_model: impl Into<DamlTimeModel>,
+        new_time_model: impl Into<DamlTimeModel> + Debug,
     ) -> DamlResult<i64> {
-        debug!("set_time_model");
         let payload = SetTimeModelRequest {
             submission_id: submission_id.into(),
             maximum_record_time: Some(to_grpc_timestamp(maximum_record_time.into())?),
             configuration_generation,
             new_time_model: Some(TimeModel::try_from(new_time_model.into())?),
         };
-        trace!("set_time_model payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        trace!(payload = ?payload, token = ?self.auth_token);
         let response =
-            self.client().set_time_model(make_request(payload, self.auth_token.as_deref())?).await?.into_inner();
+            self.client().set_time_model(make_request(payload, self.auth_token)?).await?.into_inner();
+        trace!(?response);
         Ok(response.configuration_generation)
     }
 

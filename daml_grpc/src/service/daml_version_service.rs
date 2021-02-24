@@ -2,10 +2,11 @@ use crate::data::DamlResult;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::version_service_client::VersionServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::GetLedgerApiVersionRequest;
 use crate::service::common::make_request;
-use log::{debug, trace};
 use tonic::transport::Channel;
+use tracing::{instrument, trace};
 
 /// Retrieve information about the ledger API version.
+#[derive(Debug)]
 pub struct DamlVersionService<'a> {
     channel: Channel,
     ledger_id: &'a str,
@@ -38,14 +39,19 @@ impl<'a> DamlVersionService<'a> {
     }
 
     /// Read the Ledger API version.
+    #[instrument(skip(self))]
     pub async fn get_ledger_api_version(&self) -> DamlResult<String> {
-        debug!("get_ledger_api_version");
         let payload = GetLedgerApiVersionRequest {
             ledger_id: self.ledger_id.to_string(),
         };
-        trace!("get_ledger_api_version payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        let version = self.client().get_ledger_api_version(make_request(payload, self.auth_token.as_deref())?).await?;
-        Ok(version.into_inner().version)
+        trace!(payload = ?payload, token = ?self.auth_token);
+        let response = self
+            .client()
+            .get_ledger_api_version(make_request(payload, self.auth_token)?)
+            .await?
+            .into_inner();
+        trace!(?response);
+        Ok(response.version)
     }
 
     fn client(&self) -> VersionServiceClient<Channel> {

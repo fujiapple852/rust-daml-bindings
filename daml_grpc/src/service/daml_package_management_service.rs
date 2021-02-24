@@ -4,9 +4,10 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::package_management_
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::{ListKnownPackagesRequest, UploadDarFileRequest};
 use crate::service::common::make_request;
 use bytes::Bytes;
-use log::{debug, trace};
 use std::convert::TryFrom;
+use std::fmt::Debug;
 use tonic::transport::Channel;
+use tracing::{instrument, trace};
 
 /// Query the DAML-LF packages supported by the ledger participant and upload DAR files.
 ///
@@ -17,6 +18,7 @@ use tonic::transport::Channel;
 /// When the participant is run in mode requiring authentication, all the calls in this interface will respond with
 /// `UNAUTHENTICATED`, if the caller fails to provide a valid access token, and will respond with `PERMISSION_DENIED`,
 /// if the claims in the token are insufficient to perform a given operation.
+#[derive(Debug)]
 pub struct DamlPackageManagementService<'a> {
     channel: Channel,
     auth_token: Option<&'a str>,
@@ -39,13 +41,14 @@ impl<'a> DamlPackageManagementService<'a> {
     }
 
     /// Returns the details of all DAML-LF packages known to the backing participant.
+    #[instrument(skip(self))]
     pub async fn list_known_packages(&self) -> DamlResult<Vec<DamlPackageDetails>> {
-        debug!("list_known_packages");
         let payload = ListKnownPackagesRequest {};
-        trace!("list_known_packages payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        let all_known_packages =
-            self.client().list_known_packages(make_request(payload, self.auth_token.as_deref())?).await?;
-        all_known_packages.into_inner().package_details.into_iter().map(DamlPackageDetails::try_from).collect()
+        trace!(payload = ?payload, token = ?self.auth_token);
+        let response =
+            self.client().list_known_packages(make_request(payload, self.auth_token)?).await?.into_inner();
+        trace!(?response);
+        response.package_details.into_iter().map(DamlPackageDetails::try_from).collect()
     }
 
     /// Upload a DAR file to the backing participant.
@@ -63,15 +66,19 @@ impl<'a> DamlPackageManagementService<'a> {
     ///
     /// The maximum supported size is implementation specific.  Contains a DAML archive `dar`file, which in turn is a
     /// jar like zipped container for `daml_lf` archives.
-    pub async fn upload_dar_file(&self, bytes: impl Into<Bytes>, submission_id: Option<String>) -> DamlResult<()> {
-        debug!("upload_dar_file");
+    #[instrument(skip(self))]
+    pub async fn upload_dar_file(
+        &self,
+        bytes: impl Into<Bytes> + Debug,
+        submission_id: Option<String>,
+    ) -> DamlResult<()> {
         let payload = UploadDarFileRequest {
             dar_file: bytes.into().to_vec(),
             submission_id: submission_id.unwrap_or_default(),
         };
-        trace!("upload_dar_file payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        trace!(payload = ?payload, token = ?self.auth_token);
         self.client()
-            .upload_dar_file(make_request(payload, self.auth_token.as_deref())?)
+            .upload_dar_file(make_request(payload, self.auth_token)?)
             .await
             .map_err(Into::into)
             .map(|_| ())

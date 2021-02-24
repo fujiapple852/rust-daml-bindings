@@ -19,9 +19,9 @@ use daml::util::package::find_module_package_id;
 use daml::util::DamlSandboxTokenBuilder;
 use futures::stream::StreamExt;
 use futures::try_join;
-use log::info;
-use log4rs::config::Deserializers;
 use std::convert::TryInto;
+use tracing::info;
+use tracing_subscriber::fmt::format::FmtSpan;
 
 const PINGPONG_MODULE_NAME: &str = "DA.PingPong";
 const PING_ENTITY_NAME: &str = "Ping";
@@ -35,11 +35,14 @@ const CHOICE_RESPOND_PONG: &str = "RespondPong";
 const TOKEN_VALIDITY_SECS: i64 = 60;
 // const SERVER_CA_CERT_PATH: &str = "resources/testing_types_sandbox/.tls_certs/ca.cert";
 const TOKEN_KEY_PATH: &str = "../../resources/testing_types_sandbox/.auth_certs/es256.key";
-const LOGGER_CONFIG: &str = "log4rs.yml";
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    log4rs::init_file(LOGGER_CONFIG, Deserializers::default()).context(LOGGER_CONFIG)?;
+    tracing_subscriber::fmt()
+        .with_span_events(FmtSpan::NONE)
+        .with_env_filter("daml_grpc::service::daml_command_service=trace")
+        .json()
+        .init();
     let ledger_client = create_connection("https://localhost:8080").await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     send_initial_ping(&ledger_client, &package_id, PARTY_ALICE).await?;

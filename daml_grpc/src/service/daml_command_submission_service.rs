@@ -5,11 +5,13 @@ use crate::data::DamlTraceContext;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::command_submission_service_client::CommandSubmissionServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{Commands, SubmitRequest, TraceContext};
 use crate::service::common::make_request;
-use log::{debug, trace};
 use std::convert::TryFrom;
+use std::fmt::Debug;
 use tonic::transport::Channel;
+use tracing::{instrument, trace};
 
 /// Advance the state of a DAML ledger by submitting commands.
+#[derive(Debug)]
 pub struct DamlCommandSubmissionService<'a> {
     channel: Channel,
     ledger_id: &'a str,
@@ -42,24 +44,26 @@ impl<'a> DamlCommandSubmissionService<'a> {
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn submit_request(&self, commands: DamlCommands) -> DamlResult<String> {
         self.submit_request_with_trace(commands, None).await
     }
 
+    #[instrument(skip(self))]
     pub async fn submit_request_with_trace(
         &self,
-        commands: impl Into<DamlCommands>,
-        trace_context: impl Into<Option<DamlTraceContext>>,
+        commands: impl Into<DamlCommands> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<String> {
-        debug!("submit_request");
         let commands = commands.into();
         let command_id = commands.command_id().to_owned();
         let payload = SubmitRequest {
             commands: Some(self.create_ledger_commands(commands)?),
             trace_context: trace_context.into().map(TraceContext::from),
         };
-        trace!("submit_request payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        self.client().submit(make_request(payload, self.auth_token.as_deref())?).await.map_err(DamlError::from)?;
+        trace!(payload = ?payload, token = ?self.auth_token);
+        self.client().submit(make_request(payload, self.auth_token)?).await.map_err(DamlError::from)?;
+        trace!(?command_id);
         Ok(command_id)
     }
 

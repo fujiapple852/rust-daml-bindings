@@ -8,9 +8,10 @@ use crate::service::common::make_request;
 use crate::service::DamlVerbosity;
 use futures::Stream;
 use futures::StreamExt;
-use log::{debug, trace};
 use std::convert::TryFrom;
+use std::fmt::Debug;
 use tonic::transport::Channel;
+use tracing::{instrument, trace};
 
 /// Returns a stream of the active contracts on a DAML ledger.
 ///
@@ -22,6 +23,7 @@ use tonic::transport::Channel;
 /// reflects the state at the ledger end.
 ///
 /// [`DamlLedgerOffsetBoundary::Begin`]: crate::data::offset::DamlLedgerOffsetBoundary::Begin
+#[derive(Debug)]
 pub struct DamlActiveContractsService<'a> {
     channel: Channel,
     ledger_id: &'a str,
@@ -53,31 +55,32 @@ impl<'a> DamlActiveContractsService<'a> {
         }
     }
 
+    #[instrument(skip(self, filter, verbose))]
     pub async fn get_active_contracts(
         &self,
-        filter: impl Into<DamlTransactionFilter>,
-        verbose: impl Into<DamlVerbosity>,
+        filter: impl Into<DamlTransactionFilter> + Debug,
+        verbose: impl Into<DamlVerbosity> + Debug,
     ) -> DamlResult<impl Stream<Item = DamlResult<DamlActiveContracts>>> {
         self.get_active_contracts_with_trace(filter, verbose, None).await
     }
 
+    #[instrument(skip(self))]
     pub async fn get_active_contracts_with_trace(
         &self,
-        filter: impl Into<DamlTransactionFilter>,
-        verbose: impl Into<DamlVerbosity>,
-        trace_context: impl Into<Option<DamlTraceContext>>,
+        filter: impl Into<DamlTransactionFilter> + Debug,
+        verbose: impl Into<DamlVerbosity> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<impl Stream<Item = DamlResult<DamlActiveContracts>>> {
-        debug!("get_active_contracts");
         let payload = GetActiveContractsRequest {
             ledger_id: self.ledger_id.to_string(),
             filter: Some(TransactionFilter::from(filter.into())),
             verbose: bool::from(verbose.into()),
             trace_context: trace_context.into().map(TraceContext::from),
         };
-        trace!("get_active_contracts payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        trace!(payload = ?payload, token = ?self.auth_token);
         let active_contract_stream =
-            self.client().get_active_contracts(make_request(payload, self.auth_token.as_deref())?).await?.into_inner();
-        Ok(active_contract_stream.map(|c| match c {
+            self.client().get_active_contracts(make_request(payload, self.auth_token)?).await?.into_inner();
+        Ok(active_contract_stream.inspect(|response| trace!(?response)).map(|response| match response {
             Ok(c) => DamlActiveContracts::try_from(c),
             Err(e) => Err(DamlError::from(e)),
         }))

@@ -7,19 +7,21 @@ use crate::data::DamlTransaction;
 use crate::data::DamlTransactionTree;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::transaction_service_client::TransactionServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{
-    GetLedgerEndRequest, GetTransactionByEventIdRequest, GetTransactionByIdRequest, GetTransactionsRequest,
-    LedgerOffset, TraceContext, TransactionFilter,
+    GetLedgerEndRequest, GetTransactionByEventIdRequest, GetTransactionByIdRequest, GetTransactionTreesResponse,
+    GetTransactionsRequest, GetTransactionsResponse, LedgerOffset, TraceContext, TransactionFilter,
 };
 use crate::service::common::make_request;
 use crate::service::DamlVerbosity;
 use crate::util::Required;
 use futures::Stream;
 use futures::StreamExt;
-use log::{debug, trace};
 use std::convert::TryFrom;
+use std::fmt::Debug;
 use tonic::transport::Channel;
+use tracing::{instrument, trace};
 
 /// Read transactions from a DAML ledger.
+#[derive(Debug)]
 pub struct DamlTransactionService<'a> {
     channel: Channel,
     ledger_id: &'a str,
@@ -52,198 +54,214 @@ impl<'a> DamlTransactionService<'a> {
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self, begin, end, filter, verbose))]
     pub async fn get_transactions(
         &self,
-        begin: impl Into<DamlLedgerOffset>,
-        end: impl Into<DamlLedgerOffsetType>,
-        filter: impl Into<DamlTransactionFilter>,
-        verbose: impl Into<DamlVerbosity>,
+        begin: impl Into<DamlLedgerOffset> + Debug,
+        end: impl Into<DamlLedgerOffsetType> + Debug,
+        filter: impl Into<DamlTransactionFilter> + Debug,
+        verbose: impl Into<DamlVerbosity> + Debug,
     ) -> DamlResult<impl Stream<Item = DamlResult<Vec<DamlTransaction>>>> {
         self.get_transactions_with_trace(begin, end, filter, verbose, None).await
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn get_transactions_with_trace(
         &self,
-        begin: impl Into<DamlLedgerOffset>,
-        end: impl Into<DamlLedgerOffsetType>,
-        filter: impl Into<DamlTransactionFilter>,
-        verbose: impl Into<DamlVerbosity>,
-        trace_context: impl Into<Option<DamlTraceContext>>,
+        begin: impl Into<DamlLedgerOffset> + Debug,
+        end: impl Into<DamlLedgerOffsetType> + Debug,
+        filter: impl Into<DamlTransactionFilter> + Debug,
+        verbose: impl Into<DamlVerbosity> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<impl Stream<Item = DamlResult<Vec<DamlTransaction>>>> {
-        debug!("get_transactions");
         let payload = self.make_transactions_payload(begin, end, filter, verbose, trace_context);
-        trace!("get_transactions payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        trace!(payload = ?payload, token = ?self.auth_token);
         let transaction_stream =
-            self.client().get_transactions(make_request(payload, self.auth_token.as_deref())?).await?.into_inner();
-        Ok(transaction_stream.map(|item| match item {
-            Ok(r) => Ok(r
-                .transactions
-                .into_iter()
-                .map(DamlTransaction::try_from)
-                .collect::<DamlResult<Vec<DamlTransaction>>>()?),
-            Err(e) => Err(DamlError::from(e)),
+            self.client().get_transactions(make_request(payload, self.auth_token)?).await?.into_inner();
+        Ok(transaction_stream.inspect(|response| trace!(?response)).map(|item: Result<GetTransactionsResponse, _>| {
+            match item {
+                Ok(r) => Ok(r
+                    .transactions
+                    .into_iter()
+                    .map(DamlTransaction::try_from)
+                    .collect::<DamlResult<Vec<DamlTransaction>>>()?),
+                Err(e) => Err(DamlError::from(e)),
+            }
         }))
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self, begin, end, filter, verbose))]
     pub async fn get_transaction_trees(
         &self,
-        begin: impl Into<DamlLedgerOffset>,
-        end: impl Into<DamlLedgerOffsetType>,
-        filter: impl Into<DamlTransactionFilter>,
-        verbose: impl Into<DamlVerbosity>,
+        begin: impl Into<DamlLedgerOffset> + Debug,
+        end: impl Into<DamlLedgerOffsetType> + Debug,
+        filter: impl Into<DamlTransactionFilter> + Debug,
+        verbose: impl Into<DamlVerbosity> + Debug,
     ) -> DamlResult<impl Stream<Item = DamlResult<Vec<DamlTransactionTree>>>> {
         self.get_transaction_trees_with_trace(begin, end, filter, verbose, None).await
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn get_transaction_trees_with_trace(
         &self,
-        begin: impl Into<DamlLedgerOffset>,
-        end: impl Into<DamlLedgerOffsetType>,
-        filter: impl Into<DamlTransactionFilter>,
-        verbose: impl Into<DamlVerbosity>,
-        trace_context: impl Into<Option<DamlTraceContext>>,
+        begin: impl Into<DamlLedgerOffset> + Debug,
+        end: impl Into<DamlLedgerOffsetType> + Debug,
+        filter: impl Into<DamlTransactionFilter> + Debug,
+        verbose: impl Into<DamlVerbosity> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<impl Stream<Item = DamlResult<Vec<DamlTransactionTree>>>> {
-        debug!("get_transaction_trees");
         let payload = self.make_transactions_payload(begin, end, filter, verbose, trace_context);
-        trace!("get_transaction_trees payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        trace!(payload = ?payload, token = ?self.auth_token);
         let transaction_stream =
-            self.client().get_transaction_trees(make_request(payload, self.auth_token.as_deref())?).await?.into_inner();
-        Ok(transaction_stream.map(|item| match item {
-            Ok(r) => Ok(r
-                .transactions
-                .into_iter()
-                .map(DamlTransactionTree::try_from)
-                .collect::<DamlResult<Vec<DamlTransactionTree>>>()?),
-            Err(e) => Err(DamlError::from(e)),
-        }))
+            self.client().get_transaction_trees(make_request(payload, self.auth_token)?).await?.into_inner();
+        Ok(transaction_stream.inspect(|response| trace!(?response)).map(
+            |item: Result<GetTransactionTreesResponse, _>| match item {
+                Ok(r) => Ok(r
+                    .transactions
+                    .into_iter()
+                    .map(DamlTransactionTree::try_from)
+                    .collect::<DamlResult<Vec<DamlTransactionTree>>>()?),
+                Err(e) => Err(DamlError::from(e)),
+            },
+        ))
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self, event_id, parties))]
     pub async fn get_transaction_by_event_id(
         &self,
-        event_id: impl Into<String>,
-        parties: impl Into<Vec<String>>,
+        event_id: impl Into<String> + Debug,
+        parties: impl Into<Vec<String>> + Debug,
     ) -> DamlResult<DamlTransactionTree> {
         self.get_transaction_by_event_id_with_trace(event_id, parties, None).await
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn get_transaction_by_event_id_with_trace(
         &self,
-        event_id: impl Into<String>,
-        parties: impl Into<Vec<String>>,
-        trace_context: Option<DamlTraceContext>,
+        event_id: impl Into<String> + Debug,
+        parties: impl Into<Vec<String>> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<DamlTransactionTree> {
-        debug!("get_transaction_by_event_id");
-        let payload = self.make_by_event_id_payload(event_id, parties, trace_context);
-        trace!("get_transaction_by_event_id payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let payload = self.make_by_event_id_payload(event_id, parties, trace_context.into());
+        trace!(payload = ?payload, token = ?self.auth_token);
         let response = self
             .client()
-            .get_transaction_by_event_id(make_request(payload, self.auth_token.as_deref())?)
+            .get_transaction_by_event_id(make_request(payload, self.auth_token)?)
             .await?
             .into_inner();
+        trace!(?response);
         DamlTransactionTree::try_from(response.transaction.req()?)
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self, transaction_id, parties))]
     pub async fn get_transaction_by_id(
         &self,
-        transaction_id: impl Into<String>,
-        parties: impl Into<Vec<String>>,
+        transaction_id: impl Into<String> + Debug,
+        parties: impl Into<Vec<String>> + Debug,
     ) -> DamlResult<DamlTransactionTree> {
         self.get_transaction_by_id_with_trace(transaction_id, parties, None).await
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn get_transaction_by_id_with_trace(
         &self,
-        transaction_id: impl Into<String>,
-        parties: impl Into<Vec<String>>,
-        trace_context: Option<DamlTraceContext>,
+        transaction_id: impl Into<String> + Debug,
+        parties: impl Into<Vec<String>> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<DamlTransactionTree> {
-        debug!("get_transaction_by_id");
-        let payload = self.make_by_id_payload(transaction_id, parties, trace_context);
-        trace!("get_transaction_by_id payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let payload = self.make_by_id_payload(transaction_id, parties, trace_context.into());
+        trace!(payload = ?payload, token = ?self.auth_token);
         let response =
-            self.client().get_transaction_by_id(make_request(payload, self.auth_token.as_deref())?).await?.into_inner();
+            self.client().get_transaction_by_id(make_request(payload, self.auth_token)?).await?.into_inner();
+        trace!(?response);
         DamlTransactionTree::try_from(response.transaction.req()?)
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self, event_id, parties))]
     pub async fn get_flat_transaction_by_event_id(
         &self,
-        event_id: impl Into<String>,
-        parties: impl Into<Vec<String>>,
+        event_id: impl Into<String> + Debug,
+        parties: impl Into<Vec<String>> + Debug,
     ) -> DamlResult<DamlTransaction> {
         self.get_flat_transaction_by_event_id_with_trace(event_id, parties, None).await
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn get_flat_transaction_by_event_id_with_trace(
         &self,
-        event_id: impl Into<String>,
-        parties: impl Into<Vec<String>>,
-        trace_context: Option<DamlTraceContext>,
+        event_id: impl Into<String> + Debug,
+        parties: impl Into<Vec<String>> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<DamlTransaction> {
-        debug!("get_flat_transaction_by_event_id");
-        let payload = self.make_by_event_id_payload(event_id, parties, trace_context);
-        trace!("get_flat_transaction_by_event_id payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let payload = self.make_by_event_id_payload(event_id, parties, trace_context.into());
+        trace!(payload = ?payload, token = ?self.auth_token);
         let response = self
             .client()
-            .get_flat_transaction_by_event_id(make_request(payload, self.auth_token.as_deref())?)
+            .get_flat_transaction_by_event_id(make_request(payload, self.auth_token)?)
             .await?
             .into_inner();
+        trace!(?response);
         DamlTransaction::try_from(response.transaction.req()?)
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self, transaction_id, parties))]
     pub async fn get_flat_transaction_by_id(
         &self,
-        transaction_id: impl Into<String>,
-        parties: impl Into<Vec<String>>,
+        transaction_id: impl Into<String> + Debug,
+        parties: impl Into<Vec<String>> + Debug,
     ) -> DamlResult<DamlTransaction> {
         self.get_flat_transaction_by_id_with_trace(transaction_id, parties, None).await
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn get_flat_transaction_by_id_with_trace(
         &self,
-        transaction_id: impl Into<String>,
-        parties: impl Into<Vec<String>>,
-        trace_context: Option<DamlTraceContext>,
+        transaction_id: impl Into<String> + Debug,
+        parties: impl Into<Vec<String>> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<DamlTransaction> {
-        debug!("get_flat_transaction_by_id");
-        let payload = self.make_by_id_payload(transaction_id, parties, trace_context);
-        trace!("get_flat_transaction_by_id payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        let payload = self.make_by_id_payload(transaction_id, parties, trace_context.into());
+        trace!(payload = ?payload, token = ?self.auth_token);
         let response = self
             .client()
-            .get_flat_transaction_by_id(make_request(payload, self.auth_token.as_deref())?)
+            .get_flat_transaction_by_id(make_request(payload, self.auth_token)?)
             .await?
             .into_inner();
+        trace!(?response);
         DamlTransaction::try_from(response.transaction.req()?)
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn get_ledger_end(&self) -> DamlResult<DamlLedgerOffset> {
         self.get_ledger_end_with_trace(None).await
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn get_ledger_end_with_trace(
         &self,
-        trace_context: Option<DamlTraceContext>,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<DamlLedgerOffset> {
-        debug!("get_ledger_end");
         let payload = GetLedgerEndRequest {
             ledger_id: self.ledger_id.to_string(),
-            trace_context: trace_context.map(TraceContext::from),
+            trace_context: trace_context.into().map(TraceContext::from),
         };
-        trace!("get_ledger_end payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        trace!(payload = ?payload, token = ?self.auth_token);
         let response =
-            self.client().get_ledger_end(make_request(payload, self.auth_token.as_deref())?).await?.into_inner();
+            self.client().get_ledger_end(make_request(payload, self.auth_token)?).await?.into_inner();
+        trace!(?response);
         DamlLedgerOffset::try_from(response.offset.req()?)
     }
 

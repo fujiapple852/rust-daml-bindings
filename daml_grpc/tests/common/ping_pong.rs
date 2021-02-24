@@ -5,10 +5,11 @@ use daml_grpc::data::{DamlIdentifier, DamlMinLedgerTime};
 use daml_grpc::DamlGrpcClient;
 use daml_grpc::{DamlCommandFactory, DamlGrpcClientBuilder};
 use std::error::Error;
+use std::sync::Once;
 use std::time::Duration;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, MutexGuard};
+use tracing_subscriber::fmt::format::FmtSpan;
 use uuid::Uuid;
-
 pub type TestResult = ::std::result::Result<(), Box<dyn Error>>;
 
 pub const PINGPONG_MODULE_NAME: &str = "DA.PingPong";
@@ -30,6 +31,30 @@ pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/.auth_certs
 lazy_static! {
     pub static ref STATIC_SANDBOX_LOCK: Mutex<()> = Mutex::new(());
     pub static ref WALLCLOCK_SANDBOX_LOCK: Mutex<()> = Mutex::new(());
+}
+
+static INIT: Once = Once::new();
+
+pub async fn initialize_static() -> MutexGuard<'static, ()> {
+    init_tracing();
+    STATIC_SANDBOX_LOCK.lock().await
+}
+
+pub async fn initialize_wallclock() -> MutexGuard<'static, ()> {
+    init_tracing();
+    WALLCLOCK_SANDBOX_LOCK.lock().await
+}
+
+fn init_tracing() {
+    INIT.call_once(|| {
+        tracing_subscriber::fmt()
+            .with_span_events(FmtSpan::NONE)
+            .with_env_filter(
+                "daml_grpc::service=debug,daml_grpc::service::daml_package_service=off,daml_grpc::service::\
+                 daml_ledger_identity_service=off,daml_grpc::service::daml_reset_service=off",
+            )
+            .init();
+    });
 }
 
 pub async fn new_wallclock_sandbox() -> anyhow::Result<DamlGrpcClient> {

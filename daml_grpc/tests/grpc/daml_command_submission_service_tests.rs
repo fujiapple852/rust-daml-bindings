@@ -1,7 +1,7 @@
 use crate::common::ping_pong::{
-    create_test_command_factory, create_test_ping_record, create_test_pp_id, create_test_uuid, new_static_sandbox,
-    TestResult, ALICE_PARTY, APPLICATION_ID_PREFIX, BOB_PARTY, COMMAND_ID_PREFIX, ERR_STR, PINGPONG_MODULE_NAME,
-    PING_ENTITY_NAME, STATIC_SANDBOX_LOCK, WORKFLOW_ID_PREFIX,
+    create_test_command_factory, create_test_ping_record, create_test_pp_id, create_test_uuid, initialize_static,
+    new_static_sandbox, TestResult, ALICE_PARTY, APPLICATION_ID_PREFIX, BOB_PARTY, COMMAND_ID_PREFIX, ERR_STR,
+    PINGPONG_MODULE_NAME, PING_ENTITY_NAME, WORKFLOW_ID_PREFIX,
 };
 
 use daml_grpc::data::completion::{DamlCompletion, DamlCompletionResponse};
@@ -19,7 +19,7 @@ use futures::prelude::*;
 /// expect.
 #[tokio::test]
 async fn test_command_submission_and_completion() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock().await;
+    let _lock = initialize_static().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let command_id = create_test_uuid(COMMAND_ID_PREFIX);

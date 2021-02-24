@@ -1,6 +1,6 @@
 use crate::common::ping_pong::{
-    create_test_uuid, new_static_sandbox, new_wallclock_sandbox, TestResult, STATIC_SANDBOX_LOCK, SUBMISSION_ID_PREFIX,
-    WALLCLOCK_SANDBOX_LOCK,
+    create_test_uuid, initialize_static, initialize_wallclock, new_static_sandbox, new_wallclock_sandbox, TestResult,
+    SUBMISSION_ID_PREFIX,
 };
 use chrono::{DateTime, Utc};
 use daml_grpc::data::DamlTimeModel;
@@ -10,7 +10,7 @@ use std::time::Duration;
 
 #[tokio::test]
 async fn test_get_time_model() -> TestResult {
-    let _lock = WALLCLOCK_SANDBOX_LOCK.lock().await;
+    let _lock = initialize_wallclock().await;
     let ledger_client = new_wallclock_sandbox().await?;
     let (configuration_generation, time_model) = ledger_client.config_management_service().get_time_model().await?;
     assert_eq!(1, configuration_generation);
@@ -22,7 +22,7 @@ async fn test_get_time_model() -> TestResult {
 
 #[tokio::test]
 async fn test_set_time_model() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock().await;
+    let _lock = initialize_static().await;
     let ledger_client = new_static_sandbox().await?;
     let ledger_times: Vec<DateTime<Utc>> = ledger_client.time_service().get_time().await?.take(1).try_collect().await?;
     let maximum_record_time = match ledger_times.as_slice() {

@@ -8,11 +8,12 @@ use crate::service::common::make_request;
 use crate::util::Required;
 use futures::stream::StreamExt;
 use futures::Stream;
-use log::{debug, trace};
 use std::convert::TryFrom;
 use tonic::transport::Channel;
+use tracing::{instrument, trace};
 
 /// Subscribe to configuration changes of a DAML ledger.
+#[derive(Debug)]
 pub struct DamlLedgerConfigurationService<'a> {
     channel: Channel,
     ledger_id: &'a str,
@@ -45,6 +46,7 @@ impl<'a> DamlLedgerConfigurationService<'a> {
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn get_ledger_configuration(
         &self,
     ) -> DamlResult<impl Stream<Item = DamlResult<DamlLedgerConfiguration>>> {
@@ -55,18 +57,17 @@ impl<'a> DamlLedgerConfigurationService<'a> {
         &self,
         trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> DamlResult<impl Stream<Item = DamlResult<DamlLedgerConfiguration>>> {
-        debug!("get_ledger_configuration");
         let payload = GetLedgerConfigurationRequest {
             ledger_id: self.ledger_id.to_string(),
             trace_context: trace_context.into().map(TraceContext::from),
         };
-        trace!("get_ledger_configuration payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        trace!(payload = ?payload, token = ?self.auth_token);
         let config_stream = self
             .client()
-            .get_ledger_configuration(make_request(payload, self.auth_token.as_deref())?)
+            .get_ledger_configuration(make_request(payload, self.auth_token)?)
             .await?
             .into_inner();
-        Ok(config_stream.map(|item| match item {
+        Ok(config_stream.inspect(|response| trace!(?response)).map(|item| match item {
             Ok(config) => DamlLedgerConfiguration::try_from(config.ledger_configuration.req()?),
             Err(e) => Err(DamlError::from(e)),
         }))

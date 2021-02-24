@@ -1,7 +1,7 @@
 use crate::common::ping_pong::{
-    create_ping_contract, create_test_pp_id, create_test_uuid, exercise_pong_choice, new_static_sandbox, TestResult,
-    ALICE_PARTY, APPLICATION_ID_PREFIX, BOB_PARTY, COMMAND_ID_PREFIX, ERR_STR, PINGPONG_MODULE_NAME, PING_ENTITY_NAME,
-    STATIC_SANDBOX_LOCK, WORKFLOW_ID_PREFIX,
+    create_ping_contract, create_test_pp_id, create_test_uuid, exercise_pong_choice, initialize_static,
+    new_static_sandbox, TestResult, ALICE_PARTY, APPLICATION_ID_PREFIX, BOB_PARTY, COMMAND_ID_PREFIX, ERR_STR,
+    PINGPONG_MODULE_NAME, PING_ENTITY_NAME, WORKFLOW_ID_PREFIX,
 };
 use daml::util::package::find_module_package_id;
 use daml_grpc::data::event::{DamlEvent, DamlTreeEvent};
@@ -19,7 +19,7 @@ use std::iter::FromIterator;
 /// and Exercised events only.
 #[tokio::test]
 async fn test_get_transaction_trees() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock().await;
+    let _lock = initialize_static().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let application_id = create_test_uuid(APPLICATION_ID_PREFIX);
@@ -95,7 +95,7 @@ async fn test_get_transaction_trees() -> TestResult {
 
 #[tokio::test]
 async fn test_get_transaction_by_event_id() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock().await;
+    let _lock = initialize_static().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let command_id = create_test_uuid(COMMAND_ID_PREFIX);
@@ -128,7 +128,7 @@ async fn test_get_transaction_by_event_id() -> TestResult {
 
 #[tokio::test]
 async fn test_get_transaction_by_id() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock().await;
+    let _lock = initialize_static().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let command_id = create_test_uuid(COMMAND_ID_PREFIX);
@@ -161,7 +161,7 @@ async fn test_get_transaction_by_id() -> TestResult {
 
 #[tokio::test]
 async fn test_get_flat_transaction_by_event_id() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock().await;
+    let _lock = initialize_static().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let command_id = create_test_uuid(COMMAND_ID_PREFIX);
@@ -194,7 +194,7 @@ async fn test_get_flat_transaction_by_event_id() -> TestResult {
 
 #[tokio::test]
 async fn test_get_flat_transaction_by_id() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock().await;
+    let _lock = initialize_static().await;
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let command_id = create_test_uuid(COMMAND_ID_PREFIX);
@@ -227,7 +227,7 @@ async fn test_get_flat_transaction_by_id() -> TestResult {
 
 #[tokio::test]
 async fn test_get_ledger_end() -> TestResult {
-    let _lock = STATIC_SANDBOX_LOCK.lock().await;
+    let _lock = initialize_static().await;
     let ledger_client = new_static_sandbox().await?;
     let ledger_end_offset = ledger_client.transaction_service().get_ledger_end().await?;
     assert!(matches!(ledger_end_offset, DamlLedgerOffset::Absolute(_)));

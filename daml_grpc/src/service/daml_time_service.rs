@@ -9,10 +9,12 @@ use chrono::DateTime;
 use chrono::Utc;
 use futures::stream::StreamExt;
 use futures::Stream;
-use log::{debug, trace};
+use std::fmt::Debug;
 use tonic::transport::Channel;
+use tracing::{instrument, trace};
 
 /// Get and set the time of a DAML ledger (requires `testing` feature).
+#[derive(Debug)]
 pub struct DamlTimeService<'a> {
     channel: Channel,
     ledger_id: &'a str,
@@ -45,34 +47,34 @@ impl<'a> DamlTimeService<'a> {
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn get_time(&self) -> DamlResult<impl Stream<Item = DamlResult<DateTime<Utc>>>> {
-        debug!("get_time");
         let payload = GetTimeRequest {
             ledger_id: self.ledger_id.to_string(),
         };
-        trace!("get_time payload = {:?}, auth_token = {:?}", payload, self.auth_token);
+        trace!(payload = ?payload, token = ?self.auth_token);
         let time_stream =
-            self.client().get_time(make_request(payload, self.auth_token.as_deref())?).await?.into_inner();
-        Ok(time_stream.map(|item| match item {
+            self.client().get_time(make_request(payload, self.auth_token)?).await?.into_inner();
+        Ok(time_stream.inspect(|response| trace!(?response)).map(|item| match item {
             Ok(r) => Ok(util::from_grpc_timestamp(&r.current_time.req()?)),
             Err(e) => Err(DamlError::from(e)),
         }))
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn set_time(
         &self,
-        current_time: impl Into<DateTime<Utc>>,
-        new_time: impl Into<DateTime<Utc>>,
+        current_time: impl Into<DateTime<Utc>> + Debug,
+        new_time: impl Into<DateTime<Utc>> + Debug,
     ) -> DamlResult<()> {
-        debug!("set_time");
         let payload = SetTimeRequest {
             ledger_id: self.ledger_id.to_string(),
             current_time: Some(util::to_grpc_timestamp(current_time.into())?),
             new_time: Some(util::to_grpc_timestamp(new_time.into())?),
         };
-        trace!("set_time payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        self.client().set_time(make_request(payload, self.auth_token.as_deref())?).await?;
+        trace!(payload = ?payload, token = ?self.auth_token);
+        self.client().set_time(make_request(payload, self.auth_token)?).await?;
         Ok(())
     }
 

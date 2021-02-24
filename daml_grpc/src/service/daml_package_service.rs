@@ -8,11 +8,13 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::{
 };
 use crate::service::common::make_request;
 use crate::util::Required;
-use log::{debug, trace};
 use std::convert::TryFrom;
+use std::fmt::Debug;
 use tonic::transport::Channel;
+use tracing::{instrument, trace};
 
 /// Query and extract the DAML LF packages that are supported by the DAML ledger.
+#[derive(Debug)]
 pub struct DamlPackageService<'a> {
     channel: Channel,
     ledger_id: &'a str,
@@ -45,65 +47,73 @@ impl<'a> DamlPackageService<'a> {
     }
 
     /// DOCME fully document this
+    #[instrument(skip(self))]
     pub async fn list_packages(&self) -> DamlResult<Vec<String>> {
         self.list_packages_with_trace(None).await
     }
 
+    #[instrument(skip(self))]
     pub async fn list_packages_with_trace(
         &self,
-        trace_context: impl Into<Option<DamlTraceContext>>,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<Vec<String>> {
-        debug!("list_packages");
         let payload = ListPackagesRequest {
             ledger_id: self.ledger_id.to_owned(),
             trace_context: trace_context.into().map(TraceContext::from),
         };
-        trace!("list_packages payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        let all_packages = self.client().list_packages(make_request(payload, self.auth_token.as_deref())?).await?;
-        Ok(all_packages.into_inner().package_ids)
+        trace!(payload = ?payload, token = ?self.auth_token);
+        let response =
+            self.client().list_packages(make_request(payload, self.auth_token)?).await?.into_inner();
+        trace!(?response);
+        Ok(response.package_ids)
     }
 
     /// DOCME fully document this
-    pub async fn get_package(&self, package_id: impl Into<String>) -> DamlResult<DamlPackage> {
+    #[instrument(skip(self))]
+    pub async fn get_package(&self, package_id: impl Into<String> + Debug) -> DamlResult<DamlPackage> {
         self.get_package_with_trace(package_id, None).await
     }
 
+    #[instrument(skip(self))]
     pub async fn get_package_with_trace(
         &self,
-        package_id: impl Into<String>,
-        trace_context: impl Into<Option<DamlTraceContext>>,
+        package_id: impl Into<String> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<DamlPackage> {
-        debug!("get_package");
         let payload = GetPackageRequest {
             ledger_id: self.ledger_id.to_owned(),
             package_id: package_id.into(),
             trace_context: trace_context.into().map(TraceContext::from),
         };
-        trace!("get_package payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        let package = self.client().get_package(make_request(payload, self.auth_token.as_deref())?).await?;
-        DamlPackage::try_from(package.into_inner())
+        trace!(payload = ?payload, token = ?self.auth_token);
+        let response =
+            self.client().get_package(make_request(payload, self.auth_token)?).await?.into_inner();
+        trace!(?response);
+        DamlPackage::try_from(response)
     }
 
     /// DOCME fully document this
-    pub async fn get_package_status(&self, package_id: impl Into<String>) -> DamlResult<DamlPackageStatus> {
+    #[instrument(skip(self, package_id))]
+    pub async fn get_package_status(&self, package_id: impl Into<String> + Debug) -> DamlResult<DamlPackageStatus> {
         self.get_package_status_with_trace(package_id, None).await
     }
 
+    #[instrument(skip(self))]
     pub async fn get_package_status_with_trace(
         &self,
-        package_id: impl Into<String>,
-        trace_context: impl Into<Option<DamlTraceContext>>,
+        package_id: impl Into<String> + Debug,
+        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
     ) -> DamlResult<DamlPackageStatus> {
-        debug!("get_package_status");
         let payload = GetPackageStatusRequest {
             ledger_id: self.ledger_id.to_owned(),
             package_id: package_id.into(),
             trace_context: trace_context.into().map(TraceContext::from),
         };
-        trace!("get_package_status payload = {:?}, auth_token = {:?}", payload, self.auth_token);
-        let package_status =
-            self.client().get_package_status(make_request(payload, self.auth_token.as_deref())?).await?;
-        Ok(DamlPackageStatus::from(PackageStatus::from_i32(package_status.into_inner().package_status).req()?))
+        trace!(payload = ?payload, token = ?self.auth_token);
+        let response =
+            self.client().get_package_status(make_request(payload, self.auth_token)?).await?.into_inner();
+        trace!(?response);
+        Ok(DamlPackageStatus::from(PackageStatus::from_i32(response.package_status).req()?))
     }
 
     fn client(&self) -> PackageServiceClient<Channel> {
