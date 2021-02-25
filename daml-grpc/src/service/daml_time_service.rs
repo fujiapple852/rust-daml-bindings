@@ -11,7 +11,7 @@ use crate::data::DamlError;
 use crate::data::DamlResult;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::testing::time_service_client::TimeServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::testing::{GetTimeRequest, SetTimeRequest};
-use crate::service::common::make_request;
+use crate::service::common::{make_request, trace_item};
 use crate::util;
 use crate::util::Required;
 
@@ -56,7 +56,7 @@ impl<'a> DamlTimeService<'a> {
         };
         trace!(payload = ?payload, token = ?self.auth_token);
         let time_stream = self.client().get_time(make_request(payload, self.auth_token)?).await?.into_inner();
-        Ok(time_stream.inspect(|response| trace!(?response)).map(|item| match item {
+        Ok(time_stream.inspect(trace_item).map(|item| match item {
             Ok(r) => Ok(util::from_grpc_timestamp(&r.current_time.req()?)),
             Err(e) => Err(DamlError::from(e)),
         }))

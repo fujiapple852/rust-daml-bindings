@@ -10,7 +10,7 @@ use crate::data::DamlLedgerConfiguration;
 use crate::data::DamlResult;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::ledger_configuration_service_client::LedgerConfigurationServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::GetLedgerConfigurationRequest;
-use crate::service::common::make_request;
+use crate::service::common::{make_request, trace_item};
 use crate::util::Required;
 
 /// Subscribe to configuration changes of a Daml ledger.
@@ -57,7 +57,7 @@ impl<'a> DamlLedgerConfigurationService<'a> {
         trace!(payload = ?payload, token = ?self.auth_token);
         let config_stream =
             self.client().get_ledger_configuration(make_request(payload, self.auth_token)?).await?.into_inner();
-        Ok(config_stream.inspect(|response| trace!(?response)).map(|item| match item {
+        Ok(config_stream.inspect(trace_item).map(|item| match item {
             Ok(config) => DamlLedgerConfiguration::try_from(config.ledger_configuration.req()?),
             Err(e) => Err(DamlError::from(e)),
         }))

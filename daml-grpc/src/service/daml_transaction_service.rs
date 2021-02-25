@@ -17,7 +17,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::{
     GetLedgerEndRequest, GetTransactionByEventIdRequest, GetTransactionByIdRequest, GetTransactionTreesResponse,
     GetTransactionsRequest, GetTransactionsResponse, LedgerOffset, TransactionFilter,
 };
-use crate::service::common::make_request;
+use crate::service::common::{make_request, trace_item};
 use crate::service::DamlVerbosity;
 use crate::util::Required;
 
@@ -67,15 +67,13 @@ impl<'a> DamlTransactionService<'a> {
         trace!(payload = ?payload, token = ?self.auth_token);
         let transaction_stream =
             self.client().get_transactions(make_request(payload, self.auth_token)?).await?.into_inner();
-        Ok(transaction_stream.inspect(|response| trace!(?response)).map(|item: Result<GetTransactionsResponse, _>| {
-            match item {
-                Ok(r) => Ok(r
-                    .transactions
-                    .into_iter()
-                    .map(DamlTransaction::try_from)
-                    .collect::<DamlResult<Vec<DamlTransaction>>>()?),
-                Err(e) => Err(DamlError::from(e)),
-            }
+        Ok(transaction_stream.inspect(trace_item).map(|item: Result<GetTransactionsResponse, _>| match item {
+            Ok(r) => Ok(r
+                .transactions
+                .into_iter()
+                .map(DamlTransaction::try_from)
+                .collect::<DamlResult<Vec<DamlTransaction>>>()?),
+            Err(e) => Err(DamlError::from(e)),
         }))
     }
 
@@ -92,16 +90,14 @@ impl<'a> DamlTransactionService<'a> {
         trace!(payload = ?payload, token = ?self.auth_token);
         let transaction_stream =
             self.client().get_transaction_trees(make_request(payload, self.auth_token)?).await?.into_inner();
-        Ok(transaction_stream.inspect(|response| trace!(?response)).map(
-            |item: Result<GetTransactionTreesResponse, _>| match item {
-                Ok(r) => Ok(r
-                    .transactions
-                    .into_iter()
-                    .map(DamlTransactionTree::try_from)
-                    .collect::<DamlResult<Vec<DamlTransactionTree>>>()?),
-                Err(e) => Err(DamlError::from(e)),
-            },
-        ))
+        Ok(transaction_stream.inspect(trace_item).map(|item: Result<GetTransactionTreesResponse, _>| match item {
+            Ok(r) => Ok(r
+                .transactions
+                .into_iter()
+                .map(DamlTransactionTree::try_from)
+                .collect::<DamlResult<Vec<DamlTransactionTree>>>()?),
+            Err(e) => Err(DamlError::from(e)),
+        }))
     }
 
     /// DOCME fully document this
