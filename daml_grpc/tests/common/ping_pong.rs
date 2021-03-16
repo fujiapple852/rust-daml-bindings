@@ -24,7 +24,9 @@ pub const ERR_STR: &str = "error";
 pub const STATIC_SANDBOX_URI: &str = "https://127.0.0.1:8081";
 pub const WALLCLOCK_SANDBOX_URI: &str = "https://127.0.0.1:8080";
 pub const TOKEN_VALIDITY_SECS: i64 = 60;
-pub const CONNECT_TIMEOUT_MS: u64 = 20000;
+pub const CONNECT_TIMEOUT_MS: u64 = 1000;
+pub const RESET_TIMEOUT_MS: u64 = 60000;
+pub const TIMEOUT_MS: u64 = 60000;
 pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/.auth_certs/es256.key";
 // pub const SERVER_CA_CERT_PATH: &str = "../resources/testing_types_sandbox/.tls_certs/ca.cert";
 
@@ -163,7 +165,9 @@ pub fn make_ec256_token() -> anyhow::Result<String> {
 
 async fn new_sandbox(uri: &str) -> anyhow::Result<DamlGrpcClient> {
     let client = DamlGrpcClientBuilder::uri(uri)
-        .timeout(Duration::from_millis(CONNECT_TIMEOUT_MS))
+        .reset_timeout(Duration::from_millis(RESET_TIMEOUT_MS))
+        .connect_timeout(Some(Duration::from_millis(CONNECT_TIMEOUT_MS)))
+        .timeout(Duration::from_millis(TIMEOUT_MS))
         .with_auth(make_ec256_token()?)
         // .with_tls(std::fs::read_to_string(SERVER_CA_CERT_PATH)?) // TODO re-enable when CI issue resolved
         .connect()

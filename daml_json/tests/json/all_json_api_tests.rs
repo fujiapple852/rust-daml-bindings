@@ -16,7 +16,9 @@ use tracing_subscriber::fmt::format::FmtSpan;
 const ALICE_PARTY: &str = "Alice";
 const SANDBOX_REST_URL: &str = "http://127.0.0.1:7575";
 const SANDBOX_GRPC_URL: &str = "http://127.0.0.1:8085";
-const CONNECT_TIMEOUT_MS: u64 = 10000;
+const CONNECT_TIMEOUT_MS: u64 = 1000;
+const RESET_TIMEOUT_MS: u64 = 60000;
+const TIMEOUT_MS: u64 = 60000;
 const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/.auth_certs/es256.key";
 const TRACING_FILTER: &str = "daml_json::service=info";
 const TRACING_SPAN: FmtSpan = FmtSpan::NONE;
@@ -314,14 +316,16 @@ pub async fn new_client() -> anyhow::Result<DamlJsonClient> {
     reset_sandbox(SANDBOX_GRPC_URL).await?;
     Ok(DamlJsonClientBuilder::url(SANDBOX_REST_URL)
         .connect_timeout(Duration::from_millis(CONNECT_TIMEOUT_MS))
-        .timeout(Duration::from_millis(CONNECT_TIMEOUT_MS))
+        .timeout(Duration::from_millis(TIMEOUT_MS))
         .with_auth(create_ec256_token(ALICE_PARTY)?)
         .build()?)
 }
 
 async fn reset_sandbox(uri: &str) -> anyhow::Result<()> {
     let client = DamlGrpcClientBuilder::uri(uri)
-        .timeout(Duration::from_millis(CONNECT_TIMEOUT_MS))
+        .reset_timeout(Duration::from_millis(RESET_TIMEOUT_MS))
+        .connect_timeout(Some(Duration::from_millis(CONNECT_TIMEOUT_MS)))
+        .timeout(Duration::from_millis(TIMEOUT_MS))
         .with_auth(create_ec256_token(ALICE_PARTY)?)
         .connect()
         .await?;
