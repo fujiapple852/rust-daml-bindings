@@ -10,7 +10,7 @@ use daml_derive::daml_codegen;
 use std::convert::TryInto;
 
 daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_11_1-lf_1_12.dar",
+    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_12_0-lf_1_12.dar",
     module_filter_regex = "DA.Nested"
 );
 
