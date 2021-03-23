@@ -24,10 +24,7 @@ impl DamlPackages {
         let packages = ledger_client.package_service().list_packages().await?;
         let handles = packages
             .iter()
-            .map(|pd| {
-                let pid = pd.to_owned();
-                async move { ledger_client.package_service().get_package(pid).await }
-            })
+            .map(|pd| async move { ledger_client.package_service().get_package(pd).await })
             .collect::<FuturesUnordered<_>>();
         let all_packages =
             handles.collect::<Vec<DamlResult<_>>>().await.into_iter().collect::<DamlResult<Vec<DamlPackage>>>()?;
