@@ -4,8 +4,6 @@ allow = [
     "MIT",
     "Apache-2.0",
     "ISC",
-    "BSD-2-Clause",
-    "BSD-3-Clause",
     "OpenSSL",
     "MPL-2.0",
 ]
@@ -27,9 +25,9 @@ license-files = [
 
 [advisories]
 db-path = "~/.cargo/advisory-db"
-db-url = "https://github.com/rustsec/advisory-db"
+db-urls = ["https://github.com/rustsec/advisory-db"]
 vulnerability = "deny"
-unmaintained = "allow"
+unmaintained = "deny"
 yanked = "warn"
 notice = "warn"
 

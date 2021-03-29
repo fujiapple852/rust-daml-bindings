@@ -62,8 +62,7 @@ impl<'a> DamlPackageService<'a> {
             trace_context: trace_context.into().map(TraceContext::from),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response =
-            self.client().list_packages(make_request(payload, self.auth_token)?).await?.into_inner();
+        let response = self.client().list_packages(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         Ok(response.package_ids)
     }
@@ -86,8 +85,7 @@ impl<'a> DamlPackageService<'a> {
             trace_context: trace_context.into().map(TraceContext::from),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response =
-            self.client().get_package(make_request(payload, self.auth_token)?).await?.into_inner();
+        let response = self.client().get_package(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         DamlPackage::try_from(response)
     }
@@ -110,8 +108,7 @@ impl<'a> DamlPackageService<'a> {
             trace_context: trace_context.into().map(TraceContext::from),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response =
-            self.client().get_package_status(make_request(payload, self.auth_token)?).await?.into_inner();
+        let response = self.client().get_package_status(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         Ok(DamlPackageStatus::from(PackageStatus::from_i32(response.package_status).req()?))
     }

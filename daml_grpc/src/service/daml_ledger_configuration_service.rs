@@ -62,11 +62,8 @@ impl<'a> DamlLedgerConfigurationService<'a> {
             trace_context: trace_context.into().map(TraceContext::from),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
-        let config_stream = self
-            .client()
-            .get_ledger_configuration(make_request(payload, self.auth_token)?)
-            .await?
-            .into_inner();
+        let config_stream =
+            self.client().get_ledger_configuration(make_request(payload, self.auth_token)?).await?.into_inner();
         Ok(config_stream.inspect(|response| trace!(?response)).map(|item| match item {
             Ok(config) => DamlLedgerConfiguration::try_from(config.ledger_configuration.req()?),
             Err(e) => Err(DamlError::from(e)),

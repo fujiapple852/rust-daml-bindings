@@ -54,8 +54,7 @@ impl<'a> DamlPartyManagementService<'a> {
     pub async fn get_participant_id(&self) -> DamlResult<String> {
         let payload = GetParticipantIdRequest {};
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response =
-            self.client().get_participant_id(make_request(payload, self.auth_token)?).await?.into_inner();
+        let response = self.client().get_participant_id(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         Ok(response.participant_id)
     }
@@ -69,8 +68,7 @@ impl<'a> DamlPartyManagementService<'a> {
             parties: parties.into(),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response =
-            self.client().get_parties(make_request(payload, self.auth_token)?).await?.into_inner();
+        let response = self.client().get_parties(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         Ok(response.party_details.into_iter().map(DamlPartyDetails::from).collect())
     }
@@ -83,8 +81,7 @@ impl<'a> DamlPartyManagementService<'a> {
     pub async fn list_known_parties(&self) -> DamlResult<Vec<DamlPartyDetails>> {
         let payload = ListKnownPartiesRequest {};
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response =
-            self.client().list_known_parties(make_request(payload, self.auth_token)?).await?.into_inner();
+        let response = self.client().list_known_parties(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         Ok(response.party_details.into_iter().map(DamlPartyDetails::from).collect())
     }
@@ -109,8 +106,7 @@ impl<'a> DamlPartyManagementService<'a> {
             display_name: display_name.into(),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response =
-            self.client().allocate_party(make_request(payload, self.auth_token)?).await?.into_inner();
+        let response = self.client().allocate_party(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         Ok(DamlPartyDetails::from(response.party_details.req()?))
     }

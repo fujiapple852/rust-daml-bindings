@@ -149,11 +149,8 @@ impl<'a> DamlTransactionService<'a> {
     ) -> DamlResult<DamlTransactionTree> {
         let payload = self.make_by_event_id_payload(event_id, parties, trace_context.into());
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response = self
-            .client()
-            .get_transaction_by_event_id(make_request(payload, self.auth_token)?)
-            .await?
-            .into_inner();
+        let response =
+            self.client().get_transaction_by_event_id(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         DamlTransactionTree::try_from(response.transaction.req()?)
     }
@@ -178,8 +175,7 @@ impl<'a> DamlTransactionService<'a> {
     ) -> DamlResult<DamlTransactionTree> {
         let payload = self.make_by_id_payload(transaction_id, parties, trace_context.into());
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response =
-            self.client().get_transaction_by_id(make_request(payload, self.auth_token)?).await?.into_inner();
+        let response = self.client().get_transaction_by_id(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         DamlTransactionTree::try_from(response.transaction.req()?)
     }
@@ -204,11 +200,8 @@ impl<'a> DamlTransactionService<'a> {
     ) -> DamlResult<DamlTransaction> {
         let payload = self.make_by_event_id_payload(event_id, parties, trace_context.into());
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response = self
-            .client()
-            .get_flat_transaction_by_event_id(make_request(payload, self.auth_token)?)
-            .await?
-            .into_inner();
+        let response =
+            self.client().get_flat_transaction_by_event_id(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         DamlTransaction::try_from(response.transaction.req()?)
     }
@@ -233,11 +226,8 @@ impl<'a> DamlTransactionService<'a> {
     ) -> DamlResult<DamlTransaction> {
         let payload = self.make_by_id_payload(transaction_id, parties, trace_context.into());
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response = self
-            .client()
-            .get_flat_transaction_by_id(make_request(payload, self.auth_token)?)
-            .await?
-            .into_inner();
+        let response =
+            self.client().get_flat_transaction_by_id(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         DamlTransaction::try_from(response.transaction.req()?)
     }
@@ -259,8 +249,7 @@ impl<'a> DamlTransactionService<'a> {
             trace_context: trace_context.into().map(TraceContext::from),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response =
-            self.client().get_ledger_end(make_request(payload, self.auth_token)?).await?.into_inner();
+        let response = self.client().get_ledger_end(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         DamlLedgerOffset::try_from(response.offset.req()?)
     }

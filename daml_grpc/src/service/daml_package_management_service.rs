@@ -45,8 +45,7 @@ impl<'a> DamlPackageManagementService<'a> {
     pub async fn list_known_packages(&self) -> DamlResult<Vec<DamlPackageDetails>> {
         let payload = ListKnownPackagesRequest {};
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response =
-            self.client().list_known_packages(make_request(payload, self.auth_token)?).await?.into_inner();
+        let response = self.client().list_known_packages(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         response.package_details.into_iter().map(DamlPackageDetails::try_from).collect()
     }
@@ -77,11 +76,7 @@ impl<'a> DamlPackageManagementService<'a> {
             submission_id: submission_id.unwrap_or_default(),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
-        self.client()
-            .upload_dar_file(make_request(payload, self.auth_token)?)
-            .await
-            .map_err(Into::into)
-            .map(|_| ())
+        self.client().upload_dar_file(make_request(payload, self.auth_token)?).await.map_err(Into::into).map(|_| ())
     }
 
     fn client(&self) -> PackageManagementServiceClient<Channel> {

@@ -80,8 +80,7 @@ impl<'a> DamlConfigManagementService<'a> {
             new_time_model: Some(TimeModel::try_from(new_time_model.into())?),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response =
-            self.client().set_time_model(make_request(payload, self.auth_token)?).await?.into_inner();
+        let response = self.client().set_time_model(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         Ok(response.configuration_generation)
     }

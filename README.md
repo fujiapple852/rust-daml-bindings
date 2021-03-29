@@ -125,6 +125,11 @@ $ cargo +nightly fmt --all
 
 See `rustfmt.toml` for configuration settings.
 
+To check that the code is formatted correctly:
+```
+cargo +nightly fmt -- --check
+```
+
 ## Doc
 Rust docs can be generated as follows (requires nightly Rust):
 

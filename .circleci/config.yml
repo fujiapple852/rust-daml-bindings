@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: fujiapple/rust-daml:1.51-1_11_1-v1
+      - image: fujiapple/rust-daml:1.51-1_11_1-v4
         auth:
           username: fujiapple
           password: $DOCKERHUB_PASSWORD
@@ -19,14 +19,35 @@ jobs:
           keys:
             - v4-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
       - run:
-          name: Build all targets
-          command: cargo build --all --all-targets
+          name: Build
+          command: cargo build --workspace --all-targets
+      - run:
+          name: Build all features
+          command: cargo build --workspace --all-targets --all-features
+      - run:
+          name: Run deny check
+          command: cargo deny --all-features check
+      - run:
+          name: Check formatting
+          command: cargo +nightly fmt --all -- --check
+      - run:
+          name: Check clippy lints
+          command: cargo clippy --workspace --all-features
+      - run:
+          name: Check clippy lints (tests)
+          command: cargo clippy --workspace --all-features --tests
       - run:
           name: Start sandbox
           command: cd resources/testing_types_sandbox && make run-ci && sleep 10
       - run:
           name: Test all targets
-          command: cargo test --workspace --all-targets
+          command: cargo test --workspace --all-targets --no-fail-fast -- -Z unstable-options --format json --report-time | tee /tmp/test_results.json
+      - run:
+          name: Save test results
+          command: cat /tmp/test_results.json | cargo2junit > /tmp/test_results.xml
+          when: always
+      - store_test_results:
+          path: /tmp/
       - save_cache:
           paths:
             - /usr/local/cargo/registry

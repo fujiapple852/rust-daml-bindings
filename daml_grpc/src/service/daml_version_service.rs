@@ -45,11 +45,8 @@ impl<'a> DamlVersionService<'a> {
             ledger_id: self.ledger_id.to_string(),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response = self
-            .client()
-            .get_ledger_api_version(make_request(payload, self.auth_token)?)
-            .await?
-            .into_inner();
+        let response =
+            self.client().get_ledger_api_version(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         Ok(response.version)
     }

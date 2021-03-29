@@ -53,8 +53,7 @@ impl<'a> DamlTimeService<'a> {
             ledger_id: self.ledger_id.to_string(),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
-        let time_stream =
-            self.client().get_time(make_request(payload, self.auth_token)?).await?.into_inner();
+        let time_stream = self.client().get_time(make_request(payload, self.auth_token)?).await?.into_inner();
         Ok(time_stream.inspect(|response| trace!(?response)).map(|item| match item {
             Ok(r) => Ok(util::from_grpc_timestamp(&r.current_time.req()?)),
             Err(e) => Err(DamlError::from(e)),
