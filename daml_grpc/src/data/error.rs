@@ -7,9 +7,9 @@ use tonic::codegen::http;
 #[derive(Debug)]
 pub enum DamlError {
     TimeoutError(Box<DamlError>),
-    GRPCTransportError(tonic::transport::Error),
-    GRPCStatusError(tonic::Status),
-    GRPCPermissionError(tonic::Status),
+    GrpcTransportError(tonic::transport::Error),
+    GprcStatusError(tonic::Status),
+    GprcPermissionError(tonic::Status),
     InvalidUriError(http::uri::InvalidUri),
     StdError(Error),
     UnexpectedType(String, String),
@@ -36,9 +36,9 @@ impl fmt::Display for DamlError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             DamlError::InvalidUriError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
-            DamlError::GRPCTransportError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
-            DamlError::GRPCStatusError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
-            DamlError::GRPCPermissionError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
+            DamlError::GrpcTransportError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
+            DamlError::GprcStatusError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
+            DamlError::GprcPermissionError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
             DamlError::StdError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
             DamlError::UnexpectedType(expected, actual) =>
                 write!(fmt, "unexpected type, expected {} but found {}", expected, actual),
@@ -60,15 +60,15 @@ impl error::Error for DamlError {}
 impl From<tonic::Status> for DamlError {
     fn from(e: tonic::Status) -> Self {
         match e.code() {
-            tonic::Code::Unauthenticated => DamlError::GRPCPermissionError(e),
-            _ => DamlError::GRPCStatusError(e),
+            tonic::Code::Unauthenticated => DamlError::GprcPermissionError(e),
+            _ => DamlError::GprcStatusError(e),
         }
     }
 }
 
 impl From<tonic::transport::Error> for DamlError {
     fn from(e: tonic::transport::Error) -> Self {
-        DamlError::GRPCTransportError(e)
+        DamlError::GrpcTransportError(e)
     }
 }
 

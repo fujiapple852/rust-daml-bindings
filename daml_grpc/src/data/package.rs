@@ -68,13 +68,13 @@ impl From<PackageStatus> for DamlPackageStatus {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum DamlHashFunction {
-    SHA256,
+    Sha256,
 }
 
 impl From<HashFunction> for DamlHashFunction {
     fn from(hash_function: HashFunction) -> Self {
         match hash_function {
-            HashFunction::Sha256 => DamlHashFunction::SHA256,
+            HashFunction::Sha256 => DamlHashFunction::Sha256,
         }
     }
 }

@@ -63,7 +63,7 @@ pub fn apply_payload<R, F>(payload: DamlLfArchivePayload, f: F) -> DamlLfResult<
 where
     F: FnOnce(&DamlPackage<'_>) -> R,
 {
-    let dalf = DamlLfArchive::new("unnamed", payload, DamlLfHashFunction::SHA256, "");
+    let dalf = DamlLfArchive::new("unnamed", payload, DamlLfHashFunction::Sha256, "");
     let package_payload = DamlPackagePayload::try_from(&dalf)?;
     let archive_payload = DamlArchivePayload::from_single_package(package_payload);
     let archive_wrapper = DamlArchiveWrapper::new(&archive_payload);

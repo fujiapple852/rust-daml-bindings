@@ -6,27 +6,27 @@ use std::fmt::{Display, Error, Formatter};
 /// DAML Ledger Fragment language version.
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize)]
 pub enum LanguageVersion {
-    LV0,
-    LV1(LanguageV1MinorVersion),
+    Lv0,
+    Lv1(LanguageV1MinorVersion),
 }
 
 impl LanguageVersion {
-    pub const V0: LanguageVersion = LanguageVersion::LV0;
-    pub const V1_0: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V0);
-    pub const V1_1: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V1);
-    pub const V1_11: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V11);
-    pub const V1_12: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V12);
-    pub const V1_2: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V2);
-    pub const V1_3: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V3);
-    pub const V1_4: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V4);
-    pub const V1_5: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V5);
-    pub const V1_6: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V6);
-    pub const V1_7: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V7);
-    pub const V1_8: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::V8);
-    pub const V1_DEV: LanguageVersion = LanguageVersion::LV1(LanguageV1MinorVersion::Dev);
+    pub const V0: LanguageVersion = LanguageVersion::Lv0;
+    pub const V1_0: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V0);
+    pub const V1_1: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V1);
+    pub const V1_11: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V11);
+    pub const V1_12: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V12);
+    pub const V1_2: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V2);
+    pub const V1_3: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V3);
+    pub const V1_4: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V4);
+    pub const V1_5: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V5);
+    pub const V1_6: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V6);
+    pub const V1_7: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V7);
+    pub const V1_8: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V8);
+    pub const V1_DEV: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::Dev);
 
     pub fn new_v1(minor: LanguageV1MinorVersion) -> Self {
-        LanguageVersion::LV1(minor)
+        LanguageVersion::Lv1(minor)
     }
 
     pub fn supports_feature(self, feature_version: &LanguageFeatureVersion) -> bool {
@@ -37,8 +37,8 @@ impl LanguageVersion {
 impl Display for LanguageVersion {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         match *self {
-            LanguageVersion::LV0 => write!(f, "v0"),
-            LanguageVersion::LV1(minor) => write!(f, "v1.{}", minor),
+            LanguageVersion::Lv0 => write!(f, "v0"),
+            LanguageVersion::Lv1(minor) => write!(f, "v1.{}", minor),
         }
     }
 }
@@ -219,7 +219,7 @@ mod tests {
 
     #[test]
     fn test_version_matches() {
-        assert_eq!(LanguageVersion::V1_7, LanguageVersion::LV1(LanguageV1MinorVersion::V7));
+        assert_eq!(LanguageVersion::V1_7, LanguageVersion::Lv1(LanguageV1MinorVersion::V7));
         assert_ne!(LanguageVersion::V1_7, LanguageVersion::V1_6);
     }
 

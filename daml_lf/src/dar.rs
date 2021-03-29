@@ -80,7 +80,7 @@ impl DarFile {
     /// # use daml_lf::DamlLfHashFunction;
     /// # fn main() -> DamlLfResult<()> {
     /// let dar = DarFile::from_file("Example.dar")?;
-    /// assert_eq!(&DamlLfHashFunction::SHA256, dar.main().hash_function());
+    /// assert_eq!(&DamlLfHashFunction::Sha256, dar.main().hash_function());
     /// # Ok(())
     /// # }
     /// ```

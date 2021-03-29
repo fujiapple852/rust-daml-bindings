@@ -65,7 +65,7 @@ impl DamlLfArchive {
     /// # fn main() -> DamlLfResult<()> {
     /// let buffer = Vec::<u8>::new();
     /// let archive = DamlLfArchive::from_bytes(buffer)?;
-    /// assert_eq!(&DamlLfHashFunction::SHA256, archive.hash_function());
+    /// assert_eq!(&DamlLfHashFunction::Sha256, archive.hash_function());
     /// # Ok(())
     /// # }
     /// ```
@@ -99,7 +99,7 @@ impl DamlLfArchive {
     /// # fn main() -> DamlLfResult<()> {
     /// let buffer = Vec::<u8>::new();
     /// let archive = DamlLfArchive::from_bytes_named("foo", buffer)?;
-    /// assert_eq!(&DamlLfHashFunction::SHA256, archive.hash_function());
+    /// assert_eq!(&DamlLfHashFunction::Sha256, archive.hash_function());
     /// assert_eq!("foo", archive.name());
     /// # Ok(())
     /// # }
@@ -113,7 +113,7 @@ impl DamlLfArchive {
         let payload = DamlLfArchivePayload::from_bytes(archive.payload)?;
         let archive_name = name.into();
         let sanitized_name = archive_name.rfind(&archive.hash).map_or(&archive_name[..], |i| &archive_name[..i - 1]);
-        Ok(Self::new(sanitized_name, payload, DamlLfHashFunction::SHA256, archive.hash))
+        Ok(Self::new(sanitized_name, payload, DamlLfHashFunction::Sha256, archive.hash))
     }
 
     /// Read and parse an archive from a `dalf` file.
@@ -136,7 +136,7 @@ impl DamlLfArchive {
     /// # use daml_lf::DamlLfResult;
     /// # fn main() -> DamlLfResult<()> {
     /// let archive = DamlLfArchive::from_file("Example.dalf")?;
-    /// assert_eq!(&DamlLfHashFunction::SHA256, archive.hash_function());
+    /// assert_eq!(&DamlLfHashFunction::Sha256, archive.hash_function());
     /// assert_eq!("Example", archive.name());
     /// # Ok(())
     /// # }
@@ -191,5 +191,5 @@ impl DamlLfArchive {
 /// The hash function used to compute
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DamlLfHashFunction {
-    SHA256,
+    Sha256,
 }

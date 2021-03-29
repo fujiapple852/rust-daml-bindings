@@ -131,6 +131,7 @@ macro_rules! daml_value {
             #[allow(unused_mut)]
             let mut list = vec![];
             $(
+                #[allow(clippy::vec_init_then_push)]
                 list.push(daml_value!($( @priv $type )? $value));
             )*
             DamlValue::List(list)

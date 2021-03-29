@@ -66,7 +66,7 @@ impl DamlPackages {
                     ArchiveAutoNamingStyle::Hash => hash.clone(),
                     ArchiveAutoNamingStyle::Uuid => Uuid::new_v4().to_string(),
                 };
-                Ok(DamlLfArchive::new(name, payload, DamlLfHashFunction::SHA256, hash))
+                Ok(DamlLfArchive::new(name, payload, DamlLfHashFunction::Sha256, hash))
             })
             .collect()
     }

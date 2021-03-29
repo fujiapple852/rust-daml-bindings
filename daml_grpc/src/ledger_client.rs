@@ -403,7 +403,7 @@ impl DamlGrpcClient {
         let start = Instant::now();
         let mut ledger_identity: DamlResult<String> = ledger_identity_service.get_ledger_identity().await;
         while let Err(e) = ledger_identity {
-            if let DamlError::GRPCPermissionError(_) = e {
+            if let DamlError::GprcPermissionError(_) = e {
                 return Err(e);
             }
             if start.elapsed() > *reset_timeout {

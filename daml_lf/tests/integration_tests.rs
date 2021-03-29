@@ -1,5 +1,5 @@
 #![warn(clippy::all, clippy::pedantic)]
-#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
 
 use daml_lf::element::DamlVisitableElement;
 use daml_lf::element::{DamlElementVisitor, DamlEnum};
@@ -14,7 +14,7 @@ use std::collections::HashSet;
 fn test_dalf() -> DamlLfResult<()> {
     let archive =
         DamlLfArchive::from_file("../resources/testing_types_sandbox/archive/PingPongExample/PingPongExample.dalf")?;
-    assert_eq!(&DamlLfHashFunction::SHA256, archive.hash_function());
+    assert_eq!(&DamlLfHashFunction::Sha256, archive.hash_function());
     assert_eq!("2efa7ef832162fcb17abe86cd8675e31b8e641f25aba36a05098f7e9f4023d7e", archive.hash());
     assert_eq!("PingPongExample", archive.name());
     assert_eq!(LanguageVersion::V1_0, *archive.payload().language_version());

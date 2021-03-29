@@ -64,7 +64,7 @@ impl<'a> IsRenderable<'a> {
 
     fn check_target_data(&self, tycon: &DamlTyCon<'_>) -> bool {
         match self.filter_mode {
-            RenderFilterMode::HKT => self.archive.data_by_tycon(tycon).map_or(true, |data| {
+            RenderFilterMode::HigherKindedType => self.archive.data_by_tycon(tycon).map_or(true, |data| {
                 !data.type_arguments().iter().any(|type_var| matches!(type_var.kind(), DamlKind::Arrow(_)))
             }),
             RenderFilterMode::NonSerializable => self.archive.data_by_tycon(tycon).map_or(true, DamlData::serializable),

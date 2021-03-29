@@ -11,7 +11,7 @@ pub enum DamlLfError {
     #[error("failed to convert DAML LF: {0}")]
     DamlLfConvertError(#[from] DamlLfConvertError),
     #[error("io error: {0}")]
-    IOError(#[from] std::io::Error),
+    IoError(#[from] std::io::Error),
     #[error("unknown DAML LF version: {0}")]
     UnknownVersion(String),
     #[error("unsupported DAML LF version: {0}")]

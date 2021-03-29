@@ -54,13 +54,13 @@ impl Default for RenderMode<'_> {
 #[derive(Debug, Clone, Copy)]
 pub enum RenderFilterMode {
     /// Exclude only fields with type constructors that contain Higher Kinded Types (HKT) only.
-    HKT,
+    HigherKindedType,
     /// Exclude all non-serializable fields.
     NonSerializable,
 }
 
 impl Default for RenderFilterMode {
     fn default() -> Self {
-        RenderFilterMode::HKT
+        RenderFilterMode::HigherKindedType
     }
 }

@@ -10,7 +10,7 @@ pub enum DamlCodeGenError {
     /// DAML LF error.
     DamlLfError(DamlLfError),
     /// IO error.
-    IOError(std::io::Error),
+    IoError(std::io::Error),
 }
 
 impl std::error::Error for DamlCodeGenError {}
@@ -20,7 +20,7 @@ impl Display for DamlCodeGenError {
             DamlCodeGenError::InvalidModuleMatcherRegex(e) =>
                 write!(fmt, "InvalidModuleMatcherRegex {}", (e as &regex::Error)),
             DamlCodeGenError::DamlLfError(e) => write!(fmt, "DAML LF error {}", (e as &DamlLfError)),
-            DamlCodeGenError::IOError(e) => write!(fmt, "IOError: {}", (e as &std::io::Error)),
+            DamlCodeGenError::IoError(e) => write!(fmt, "IOError: {}", (e as &std::io::Error)),
         }
     }
 }

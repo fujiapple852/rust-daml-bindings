@@ -20,7 +20,7 @@ async fn test_get_package() -> TestResult {
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let daml_package = ledger_client.package_service().get_package(&package_id).await?;
     assert!(!daml_package.payload().is_empty());
-    assert_eq!(&DamlHashFunction::SHA256, daml_package.hash_function());
+    assert_eq!(&DamlHashFunction::Sha256, daml_package.hash_function());
     assert_eq!(&package_id, daml_package.hash());
     Ok(())
 }

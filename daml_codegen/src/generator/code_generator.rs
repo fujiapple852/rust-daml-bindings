@@ -35,10 +35,10 @@ pub fn daml_codegen_internal(
         match module_output_mode {
             ModuleOutputMode::Separate =>
                 generate_archive_separate(archive, output_path.as_ref(), &module_matcher, &render_method)
-                    .map_err(DamlCodeGenError::IOError)?,
+                    .map_err(DamlCodeGenError::IoError)?,
             ModuleOutputMode::Combined =>
                 generate_archive_combined(archive, output_path.as_ref(), &module_matcher, &render_method)
-                    .map_err(DamlCodeGenError::IOError)?,
+                    .map_err(DamlCodeGenError::IoError)?,
         }
         Ok(())
     })
