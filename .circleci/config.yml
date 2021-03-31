@@ -55,3 +55,48 @@ jobs:
             - target/debug/build
             - target/debug/deps
           key: v4-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
+  examples:
+    docker:
+      - image: fujiapple/rust-daml:1.51-1_11_1-v4
+        auth:
+          username: fujiapple
+          password: $DOCKERHUB_PASSWORD
+    steps:
+      - checkout
+      - run:
+          name: Version information
+          command: rustc --version; cargo --version; rustup --version
+      - run:
+          name: Calculate dependencies
+          command: cargo generate-lockfile
+      - restore_cache:
+          keys:
+            - v4-cargo-cache-{{ arch }}-{{ checksum "examples/darn/Cargo.lock" }}-{{ checksum "examples/ping_pong_demo/Cargo.lock" }}-{{ checksum "examples/rental_demo/Cargo.lock" }}
+      - run:
+          name: Build darn example
+          command: cargo build --manifest-path examples/darn/Cargo.toml
+      - run:
+          name: Build ping_pong_demo example
+          command: cargo build --manifest-path examples/ping_pong_demo/Cargo.toml
+      - run:
+          name: Build rental_demo example
+          command: cargo build --manifest-path examples/rental_demo/Cargo.toml
+      - save_cache:
+          paths:
+            - /usr/local/cargo/registry
+            - examples/darn/target/debug/.fingerprint
+            - examples/darn/target/debug/build
+            - examples/darn/target/debug/deps
+            - examples/ping_pong_demo/target/debug/.fingerprint
+            - examples/ping_pong_demo/target/debug/build
+            - examples/ping_pong_demo/target/debug/deps
+            - examples/rental_demo/target/debug/.fingerprint
+            - examples/rental_demo/target/debug/build
+            - examples/rental_demo/target/debug/deps
+          key: v4-cargo-cache-{{ arch }}-{{ checksum "examples/darn/Cargo.lock" }}-{{ checksum "examples/ping_pong_demo/Cargo.lock" }}-{{ checksum "examples/rental_demo/Cargo.lock" }}
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - examples
