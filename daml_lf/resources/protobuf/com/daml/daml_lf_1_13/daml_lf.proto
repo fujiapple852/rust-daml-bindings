@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
-package daml_lf_1_12;
+package daml_lf_1_13;
 
-option java_package = "com.daml.daml_lf_1_12";
-option csharp_namespace = "Com.Daml.Daml_Lf_1_12.DamlLf";
+option java_package = "com.daml.daml_lf_1_13";
+option csharp_namespace = "Com.Daml.Daml_Lf_1_13.DamlLf";
 
-import "com/daml/daml_lf_1_12/daml_lf_1.proto";
+import "com/daml/daml_lf_1_13/daml_lf_1.proto";
 
 message ArchivePayload {
   // this is number 3 for historical reasons -- we had

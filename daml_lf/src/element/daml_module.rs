@@ -2,6 +2,8 @@ use crate::element::daml_data::DamlData;
 use crate::element::visitor::DamlElementVisitor;
 #[cfg(feature = "full")]
 use crate::element::DamlDefValue;
+#[cfg(feature = "full")]
+use crate::element::DamlExpr;
 use crate::element::DamlVisitableElement;
 use crate::element::{serialize, DamlType, DamlTypeVarWithKind};
 use crate::owned::ToStatic;
@@ -22,6 +24,7 @@ pub struct DamlModule<'a> {
     child_modules: HashMap<Cow<'a, str>, DamlModule<'a>>,
     #[serde(serialize_with = "serialize::serialize_map")]
     data_types: HashMap<Cow<'a, str>, DamlData<'a>>,
+    exceptions: Vec<DamlDefException<'a>>,
     #[cfg(feature = "full")]
     values: HashMap<Cow<'a, str>, DamlDefValue<'a>>,
 }
@@ -46,6 +49,7 @@ impl<'a> DamlModule<'a> {
             synonyms,
             child_modules: HashMap::default(),
             data_types,
+            exceptions,
             #[cfg(feature = "full")]
             values,
         }
@@ -74,6 +78,11 @@ impl<'a> DamlModule<'a> {
     /// The `DamlData` declared in the module.
     pub fn data_types(&self) -> impl Iterator<Item = &DamlData<'a>> {
         self.data_types.values()
+    }
+
+    /// The `DamlDefException` declared in the module.
+    pub fn exceptions(&self) -> &[DamlDefException<'_>] {
+        &self.exceptions
     }
 
     /// The `DamlDefValue` declared in the module.
@@ -142,6 +151,7 @@ impl<'a> DamlModule<'a> {
         debug_assert_eq!(self.path, other.path);
         self.flags = other.flags;
         self.data_types = other.data_types;
+        self.exceptions = other.exceptions;
         self.synonyms = other.synonyms;
         #[cfg(feature = "full")]
         {
@@ -176,6 +186,7 @@ impl<'a> DamlVisitableElement<'a> for DamlModule<'a> {
         }
         #[cfg(feature = "full")]
         self.values.values().for_each(|value| value.accept(visitor));
+        self.exceptions.iter().for_each(|ex| ex.accept(visitor));
         visitor.post_visit_module(self);
     }
 }
@@ -192,6 +203,7 @@ impl ToStatic for DamlModule<'_> {
             data_types: self.data_types.iter().map(|(k, v)| (k.to_static(), DamlData::to_static(v))).collect(),
             #[cfg(feature = "full")]
             values: self.values.iter().map(|(k, v)| (k.to_static(), DamlDefValue::to_static(v))).collect(),
+            exceptions: self.exceptions.iter().map(DamlDefException::to_static).collect(),
         }
     }
 }
@@ -285,5 +297,52 @@ impl DamlFeatureFlags {
     ///
     pub fn dont_disclose_non_consuming_choices_to_observers(self) -> bool {
         self.dont_disclose_non_consuming_choices_to_observers
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct DamlDefException<'a> {
+    pub name: Vec<Cow<'a, str>>,
+    #[cfg(feature = "full")]
+    pub message: DamlExpr<'a>,
+}
+
+impl<'a> DamlDefException<'a> {
+    pub const fn new(name: Vec<Cow<'a, str>>, #[cfg(feature = "full")] message: DamlExpr<'a>) -> Self {
+        Self {
+            name,
+            #[cfg(feature = "full")]
+            message,
+        }
+    }
+
+    pub fn name(&self) -> impl Iterator<Item = &str> {
+        self.name.iter().map(AsRef::as_ref)
+    }
+
+    #[cfg(feature = "full")]
+    pub const fn message(&self) -> &DamlExpr<'a> {
+        &self.message
+    }
+}
+
+impl<'a> DamlVisitableElement<'a> for DamlDefException<'a> {
+    fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
+        visitor.pre_visit_def_exception(self);
+        #[cfg(feature = "full")]
+        self.message.accept(visitor);
+        visitor.post_visit_def_exception(self);
+    }
+}
+
+impl ToStatic for DamlDefException<'_> {
+    type Static = DamlDefException<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlDefException::new(
+            self.name.iter().map(ToStatic::to_static).collect(),
+            #[cfg(feature = "full")]
+            self.message.to_static(),
+        )
     }
 }

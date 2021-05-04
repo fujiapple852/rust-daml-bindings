@@ -91,6 +91,12 @@ impl<'a> DamlDataBoxChecker<'a> {
             | DamlTypePayload::Arrow
             | DamlTypePayload::Any
             | DamlTypePayload::TypeRep
+            | DamlTypePayload::AnyException
+            | DamlTypePayload::GeneralError
+            | DamlTypePayload::ArithmeticError
+            | DamlTypePayload::ContractError
+            | DamlTypePayload::Bignumeric
+            | DamlTypePayload::RoundingMode
             | DamlTypePayload::Nat(_) => false,
         })
     }

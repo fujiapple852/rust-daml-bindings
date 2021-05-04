@@ -88,6 +88,9 @@ pub enum DamlLfConvertError {
     /// Unknown BuiltinFunction enum variant.
     #[error("unknown BuiltinFunction enum variant {0}")]
     UnknownBuiltinFunction(i32),
+    /// Unknown RoundingMode enum variant.
+    #[error("unknown RoundingMode enum variant {0}")]
+    UnknownRoundingMode(i32),
     /// Nat out of range (0..37 inclusive).
     #[error("Nat {0} out of range (0..37 inclusive)")]
     NatOutOfRange(i64),
