@@ -439,6 +439,17 @@ pub enum DamlBuiltinFunction {
     CoerceContractId,
     TextFromCodePoints,
     TextToCodePoints,
+    ScaleBignumeric,
+    PrecisionBignumeric,
+    AddBignumeric,
+    SubBignumeric,
+    MulBignumeric,
+    DivBignumeric,
+    ShiftBignumeric,
+    ToNumericBignumeric,
+    ShiftRightBignumeric,
+    ToBignumericNumeric,
+    ToTextBignumeric,
     GenmapEmpty,
     GenmapInsert,
     GenmapLookup,
@@ -494,6 +505,7 @@ pub enum DamlPrimLit<'a> {
     /// the decimal point) between 0 and 37 (bounds inclusive). In the following, we will use scale(LitNumeric) to
     /// denote the scale of the decimal number.
     Numeric(Cow<'a, str>),
+    RoundingMode(RoundingMode),
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlPrimLit<'a> {
@@ -514,7 +526,27 @@ impl ToStatic for DamlPrimLit<'_> {
             DamlPrimLit::Date(date) => DamlPrimLit::Date(*date),
             DamlPrimLit::Timestamp(timestamp) => DamlPrimLit::Timestamp(*timestamp),
             DamlPrimLit::Numeric(numeric) => DamlPrimLit::Numeric(numeric.to_static()),
+            DamlPrimLit::RoundingMode(mode) => DamlPrimLit::RoundingMode(mode.clone()),
         }
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub enum RoundingMode {
+    Up,
+    Down,
+    Ceiling,
+    Floor,
+    HalfUp,
+    HalfDown,
+    HalfEven,
+    Unnecessary,
+}
+
+impl<'a> DamlVisitableElement<'a> for RoundingMode {
+    fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
+        visitor.pre_visit_rounding_mode(self);
+        visitor.post_visit_rounding_mode(self);
     }
 }
 

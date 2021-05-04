@@ -8,6 +8,7 @@ use crate::element::{
     DamlLocalValueName, DamlNonLocalValueName, DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon,
     DamlRecProj, DamlRecUpd, DamlRetrieveByKey, DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj, DamlStructUpd,
     DamlToAny, DamlTyAbs, DamlTyApp, DamlUpdate, DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
+    RoundingMode,
 };
 use crate::element::{
     DamlAbsoluteTyCon, DamlArchive, DamlArrow, DamlChoice, DamlData, DamlDefKey, DamlDefTypeSyn, DamlEnum, DamlField,
@@ -107,6 +108,10 @@ pub trait DamlElementVisitor {
     fn pre_visit_prim_lit<'a>(&mut self, prim_lit: &DamlPrimLit<'a>) {}
     #[cfg(feature = "full")]
     fn post_visit_prim_lit<'a>(&mut self, prim_lit: &DamlPrimLit<'a>) {}
+    #[cfg(feature = "full")]
+    fn pre_visit_rounding_mode(&mut self, rounding_mode: &RoundingMode) {}
+    #[cfg(feature = "full")]
+    fn post_visit_rounding_mode(&mut self, rounding_mode: &RoundingMode) {}
     #[cfg(feature = "full")]
     fn pre_visit_rec_con<'a>(&mut self, rec_con: &DamlRecCon<'a>) {}
     #[cfg(feature = "full")]

@@ -52,6 +52,8 @@ impl<'a> IsRenderable<'a> {
             | DamlType::Scenario
             | DamlType::Any
             | DamlType::TypeRep
+            | DamlType::Bignumeric
+            | DamlType::RoundingMode
             | DamlType::Forall(_)
             | DamlType::Struct(_)
             | DamlType::Syn(_) => false,

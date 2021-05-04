@@ -1,9 +1,9 @@
 use crate::element::DamlPackage;
 use crate::error::{DamlLfError, DamlLfResult};
+use crate::lf_protobuf::com::digitalasset::daml_lf::archive_payload::Sum;
+use crate::lf_protobuf::com::digitalasset::daml_lf::ArchivePayload;
 use crate::lf_protobuf::com::digitalasset::daml_lf_1;
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::module::Name;
-use crate::lf_protobuf::com::digitalasset::daml_lf_dev::archive_payload::Sum;
-use crate::lf_protobuf::com::digitalasset::daml_lf_dev::ArchivePayload;
 use crate::{convert, LanguageV1MinorVersion, LanguageVersion};
 use bytes::Bytes;
 use itertools::Itertools;

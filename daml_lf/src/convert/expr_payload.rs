@@ -12,6 +12,7 @@ use crate::lf_protobuf::com::digitalasset::daml_lf_1::expr::{
     Abs, App, Cons, EnumCon, FromAny, OptionalSome, RecCon, RecProj, RecUpd, StructCon, StructProj, StructUpd, ToAny,
     TyAbs, TyApp, VariantCon,
 };
+use crate::lf_protobuf::com::digitalasset::daml_lf_1::prim_lit::RoundingMode;
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::scenario::Commit;
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::update;
 use crate::lf_protobuf::com::digitalasset::daml_lf_1::update::{Create, Exercise, ExerciseByKey, Fetch, RetrieveByKey};
@@ -899,6 +900,7 @@ pub enum DamlPrimLitPayload<'a> {
     /// year-month-day-hour-minute-second-microsecond format.
     Timestamp(i64),
     Numeric(InternableString<'a>),
+    RoundingMode(RoundingModePayload),
 }
 
 impl<'a> TryFrom<&'a PrimLit> for DamlPrimLitPayload<'a> {
@@ -915,7 +917,38 @@ impl<'a> TryFrom<&'a PrimLit> for DamlPrimLitPayload<'a> {
             prim_lit::Sum::Timestamp(ts) => DamlPrimLitPayload::Timestamp(*ts),
             prim_lit::Sum::DecimalStr(s) => DamlPrimLitPayload::Numeric(InternableString::LiteralString(s)),
             prim_lit::Sum::NumericInternedStr(i) => DamlPrimLitPayload::Numeric(InternableString::InternedString(*i)),
+            prim_lit::Sum::RoundingMode(m) => DamlPrimLitPayload::RoundingMode(RoundingModePayload::try_from(m)?),
         })
+    }
+}
+
+#[derive(Debug)]
+pub enum RoundingModePayload {
+    Up,
+    Down,
+    Ceiling,
+    Floor,
+    HalfUp,
+    HalfDown,
+    HalfEven,
+    Unnecessary,
+}
+
+impl<'a> TryFrom<&i32> for RoundingModePayload {
+    type Error = DamlLfConvertError;
+
+    fn try_from(rounding_mode: &i32) -> DamlLfConvertResult<Self> {
+        match RoundingMode::from_i32(*rounding_mode) {
+            Some(RoundingMode::Up) => Ok(RoundingModePayload::Up),
+            Some(RoundingMode::Down) => Ok(RoundingModePayload::Down),
+            Some(RoundingMode::Ceiling) => Ok(RoundingModePayload::Ceiling),
+            Some(RoundingMode::Floor) => Ok(RoundingModePayload::Floor),
+            Some(RoundingMode::HalfUp) => Ok(RoundingModePayload::HalfUp),
+            Some(RoundingMode::HalfDown) => Ok(RoundingModePayload::HalfDown),
+            Some(RoundingMode::HalfEven) => Ok(RoundingModePayload::HalfEven),
+            Some(RoundingMode::Unnecessary) => Ok(RoundingModePayload::Unnecessary),
+            None => Err(DamlLfConvertError::UnknownRoundingMode(*rounding_mode)),
+        }
     }
 }
 
@@ -1016,6 +1049,17 @@ pub enum DamlBuiltinFunctionPayload {
     CoerceContractId,
     TextFromCodePoints,
     TextToCodePoints,
+    ScaleBignumeric,
+    PrecisionBignumeric,
+    AddBignumeric,
+    SubBignumeric,
+    MulBignumeric,
+    DivBignumeric,
+    ShiftBignumeric,
+    ShiftRightBignumeric,
+    ToNumericBignumeric,
+    ToBignumericNumeric,
+    ToTextBignumeric,
     GenmapEmpty,
     GenmapInsert,
     GenmapLookup,
@@ -1133,6 +1177,16 @@ impl<'a> TryFrom<&i32> for DamlBuiltinFunctionPayload {
             Some(BuiltinFunction::CoerceContractId) => Ok(DamlBuiltinFunctionPayload::CoerceContractId),
             Some(BuiltinFunction::TextFromCodePoints) => Ok(DamlBuiltinFunctionPayload::TextFromCodePoints),
             Some(BuiltinFunction::TextToCodePoints) => Ok(DamlBuiltinFunctionPayload::TextToCodePoints),
+            Some(BuiltinFunction::ScaleBignumeric) => Ok(DamlBuiltinFunctionPayload::ScaleBignumeric),
+            Some(BuiltinFunction::PrecisionBignumeric) => Ok(DamlBuiltinFunctionPayload::PrecisionBignumeric),
+            Some(BuiltinFunction::AddBignumeric) => Ok(DamlBuiltinFunctionPayload::AddBignumeric),
+            Some(BuiltinFunction::SubBignumeric) => Ok(DamlBuiltinFunctionPayload::SubBignumeric),
+            Some(BuiltinFunction::MulBignumeric) => Ok(DamlBuiltinFunctionPayload::MulBignumeric),
+            Some(BuiltinFunction::DivBignumeric) => Ok(DamlBuiltinFunctionPayload::DivBignumeric),
+            Some(BuiltinFunction::ShiftRightBignumeric) => Ok(DamlBuiltinFunctionPayload::ShiftRightBignumeric),
+            Some(BuiltinFunction::ToNumericBignumeric) => Ok(DamlBuiltinFunctionPayload::ToNumericBignumeric),
+            Some(BuiltinFunction::ToBignumericNumeric) => Ok(DamlBuiltinFunctionPayload::ToBignumericNumeric),
+            Some(BuiltinFunction::ToTextBignumeric) => Ok(DamlBuiltinFunctionPayload::ToTextBignumeric),
             Some(BuiltinFunction::GenmapEmpty) => Ok(DamlBuiltinFunctionPayload::GenmapEmpty),
             Some(BuiltinFunction::GenmapInsert) => Ok(DamlBuiltinFunctionPayload::GenmapInsert),
             Some(BuiltinFunction::GenmapLookup) => Ok(DamlBuiltinFunctionPayload::GenmapLookup),

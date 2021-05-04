@@ -781,7 +781,9 @@ impl<'a> JsonSchemaEncoder<'a> {
             | DamlType::Scenario
             | DamlType::Forall(_)
             | DamlType::Struct(_)
-            | DamlType::Syn(_) => Err(DamlJsonSchemaCodecError::UnsupportedDamlType(ty.name().to_owned())),
+            | DamlType::Syn(_)
+            | DamlType::Bignumeric
+            | DamlType::RoundingMode => Err(DamlJsonSchemaCodecError::UnsupportedDamlType(ty.name().to_owned())),
         }
     }
 

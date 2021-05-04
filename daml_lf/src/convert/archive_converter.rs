@@ -376,6 +376,8 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
             DamlTypePayload::Arrow => DamlType::Arrow,
             DamlTypePayload::Any => DamlType::Any,
             DamlTypePayload::TypeRep => DamlType::TypeRep,
+            DamlTypePayload::Bignumeric => DamlType::Bignumeric,
+            DamlTypePayload::RoundingMode => DamlType::RoundingMode,
             DamlTypePayload::Nat(n) => DamlType::Nat(*n),
             DamlTypePayload::Forall(forall) => DamlType::Forall(DamlForall::try_from(&daml_type.wrap(forall))?),
             DamlTypePayload::Struct(tuple) => DamlType::Struct(DamlStruct::try_from(&daml_type.wrap(tuple))?),

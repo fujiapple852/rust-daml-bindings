@@ -9,7 +9,7 @@ use crate::convert::expr_payload::{
     DamlRecConWrapper, DamlRecProjWrapper, DamlRecUpdWrapper, DamlRetrieveByKeyWrapper, DamlScenarioEmbedExprWrapper,
     DamlScenarioPayload, DamlScenarioWrapper, DamlStructConWrapper, DamlStructProjWrapper, DamlStructUpdWrapper,
     DamlToAnyWrapper, DamlTyAbsWrapper, DamlTyAppWrapper, DamlUpdateEmbedExprWrapper, DamlUpdatePayload,
-    DamlUpdateWrapper, DamlValueNameWrapper, DamlVarWithTypeWrapper, DamlVariantConWrapper,
+    DamlUpdateWrapper, DamlValueNameWrapper, DamlVarWithTypeWrapper, DamlVariantConWrapper, RoundingModePayload,
 };
 use crate::convert::package_payload::DamlPackagePayload;
 use crate::element::{
@@ -19,7 +19,7 @@ use crate::element::{
     DamlLocalValueName, DamlNonLocalValueName, DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon,
     DamlRecProj, DamlRecUpd, DamlRetrieveByKey, DamlScenario, DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj,
     DamlStructUpd, DamlToAny, DamlTyAbs, DamlTyApp, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind,
-    DamlUpdate, DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
+    DamlUpdate, DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon, RoundingMode,
 };
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use std::borrow::Cow;
@@ -194,6 +194,17 @@ impl<'a> From<&DamlBuiltinFunctionPayload> for DamlBuiltinFunction {
             DamlBuiltinFunctionPayload::Less => DamlBuiltinFunction::Less,
             DamlBuiltinFunctionPayload::GreaterEq => DamlBuiltinFunction::GreaterEq,
             DamlBuiltinFunctionPayload::Greater => DamlBuiltinFunction::Greater,
+            DamlBuiltinFunctionPayload::ScaleBignumeric => DamlBuiltinFunction::ScaleBignumeric,
+            DamlBuiltinFunctionPayload::PrecisionBignumeric => DamlBuiltinFunction::PrecisionBignumeric,
+            DamlBuiltinFunctionPayload::AddBignumeric => DamlBuiltinFunction::AddBignumeric,
+            DamlBuiltinFunctionPayload::SubBignumeric => DamlBuiltinFunction::SubBignumeric,
+            DamlBuiltinFunctionPayload::MulBignumeric => DamlBuiltinFunction::MulBignumeric,
+            DamlBuiltinFunctionPayload::DivBignumeric => DamlBuiltinFunction::DivBignumeric,
+            DamlBuiltinFunctionPayload::ShiftBignumeric => DamlBuiltinFunction::ShiftBignumeric,
+            DamlBuiltinFunctionPayload::ToNumericBignumeric => DamlBuiltinFunction::ToNumericBignumeric,
+            DamlBuiltinFunctionPayload::ShiftRightBignumeric => DamlBuiltinFunction::ShiftRightBignumeric,
+            DamlBuiltinFunctionPayload::ToBignumericNumeric => DamlBuiltinFunction::ToBignumericNumeric,
+            DamlBuiltinFunctionPayload::ToTextBignumeric => DamlBuiltinFunction::ToTextBignumeric,
         }
     }
 }
@@ -222,7 +233,23 @@ impl<'a> TryFrom<&DamlPrimLitWrapper<'a>> for DamlPrimLit<'a> {
             DamlPrimLitPayload::Date(date) => DamlPrimLit::Date(*date),
             DamlPrimLitPayload::Timestamp(timestamp) => DamlPrimLit::Timestamp(*timestamp),
             DamlPrimLitPayload::Numeric(numeric) => DamlPrimLit::Numeric(numeric.resolve(resolver)?),
+            DamlPrimLitPayload::RoundingMode(mode) => DamlPrimLit::RoundingMode(RoundingMode::from(mode)),
         })
+    }
+}
+
+impl<'a> From<&RoundingModePayload> for RoundingMode {
+    fn from(rounding_mode: &RoundingModePayload) -> Self {
+        match rounding_mode {
+            RoundingModePayload::Up => RoundingMode::Up,
+            RoundingModePayload::Down => RoundingMode::Down,
+            RoundingModePayload::Ceiling => RoundingMode::Ceiling,
+            RoundingModePayload::Floor => RoundingMode::Floor,
+            RoundingModePayload::HalfUp => RoundingMode::HalfUp,
+            RoundingModePayload::HalfDown => RoundingMode::HalfDown,
+            RoundingModePayload::HalfEven => RoundingMode::HalfEven,
+            RoundingModePayload::Unnecessary => RoundingMode::Unnecessary,
+        }
     }
 }
 
