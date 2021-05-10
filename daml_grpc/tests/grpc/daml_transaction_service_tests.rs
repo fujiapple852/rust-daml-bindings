@@ -112,7 +112,7 @@ async fn test_get_transaction_by_event_id() -> TestResult {
     };
     assert_eq!(&command_id, transaction.command_id());
     assert_eq!(&workflow_id, transaction.workflow_id());
-    assert_eq!(&[expected_event_id.to_owned()], transaction.root_event_ids());
+    assert_eq!(&[expected_event_id.clone()], transaction.root_event_ids());
     assert_eq!(expected_event_id, event.event_id());
     assert_eq!(package_id, event.template_id().package_id());
     assert_eq!(PINGPONG_MODULE_NAME, event.template_id().module_name());

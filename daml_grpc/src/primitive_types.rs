@@ -315,7 +315,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_numeric_from_should_panic() {
-        let _ = DamlNumeric10::from(1_f64 / 0_f64);
+        let _panic = DamlNumeric10::from(1_f64 / 0_f64);
     }
 
     #[test]

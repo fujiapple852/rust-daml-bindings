@@ -464,15 +464,15 @@ impl DamlJsonClient {
 
     fn make_post_request(&self, url: &Url) -> RequestBuilder {
         match self.config.auth_token.as_deref() {
-            Some(token) => self.client.post(url.to_owned()).bearer_auth(token),
-            None => self.client.post(url.to_owned()),
+            Some(token) => self.client.post(url.clone()).bearer_auth(token),
+            None => self.client.post(url.clone()),
         }
     }
 
     fn make_get_request(&self, url: &Url) -> RequestBuilder {
         match self.config.auth_token.as_deref() {
-            Some(token) => self.client.get(url.to_owned()).bearer_auth(token),
-            None => self.client.get(url.to_owned()),
+            Some(token) => self.client.get(url.clone()).bearer_auth(token),
+            None => self.client.get(url.clone()),
         }
     }
 

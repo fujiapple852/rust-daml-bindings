@@ -196,7 +196,7 @@ impl CommandExecutor for DamlSimpleExecutor<'_> {
     // TODO abstract away the "find the root" logic
     async fn execute_exercise(&self, exercise_command: DamlExerciseCommand) -> Result<DamlValue, DamlError> {
         let tx = self.submit_and_wait_for_transaction_tree(DamlCommand::Exercise(exercise_command)).await?;
-        let root_event_id = tx.root_event_ids()[0].to_owned();
+        let root_event_id = tx.root_event_ids()[0].clone();
         tx.take_events_by_id()
             .into_iter()
             .find_map(|(id, e)| {

@@ -106,7 +106,7 @@ async fn test_create_and_exercise() -> anyhow::Result<()> {
 async fn test_exercise_by_key() -> anyhow::Result<()> {
     let _lock = initialize().await;
     let alice_client = new_client().await?;
-    let _ =
+    let _event =
         alice_client.create("DA.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 5 })).await?;
     let exercise_by_key_result = alice_client
         .exercise_by_key(
@@ -145,7 +145,7 @@ async fn test_fetch() -> anyhow::Result<()> {
 async fn test_fetch_by_key() -> anyhow::Result<()> {
     let _lock = initialize().await;
     let alice_client = new_client().await?;
-    let _ =
+    let _event =
         alice_client.create("DA.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 99 })).await?;
     let fetch_by_key_result =
         alice_client.fetch_by_key("DA.PingPong:Ping", json!({"sender": "Alice", "count": 99})).await?;
@@ -157,7 +157,7 @@ async fn test_fetch_by_key() -> anyhow::Result<()> {
 async fn test_query_all() -> anyhow::Result<()> {
     let _lock = initialize().await;
     let alice_client = new_client().await?;
-    let _ =
+    let _event =
         alice_client.create("DA.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
     let active_contracts = alice_client.query_all().await?;
     assert_eq!(
@@ -171,7 +171,7 @@ async fn test_query_all() -> anyhow::Result<()> {
 async fn test_query() -> anyhow::Result<()> {
     let _lock = initialize().await;
     let alice_client = new_client().await?;
-    let _ =
+    let _event =
         alice_client.create("DA.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
     let active_contracts = alice_client.query(vec!["DA.PingPong:Ping"], json!({})).await?;
     assert_eq!(
@@ -265,7 +265,7 @@ async fn test_list_packages() -> anyhow::Result<()> {
 async fn test_download_package() -> anyhow::Result<()> {
     let _lock = initialize().await;
     let alice_client = new_client().await?;
-    let package_id = alice_client.list_packages().await?.first().unwrap().to_owned();
+    let package_id = alice_client.list_packages().await?.first().unwrap().clone();
     let download_package_response = alice_client.download_package(&package_id).await?;
     assert!(!download_package_response.is_empty());
     Ok(())

@@ -128,14 +128,8 @@ impl DamlLfArchivePayload {
     /// ```
     pub fn list_modules(&self) -> Vec<String> {
         match &self.package {
-            DamlLfPackage::V1(package) => package
-                .modules
-                .iter()
-                .filter_map(|m| match &m.name {
-                    Some(dn) => Some(self.decode_dotted_name(dn)),
-                    _ => None,
-                })
-                .collect(),
+            DamlLfPackage::V1(package) =>
+                package.modules.iter().filter_map(|m| m.name.as_ref().map(|dn| self.decode_dotted_name(dn))).collect(),
         }
     }
 

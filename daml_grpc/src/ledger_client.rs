@@ -319,7 +319,7 @@ impl DamlGrpcClient {
     }
 
     async fn make_channel(config: &DamlGrpcClientConfig) -> DamlResult<Channel> {
-        let mut channel = Channel::from_shared(config.uri.to_owned())?;
+        let mut channel = Channel::from_shared(config.uri.clone())?;
         if let Some(limit) = config.concurrency_limit {
             channel = channel.concurrency_limit(limit);
         }

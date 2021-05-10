@@ -80,8 +80,8 @@ impl ToStatic for DamlExpr<'_> {
         match self {
             DamlExpr::Var(var) => DamlExpr::Var(var.to_static()),
             DamlExpr::Val(val) => DamlExpr::Val(val.to_static()),
-            DamlExpr::Builtin(builtin) => DamlExpr::Builtin(builtin.to_owned()),
-            DamlExpr::PrimCon(prim_con) => DamlExpr::PrimCon(prim_con.to_owned()),
+            DamlExpr::Builtin(builtin) => DamlExpr::Builtin(builtin.clone()),
+            DamlExpr::PrimCon(prim_con) => DamlExpr::PrimCon(*prim_con),
             DamlExpr::PrimLit(prim_lit) => DamlExpr::PrimLit(prim_lit.to_static()),
             DamlExpr::RecCon(rec_con) => DamlExpr::RecCon(rec_con.to_static()),
             DamlExpr::RecProj(rec_proj) => DamlExpr::RecProj(rec_proj.to_static()),
@@ -1549,8 +1549,8 @@ pub struct DamlCreate<'a> {
 impl<'a> DamlCreate<'a> {
     pub fn new(template: DamlTyConName<'a>, expr: Box<DamlExpr<'a>>) -> Self {
         Self {
-            expr,
             template,
+            expr,
         }
     }
 

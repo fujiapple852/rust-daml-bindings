@@ -3,7 +3,7 @@ use syn::{AngleBracketedGenericArguments, GenericArgument, Path, PathArguments, 
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum AttrType {
-    ContractId(Box<AttrType>),
+    ContractId(Box<Self>),
     Int64,
     Numeric,
     Text,
@@ -12,12 +12,12 @@ pub enum AttrType {
     Bool,
     Unit,
     Date,
-    Box(Box<AttrType>),
-    List(Box<AttrType>),
-    TextMap(Box<AttrType>),
-    GenMap(Box<AttrType>, Box<AttrType>),
-    Optional(Box<AttrType>),
-    TyCon(String, Vec<String>, Vec<AttrType>),
+    Box(Box<Self>),
+    List(Box<Self>),
+    TextMap(Box<Self>),
+    GenMap(Box<Self>, Box<Self>),
+    Optional(Box<Self>),
+    TyCon(String, Vec<String>, Vec<Self>),
 }
 
 impl AttrType {

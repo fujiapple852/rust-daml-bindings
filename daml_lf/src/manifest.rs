@@ -261,7 +261,7 @@ fn split_manifest_string(s: impl AsRef<str>) -> String {
         s.as_ref().as_bytes().chunks(71).map(String::from_utf8_lossy).map(String::from).collect();
     match split_lines.as_slice() {
         [] => "".to_owned(),
-        [head] => head.to_owned(),
+        [head] => head.clone(),
         [head, tail @ ..] => {
             let new_tail: String = tail.iter().map(|s| format!(" {}", s)).join("\n");
             format!("{}\n{}", head, new_tail)
