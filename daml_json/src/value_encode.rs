@@ -731,13 +731,13 @@ mod tests {
     }
 
     fn find_genmap_value<'a>(genmap: &'a Value, key: &Value) -> DamlJsonCodecResult<&'a Value> {
-        genmap
+        Ok(genmap
             .try_array()?
             .iter()
             .find_map(|item| (item.try_array().ok()?.first()? == key).then(|| item))
             .req()?
             .try_array()?
             .last()
-            .req()
+            .req()?)
     }
 }

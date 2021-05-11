@@ -1,3 +1,4 @@
+use crate::util::{NotSingleError, RequiredError};
 use thiserror::Error;
 
 /// DAML JSON Result.
@@ -10,6 +11,8 @@ pub enum DamlJsonError {
     CodecError(#[from] DamlJsonCodecError),
     #[error("DamlJsonError: GRPC error: {0}")]
     ReqwestError(#[from] reqwest::Error),
+    #[error(transparent)]
+    MissingRequiredField(#[from] RequiredError),
     #[error("DamlJsonError: error response: {0}, {1}")]
     ErrorResponse(u16, String),
     #[error("DamlJsonError: url parse error: {0}")]
@@ -58,6 +61,10 @@ pub enum DamlJsonCodecError {
     Int64ParseError(#[from] std::num::ParseIntError),
     #[error("failed to parse date or datetime from string: {0}")]
     DateParseError(#[from] chrono::format::ParseError),
+    #[error(transparent)]
+    MissingRequiredField(#[from] RequiredError),
+    #[error(transparent)]
+    UnexpectedListEntries(#[from] NotSingleError),
     #[error("expected JSON type {0} but found type {1}")]
     UnexpectedJsonType(String, String),
     #[error("record object did not contain expected field {0}")]
@@ -72,8 +79,6 @@ pub enum DamlJsonCodecError {
     UnexpectedUnitData,
     #[error("expected an array with either zero or one entry")]
     UnexpectedOptionalArrayLength,
-    #[error("expected exactly one list item")]
-    UnexpectedListEntries,
     #[error("duplicate genmap keys")]
     DuplicateGenMapKeys,
     #[error("expected exactly two types for genmap")]
@@ -82,6 +87,24 @@ pub enum DamlJsonCodecError {
     UnsupportedDamlType(String),
     #[error("Data item {0} not found in archive")]
     DataNotFound(String),
-    #[error("required field was not supplied")]
-    MissingRequiredField,
+}
+
+/// DAML JSON Schema Codec Result.
+pub type DamlJsonSchemaCodecResult<T> = Result<T, DamlJsonSchemaCodecError>;
+
+/// DAML JSON Schema Codec Error.
+#[derive(Error, Debug)]
+pub enum DamlJsonSchemaCodecError {
+    #[error("failed to process DAML LF: {0}")]
+    DamlLfError(#[from] daml_lf::DamlLfError),
+    #[error(transparent)]
+    MissingRequiredField(#[from] RequiredError),
+    #[error(transparent)]
+    UnexpectedListEntries(#[from] NotSingleError),
+    #[error(transparent)]
+    JsonError(#[from] serde_json::Error),
+    #[error("Data item {0} not found in archive")]
+    DataNotFound(String),
+    #[error("unsupported Daml type {0} in JSON Schema")]
+    UnsupportedDamlType(String),
 }
