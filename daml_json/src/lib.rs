@@ -1,4 +1,4 @@
-//! DAML ledger JSON [API](https://docs.daml.com/json-api/index.html).
+//! Daml ledger JSON [API](https://docs.daml.com/json-api/index.html).
 //!
 //! # Examples
 //!
@@ -31,28 +31,34 @@
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 
-/// DAML JSON API service endpoints.
+/// Daml JSON API service endpoints.
 pub mod service;
 
-/// DAML JSON API request & response types.
+/// Daml JSON API request & response types.
 pub mod request;
 
-/// DAML JSON API data types.
+/// Daml JSON API data types.
 pub mod data;
 
-/// DAML JSON API errors.
+/// Daml JSON API errors.
 pub mod error;
 
-/// DAML JSON value decoder.
+/// Daml JSON value decoder.
 pub mod value_decode;
 
-/// DAML JSON value encoder.
+/// Daml JSON value encoder.
 pub mod value_encode;
 
-/// DAML JSON request converter.
+/// Daml JSON request converter.
 pub mod request_converter;
 
-/// DAML JSON response converter.
+/// Daml JSON response converter.
 pub mod response_converter;
+
+/// Daml JSON API data types.
+mod schema_data;
+
+/// Daml JSON schema encoder.
+pub mod schema_encoder;
 
 mod util;

@@ -6,12 +6,14 @@ description = "Tools for working with DAML Archives and ledgers"
 edition = "2018"
 
 [dependencies]
-daml = { path = "../../daml", features = [ "grpc", "sandbox", "lf_full", "util" ] }
+daml = { path = "../../daml", features = [ "grpc", "sandbox", "lf_full", "util", "json" ] }
 tokio = { version = "1", features = [ "macros", "rt-multi-thread" ] }
 clap = "2.33"
 prettytable-rs = "0.8"
 itertools = "0.10"
 anyhow = "1.0"
 thiserror = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 [workspace]
