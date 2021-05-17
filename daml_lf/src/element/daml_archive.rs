@@ -10,21 +10,32 @@ use std::collections::HashMap;
 #[derive(Debug, Serialize, Clone, Default)]
 pub struct DamlArchive<'a> {
     name: Cow<'a, str>,
+    main_package_id: Cow<'a, str>,
     #[serde(serialize_with = "serialize::serialize_map")]
     packages: HashMap<Cow<'a, str>, DamlPackage<'a>>,
 }
 
 impl<'a> DamlArchive<'a> {
     ///
-    pub const fn new(name: Cow<'a, str>, packages: HashMap<Cow<'a, str>, DamlPackage<'a>>) -> Self {
+    pub const fn new(
+        name: Cow<'a, str>,
+        main_package_id: Cow<'a, str>,
+        packages: HashMap<Cow<'a, str>, DamlPackage<'a>>,
+    ) -> Self {
         Self {
             name,
+            main_package_id,
             packages,
         }
     }
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    /// Return the package id of the main `DamlPackage` contained in this `DamlArchive`.
+    pub fn main_package_id(&self) -> &str {
+        &self.main_package_id
     }
 
     /// Return an Iterator of the [`DamlPackage`] in this [`DamlArchive`].
@@ -77,6 +88,7 @@ impl ToStatic for DamlArchive<'_> {
     fn to_static(&self) -> Self::Static {
         DamlArchive::new(
             self.name.to_static(),
+            self.main_package_id.to_static(),
             self.packages.iter().map(|(k, v)| (k.to_static(), DamlPackage::to_static(v))).collect(),
         )
     }

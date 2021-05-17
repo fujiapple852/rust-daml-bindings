@@ -30,6 +30,7 @@ impl<'a> DamlArchiveWrapper<'a> {
 #[derive(Debug, PartialEq)]
 pub struct DamlArchivePayload<'a> {
     pub name: &'a str,
+    pub main_package_id: &'a str,
     pub packages: HashMap<&'a str, DamlPackagePayload<'a>>,
 }
 
@@ -37,6 +38,7 @@ impl<'a> DamlArchivePayload<'a> {
     pub fn from_single_package(package: DamlPackagePayload<'a>) -> Self {
         Self {
             name: "",
+            main_package_id: package.package_id,
             packages: vec![("", package)].into_iter().collect(),
         }
     }
@@ -51,6 +53,7 @@ impl<'a> TryFrom<&'a DarFile> for DamlArchivePayload<'a> {
 
     fn try_from(dar_file: &'a DarFile) -> DamlLfConvertResult<Self> {
         let name = &dar_file.main.name;
+        let main_package_id = &dar_file.main.hash;
         let packages: HashMap<_, _> = dar_file
             .dependencies
             .iter()
@@ -59,6 +62,7 @@ impl<'a> TryFrom<&'a DarFile> for DamlArchivePayload<'a> {
             .collect::<DamlLfConvertResult<_>>()?;
         Ok(Self {
             name,
+            main_package_id,
             packages,
         })
     }
