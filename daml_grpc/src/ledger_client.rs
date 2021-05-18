@@ -8,7 +8,9 @@ use crate::service::{
 use crate::service::{DamlConfigManagementService, DamlPackageManagementService, DamlPartyManagementService};
 #[cfg(feature = "sandbox")]
 use crate::service::{DamlResetService, DamlTimeService};
-use std::time::{Duration, Instant};
+use std::time::Duration;
+#[cfg(feature = "sandbox")]
+use std::time::Instant;
 use tonic::transport::{Certificate, Channel, ClientTlsConfig};
 use tracing::{debug, instrument};
 
