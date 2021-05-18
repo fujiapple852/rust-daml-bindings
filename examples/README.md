@@ -25,3 +25,10 @@ A simple tool which demonstrates some features pf the various 'DAML' libraries.
 ```bash
 $ cd darn && cargo run
 ```
+
+## Daml JSON schema
+A tool which generate Daml JSON schemas
+
+```bash
+$ cd daml_json_schema && cargo run
+```
