@@ -43,6 +43,17 @@ impl<'a> DamlArchive<'a> {
         self.packages.values()
     }
 
+    /// Return the first [`DamlPackage`] in this [`DamlArchive`] which has the given `name` or `None` if no such
+    /// package exists.
+    pub fn package_by_name(&self, name: &str) -> Option<&DamlPackage<'_>> {
+        self.packages.values().find(|p| p.name() == name)
+    }
+
+    /// Return the main [`DamlPackage`] in this [`DamlArchive`] or `None` if no such package exists.`
+    pub fn main_package(&self) -> Option<&DamlPackage<'_>> {
+        self.packages.get(&self.main_package_id)
+    }
+
     /// Retrieve a `DamlData` contained within this `DamlArchive` referred to by the supplied `DamlTyCon` or `None` if
     /// not such data item exists.
     ///
