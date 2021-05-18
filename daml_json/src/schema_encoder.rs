@@ -66,6 +66,15 @@ pub struct SchemaEncoderConfig {
     render_title: RenderTitle,
 }
 
+impl SchemaEncoderConfig {
+    pub fn new(render_schema: RenderSchema, render_title: RenderTitle) -> Self {
+        Self {
+            render_schema,
+            render_title,
+        }
+    }
+}
+
 /// Encode a `DamlArchive` as a JSON schema.
 ///
 /// Generate [JSON Schema](https://json-schema.org/) from Daml LF using the `draft/2020-12/schema` version of the
