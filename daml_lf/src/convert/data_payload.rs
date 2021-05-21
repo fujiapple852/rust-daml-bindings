@@ -55,7 +55,7 @@ impl<'a> TryFrom<&'a DefDataType> for DamlDataPayload<'a> {
 
     fn try_from(def_data_type: &'a DefDataType) -> DamlLfConvertResult<Self> {
         let name = InternableDottedName::from(def_data_type.name.as_ref().req()?);
-        let type_arguments: Vec<_> = def_data_type
+        let type_params: Vec<_> = def_data_type
             .params
             .iter()
             .map(DamlTypeVarWithKindPayload::try_from)
@@ -65,20 +65,20 @@ impl<'a> TryFrom<&'a DefDataType> for DamlDataPayload<'a> {
             DataCons::Record(fields) => Self::new_record(DamlRecordPayload::new(
                 name,
                 fields.fields.iter().map(DamlFieldPayload::try_from).collect::<DamlLfConvertResult<_>>()?,
-                type_arguments,
+                type_params,
                 serializable,
             )),
             DataCons::Variant(fields) => Self::new_variant(DamlVariantPayload::new(
                 name,
                 fields.fields.iter().map(DamlFieldPayload::try_from).collect::<DamlLfConvertResult<_>>()?,
-                type_arguments,
+                type_params,
                 serializable,
             )),
             DataCons::Enum(constructors) => Self::new_enum(DamlEnumPayload::new(
                 name,
                 constructors.constructors_str.as_slice(),
                 constructors.constructors_interned_str.as_slice(),
-                type_arguments,
+                type_params,
                 serializable,
             )),
         })
@@ -322,7 +322,7 @@ impl<'a> TryFrom<&'a DefKey> for DamlDefKeyPayload<'a> {
 pub struct DamlRecordPayload<'a> {
     pub name: InternableDottedName<'a>,
     pub fields: Vec<DamlFieldPayload<'a>>,
-    pub type_arguments: Vec<DamlTypeVarWithKindPayload<'a>>,
+    pub type_params: Vec<DamlTypeVarWithKindPayload<'a>>,
     pub serializable: bool,
 }
 
@@ -330,13 +330,13 @@ impl<'a> DamlRecordPayload<'a> {
     pub fn new(
         name: InternableDottedName<'a>,
         fields: Vec<DamlFieldPayload<'a>>,
-        type_arguments: Vec<DamlTypeVarWithKindPayload<'a>>,
+        type_params: Vec<DamlTypeVarWithKindPayload<'a>>,
         serializable: bool,
     ) -> Self {
         Self {
             name,
             fields,
-            type_arguments,
+            type_params,
             serializable,
         }
     }
@@ -352,7 +352,7 @@ impl<'a> PartialEq for DamlRecordPayload<'a> {
 pub struct DamlVariantPayload<'a> {
     pub name: InternableDottedName<'a>,
     pub fields: Vec<DamlFieldPayload<'a>>,
-    pub type_arguments: Vec<DamlTypeVarWithKindPayload<'a>>,
+    pub type_params: Vec<DamlTypeVarWithKindPayload<'a>>,
     pub serializable: bool,
 }
 
@@ -360,13 +360,13 @@ impl<'a> DamlVariantPayload<'a> {
     pub fn new(
         name: InternableDottedName<'a>,
         fields: Vec<DamlFieldPayload<'a>>,
-        type_arguments: Vec<DamlTypeVarWithKindPayload<'a>>,
+        type_params: Vec<DamlTypeVarWithKindPayload<'a>>,
         serializable: bool,
     ) -> Self {
         Self {
             name,
             fields,
-            type_arguments,
+            type_params,
             serializable,
         }
     }
@@ -383,7 +383,7 @@ pub struct DamlEnumPayload<'a> {
     pub name: InternableDottedName<'a>,
     pub constructors_str: &'a [String],
     pub constructors_interned_str: &'a [i32],
-    pub type_arguments: Vec<DamlTypeVarWithKindPayload<'a>>,
+    pub type_params: Vec<DamlTypeVarWithKindPayload<'a>>,
     pub serializable: bool,
 }
 
@@ -392,14 +392,14 @@ impl<'a> DamlEnumPayload<'a> {
         name: InternableDottedName<'a>,
         constructors_str: &'a [String],
         constructors_interned_str: &'a [i32],
-        type_arguments: Vec<DamlTypeVarWithKindPayload<'a>>,
+        type_params: Vec<DamlTypeVarWithKindPayload<'a>>,
         serializable: bool,
     ) -> Self {
         Self {
             name,
             constructors_str,
             constructors_interned_str,
-            type_arguments,
+            type_params,
             serializable,
         }
     }

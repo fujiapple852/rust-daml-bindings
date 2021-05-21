@@ -36,13 +36,13 @@ impl<'a> DamlData<'a> {
         }
     }
 
-    /// The type arguments applied to this data type.
-    pub fn type_arguments(&self) -> &[DamlTypeVarWithKind<'_>] {
+    /// The type parameters applied to this data type.
+    pub fn type_params(&self) -> &[DamlTypeVarWithKind<'_>] {
         match self {
-            DamlData::Record(record) => &record.type_arguments,
+            DamlData::Record(record) => &record.type_params,
             DamlData::Template(_) => &[],
-            DamlData::Variant(variant) => &variant.type_arguments,
-            DamlData::Enum(data_enum) => &data_enum.type_arguments,
+            DamlData::Variant(variant) => &variant.type_params,
+            DamlData::Enum(data_enum) => &data_enum.type_params,
         }
     }
 
@@ -472,7 +472,7 @@ impl ToStatic for DamlDefKey<'_> {
 pub struct DamlRecord<'a> {
     name: Cow<'a, str>,
     fields: Vec<DamlField<'a>>,
-    type_arguments: Vec<DamlTypeVarWithKind<'a>>,
+    type_params: Vec<DamlTypeVarWithKind<'a>>,
     serializable: bool,
 }
 
@@ -480,13 +480,13 @@ impl<'a> DamlRecord<'a> {
     pub fn new(
         name: Cow<'a, str>,
         fields: Vec<DamlField<'a>>,
-        type_arguments: Vec<DamlTypeVarWithKind<'a>>,
+        type_params: Vec<DamlTypeVarWithKind<'a>>,
         serializable: bool,
     ) -> Self {
         Self {
             name,
             fields,
-            type_arguments,
+            type_params,
             serializable,
         }
     }
@@ -499,8 +499,8 @@ impl<'a> DamlRecord<'a> {
         &self.fields
     }
 
-    pub fn type_arguments(&self) -> &[DamlTypeVarWithKind<'a>] {
-        &self.type_arguments
+    pub fn type_params(&self) -> &[DamlTypeVarWithKind<'a>] {
+        &self.type_params
     }
 
     pub const fn serializable(&self) -> bool {
@@ -512,7 +512,7 @@ impl<'a> DamlVisitableElement<'a> for DamlRecord<'a> {
     fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
         visitor.pre_visit_record(self);
         self.fields.iter().for_each(|field| field.accept(visitor));
-        self.type_arguments.iter().for_each(|arg| arg.accept(visitor));
+        self.type_params.iter().for_each(|arg| arg.accept(visitor));
         visitor.post_visit_record(self);
     }
 }
@@ -524,7 +524,7 @@ impl ToStatic for DamlRecord<'_> {
         DamlRecord::new(
             self.name.to_static(),
             self.fields.iter().map(DamlField::to_static).collect(),
-            self.type_arguments.iter().map(DamlTypeVarWithKind::to_static).collect(),
+            self.type_params.iter().map(DamlTypeVarWithKind::to_static).collect(),
             self.serializable,
         )
     }
@@ -534,7 +534,7 @@ impl ToStatic for DamlRecord<'_> {
 pub struct DamlVariant<'a> {
     name: Cow<'a, str>,
     fields: Vec<DamlField<'a>>,
-    type_arguments: Vec<DamlTypeVarWithKind<'a>>,
+    type_params: Vec<DamlTypeVarWithKind<'a>>,
     serializable: bool,
 }
 
@@ -542,13 +542,13 @@ impl<'a> DamlVariant<'a> {
     pub fn new(
         name: Cow<'a, str>,
         fields: Vec<DamlField<'a>>,
-        type_arguments: Vec<DamlTypeVarWithKind<'a>>,
+        type_params: Vec<DamlTypeVarWithKind<'a>>,
         serializable: bool,
     ) -> Self {
         Self {
             name,
             fields,
-            type_arguments,
+            type_params,
             serializable,
         }
     }
@@ -561,8 +561,8 @@ impl<'a> DamlVariant<'a> {
         &self.fields
     }
 
-    pub fn type_arguments(&self) -> &[DamlTypeVarWithKind<'a>] {
-        &self.type_arguments
+    pub fn type_params(&self) -> &[DamlTypeVarWithKind<'a>] {
+        &self.type_params
     }
 
     pub const fn serializable(&self) -> bool {
@@ -574,7 +574,7 @@ impl<'a> DamlVisitableElement<'a> for DamlVariant<'a> {
     fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
         visitor.pre_visit_variant(self);
         self.fields.iter().for_each(|field| field.accept(visitor));
-        self.type_arguments.iter().for_each(|arg| arg.accept(visitor));
+        self.type_params.iter().for_each(|arg| arg.accept(visitor));
         visitor.post_visit_variant(self);
     }
 }
@@ -586,7 +586,7 @@ impl ToStatic for DamlVariant<'_> {
         DamlVariant::new(
             self.name.to_static(),
             self.fields.iter().map(DamlField::to_static).collect(),
-            self.type_arguments.iter().map(DamlTypeVarWithKind::to_static).collect(),
+            self.type_params.iter().map(DamlTypeVarWithKind::to_static).collect(),
             self.serializable,
         )
     }
@@ -596,7 +596,7 @@ impl ToStatic for DamlVariant<'_> {
 pub struct DamlEnum<'a> {
     name: Cow<'a, str>,
     constructors: Vec<Cow<'a, str>>,
-    type_arguments: Vec<DamlTypeVarWithKind<'a>>,
+    type_params: Vec<DamlTypeVarWithKind<'a>>,
     serializable: bool,
 }
 
@@ -604,13 +604,13 @@ impl<'a> DamlEnum<'a> {
     pub fn new(
         name: Cow<'a, str>,
         constructors: Vec<Cow<'a, str>>,
-        type_arguments: Vec<DamlTypeVarWithKind<'a>>,
+        type_params: Vec<DamlTypeVarWithKind<'a>>,
         serializable: bool,
     ) -> Self {
         Self {
             name,
             constructors,
-            type_arguments,
+            type_params,
             serializable,
         }
     }
@@ -623,8 +623,8 @@ impl<'a> DamlEnum<'a> {
         self.constructors.iter().map(AsRef::as_ref)
     }
 
-    pub fn type_arguments(&self) -> &[DamlTypeVarWithKind<'a>] {
-        &self.type_arguments
+    pub fn type_params(&self) -> &[DamlTypeVarWithKind<'a>] {
+        &self.type_params
     }
 
     pub const fn serializable(&self) -> bool {
@@ -635,7 +635,7 @@ impl<'a> DamlEnum<'a> {
 impl<'a> DamlVisitableElement<'a> for DamlEnum<'a> {
     fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
         visitor.pre_visit_enum(self);
-        self.type_arguments.iter().for_each(|arg| arg.accept(visitor));
+        self.type_params.iter().for_each(|arg| arg.accept(visitor));
         visitor.post_visit_enum(self);
     }
 }
@@ -647,7 +647,7 @@ impl ToStatic for DamlEnum<'_> {
         DamlEnum::new(
             self.name.to_static(),
             self.constructors.iter().map(ToStatic::to_static).collect(),
-            self.type_arguments.iter().map(DamlTypeVarWithKind::to_static).collect(),
+            self.type_params.iter().map(DamlTypeVarWithKind::to_static).collect(),
             self.serializable,
         )
     }

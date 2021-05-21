@@ -22,8 +22,8 @@ pub fn quote_daml_enum(_ctx: &RenderContext<'_>, daml_enum: &DamlEnum<'_>) -> To
 /// Generate `enum Foo {...}` enum.
 fn quote_enum(daml_enum: &DamlEnum<'_>) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(daml_enum.name());
-    let bounded_param_tokens = quote_bounded_params(daml_enum.type_arguments());
-    let unbounded_param_tokens = quote_unbounded_params(daml_enum.type_arguments());
+    let bounded_param_tokens = quote_bounded_params(daml_enum.type_params());
+    let unbounded_param_tokens = quote_unbounded_params(daml_enum.type_params());
 
     let body_tokens = quote_enum_body(daml_enum);
     quote!(
@@ -51,8 +51,8 @@ fn quote_enum_body(daml_enum: &DamlEnum<'_>) -> TokenStream {
 /// Generate the `DamlSerializeFrom<Foo> for DamlValue` method.
 fn quote_serialize_trait_impl(daml_enum: &DamlEnum<'_>) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(daml_enum.name());
-    let unbounded_param_tokens = quote_unbounded_params(daml_enum.type_arguments());
-    let serialize_where_tokens = quote_serialize_where(daml_enum.type_arguments());
+    let unbounded_param_tokens = quote_unbounded_params(daml_enum.type_params());
+    let serialize_where_tokens = quote_serialize_where(daml_enum.type_params());
     let all_match_arms: Vec<_> = daml_enum
         .constructors()
         .map(|enum_variant| quote_from_trait_match_arm(daml_enum.name(), enum_variant))
@@ -71,8 +71,8 @@ fn quote_serialize_trait_impl(daml_enum: &DamlEnum<'_>) -> TokenStream {
 /// Generate the `DamlDeserializeFrom<DamlValue> for Foo` method.
 fn quote_deserialize_trait_impl(daml_enum: &DamlEnum<'_>) -> TokenStream {
     let enum_name_tokens = quote_escaped_ident(daml_enum.name());
-    let unbounded_param_tokens = quote_unbounded_params(daml_enum.type_arguments());
-    let deserialize_where_tokens = quote_deserialize_where(daml_enum.type_arguments());
+    let unbounded_param_tokens = quote_unbounded_params(daml_enum.type_params());
+    let deserialize_where_tokens = quote_deserialize_where(daml_enum.type_params());
     let all_match_arms: Vec<_> = daml_enum
         .constructors()
         .map(|enum_variant| quote_try_from_trait_match_arm(daml_enum.name(), enum_variant))

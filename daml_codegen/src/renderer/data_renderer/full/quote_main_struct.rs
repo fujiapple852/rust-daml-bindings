@@ -14,7 +14,7 @@ use std::ops::Not;
 
 /// Generate the `Foo` struct and methods.
 pub fn quote_daml_record(ctx: &RenderContext<'_>, daml_record: &DamlRecord<'_>) -> TokenStream {
-    quote_daml_record_and_impl(ctx, daml_record.name(), daml_record.fields(), daml_record.type_arguments())
+    quote_daml_record_and_impl(ctx, daml_record.name(), daml_record.fields(), daml_record.type_params())
 }
 
 /// Generate the `Foo` struct and methods.

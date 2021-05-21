@@ -137,10 +137,10 @@ impl<'a> TryFrom<DamlDataWrapper<'a>> for DamlData<'a> {
         Ok(match data.payload {
             DamlDataEnrichedPayload::Record(record) => {
                 let name = record.name.resolve_last(resolver)?;
-                let type_arguments = convert_type_var_arguments(data, &record.type_arguments)?;
+                let type_params = convert_type_var_params(data, &record.type_params)?;
                 let fields = convert_fields(data, &record.fields)?;
                 let serializable = record.serializable;
-                DamlData::Record(DamlRecord::new(name, fields, type_arguments, serializable))
+                DamlData::Record(DamlRecord::new(name, fields, type_params, serializable))
             },
             DamlDataEnrichedPayload::Template(template) => {
                 let name = template.name.resolve_last(resolver)?;
@@ -187,14 +187,14 @@ impl<'a> TryFrom<DamlDataWrapper<'a>> for DamlData<'a> {
             },
             DamlDataEnrichedPayload::Variant(variant) => {
                 let name = variant.name.resolve_last(resolver)?;
-                let type_arguments = convert_type_var_arguments(data, &variant.type_arguments)?;
+                let type_params = convert_type_var_params(data, &variant.type_params)?;
                 let fields = convert_fields(data, &variant.fields)?;
                 let serializable = variant.serializable;
-                DamlData::Variant(DamlVariant::new(name, fields, type_arguments, serializable))
+                DamlData::Variant(DamlVariant::new(name, fields, type_params, serializable))
             },
             DamlDataEnrichedPayload::Enum(data_enum) => {
                 let name = data_enum.name.resolve_last(resolver)?;
-                let type_arguments = convert_type_var_arguments(data, &data_enum.type_arguments)?;
+                let type_params = convert_type_var_params(data, &data_enum.type_params)?;
                 let constructors: Vec<Cow<'_, str>> = if data
                     .context
                     .package
@@ -211,7 +211,7 @@ impl<'a> TryFrom<DamlDataWrapper<'a>> for DamlData<'a> {
                     data_enum.constructors_str.iter().map(Cow::from).collect()
                 };
                 let serializable = data_enum.serializable;
-                DamlData::Enum(DamlEnum::new(name, constructors, type_arguments, serializable))
+                DamlData::Enum(DamlEnum::new(name, constructors, type_params, serializable))
             },
         })
     }
@@ -605,7 +605,7 @@ fn convert_type_arguments<'a, T: Copy>(
     type_arguments.iter().map(|ty| DamlType::try_from(&wrapper.wrap(ty))).collect::<DamlLfConvertResult<_>>()
 }
 
-fn convert_type_var_arguments<'a, T: Copy>(
+fn convert_type_var_params<'a, T: Copy>(
     wrapper: PayloadElementWrapper<'a, T>,
     type_var_arguments: &'a [DamlTypeVarWithKindPayload<'a>],
 ) -> DamlLfConvertResult<Vec<DamlTypeVarWithKind<'a>>> {

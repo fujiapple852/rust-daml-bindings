@@ -72,19 +72,16 @@ pub fn quote_tycon(tycon: &DamlTyCon<'_>) -> TokenStream {
     match tycon.tycon() {
         DamlTyConName::Local(local_tycon) => {
             let target_type_tokens = quote_escaped_ident(local_tycon.data_name());
-            // let type_arguments_tokens = quote_generic_type_arguments(local_tycon.type_arguments());
             quote!(#target_type_tokens #type_arguments_tokens)
         },
         DamlTyConName::NonLocal(non_local_tycon) => {
             let target_type_tokens = quote_escaped_ident(non_local_tycon.data_name());
             let target_path_tokens = quote_non_local_path(non_local_tycon);
-            // let type_arguments_tokens = quote_generic_type_arguments(non_local_tycon.type_arguments());
             quote!(#target_path_tokens #target_type_tokens #type_arguments_tokens)
         },
         DamlTyConName::Absolute(abs_tycon) => {
             let target_type_tokens = quote_escaped_ident(abs_tycon.data_name());
             let target_path_tokens = quote_absolute_tycon(abs_tycon);
-            // let type_arguments_tokens = quote_generic_type_arguments(abs_tycon.type_arguments());
             quote!(#target_path_tokens #target_type_tokens #type_arguments_tokens)
         },
     }

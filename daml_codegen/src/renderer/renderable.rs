@@ -6,7 +6,7 @@ use daml_lf::element::{DamlArchive, DamlData, DamlKind, DamlTyCon, DamlType};
 /// When the `filter_mode` is `RenderFilterMode::HKT` then the renderer will exclude fields which contain
 /// (recursively) any `TyCon` where the target `DamlData` defines a type parameter with a higher kind (i.e. `* -> *`)
 ///
-/// Note that each `DamlData` item provides kind information (i.e. `DamlData::type_arguments`) to perform this
+/// Note that each `DamlData` item provides kind information (i.e. `DamlData::type_params`) to perform this
 /// exclusion logic.  In theory this information could instead be used to generate code which support such higher kinded
 /// structures however this is not currently possible in stable Rust to the best of my knowledge.
 ///
@@ -65,7 +65,7 @@ impl<'a> IsRenderable<'a> {
     fn check_target_data(&self, tycon: &DamlTyCon<'_>) -> bool {
         match self.filter_mode {
             RenderFilterMode::HigherKindedType => self.archive.data_by_tycon(tycon).map_or(true, |data| {
-                !data.type_arguments().iter().any(|type_var| matches!(type_var.kind(), DamlKind::Arrow(_)))
+                !data.type_params().iter().any(|type_var| matches!(type_var.kind(), DamlKind::Arrow(_)))
             }),
             RenderFilterMode::NonSerializable => self.archive.data_by_tycon(tycon).map_or(true, DamlData::serializable),
         }

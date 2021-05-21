@@ -15,11 +15,11 @@ use std::ops::Not;
 pub fn quote_daml_variant(ctx: &RenderContext<'_>, variant: &DamlVariant<'_>) -> TokenStream {
     let supported_fields: Vec<_> =
         variant.fields().iter().filter(|&field| IsRenderable::new(ctx).check_type(field.ty())).collect();
-    let variant_tokens = quote_variant(variant.name(), &supported_fields, variant.type_arguments());
+    let variant_tokens = quote_variant(variant.name(), &supported_fields, variant.type_params());
     let serialize_trait_impl_tokens =
-        quote_serialize_trait_impl(variant.name(), &supported_fields, variant.type_arguments());
+        quote_serialize_trait_impl(variant.name(), &supported_fields, variant.type_params());
     let deserialize_trait_impl_tokens =
-        quote_deserialize_trait_impl(variant.name(), &supported_fields, variant.type_arguments());
+        quote_deserialize_trait_impl(variant.name(), &supported_fields, variant.type_params());
     quote!(
         #variant_tokens
         #serialize_trait_impl_tokens
