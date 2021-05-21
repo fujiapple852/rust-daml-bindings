@@ -103,6 +103,16 @@ impl<'a> DamlType<'a> {
 
     /// Convenience method to create a `DamlType::TyCon` for a given package id, module path and entity.
     pub fn make_tycon<'b, S: AsRef<str> + 'b>(package_id: &'b str, module: &'b [S], entity: &'b str) -> DamlType<'b> {
+        Self::make_tycon_with_args(package_id, module, entity, vec![])
+    }
+
+    /// Convenience method to create a `DamlType::TyCon` for a given package id, module path, entity & type args.
+    pub fn make_tycon_with_args<'b, S: AsRef<str> + 'b>(
+        package_id: &'b str,
+        module: &'b [S],
+        entity: &'b str,
+        type_arguments: Vec<DamlType<'b>>,
+    ) -> DamlType<'b> {
         DamlType::TyCon(DamlTyCon::new(
             DamlTyConName::Absolute(DamlAbsoluteTyCon::new(
                 entity.into(),
@@ -110,7 +120,7 @@ impl<'a> DamlType<'a> {
                 Cow::default(),
                 module.iter().map(AsRef::as_ref).map(Into::into).collect(),
             )),
-            vec![],
+            type_arguments,
         ))
     }
 }
