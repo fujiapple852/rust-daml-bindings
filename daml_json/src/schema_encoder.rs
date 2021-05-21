@@ -4,8 +4,12 @@ use itertools::Itertools;
 use serde_json::json;
 use serde_json::Value;
 
-use daml_lf::element::{DamlArchive, DamlData, DamlEnum, DamlField, DamlRecord, DamlType, DamlVariant};
+use daml_lf::element::{
+    DamlArchive, DamlData, DamlEnum, DamlField, DamlRecord, DamlTemplate, DamlType, DamlTypeVarWithKind, DamlVar,
+    DamlVariant,
+};
 
+use crate::error::DamlJsonSchemaCodecError::NotSerializableDamlType;
 use crate::error::{DamlJsonSchemaCodecError, DamlJsonSchemaCodecResult};
 use crate::schema_data::{
     DamlJsonSchemaBool, DamlJsonSchemaContractId, DamlJsonSchemaDate, DamlJsonSchemaDecimal, DamlJsonSchemaEnum,
@@ -91,12 +95,23 @@ impl<'a> JsonSchemaEncoder<'a> {
 
     /// Encode a `DamlType` as a JSON schema.
     pub fn encode(&self, ty: &DamlType<'_>) -> DamlJsonSchemaCodecResult<Value> {
-        self.do_encode(ty, true)
+        self.do_encode(ty, true, &[], &[])
     }
 
     /// Encode a `DamlRecord` as a JSON schema  .
     pub fn encode_record(&self, record: &DamlRecord<'_>) -> DamlJsonSchemaCodecResult<Value> {
-        self.do_encode_record(record.name(), record.fields())
+        record
+            .serializable()
+            .then(|| self.do_encode_record(record.name(), record.fields(), &[], &[]))
+            .unwrap_or_else(|| Err(NotSerializableDamlType(record.name().to_owned())))
+    }
+
+    /// Encode a `DamlTemplate` as a JSON schema.
+    pub fn encode_template(&self, template: &DamlTemplate<'_>) -> DamlJsonSchemaCodecResult<Value> {
+        template
+            .serializable()
+            .then(|| self.do_encode_record(template.name(), template.fields(), &[], &[]))
+            .unwrap_or_else(|| Err(NotSerializableDamlType(template.name().to_owned())))
     }
 
     /// Encode a Daml `Unit` type as JSON schema.
@@ -501,11 +516,20 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///
     /// > ⓘ Note: For the JSON list encoding, all fields will be included, and the order is significant. The
     /// `minItems` and `maxItems`will be set to reflect the number of fields on the record.
-    fn do_encode_record(&self, name: &str, fields: &[DamlField<'_>]) -> DamlJsonSchemaCodecResult<Value> {
+    fn do_encode_record(
+        &self,
+        name: &str,
+        fields: &[DamlField<'_>],
+        type_params: &[DamlTypeVarWithKind<'a>],
+        type_args: &[DamlType<'_>],
+    ) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaRecord {
             schema: self.schema_if_data_or_all(),
             title: self.title_if_data_or_all(&format!("Record ({})", name)),
-            one_of: [self.do_encode_record_object(name, fields)?, self.do_encode_record_list(name, fields)?],
+            one_of: [
+                self.do_encode_record_object(name, fields, type_args, type_params)?,
+                self.do_encode_record_list(name, fields, type_params, type_args)?,
+            ],
         })?)
     }
 
@@ -556,11 +580,16 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///   ]
     /// }
     /// ```
-    fn encode_variant(&self, variant: &DamlVariant<'_>) -> DamlJsonSchemaCodecResult<Value> {
+    fn encode_variant(
+        &self,
+        variant: &DamlVariant<'_>,
+        type_params: &[DamlTypeVarWithKind<'a>],
+        type_args: &[DamlType<'_>],
+    ) -> DamlJsonSchemaCodecResult<Value> {
         let all_arms = variant
             .fields()
             .iter()
-            .map(|field| self.encode_variant_arm(variant.name(), field))
+            .map(|field| self.encode_variant_arm(variant.name(), field, type_params, type_args))
             .collect::<DamlJsonSchemaCodecResult<Vec<_>>>()?;
         Ok(serde_json::to_value(DamlJsonSchemaVariant {
             schema: self.schema_if_data_or_all(),
@@ -595,7 +624,13 @@ impl<'a> JsonSchemaEncoder<'a> {
         })?)
     }
 
-    fn do_encode(&self, ty: &DamlType<'_>, top_level: bool) -> DamlJsonSchemaCodecResult<Value> {
+    fn do_encode(
+        &self,
+        ty: &DamlType<'_>,
+        top_level: bool,
+        type_params: &[DamlTypeVarWithKind<'_>],
+        type_args: &[DamlType<'_>],
+    ) -> DamlJsonSchemaCodecResult<Value> {
         match ty {
             DamlType::Unit => self.encode_unit(),
             DamlType::Bool => self.encode_bool(),
@@ -606,18 +641,28 @@ impl<'a> JsonSchemaEncoder<'a> {
             DamlType::Date => self.encode_date(),
             DamlType::Int64 => self.encode_int64(),
             DamlType::Numeric(_) => self.encode_decimal(),
-            DamlType::List(tys) => self.encode_list(self.do_encode(tys.as_single()?, true)?),
-            DamlType::TextMap(tys) => self.encode_textmap(self.do_encode(tys.as_single()?, true)?),
-            DamlType::GenMap(tys) =>
-                self.encode_genmap(self.do_encode(tys.first().req()?, true)?, self.do_encode(tys.last().req()?, true)?),
-            DamlType::Optional(nested) => self.encode_optional(self.do_encode(nested.as_single()?, false)?, top_level),
-            DamlType::TyCon(tycon) | DamlType::BoxedTyCon(tycon) => self.encode_data(
-                self.arc
-                    .data_by_tycon(tycon)
-                    .ok_or_else(|| DamlJsonSchemaCodecError::DataNotFound(tycon.tycon().to_string()))?,
+            DamlType::List(tys) => self.encode_list(self.do_encode(tys.as_single()?, true, type_params, type_args)?),
+            DamlType::TextMap(tys) =>
+                self.encode_textmap(self.do_encode(tys.as_single()?, true, type_params, type_args)?),
+            DamlType::GenMap(tys) => self.encode_genmap(
+                self.do_encode(tys.first().req()?, true, type_params, type_args)?,
+                self.do_encode(tys.last().req()?, true, type_params, type_args)?,
             ),
-            DamlType::Var(_)
-            | DamlType::Nat(_)
+            DamlType::Optional(nested) =>
+                self.encode_optional(self.do_encode(nested.as_single()?, false, type_params, type_args)?, top_level),
+            DamlType::TyCon(tycon) | DamlType::BoxedTyCon(tycon) => {
+                let data = self
+                    .arc
+                    .data_by_tycon(tycon)
+                    .ok_or_else(|| DamlJsonSchemaCodecError::DataNotFound(tycon.tycon().to_string()))?;
+                self.encode_data(data, tycon.type_arguments())
+            },
+            DamlType::Var(v) => {
+                // TODO: we passthrough top_level as-is here because we may or may not a Var inside an optional.  But
+                // what about List et. al, should they passthrough as well?
+                self.do_encode(Self::resolve_type_var(type_params, type_args, v)?, top_level, type_params, type_args)
+            },
+            DamlType::Nat(_)
             | DamlType::Arrow
             | DamlType::Any
             | DamlType::TypeRep
@@ -629,25 +674,40 @@ impl<'a> JsonSchemaEncoder<'a> {
         }
     }
 
-    fn encode_data(&self, data: &DamlData<'_>) -> DamlJsonSchemaCodecResult<Value> {
-        match data {
-            DamlData::Template(template) => self.do_encode_record(template.name(), template.fields()),
-            DamlData::Record(record) => self.do_encode_record(record.name(), record.fields()),
-            DamlData::Variant(variant) => self.encode_variant(variant),
-            DamlData::Enum(data_enum) => self.encode_enum(data_enum),
-        }
+    fn encode_data(&self, data: &DamlData<'_>, type_args: &[DamlType<'_>]) -> DamlJsonSchemaCodecResult<Value> {
+        data.serializable()
+            .then(|| match data {
+                DamlData::Template(template) =>
+                    self.do_encode_record(template.name(), template.fields(), &[], type_args),
+                DamlData::Record(record) =>
+                    self.do_encode_record(record.name(), record.fields(), record.type_params(), type_args),
+                DamlData::Variant(variant) => self.encode_variant(variant, variant.type_params(), type_args),
+                DamlData::Enum(data_enum) => self.encode_enum(data_enum),
+            })
+            .unwrap_or_else(|| Err(NotSerializableDamlType(data.name().to_owned())))
     }
 
-    fn do_encode_record_object(&self, name: &str, fields: &[DamlField<'_>]) -> DamlJsonSchemaCodecResult<Value> {
+    fn do_encode_record_object(
+        &self,
+        name: &str,
+        fields: &[DamlField<'_>],
+        type_args: &[DamlType<'_>],
+        type_params: &[DamlTypeVarWithKind<'a>],
+    ) -> DamlJsonSchemaCodecResult<Value> {
         let fields_map = fields
             .iter()
-            .map(|field| self.do_encode(field.ty(), true).map(|json_val| (field.name(), json_val)))
+            .map(|field| {
+                self.do_encode(field.ty(), true, type_params, type_args).map(|json_val| (field.name(), json_val))
+            })
             .collect::<DamlJsonSchemaCodecResult<BTreeMap<&str, Value>>>()?;
         let opt_fields = fields
             .iter()
-            .filter_map(|field| (!matches!(field.ty(), DamlType::Optional(_))).then(|| field.name()))
-            .sorted()
-            .collect::<Vec<_>>();
+            .filter_map(|field| match Self::is_optional_field(field, type_args, type_params) {
+                Ok(b) if !b => Some(Ok(field.name())),
+                Ok(_) => None,
+                Err(e) => Some(Err(e)),
+            })
+            .collect::<DamlJsonSchemaCodecResult<Vec<_>>>()?;
         Ok(serde_json::to_value(DamlJsonSchemaRecordAsObject {
             ty: "object",
             title: self.title_if_all(&format!("Record ({})", name)),
@@ -657,10 +717,16 @@ impl<'a> JsonSchemaEncoder<'a> {
         })?)
     }
 
-    fn do_encode_record_list(&self, name: &str, fields: &[DamlField<'_>]) -> DamlJsonSchemaCodecResult<Value> {
+    fn do_encode_record_list(
+        &self,
+        name: &str,
+        fields: &[DamlField<'_>],
+        type_params: &[DamlTypeVarWithKind<'a>],
+        type_args: &[DamlType<'_>],
+    ) -> DamlJsonSchemaCodecResult<Value> {
         let fields_list = fields
             .iter()
-            .map(|field| self.do_encode(field.ty(), true))
+            .map(|field| self.do_encode(field.ty(), true, type_params, type_args))
             .collect::<DamlJsonSchemaCodecResult<Vec<Value>>>()?;
         let field_names = fields.iter().map(DamlField::name).join(", ");
         let item_count = fields_list.len();
@@ -674,18 +740,53 @@ impl<'a> JsonSchemaEncoder<'a> {
         })?)
     }
 
-    fn encode_variant_arm(&self, name: &str, daml_field: &DamlField<'_>) -> DamlJsonSchemaCodecResult<Value> {
+    fn encode_variant_arm(
+        &self,
+        name: &str,
+        daml_field: &DamlField<'_>,
+        type_params: &[DamlTypeVarWithKind<'a>],
+        type_args: &[DamlType<'_>],
+    ) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaVariantArm {
             ty: "object",
             title: self.title_if_all(&format!("Variant ({}, tag={})", name, daml_field.name())),
             properties: json!(
                {
                  "tag": { "type": "string", "enum": [daml_field.name()] },
-                 "value": self.do_encode(daml_field.ty(), true)?
+                 "value": self.do_encode(daml_field.ty(), true, type_params, type_args)?
                }
             ),
             additional_properties: false,
         })?)
+    }
+
+    /// Resolve a `DamlVar` to a specific `DamlType` from the current type arguments by matching the position of the var
+    /// in the type parameters.
+    fn resolve_type_var<'arg>(
+        type_params: &[DamlTypeVarWithKind<'_>],
+        type_args: &'arg [DamlType<'arg>],
+        var: &DamlVar<'_>,
+    ) -> DamlJsonSchemaCodecResult<&'arg DamlType<'arg>> {
+        let index = type_params
+            .iter()
+            .position(|h| h.var() == var.var())
+            .ok_or_else(|| DamlJsonSchemaCodecError::TypeVarNotFoundInArgs(var.var().to_string()))?;
+        type_args.get(index).ok_or_else(|| DamlJsonSchemaCodecError::TypeVarNotFoundInParams(var.var().to_string()))
+    }
+
+    /// Determine if a given field is `DamlType::Optional`, or a `DamlType::Var` that resolves to a
+    /// `DamlType::Optional`.
+    fn is_optional_field(
+        field: &DamlField<'_>,
+        type_args: &[DamlType<'_>],
+        type_params: &[DamlTypeVarWithKind<'a>],
+    ) -> DamlJsonSchemaCodecResult<bool> {
+        match field.ty() {
+            DamlType::Optional(_) => Ok(true),
+            DamlType::Var(var) =>
+                Ok(matches!(Self::resolve_type_var(type_params, type_args, var)?, DamlType::Optional(_))),
+            _ => Ok(false),
+        }
     }
 
     fn schema_if_all(&self) -> Option<&'static str> {
@@ -717,13 +818,13 @@ mod tests {
     use super::*;
 
     static TESTING_TYPES_DAR_PATH: &str =
-        "../resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_12_0-lf_1_12.dar";
+        "../resources/testing_types_sandbox/archive/TestingTypes-1_1_0-sdk_1_13_0-lf_1_12.dar";
 
     #[test]
     fn test_unit() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Unit;
         let expected = json!({"type": "object", "title": "Unit", "additionalProperties": false});
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -732,7 +833,7 @@ mod tests {
     fn test_text() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Text;
         let expected = json!({"type": "string", "title": "Text"});
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -741,7 +842,7 @@ mod tests {
     fn test_party() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Party;
         let expected = json!({"type": "string", "title": "Party"});
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -750,7 +851,7 @@ mod tests {
     fn test_int64() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Int64;
         let expected = json!({"type": ["integer", "string"], "title": "Int64"});
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -759,7 +860,7 @@ mod tests {
     fn test_numeric() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Numeric(Box::new(DamlType::Nat(18)));
         let expected = json!({"type": ["number", "string"], "title": "Decimal"});
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -768,7 +869,7 @@ mod tests {
     fn test_bool() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Bool;
         let expected = json!({"type": "boolean", "title": "Bool"});
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -777,7 +878,7 @@ mod tests {
     fn test_contract_id() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::ContractId(None);
         let expected = json!({"type": "string", "title": "ContractId"});
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -786,7 +887,7 @@ mod tests {
     fn test_timestamp() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Timestamp;
         let expected = json!({"type": "string", "title": "Timestamp"});
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -795,7 +896,7 @@ mod tests {
     fn test_date() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Date;
         let expected = json!({"type": "string", "title": "Date"});
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -821,7 +922,7 @@ mod tests {
               "title": "Optional"
             }
         );
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -862,7 +963,7 @@ mod tests {
                   "title": "Optional"
                 }
         );
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -918,7 +1019,7 @@ mod tests {
                   "title": "Optional"
                 }
         );
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -985,7 +1086,7 @@ mod tests {
                   "title": "Record (RecordArgument)"
                 }
         );
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1043,7 +1144,7 @@ mod tests {
                   "title": "Record (Bar)"
                 }
         );
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1125,7 +1226,7 @@ mod tests {
                   "title": "Record (Foo)"
                 }
         );
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1154,8 +1255,8 @@ mod tests {
                         }
                       },
                       "required": [
-                        "age",
-                        "name"
+                        "name",
+                        "age"
                       ],
                       "title": "Record (Person)",
                       "type": "object"
@@ -1184,7 +1285,7 @@ mod tests {
                   "title": "Record (Person)"
                 }
         );
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1217,9 +1318,9 @@ mod tests {
                         }
                       },
                       "required": [
-                        "count",
+                        "sender",
                         "receiver",
-                        "sender"
+                        "count"
                       ],
                       "title": "Record (Ping)",
                       "type": "object"
@@ -1252,7 +1353,7 @@ mod tests {
                   "title": "Record (Ping)"
                 }
         );
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1273,7 +1374,7 @@ mod tests {
                   "type": "string"
                 }
         );
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1410,10 +1511,10 @@ mod tests {
                                 }
                               },
                               "required": [
-                                "alpha",
-                                "b",
+                                "r",
                                 "g",
-                                "r"
+                                "b",
+                                "alpha"
                               ],
                               "title": "Record (RGBA)",
                               "type": "object"
@@ -1466,7 +1567,7 @@ mod tests {
                   "title": "Variant (Color)"
                 }
         );
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1530,7 +1631,7 @@ mod tests {
                   "title": "Record (Depth1)"
                 }
         );
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1624,9 +1725,31 @@ mod tests {
                   "title": "Record (Depth2)"
                 }
         );
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true)?;
+        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
+    }
+
+    #[test]
+    fn test_fail_for_non_serializable_record() -> Result<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "HigherKindTest"], "HigherKindedData");
+        match JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[]) {
+            Err(DamlJsonSchemaCodecError::NotSerializableDamlType(s)) if s == "HigherKindedData" => Ok(()),
+            Err(e) => panic!("expected different error: {}", e.to_string()),
+            _ => panic!("expected error"),
+        }
+    }
+
+    #[test]
+    fn test_fail_for_generic_missing_type_arg() -> Result<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Oa");
+        match JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[]) {
+            Err(DamlJsonSchemaCodecError::TypeVarNotFoundInParams(s)) if s == "a" => Ok(()),
+            Err(e) => panic!("expected different error: {}", e.to_string()),
+            _ => panic!("expected error"),
+        }
     }
 
     // Test the generated JSON schema against various sample JSON values.
@@ -1813,6 +1936,50 @@ mod tests {
         validate_schema_for_arc_match(arc, &ty, &instance)
     }
 
+    /// { foo: 42 }     -->  Oa { foo: Some 42 }        : Oa Int
+    #[test]
+    fn test_validate_generic_opt_int_some() -> Result<()> {
+        let arc = daml_archive();
+        let ty =
+            DamlType::make_tycon_with_args(arc.main_package_id(), &["DA", "JsonTest"], "Oa", vec![DamlType::Int64]);
+        let instance = json!({ "foo": 42 });
+        validate_schema_for_arc_match(arc, &ty, &instance)
+    }
+
+    /// { }             -->  Oa { foo: None }           : Oa Int
+    #[test]
+    fn test_validate_generic_opt_int_none() -> Result<()> {
+        let arc = daml_archive();
+        let ty =
+            DamlType::make_tycon_with_args(arc.main_package_id(), &["DA", "JsonTest"], "Oa", vec![DamlType::Int64]);
+        let instance = json!({});
+        validate_schema_for_arc_match(arc, &ty, &instance)
+    }
+
+    /// { foo: [42] }   -->  Oa { foo: Some (Some 42) } : Oa (Optional Int)
+    #[test]
+    fn test_validate_generic_opt_opt_int_some() -> Result<()> {
+        let arc = daml_archive();
+        let ty =
+            DamlType::make_tycon_with_args(arc.main_package_id(), &["DA", "JsonTest"], "Oa", vec![DamlType::Optional(
+                vec![DamlType::Int64],
+            )]);
+        let instance = json!({ "foo": [42] });
+        validate_schema_for_arc_match(arc, &ty, &instance)
+    }
+
+    /// { foo: [] }     -->  Oa { foo: Some None }      : Oa (Optional Int)
+    #[test]
+    fn test_validate_generic_opt_opt_int_none() -> Result<()> {
+        let arc = daml_archive();
+        let ty =
+            DamlType::make_tycon_with_args(arc.main_package_id(), &["DA", "JsonTest"], "Oa", vec![DamlType::Optional(
+                vec![DamlType::Int64],
+            )]);
+        let instance = json!({ "foo": [] });
+        validate_schema_for_arc_match(arc, &ty, &instance)
+    }
+
     #[test]
     fn test_validate_genmap_of_int64_to_text_empty() -> Result<()> {
         validate_schema_match(&DamlType::GenMap(vec![DamlType::Int64, DamlType::Text]), &json!([]))
@@ -1887,7 +2054,7 @@ mod tests {
     }
 
     fn do_validate_schema(arc: &DamlArchive<'_>, ty: &DamlType<'_>, instance: &Value, matches: bool) -> Result<()> {
-        let schema = JsonSchemaEncoder::new(arc).do_encode(ty, true)?;
+        let schema = JsonSchemaEncoder::new(arc).do_encode(ty, true, &[], &[])?;
         let compiled = JSONSchema::compile(&schema)?;
         let result = compiled.validate(instance);
         assert_eq!(matches, result.is_ok());

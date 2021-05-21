@@ -4,7 +4,7 @@ use daml::grpc_api::serialize::{DamlDeserializeInto, DamlSerializeFrom};
 use daml_derive::daml_codegen;
 
 daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_13_0-lf_1_12.dar",
+    dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_1_0-sdk_1_13_0-lf_1_12.dar",
     module_filter_regex = "DA.NestedModuleTest"
 );
 

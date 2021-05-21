@@ -107,4 +107,10 @@ pub enum DamlJsonSchemaCodecError {
     DataNotFound(String),
     #[error("unsupported Daml type {0} in JSON Schema")]
     UnsupportedDamlType(String),
+    #[error("Daml type {0} in is not serializable")]
+    NotSerializableDamlType(String),
+    #[error("Daml type variable '{0}' not found in type arguments")]
+    TypeVarNotFoundInArgs(String),
+    #[error("Daml type variable '{0}' not found in type parameters")]
+    TypeVarNotFoundInParams(String),
 }

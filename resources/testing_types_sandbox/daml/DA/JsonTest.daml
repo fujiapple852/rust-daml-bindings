@@ -8,3 +8,4 @@ data Foo = Bar Int | Baz | Quux (Optional Int)
 data Status = Enabled | Disabled
 data Person = Person with name : Text, age : Int
 data PersonMap = PersonMap with m : Map Person Text
+data Oa a = Oa with foo: Optional a
