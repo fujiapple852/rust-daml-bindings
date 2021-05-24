@@ -61,4 +61,7 @@ mod schema_data;
 /// Daml JSON schema encoder.
 pub mod schema_encoder;
 
+/// `OpenAPI` data types
+pub mod openapi_data;
+
 mod util;
