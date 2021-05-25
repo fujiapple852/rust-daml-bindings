@@ -650,18 +650,16 @@ impl<'a> JsonSchemaEncoder<'a> {
             ),
             DamlType::Optional(nested) =>
                 self.encode_optional(self.do_encode(nested.as_single()?, false, type_params, type_args)?, top_level),
-            DamlType::TyCon(tycon) | DamlType::BoxedTyCon(tycon) => {
+            DamlType::TyCon(tycon) => {
                 let data = self
                     .arc
                     .data_by_tycon(tycon)
                     .ok_or_else(|| DamlJsonSchemaCodecError::DataNotFound(tycon.tycon().to_string()))?;
                 self.encode_data(data, tycon.type_arguments())
             },
-            DamlType::Var(v) => {
-                // TODO: we passthrough top_level as-is here because we may or may not a Var inside an optional.  But
-                // what about List et. al, should they passthrough as well?
-                self.do_encode(Self::resolve_type_var(type_params, type_args, v)?, top_level, type_params, type_args)
-            },
+            DamlType::BoxedTyCon(tycon) => Ok(Self::encode_recursive(&tycon.tycon().to_string())),
+            DamlType::Var(v) =>
+                self.do_encode(Self::resolve_type_var(type_params, type_args, v)?, top_level, type_params, type_args),
             DamlType::Nat(_)
             | DamlType::Arrow
             | DamlType::Any
@@ -760,6 +758,16 @@ impl<'a> JsonSchemaEncoder<'a> {
         })?)
     }
 
+    /// Recursive data types are not currently supported and so we emit a schema object which matches anything.
+    fn encode_recursive(name: &str) -> Value {
+        json!(
+            {
+                "title": format!("Any ({})", name),
+                "description": "recursive data types are not yet supported"
+            }
+        )
+    }
+
     /// Resolve a `DamlVar` to a specific `DamlType` from the current type arguments by matching the position of the var
     /// in the type parameters.
     fn resolve_type_var<'arg>(
@@ -818,7 +826,7 @@ mod tests {
     use super::*;
 
     static TESTING_TYPES_DAR_PATH: &str =
-        "../resources/testing_types_sandbox/archive/TestingTypes-1_1_0-sdk_1_13_0-lf_1_12.dar";
+        "../resources/testing_types_sandbox/archive/TestingTypes-1_2_0-sdk_1_13_0-lf_1_12.dar";
 
     #[test]
     fn test_unit() -> DamlJsonSchemaCodecResult<()> {
@@ -1723,6 +1731,59 @@ mod tests {
                     }
                   ],
                   "title": "Record (Depth2)"
+                }
+        );
+        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_recursive() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Rec");
+        let expected = json!(
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "title": "Record (Rec)",
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "title": "Record (Rec)",
+                      "properties": {
+                        "bar": {
+                          "title": "Any (TestingTypes:DA.JsonTest:Rec)",
+                          "description": "recursive data types are not yet supported"
+                        },
+                        "foo": {
+                          "title": "Text",
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "foo",
+                        "bar"
+                      ]
+                    },
+                    {
+                      "type": "array",
+                      "title": "Record (Rec, fields = [foo, bar])",
+                      "items": [
+                        {
+                          "title": "Text",
+                          "type": "string"
+                        },
+                        {
+                          "title": "Any (TestingTypes:DA.JsonTest:Rec)",
+                          "description": "recursive data types are not yet supported"
+                        }
+                      ],
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "additionalItems": false
+                    }
+                  ]
                 }
         );
         let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;

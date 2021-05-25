@@ -9,3 +9,4 @@ data Status = Enabled | Disabled
 data Person = Person with name : Text, age : Int
 data PersonMap = PersonMap with m : Map Person Text
 data Oa a = Oa with foo: Optional a
+data Rec = Rec with foo: Text, bar: Rec
