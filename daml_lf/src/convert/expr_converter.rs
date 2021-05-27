@@ -16,10 +16,10 @@ use crate::element::{
     DamlAbs, DamlApp, DamlBinding, DamlBlock, DamlBuiltinFunction, DamlCase, DamlCaseAlt, DamlCaseAltCons,
     DamlCaseAltEnum, DamlCaseAltOptionalSome, DamlCaseAltSum, DamlCaseAltVariant, DamlCommit, DamlCons, DamlCreate,
     DamlDefValue, DamlEnumCon, DamlExercise, DamlExerciseByKey, DamlExpr, DamlFetch, DamlFieldWithExpr, DamlFromAny,
-    DamlLocalTyCon, DamlNonLocalTyCon, DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon, DamlRecProj,
-    DamlRecUpd, DamlRetrieveByKey, DamlScenario, DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj, DamlStructUpd,
-    DamlToAny, DamlTyAbs, DamlTyApp, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind, DamlUpdate,
-    DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
+    DamlLocalValueName, DamlNonLocalValueName, DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon,
+    DamlRecProj, DamlRecUpd, DamlRetrieveByKey, DamlScenario, DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj,
+    DamlStructUpd, DamlToAny, DamlTyAbs, DamlTyApp, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind,
+    DamlUpdate, DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
 };
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use std::borrow::Cow;
@@ -31,7 +31,7 @@ impl<'a> TryFrom<&DamlDefValueWrapper<'a>> for DamlDefValue<'a> {
 
     fn try_from(def_value: &DamlDefValueWrapper<'a>) -> DamlLfConvertResult<Self> {
         Ok(DamlDefValue::new(
-            def_value.payload.name.resolve(def_value.context.package)?,
+            def_value.payload.name.resolve_last(def_value.context.package)?,
             DamlType::try_from(&def_value.wrap(&def_value.payload.ty))?,
             DamlExpr::try_from(&def_value.wrap(&def_value.payload.expr))?,
             def_value.payload.no_party_literals,
@@ -714,14 +714,14 @@ impl<'a> TryFrom<&DamlValueNameWrapper<'a>> for DamlValueName<'a> {
         let target_module_path = value_name.payload.module_path.resolve(source_resolver)?;
         let data_name = value_name.payload.name.resolve_last(source_resolver)?;
         if target_package_name == source_package_name && target_module_path == source_module_path {
-            Ok(DamlValueName::Local(DamlLocalTyCon::new(
+            Ok(DamlValueName::Local(DamlLocalValueName::new(
                 data_name,
                 target_package_id,
                 target_package_name,
                 target_module_path,
             )))
         } else {
-            Ok(DamlValueName::NonLocal(DamlNonLocalTyCon::new(
+            Ok(DamlValueName::NonLocal(DamlNonLocalValueName::new(
                 data_name,
                 source_package_id,
                 source_package_name,

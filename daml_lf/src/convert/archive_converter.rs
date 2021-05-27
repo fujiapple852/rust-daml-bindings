@@ -95,7 +95,7 @@ impl<'a> TryFrom<&DamlModuleWrapper<'a>> for DamlModule<'a> {
             synonyms,
             data_types.into_iter().map(|dt| (dt.name_clone(), dt)).collect(),
             #[cfg(feature = "full")]
-            values,
+            values.into_iter().map(|val| (val.name_clone(), val)).collect(),
         ))
     }
 }

@@ -1,6 +1,5 @@
 use crate::element::{
-    DamlAbsoluteTyCon, DamlElementVisitor, DamlLocalTyCon, DamlNonLocalTyCon, DamlTyCon, DamlTyConName, DamlType,
-    DamlTypeVarWithKind, DamlVisitableElement,
+    DamlElementVisitor, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind, DamlVisitableElement,
 };
 use crate::owned::ToStatic;
 use serde::Serialize;
@@ -110,11 +109,23 @@ impl ToStatic for DamlExpr<'_> {
     }
 }
 
+/// DOCME
 #[derive(Debug, Serialize, Clone)]
 pub enum DamlValueName<'a> {
-    Local(DamlLocalTyCon<'a>),
-    NonLocal(DamlNonLocalTyCon<'a>),
-    Absolute(DamlAbsoluteTyCon<'a>),
+    Local(DamlLocalValueName<'a>),
+    NonLocal(DamlNonLocalValueName<'a>),
+}
+
+impl DamlValueName<'_> {
+    /// Extract the package id, module path and name.
+    #[doc(hidden)]
+    pub(crate) fn reference_parts(&self) -> (&str, &[Cow<'_, str>], &str) {
+        match self {
+            DamlValueName::Local(local) => (&local.package_id, &local.module_path, &local.name),
+            DamlValueName::NonLocal(non_local) =>
+                (&non_local.target_package_id, &non_local.target_module_path, &non_local.name),
+        }
+    }
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlValueName<'a> {
@@ -123,7 +134,6 @@ impl<'a> DamlVisitableElement<'a> for DamlValueName<'a> {
         match self {
             DamlValueName::Local(local) => local.accept(visitor),
             DamlValueName::NonLocal(non_local) => non_local.accept(visitor),
-            DamlValueName::Absolute(absolute) => absolute.accept(visitor),
         }
         visitor.post_visit_value_name(self);
     }
@@ -136,8 +146,153 @@ impl ToStatic for DamlValueName<'_> {
         match self {
             DamlValueName::Local(local) => DamlValueName::Local(local.to_static()),
             DamlValueName::NonLocal(non_local) => DamlValueName::NonLocal(non_local.to_static()),
-            DamlValueName::Absolute(absolute) => DamlValueName::Absolute(absolute.to_static()),
         }
+    }
+}
+
+/// DOCME
+#[derive(Debug, Serialize, Clone)]
+pub struct DamlLocalValueName<'a> {
+    pub name: Cow<'a, str>,
+    pub package_id: Cow<'a, str>,
+    pub package_name: Cow<'a, str>,
+    pub module_path: Vec<Cow<'a, str>>,
+}
+
+impl<'a> DamlLocalValueName<'a> {
+    pub fn new(
+        name: Cow<'a, str>,
+        package_id: Cow<'a, str>,
+        package_name: Cow<'a, str>,
+        module_path: Vec<Cow<'a, str>>,
+    ) -> Self {
+        Self {
+            name,
+            package_id,
+            package_name,
+            module_path,
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn package_id(&self) -> &str {
+        &self.package_id
+    }
+
+    pub fn package_name(&self) -> &str {
+        &self.package_name
+    }
+
+    pub fn module_path(&self) -> impl Iterator<Item = &str> {
+        self.module_path.iter().map(AsRef::as_ref)
+    }
+}
+
+impl<'a> DamlVisitableElement<'a> for DamlLocalValueName<'a> {
+    fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
+        visitor.pre_visit_local_value_name(self);
+        visitor.post_visit_local_value_name(self);
+    }
+}
+
+impl ToStatic for DamlLocalValueName<'_> {
+    type Static = DamlLocalValueName<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlLocalValueName::new(
+            self.name.to_static(),
+            self.package_id.to_static(),
+            self.package_name.to_static(),
+            self.module_path.iter().map(ToStatic::to_static).collect(),
+        )
+    }
+}
+
+/// DOCME
+#[derive(Debug, Serialize, Clone)]
+pub struct DamlNonLocalValueName<'a> {
+    name: Cow<'a, str>,
+    source_package_id: Cow<'a, str>,
+    source_package_name: Cow<'a, str>,
+    source_module_path: Vec<Cow<'a, str>>,
+    target_package_id: Cow<'a, str>,
+    target_package_name: Cow<'a, str>,
+    target_module_path: Vec<Cow<'a, str>>,
+}
+
+impl<'a> DamlNonLocalValueName<'a> {
+    pub fn new(
+        name: Cow<'a, str>,
+        source_package_id: Cow<'a, str>,
+        source_package_name: Cow<'a, str>,
+        source_module_path: Vec<Cow<'a, str>>,
+        target_package_id: Cow<'a, str>,
+        target_package_name: Cow<'a, str>,
+        target_module_path: Vec<Cow<'a, str>>,
+    ) -> Self {
+        Self {
+            name,
+            source_package_id,
+            source_package_name,
+            source_module_path,
+            target_package_id,
+            target_package_name,
+            target_module_path,
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn source_package_id(&self) -> &str {
+        &self.source_package_id
+    }
+
+    pub fn source_package_name(&self) -> &str {
+        &self.source_package_name
+    }
+
+    pub fn source_module_path(&self) -> impl Iterator<Item = &str> {
+        self.source_module_path.iter().map(AsRef::as_ref)
+    }
+
+    pub fn target_package_id(&self) -> &str {
+        &self.target_package_id
+    }
+
+    pub fn target_package_name(&self) -> &str {
+        &self.target_package_name
+    }
+
+    pub fn target_module_path(&self) -> impl Iterator<Item = &str> {
+        self.target_module_path.iter().map(AsRef::as_ref)
+    }
+}
+
+impl<'a> DamlVisitableElement<'a> for DamlNonLocalValueName<'a> {
+    fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
+        visitor.pre_visit_non_local_value_name(self);
+        visitor.post_visit_non_local_value_name(self);
+    }
+}
+
+impl ToStatic for DamlNonLocalValueName<'_> {
+    type Static = DamlNonLocalValueName<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlNonLocalValueName::new(
+            self.name.to_static(),
+            self.source_package_id.to_static(),
+            self.source_package_name.to_static(),
+            self.source_module_path.iter().map(ToStatic::to_static).collect(),
+            self.target_package_id.to_static(),
+            self.target_package_name.to_static(),
+            self.target_module_path.iter().map(ToStatic::to_static).collect(),
+        )
     }
 }
 

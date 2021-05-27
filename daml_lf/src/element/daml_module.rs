@@ -23,7 +23,7 @@ pub struct DamlModule<'a> {
     #[serde(serialize_with = "serialize::serialize_map")]
     data_types: HashMap<Cow<'a, str>, DamlData<'a>>,
     #[cfg(feature = "full")]
-    values: Vec<DamlDefValue<'a>>,
+    values: HashMap<Cow<'a, str>, DamlDefValue<'a>>,
 }
 
 impl<'a> DamlModule<'a> {
@@ -38,7 +38,7 @@ impl<'a> DamlModule<'a> {
         flags: DamlFeatureFlags,
         synonyms: Vec<DamlDefTypeSyn<'a>>,
         data_types: HashMap<Cow<'a, str>, DamlData<'a>>,
-        #[cfg(feature = "full")] values: Vec<DamlDefValue<'a>>,
+        #[cfg(feature = "full")] values: HashMap<Cow<'a, str>, DamlDefValue<'a>>,
     ) -> Self {
         Self {
             path,
@@ -78,8 +78,8 @@ impl<'a> DamlModule<'a> {
 
     /// The `DamlDefValue` declared in the module.
     #[cfg(feature = "full")]
-    pub fn values(&self) -> &[DamlDefValue<'a>] {
-        &self.values
+    pub fn values(&self) -> impl Iterator<Item = &DamlDefValue<'a>> {
+        self.values.values()
     }
 
     /// Returns `true` if this is a root module, `false` otherwise.
@@ -114,8 +114,14 @@ impl<'a> DamlModule<'a> {
     }
 
     /// Retrieve a [`DamlData`] by name or `None` if no such data type exists.
-    pub fn data_type<S: AsRef<str>>(&self, data: S) -> Option<&DamlData<'a>> {
-        self.data_types.get(data.as_ref())
+    pub fn data_type<S: AsRef<str>>(&self, name: S) -> Option<&DamlData<'a>> {
+        self.data_types.get(name.as_ref())
+    }
+
+    /// Retrieve a [`DamlDefValue`] by name or `None` if no such value exists.
+    #[cfg(feature = "full")]
+    pub fn value<S: AsRef<str>>(&self, name: S) -> Option<&DamlDefValue<'a>> {
+        self.values.get(name.as_ref())
     }
 
     /// Retrieve or create a child [`DamlModule`] with `name`.
@@ -152,7 +158,7 @@ impl<'a> DamlModule<'a> {
             child_modules: HashMap::default(),
             data_types: HashMap::default(),
             #[cfg(feature = "full")]
-            values: Vec::default(),
+            values: HashMap::default(),
         }
     }
 }
@@ -169,7 +175,7 @@ impl<'a> DamlVisitableElement<'a> for DamlModule<'a> {
             self.child_modules.values().for_each(|module| module.accept(visitor));
         }
         #[cfg(feature = "full")]
-        self.values.iter().for_each(|value| value.accept(visitor));
+        self.values.values().for_each(|value| value.accept(visitor));
         visitor.post_visit_module(self);
     }
 }
@@ -185,7 +191,7 @@ impl ToStatic for DamlModule<'_> {
             child_modules: self.child_modules.iter().map(|(k, v)| (k.to_static(), DamlModule::to_static(v))).collect(),
             data_types: self.data_types.iter().map(|(k, v)| (k.to_static(), DamlData::to_static(v))).collect(),
             #[cfg(feature = "full")]
-            values: self.values.iter().map(DamlDefValue::to_static).collect(),
+            values: self.values.iter().map(|(k, v)| (k.to_static(), DamlDefValue::to_static(v))).collect(),
         }
     }
 }

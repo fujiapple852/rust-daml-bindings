@@ -1,6 +1,8 @@
 use crate::element::daml_package::DamlPackage;
 use crate::element::visitor::{DamlElementVisitor, DamlVisitableElement};
 use crate::element::{serialize, DamlData, DamlTyCon};
+#[cfg(feature = "full")]
+use crate::element::{DamlDefValue, DamlValueName};
 use crate::owned::ToStatic;
 use itertools::Itertools;
 use serde::Serialize;
@@ -78,6 +80,29 @@ impl<'a> DamlArchive<'a> {
             .root_module()
             .child_module_path(module_path)?
             .data_type(data_name.as_ref())
+    }
+
+    /// Retrieve a `DamlDefValue` for a given `DamlValueName` or `None` if no such value exists in this `DamlArchive`.
+    ///
+    /// DOCME
+    #[cfg(feature = "full")]
+    pub fn value_by_name<'b>(&'a self, name: &'b DamlValueName<'_>) -> Option<&'a DamlDefValue<'a>> {
+        let (package_id, module_path, name) = name.reference_parts();
+        self.value(package_id, module_path, name)
+    }
+
+    /// Retrieve a `DamlDefValue` for the supplied package id, module path & name or `None` if no such value exists in
+    /// this `DamlArchive`.
+    ///
+    /// DOCME
+    #[cfg(feature = "full")]
+    pub fn value<P, M, D>(&'a self, package_id: P, module_path: &[M], name: D) -> Option<&'a DamlDefValue<'a>>
+    where
+        P: AsRef<str>,
+        M: AsRef<str>,
+        D: AsRef<str>,
+    {
+        self.packages.get(package_id.as_ref())?.root_module().child_module_path(module_path)?.value(name.as_ref())
     }
 }
 

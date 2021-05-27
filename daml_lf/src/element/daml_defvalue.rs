@@ -6,7 +6,7 @@ use std::borrow::Cow;
 
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlDefValue<'a> {
-    pub name: Vec<Cow<'a, str>>,
+    pub name: Cow<'a, str>,
     pub ty: DamlType<'a>,
     pub expr: DamlExpr<'a>,
     pub no_party_literals: bool,
@@ -15,7 +15,7 @@ pub struct DamlDefValue<'a> {
 
 impl<'a> DamlDefValue<'a> {
     pub const fn new(
-        name: Vec<Cow<'a, str>>,
+        name: Cow<'a, str>,
         ty: DamlType<'a>,
         expr: DamlExpr<'a>,
         no_party_literals: bool,
@@ -30,8 +30,17 @@ impl<'a> DamlDefValue<'a> {
         }
     }
 
-    pub fn name(&self) -> impl Iterator<Item = &str> {
-        self.name.iter().map(AsRef::as_ref)
+    /// The name of this value.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// The name of this value.
+    ///
+    /// This is a clone of a `Cow<str>` which is cheap for the borrowed case used within the library.
+    #[doc(hidden)]
+    pub fn name_clone(&self) -> Cow<'a, str> {
+        self.name.clone()
     }
 
     pub const fn ty(&self) -> &DamlType<'a> {
@@ -65,7 +74,7 @@ impl ToStatic for DamlDefValue<'_> {
 
     fn to_static(&self) -> Self::Static {
         DamlDefValue::new(
-            self.name.iter().map(ToStatic::to_static).collect(),
+            self.name.to_static(),
             self.ty.to_static(),
             self.expr.to_static(),
             self.no_party_literals,

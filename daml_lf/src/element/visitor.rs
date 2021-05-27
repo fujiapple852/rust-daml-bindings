@@ -5,9 +5,9 @@ use crate::element::{
     DamlAbs, DamlApp, DamlBinding, DamlBlock, DamlBuiltinFunction, DamlCase, DamlCaseAlt, DamlCaseAltCons,
     DamlCaseAltEnum, DamlCaseAltOptionalSome, DamlCaseAltSum, DamlCaseAltVariant, DamlCommit, DamlCons, DamlCreate,
     DamlDefValue, DamlEnumCon, DamlExercise, DamlExerciseByKey, DamlExpr, DamlFetch, DamlFieldWithExpr, DamlFromAny,
-    DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon, DamlRecProj, DamlRecUpd, DamlRetrieveByKey,
-    DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj, DamlStructUpd, DamlToAny, DamlTyAbs, DamlTyApp, DamlUpdate,
-    DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
+    DamlLocalValueName, DamlNonLocalValueName, DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon,
+    DamlRecProj, DamlRecUpd, DamlRetrieveByKey, DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj, DamlStructUpd,
+    DamlToAny, DamlTyAbs, DamlTyApp, DamlUpdate, DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon,
 };
 use crate::element::{
     DamlAbsoluteTyCon, DamlArchive, DamlArrow, DamlChoice, DamlData, DamlDefKey, DamlDefTypeSyn, DamlEnum, DamlField,
@@ -85,6 +85,14 @@ pub trait DamlElementVisitor {
     fn post_visit_expr<'a>(&mut self, expr: &'a DamlExpr<'a>) {}
     #[cfg(feature = "full")]
     fn pre_visit_value_name<'a>(&mut self, value_name: &'a DamlValueName<'a>) {}
+    #[cfg(feature = "full")]
+    fn pre_visit_local_value_name<'a>(&mut self, local_value_name: &'a DamlLocalValueName<'a>) {}
+    #[cfg(feature = "full")]
+    fn post_visit_local_value_name<'a>(&mut self, local_value_name: &'a DamlLocalValueName<'a>) {}
+    #[cfg(feature = "full")]
+    fn pre_visit_non_local_value_name<'a>(&mut self, non_local_value_name: &'a DamlNonLocalValueName<'a>) {}
+    #[cfg(feature = "full")]
+    fn post_visit_non_local_value_name<'a>(&mut self, non_local_value_name: &'a DamlNonLocalValueName<'a>) {}
     #[cfg(feature = "full")]
     fn post_visit_value_name<'a>(&mut self, value_name: &'a DamlValueName<'a>) {}
     #[cfg(feature = "full")]

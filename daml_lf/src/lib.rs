@@ -43,6 +43,7 @@ pub use archive::{DamlLfArchive, DamlLfHashFunction, DEFAULT_ARCHIVE_NAME};
 pub use dar::DarFile;
 pub use error::{DamlLfError, DamlLfResult};
 pub use manifest::{DarEncryptionType, DarManifest, DarManifestFormat, DarManifestVersion};
+pub use owned::ToStatic;
 pub use package_info::PackageInfo;
 pub use payload::{DamlLfArchivePayload, DamlLfPackage};
 pub use version::{LanguageFeatureVersion, LanguageV1MinorVersion, LanguageVersion};
