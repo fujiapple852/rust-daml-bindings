@@ -568,7 +568,8 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///           "type": "..."
     ///         }
     ///       },
-    ///       "additionalProperties": false
+    ///       "additionalProperties": false,
+    ///       "required": [ "tag", "value" ]
     ///     },
     ///     {
     ///       "title": "Variant ...",
@@ -584,7 +585,8 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///           "type": "..."
     ///         }
     ///       },
-    ///       "additionalProperties": false
+    ///       "additionalProperties": false,
+    ///       "required": [ "tag", "value" ]
     ///     }
     ///   ]
     /// }
@@ -763,6 +765,7 @@ impl<'a> JsonSchemaEncoder<'a> {
                  "value": self.do_encode(daml_field.ty(), true, type_params, type_args)?
                }
             ),
+            required: vec!["tag", "value"],
             additional_properties: false,
         })?)
     }
@@ -1404,184 +1407,204 @@ mod tests {
         let expected = json!(
                 {
                   "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "title": "Variant (Color)",
                   "oneOf": [
                     {
-                      "additionalProperties": false,
+                      "type": "object",
+                      "title": "Variant (Color, tag=Red)",
                       "properties": {
                         "tag": {
+                          "type": "string",
                           "enum": [
                             "Red"
-                          ],
-                          "type": "string"
+                          ]
                         },
                         "value": {
-                          "additionalProperties": false,
                           "title": "Unit",
-                          "type": "object"
+                          "type": "object",
+                          "additionalProperties": false
                         }
                       },
-                      "title": "Variant (Color, tag=Red)",
-                      "type": "object"
+                      "additionalProperties": false,
+                      "required": [
+                        "tag",
+                        "value"
+                      ]
                     },
                     {
-                      "additionalProperties": false,
+                      "type": "object",
+                      "title": "Variant (Color, tag=Green)",
                       "properties": {
                         "tag": {
+                          "type": "string",
                           "enum": [
                             "Green"
-                          ],
-                          "type": "string"
+                          ]
                         },
                         "value": {
-                          "additionalProperties": false,
                           "title": "Unit",
-                          "type": "object"
+                          "type": "object",
+                          "additionalProperties": false
                         }
                       },
-                      "title": "Variant (Color, tag=Green)",
-                      "type": "object"
+                      "additionalProperties": false,
+                      "required": [
+                        "tag",
+                        "value"
+                      ]
                     },
                     {
-                      "additionalProperties": false,
+                      "type": "object",
+                      "title": "Variant (Color, tag=Blue)",
                       "properties": {
                         "tag": {
+                          "type": "string",
                           "enum": [
                             "Blue"
-                          ],
-                          "type": "string"
+                          ]
                         },
                         "value": {
-                          "additionalProperties": false,
                           "title": "Unit",
-                          "type": "object"
+                          "type": "object",
+                          "additionalProperties": false
                         }
                       },
-                      "title": "Variant (Color, tag=Blue)",
-                      "type": "object"
+                      "additionalProperties": false,
+                      "required": [
+                        "tag",
+                        "value"
+                      ]
                     },
                     {
-                      "additionalProperties": false,
+                      "type": "object",
+                      "title": "Variant (Color, tag=Custom)",
                       "properties": {
                         "tag": {
+                          "type": "string",
                           "enum": [
                             "Custom"
-                          ],
-                          "type": "string"
+                          ]
                         },
                         "value": {
+                          "title": "List",
+                          "type": "array",
                           "items": {
+                            "title": "Int64",
                             "type": [
                               "integer",
                               "string"
-                            ],
-                            "title": "Int64"
-                          },
-                          "title": "List",
-                          "type": "array"
+                            ]
+                          }
                         }
                       },
-                      "title": "Variant (Color, tag=Custom)",
-                      "type": "object"
+                      "additionalProperties": false,
+                      "required": [
+                        "tag",
+                        "value"
+                      ]
                     },
                     {
-                      "additionalProperties": false,
+                      "type": "object",
+                      "title": "Variant (Color, tag=Other)",
                       "properties": {
                         "tag": {
+                          "type": "string",
                           "enum": [
                             "Other"
-                          ],
-                          "type": "string"
+                          ]
                         },
                         "value": {
                           "$schema": "https://json-schema.org/draft/2020-12/schema",
+                          "title": "Record (RGBA)",
                           "oneOf": [
                             {
-                              "additionalProperties": false,
+                              "type": "object",
+                              "title": "Record (RGBA)",
                               "properties": {
                                 "alpha": {
+                                  "title": "Int64",
                                   "type": [
                                     "integer",
                                     "string"
-                                  ],
-                                  "title": "Int64"
+                                  ]
                                 },
                                 "b": {
+                                  "title": "Int64",
                                   "type": [
                                     "integer",
                                     "string"
-                                  ],
-                                  "title": "Int64"
+                                  ]
                                 },
                                 "g": {
+                                  "title": "Int64",
                                   "type": [
                                     "integer",
                                     "string"
-                                  ],
-                                  "title": "Int64"
+                                  ]
                                 },
                                 "r": {
+                                  "title": "Int64",
                                   "type": [
                                     "integer",
                                     "string"
-                                  ],
-                                  "title": "Int64"
+                                  ]
                                 }
                               },
+                              "additionalProperties": false,
                               "required": [
                                 "r",
                                 "g",
                                 "b",
                                 "alpha"
-                              ],
-                              "title": "Record (RGBA)",
-                              "type": "object"
+                              ]
                             },
                             {
-                              "additionalItems": false,
+                              "type": "array",
+                              "title": "Record (RGBA, fields = [r, g, b, alpha])",
                               "items": [
                                 {
+                                  "title": "Int64",
                                   "type": [
                                     "integer",
                                     "string"
-                                  ],
-                                  "title": "Int64"
+                                  ]
                                 },
                                 {
+                                  "title": "Int64",
                                   "type": [
                                     "integer",
                                     "string"
-                                  ],
-                                  "title": "Int64"
+                                  ]
                                 },
                                 {
+                                  "title": "Int64",
                                   "type": [
                                     "integer",
                                     "string"
-                                  ],
-                                  "title": "Int64"
+                                  ]
                                 },
                                 {
+                                  "title": "Int64",
                                   "type": [
                                     "integer",
                                     "string"
-                                  ],
-                                  "title": "Int64"
+                                  ]
                                 }
                               ],
-                              "maxItems": 4,
                               "minItems": 4,
-                              "title": "Record (RGBA, fields = [r, g, b, alpha])",
-                              "type": "array"
+                              "maxItems": 4,
+                              "additionalItems": false
                             }
-                          ],
-                          "title": "Record (RGBA)"
+                          ]
                         }
                       },
-                      "title": "Variant (Color, tag=Other)",
-                      "type": "object"
+                      "additionalProperties": false,
+                      "required": [
+                        "tag",
+                        "value"
+                      ]
                     }
-                  ],
-                  "title": "Variant (Color)"
+                  ]
                 }
         );
         let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
@@ -2063,6 +2086,62 @@ mod tests {
     #[test]
     fn test_validate_genmap_of_int64_to_text_invalid() -> Result<()> {
         validate_schema_no_match(&DamlType::GenMap(vec![DamlType::Int64, DamlType::Text]), &json!(123))
+    }
+
+    #[test]
+    fn test_validate_variant() -> Result<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "AllVariantTypes");
+        let instance = json!(
+            {
+              "tag": "TupleStructListOfPrimitive", "value": [1, 2, 3]
+            }
+        );
+        validate_schema_for_arc_match(arc, &ty, &instance)
+    }
+
+    #[test]
+    fn test_validate_variant_unit_value() -> Result<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "AllVariantTypes");
+        let instance = json!(
+            {
+              "tag": "NoArgument", "value": {}
+            }
+        );
+        validate_schema_for_arc_match(arc, &ty, &instance)
+    }
+
+    #[test]
+    fn test_validate_variant_unknown_tag() -> Result<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "AllVariantTypes");
+        let instance = json!(
+            {
+              "tag": "UnknownTag", "value": {}
+            }
+        );
+        validate_schema_for_arc_no_match(arc, &ty, &instance)
+    }
+
+    #[test]
+    fn test_validate_variant_no_tag_or_value() -> Result<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "AllVariantTypes");
+        let instance = json!({});
+        validate_schema_for_arc_no_match(arc, &ty, &instance)
+    }
+
+    #[test]
+    fn test_validate_variant_no_value() -> Result<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "AllVariantTypes");
+        let instance = json!(
+            {
+              "tag": "NoArgument"
+            }
+        );
+        validate_schema_for_arc_no_match(arc, &ty, &instance)
     }
 
     #[test]

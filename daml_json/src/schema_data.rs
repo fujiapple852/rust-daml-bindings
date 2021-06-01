@@ -253,6 +253,7 @@ pub struct DamlJsonSchemaVariantArm<'a> {
     pub properties: Value,
     #[serde(rename = "additionalProperties")]
     pub additional_properties: bool,
+    pub required: Vec<&'a str>,
 }
 
 #[derive(Debug, Serialize)]
