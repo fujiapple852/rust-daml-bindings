@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "title": "Int64"
+        },
+        "name": {
+          "type": "string",
+          "title": "Text"
+        }
+      },
+      "required": [
+        "name",
+        "age"
+      ],
+      "title": "Record (Person)",
+      "type": "object"
+    },
+    {
+      "additionalItems": false,
+      "items": [
+        {
+          "type": "string",
+          "title": "Text"
+        },
+        {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "title": "Int64"
+        }
+      ],
+      "maxItems": 2,
+      "minItems": 2,
+      "title": "Record (Person, fields = [name, age])",
+      "type": "array"
+    }
+  ],
+  "title": "Record (Person)"
+}

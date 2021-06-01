@@ -1,0 +1,15 @@
+{
+  "oneOf": [
+    {
+      "type": "null"
+    },
+    {
+      "type": [
+        "integer",
+        "string"
+      ],
+      "title": "Int64"
+    }
+  ],
+  "title": "Optional"
+}

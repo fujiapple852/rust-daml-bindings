@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "foo": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "oneOf": [
+                {
+                  "maxItems": 0,
+                  "minItems": 0,
+                  "type": "array"
+                },
+                {
+                  "items": {
+                    "type": [
+                      "integer",
+                      "string"
+                    ],
+                    "title": "Int64"
+                  },
+                  "maxItems": 1,
+                  "minItems": 1,
+                  "type": "array"
+                }
+              ],
+              "title": "Optional (depth > 1)"
+            }
+          ],
+          "title": "Optional"
+        }
+      },
+      "required": [],
+      "title": "Record (Depth2)",
+      "type": "object"
+    },
+    {
+      "additionalItems": false,
+      "items": [
+        {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "oneOf": [
+                {
+                  "maxItems": 0,
+                  "minItems": 0,
+                  "type": "array"
+                },
+                {
+                  "items": {
+                    "type": [
+                      "integer",
+                      "string"
+                    ],
+                    "title": "Int64"
+                  },
+                  "maxItems": 1,
+                  "minItems": 1,
+                  "type": "array"
+                }
+              ],
+              "title": "Optional (depth > 1)"
+            }
+          ],
+          "title": "Optional"
+        }
+      ],
+      "maxItems": 1,
+      "minItems": 1,
+      "title": "Record (Depth2, fields = [foo])",
+      "type": "array"
+    }
+  ],
+  "title": "Record (Depth2)"
+}

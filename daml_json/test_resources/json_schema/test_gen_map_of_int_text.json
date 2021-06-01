@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "foo": {
+          "items": {
+            "additionalItems": false,
+            "items": [
+              {
+                "type": [
+                  "integer",
+                  "string"
+                ],
+                "title": "Int64"
+              },
+              {
+                "type": "string",
+                "title": "Text"
+              }
+            ],
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "title": "GenMap",
+          "type": "array"
+        }
+      },
+      "required": [
+        "foo"
+      ],
+      "title": "Record (Foo)",
+      "type": "object"
+    },
+    {
+      "additionalItems": false,
+      "items": [
+        {
+          "items": {
+            "additionalItems": false,
+            "items": [
+              {
+                "type": [
+                  "integer",
+                  "string"
+                ],
+                "title": "Int64"
+              },
+              {
+                "type": "string",
+                "title": "Text"
+              }
+            ],
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "title": "GenMap",
+          "type": "array"
+        }
+      ],
+      "maxItems": 1,
+      "minItems": 1,
+      "title": "Record (Foo, fields = [foo])",
+      "type": "array"
+    }
+  ],
+  "title": "Record (Foo)"
+}

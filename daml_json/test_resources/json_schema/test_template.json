@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "title": "Int64"
+        },
+        "receiver": {
+          "type": "string",
+          "title": "Party"
+        },
+        "sender": {
+          "type": "string",
+          "title": "Party"
+        }
+      },
+      "required": [
+        "sender",
+        "receiver",
+        "count"
+      ],
+      "title": "Record (Ping)",
+      "type": "object"
+    },
+    {
+      "additionalItems": false,
+      "items": [
+        {
+          "type": "string",
+          "title": "Party"
+        },
+        {
+          "type": "string",
+          "title": "Party"
+        },
+        {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "title": "Int64"
+        }
+      ],
+      "maxItems": 3,
+      "minItems": 3,
+      "title": "Record (Ping, fields = [sender, receiver, count])",
+      "type": "array"
+    }
+  ],
+  "title": "Record (Ping)"
+}

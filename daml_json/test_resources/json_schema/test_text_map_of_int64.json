@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "bar": {
+          "additionalProperties": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "title": "Int64"
+          },
+          "title": "TextMap",
+          "type": "object"
+        }
+      },
+      "required": [
+        "bar"
+      ],
+      "title": "Record (Bar)",
+      "type": "object"
+    },
+    {
+      "additionalItems": false,
+      "items": [
+        {
+          "additionalProperties": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "title": "Int64"
+          },
+          "title": "TextMap",
+          "type": "object"
+        }
+      ],
+      "maxItems": 1,
+      "minItems": 1,
+      "title": "Record (Bar, fields = [bar])",
+      "type": "array"
+    }
+  ],
+  "title": "Record (Bar)"
+}

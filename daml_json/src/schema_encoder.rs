@@ -840,10 +840,17 @@ mod tests {
     static TESTING_TYPES_DAR_PATH: &str =
         "../resources/testing_types_sandbox/archive/TestingTypes-1_2_0-sdk_1_13_0-lf_1_12.dar";
 
+    #[macro_export]
+    macro_rules! get_expected {
+        ($name : literal) => {
+            serde_json::from_str::<Value>(include_str!(concat!("../test_resources/json_schema/", $name)))
+        };
+    }
+
     #[test]
     fn test_unit() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Unit;
-        let expected = json!({"type": "object", "title": "Unit", "additionalProperties": false});
+        let expected = get_expected!("test_unit.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
@@ -852,7 +859,7 @@ mod tests {
     #[test]
     fn test_text() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Text;
-        let expected = json!({"type": "string", "title": "Text"});
+        let expected = get_expected!("test_text.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
@@ -861,7 +868,7 @@ mod tests {
     #[test]
     fn test_party() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Party;
-        let expected = json!({"type": "string", "title": "Party"});
+        let expected = get_expected!("test_party.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
@@ -870,7 +877,7 @@ mod tests {
     #[test]
     fn test_int64() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Int64;
-        let expected = json!({"type": ["integer", "string"], "title": "Int64"});
+        let expected = get_expected!("test_int64.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
@@ -879,7 +886,7 @@ mod tests {
     #[test]
     fn test_numeric() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Numeric(Box::new(DamlType::Nat(18)));
-        let expected = json!({"type": ["number", "string"], "title": "Decimal"});
+        let expected = get_expected!("test_numeric.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
@@ -888,7 +895,7 @@ mod tests {
     #[test]
     fn test_bool() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Bool;
-        let expected = json!({"type": "boolean", "title": "Bool"});
+        let expected = get_expected!("test_bool.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
@@ -897,7 +904,7 @@ mod tests {
     #[test]
     fn test_contract_id() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::ContractId(None);
-        let expected = json!({"type": "string", "title": "ContractId"});
+        let expected = get_expected!("test_contract_id.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
@@ -906,7 +913,7 @@ mod tests {
     #[test]
     fn test_timestamp() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Timestamp;
-        let expected = json!({"type": "string", "title": "Timestamp"});
+        let expected = get_expected!("test_timestamp.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
@@ -915,7 +922,7 @@ mod tests {
     #[test]
     fn test_date() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Date;
-        let expected = json!({"type": "string", "title": "Date"});
+        let expected = get_expected!("test_date.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
@@ -925,23 +932,7 @@ mod tests {
     #[test]
     fn test_optional_int64() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Optional(vec![DamlType::Int64]);
-        let expected = json!(
-            {
-              "oneOf": [
-                {
-                  "type": "null"
-                },
-                {
-                  "type": [
-                    "integer",
-                    "string"
-                  ],
-                  "title": "Int64"
-                }
-              ],
-              "title": "Optional"
-            }
-        );
+        let expected = get_expected!("test_optional_int64.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
@@ -951,38 +942,7 @@ mod tests {
     #[test]
     fn test_optional_optional_int64() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Optional(vec![DamlType::Optional(vec![DamlType::Int64])]);
-        let expected = json!(
-                {
-                  "oneOf": [
-                    {
-                      "type": "null"
-                    },
-                    {
-                      "oneOf": [
-                        {
-                          "maxItems": 0,
-                          "minItems": 0,
-                          "type": "array"
-                        },
-                        {
-                          "items": {
-                            "type": [
-                              "integer",
-                              "string"
-                            ],
-                            "title": "Int64"
-                          },
-                          "maxItems": 1,
-                          "minItems": 1,
-                          "type": "array"
-                        }
-                      ],
-                      "title": "Optional (depth > 1)"
-                    }
-                  ],
-                  "title": "Optional"
-                }
-        );
+        let expected = get_expected!("test_optional_optional_int64.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
@@ -992,53 +952,7 @@ mod tests {
     #[test]
     fn test_optional_optional_optional_int64() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Optional(vec![DamlType::Optional(vec![DamlType::Optional(vec![DamlType::Int64])])]);
-        let expected = json!(
-                {
-                  "oneOf": [
-                    {
-                      "type": "null"
-                    },
-                    {
-                      "oneOf": [
-                        {
-                          "maxItems": 0,
-                          "minItems": 0,
-                          "type": "array"
-                        },
-                        {
-                          "items": {
-                            "oneOf": [
-                              {
-                                "maxItems": 0,
-                                "minItems": 0,
-                                "type": "array"
-                              },
-                              {
-                                "items": {
-                                  "type": [
-                                    "integer",
-                                    "string"
-                                  ],
-                                  "title": "Int64"
-                                },
-                                "maxItems": 1,
-                                "minItems": 1,
-                                "type": "array"
-                              }
-                            ],
-                            "title": "Optional (depth > 1)"
-                          },
-                          "maxItems": 1,
-                          "minItems": 1,
-                          "type": "array"
-                        }
-                      ],
-                      "title": "Optional (depth > 1)"
-                    }
-                  ],
-                  "title": "Optional"
-                }
-        );
+        let expected = get_expected!("test_optional_optional_optional_int64.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
         assert_eq!(actual, expected);
         Ok(())
@@ -1048,64 +962,7 @@ mod tests {
     fn test_list_of_text() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "RecordArgument");
-        let expected = json!(
-                {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "oneOf": [
-                    {
-                      "additionalProperties": false,
-                      "properties": {
-                        "field_aaa": {
-                          "type": [
-                            "integer",
-                            "string"
-                          ],
-                          "title": "Int64"
-                        },
-                        "field_bbb": {
-                          "items": {
-                            "type": "string",
-                            "title": "Text"
-                          },
-                          "title": "List",
-                          "type": "array"
-                        }
-                      },
-                      "required": [
-                        "field_aaa",
-                        "field_bbb"
-                      ],
-                      "title": "Record (RecordArgument)",
-                      "type": "object"
-                    },
-                    {
-                      "additionalItems": false,
-                      "items": [
-                        {
-                          "type": [
-                            "integer",
-                            "string"
-                          ],
-                          "title": "Int64"
-                        },
-                        {
-                          "items": {
-                            "type": "string",
-                            "title": "Text"
-                          },
-                          "title": "List",
-                          "type": "array"
-                        }
-                      ],
-                      "maxItems": 2,
-                      "minItems": 2,
-                      "title": "Record (RecordArgument, fields = [field_aaa, field_bbb])",
-                      "type": "array"
-                    }
-                  ],
-                  "title": "Record (RecordArgument)"
-                }
-        );
+        let expected = get_expected!("test_list_of_text.json")?;
         let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1115,55 +972,7 @@ mod tests {
     fn test_text_map_of_int64() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "MapTest"], "Bar");
-        let expected = json!(
-                {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "oneOf": [
-                    {
-                      "additionalProperties": false,
-                      "properties": {
-                        "bar": {
-                          "additionalProperties": {
-                            "type": [
-                              "integer",
-                              "string"
-                            ],
-                            "title": "Int64"
-                          },
-                          "title": "TextMap",
-                          "type": "object"
-                        }
-                      },
-                      "required": [
-                        "bar"
-                      ],
-                      "title": "Record (Bar)",
-                      "type": "object"
-                    },
-                    {
-                      "additionalItems": false,
-                      "items": [
-                        {
-                          "additionalProperties": {
-                            "type": [
-                              "integer",
-                              "string"
-                            ],
-                            "title": "Int64"
-                          },
-                          "title": "TextMap",
-                          "type": "object"
-                        }
-                      ],
-                      "maxItems": 1,
-                      "minItems": 1,
-                      "title": "Record (Bar, fields = [bar])",
-                      "type": "array"
-                    }
-                  ],
-                  "title": "Record (Bar)"
-                }
-        );
+        let expected = get_expected!("test_text_map_of_int64.json")?;
         let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1173,79 +982,7 @@ mod tests {
     fn test_gen_map_of_int_text() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "MapTest"], "Foo");
-        let expected = json!(
-                {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "oneOf": [
-                    {
-                      "additionalProperties": false,
-                      "properties": {
-                        "foo": {
-                          "items": {
-                            "additionalItems": false,
-                            "items": [
-                              {
-                                "type": [
-                                  "integer",
-                                  "string"
-                                ],
-                                "title": "Int64"
-                              },
-                              {
-                                "type": "string",
-                                "title": "Text"
-                              }
-                            ],
-                            "maxItems": 2,
-                            "minItems": 2,
-                            "type": "array"
-                          },
-                          "title": "GenMap",
-                          "type": "array"
-                        }
-                      },
-                      "required": [
-                        "foo"
-                      ],
-                      "title": "Record (Foo)",
-                      "type": "object"
-                    },
-                    {
-                      "additionalItems": false,
-                      "items": [
-                        {
-                          "items": {
-                            "additionalItems": false,
-                            "items": [
-                              {
-                                "type": [
-                                  "integer",
-                                  "string"
-                                ],
-                                "title": "Int64"
-                              },
-                              {
-                                "type": "string",
-                                "title": "Text"
-                              }
-                            ],
-                            "maxItems": 2,
-                            "minItems": 2,
-                            "type": "array"
-                          },
-                          "title": "GenMap",
-                          "type": "array"
-                        }
-                      ],
-                      "maxItems": 1,
-                      "minItems": 1,
-                      "title": "Record (Foo, fields = [foo])",
-                      "type": "array"
-                    }
-                  ],
-                  "title": "Record (Foo)"
-                }
-        );
+        let expected = get_expected!("test_gen_map_of_int_text.json")?;
         let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1255,56 +992,7 @@ mod tests {
     fn test_record() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Person");
-        let expected = json!(
-                {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "oneOf": [
-                    {
-                      "additionalProperties": false,
-                      "properties": {
-                        "age": {
-                          "type": [
-                            "integer",
-                            "string"
-                          ],
-                          "title": "Int64"
-                        },
-                        "name": {
-                          "type": "string",
-                          "title": "Text"
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "age"
-                      ],
-                      "title": "Record (Person)",
-                      "type": "object"
-                    },
-                    {
-                      "additionalItems": false,
-                      "items": [
-                        {
-                          "type": "string",
-                          "title": "Text"
-                        },
-                        {
-                          "type": [
-                            "integer",
-                            "string"
-                          ],
-                          "title": "Int64"
-                        }
-                      ],
-                      "maxItems": 2,
-                      "minItems": 2,
-                      "title": "Record (Person, fields = [name, age])",
-                      "type": "array"
-                    }
-                  ],
-                  "title": "Record (Person)"
-                }
-        );
+        let expected = get_expected!("test_record.json")?;
         let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1314,65 +1002,7 @@ mod tests {
     fn test_template() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "PingPong"], "Ping");
-        let expected = json!(
-                {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "oneOf": [
-                    {
-                      "additionalProperties": false,
-                      "properties": {
-                        "count": {
-                          "type": [
-                            "integer",
-                            "string"
-                          ],
-                          "title": "Int64"
-                        },
-                        "receiver": {
-                          "type": "string",
-                          "title": "Party"
-                        },
-                        "sender": {
-                          "type": "string",
-                          "title": "Party"
-                        }
-                      },
-                      "required": [
-                        "sender",
-                        "receiver",
-                        "count"
-                      ],
-                      "title": "Record (Ping)",
-                      "type": "object"
-                    },
-                    {
-                      "additionalItems": false,
-                      "items": [
-                        {
-                          "type": "string",
-                          "title": "Party"
-                        },
-                        {
-                          "type": "string",
-                          "title": "Party"
-                        },
-                        {
-                          "type": [
-                            "integer",
-                            "string"
-                          ],
-                          "title": "Int64"
-                        }
-                      ],
-                      "maxItems": 3,
-                      "minItems": 3,
-                      "title": "Record (Ping, fields = [sender, receiver, count])",
-                      "type": "array"
-                    }
-                  ],
-                  "title": "Record (Ping)"
-                }
-        );
+        let expected = get_expected!("test_template.json")?;
         let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1382,18 +1012,7 @@ mod tests {
     fn test_enum() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Vehicle"], "SimpleColor");
-        let expected = json!(
-                {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "enum": [
-                    "Red",
-                    "Green",
-                    "Blue"
-                  ],
-                  "title": "Enum (SimpleColor)",
-                  "type": "string"
-                }
-        );
+        let expected = get_expected!("test_enum.json")?;
         let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1404,209 +1023,7 @@ mod tests {
     fn test_variant() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Shape"], "Color");
-        let expected = json!(
-                {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "title": "Variant (Color)",
-                  "oneOf": [
-                    {
-                      "type": "object",
-                      "title": "Variant (Color, tag=Red)",
-                      "properties": {
-                        "tag": {
-                          "type": "string",
-                          "enum": [
-                            "Red"
-                          ]
-                        },
-                        "value": {
-                          "title": "Unit",
-                          "type": "object",
-                          "additionalProperties": false
-                        }
-                      },
-                      "additionalProperties": false,
-                      "required": [
-                        "tag",
-                        "value"
-                      ]
-                    },
-                    {
-                      "type": "object",
-                      "title": "Variant (Color, tag=Green)",
-                      "properties": {
-                        "tag": {
-                          "type": "string",
-                          "enum": [
-                            "Green"
-                          ]
-                        },
-                        "value": {
-                          "title": "Unit",
-                          "type": "object",
-                          "additionalProperties": false
-                        }
-                      },
-                      "additionalProperties": false,
-                      "required": [
-                        "tag",
-                        "value"
-                      ]
-                    },
-                    {
-                      "type": "object",
-                      "title": "Variant (Color, tag=Blue)",
-                      "properties": {
-                        "tag": {
-                          "type": "string",
-                          "enum": [
-                            "Blue"
-                          ]
-                        },
-                        "value": {
-                          "title": "Unit",
-                          "type": "object",
-                          "additionalProperties": false
-                        }
-                      },
-                      "additionalProperties": false,
-                      "required": [
-                        "tag",
-                        "value"
-                      ]
-                    },
-                    {
-                      "type": "object",
-                      "title": "Variant (Color, tag=Custom)",
-                      "properties": {
-                        "tag": {
-                          "type": "string",
-                          "enum": [
-                            "Custom"
-                          ]
-                        },
-                        "value": {
-                          "title": "List",
-                          "type": "array",
-                          "items": {
-                            "title": "Int64",
-                            "type": [
-                              "integer",
-                              "string"
-                            ]
-                          }
-                        }
-                      },
-                      "additionalProperties": false,
-                      "required": [
-                        "tag",
-                        "value"
-                      ]
-                    },
-                    {
-                      "type": "object",
-                      "title": "Variant (Color, tag=Other)",
-                      "properties": {
-                        "tag": {
-                          "type": "string",
-                          "enum": [
-                            "Other"
-                          ]
-                        },
-                        "value": {
-                          "$schema": "https://json-schema.org/draft/2020-12/schema",
-                          "title": "Record (RGBA)",
-                          "oneOf": [
-                            {
-                              "type": "object",
-                              "title": "Record (RGBA)",
-                              "properties": {
-                                "alpha": {
-                                  "title": "Int64",
-                                  "type": [
-                                    "integer",
-                                    "string"
-                                  ]
-                                },
-                                "b": {
-                                  "title": "Int64",
-                                  "type": [
-                                    "integer",
-                                    "string"
-                                  ]
-                                },
-                                "g": {
-                                  "title": "Int64",
-                                  "type": [
-                                    "integer",
-                                    "string"
-                                  ]
-                                },
-                                "r": {
-                                  "title": "Int64",
-                                  "type": [
-                                    "integer",
-                                    "string"
-                                  ]
-                                }
-                              },
-                              "additionalProperties": false,
-                              "required": [
-                                "r",
-                                "g",
-                                "b",
-                                "alpha"
-                              ]
-                            },
-                            {
-                              "type": "array",
-                              "title": "Record (RGBA, fields = [r, g, b, alpha])",
-                              "items": [
-                                {
-                                  "title": "Int64",
-                                  "type": [
-                                    "integer",
-                                    "string"
-                                  ]
-                                },
-                                {
-                                  "title": "Int64",
-                                  "type": [
-                                    "integer",
-                                    "string"
-                                  ]
-                                },
-                                {
-                                  "title": "Int64",
-                                  "type": [
-                                    "integer",
-                                    "string"
-                                  ]
-                                },
-                                {
-                                  "title": "Int64",
-                                  "type": [
-                                    "integer",
-                                    "string"
-                                  ]
-                                }
-                              ],
-                              "minItems": 4,
-                              "maxItems": 4,
-                              "additionalItems": false
-                            }
-                          ]
-                        }
-                      },
-                      "additionalProperties": false,
-                      "required": [
-                        "tag",
-                        "value"
-                      ]
-                    }
-                  ]
-                }
-        );
+        let expected = get_expected!("test_variant.json")?;
         let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1616,61 +1033,7 @@ mod tests {
     fn test_optional_depth1() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Depth1");
-        let expected = json!(
-                {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "oneOf": [
-                    {
-                      "additionalProperties": false,
-                      "properties": {
-                        "foo": {
-                          "oneOf": [
-                            {
-                              "type": "null"
-                            },
-                            {
-                              "type": [
-                                "integer",
-                                "string"
-                              ],
-                              "title": "Int64"
-                            }
-                          ],
-                          "title": "Optional"
-                        }
-                      },
-                      "required": [],
-                      "title": "Record (Depth1)",
-                      "type": "object"
-                    },
-                    {
-                      "additionalItems": false,
-                      "items": [
-                        {
-                          "oneOf": [
-                            {
-                              "type": "null"
-                            },
-                            {
-                              "type": [
-                                "integer",
-                                "string"
-                              ],
-                              "title": "Int64"
-                            }
-                          ],
-                          "title": "Optional"
-                        }
-                      ],
-                      "maxItems": 1,
-                      "minItems": 1,
-                      "title": "Record (Depth1, fields = [foo])",
-                      "type": "array"
-                    }
-                  ],
-                  "title": "Record (Depth1)"
-                }
-        );
+        let expected = get_expected!("test_optional_depth1.json")?;
         let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1680,91 +1043,7 @@ mod tests {
     fn test_optional_depth2() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Depth2");
-        let expected = json!(
-                {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "oneOf": [
-                    {
-                      "additionalProperties": false,
-                      "properties": {
-                        "foo": {
-                          "oneOf": [
-                            {
-                              "type": "null"
-                            },
-                            {
-                              "oneOf": [
-                                {
-                                  "maxItems": 0,
-                                  "minItems": 0,
-                                  "type": "array"
-                                },
-                                {
-                                  "items": {
-                                    "type": [
-                                      "integer",
-                                      "string"
-                                    ],
-                                    "title": "Int64"
-                                  },
-                                  "maxItems": 1,
-                                  "minItems": 1,
-                                  "type": "array"
-                                }
-                              ],
-                              "title": "Optional (depth > 1)"
-                            }
-                          ],
-                          "title": "Optional"
-                        }
-                      },
-                      "required": [],
-                      "title": "Record (Depth2)",
-                      "type": "object"
-                    },
-                    {
-                      "additionalItems": false,
-                      "items": [
-                        {
-                          "oneOf": [
-                            {
-                              "type": "null"
-                            },
-                            {
-                              "oneOf": [
-                                {
-                                  "maxItems": 0,
-                                  "minItems": 0,
-                                  "type": "array"
-                                },
-                                {
-                                  "items": {
-                                    "type": [
-                                      "integer",
-                                      "string"
-                                    ],
-                                    "title": "Int64"
-                                  },
-                                  "maxItems": 1,
-                                  "minItems": 1,
-                                  "type": "array"
-                                }
-                              ],
-                              "title": "Optional (depth > 1)"
-                            }
-                          ],
-                          "title": "Optional"
-                        }
-                      ],
-                      "maxItems": 1,
-                      "minItems": 1,
-                      "title": "Record (Depth2, fields = [foo])",
-                      "type": "array"
-                    }
-                  ],
-                  "title": "Record (Depth2)"
-                }
-        );
+        let expected = get_expected!("test_optional_depth2.json")?;
         let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1774,50 +1053,7 @@ mod tests {
     fn test_recursive() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Rec");
-        let expected = json!(
-                {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "title": "Record (Rec)",
-                  "oneOf": [
-                    {
-                      "type": "object",
-                      "title": "Record (Rec)",
-                      "properties": {
-                        "bar": {
-                          "title": "Any (TestingTypes:DA.JsonTest:Rec)",
-                          "description": "recursive data types are not yet supported"
-                        },
-                        "foo": {
-                          "title": "Text",
-                          "type": "string"
-                        }
-                      },
-                      "additionalProperties": false,
-                      "required": [
-                        "foo",
-                        "bar"
-                      ]
-                    },
-                    {
-                      "type": "array",
-                      "title": "Record (Rec, fields = [foo, bar])",
-                      "items": [
-                        {
-                          "title": "Text",
-                          "type": "string"
-                        },
-                        {
-                          "title": "Any (TestingTypes:DA.JsonTest:Rec)",
-                          "description": "recursive data types are not yet supported"
-                        }
-                      ],
-                      "minItems": 2,
-                      "maxItems": 2,
-                      "additionalItems": false
-                    }
-                  ]
-                }
-        );
+        let expected = get_expected!("test_recursive.json")?;
         let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
         assert_json_eq!(actual, expected);
         Ok(())

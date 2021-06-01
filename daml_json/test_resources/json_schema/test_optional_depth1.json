@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "foo": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "title": "Int64"
+            }
+          ],
+          "title": "Optional"
+        }
+      },
+      "required": [],
+      "title": "Record (Depth1)",
+      "type": "object"
+    },
+    {
+      "additionalItems": false,
+      "items": [
+        {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "title": "Int64"
+            }
+          ],
+          "title": "Optional"
+        }
+      ],
+      "maxItems": 1,
+      "minItems": 1,
+      "title": "Record (Depth1, fields = [foo])",
+      "type": "array"
+    }
+  ],
+  "title": "Record (Depth1)"
+}

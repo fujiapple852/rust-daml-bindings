@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "field_aaa": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "title": "Int64"
+        },
+        "field_bbb": {
+          "items": {
+            "type": "string",
+            "title": "Text"
+          },
+          "title": "List",
+          "type": "array"
+        }
+      },
+      "required": [
+        "field_aaa",
+        "field_bbb"
+      ],
+      "title": "Record (RecordArgument)",
+      "type": "object"
+    },
+    {
+      "additionalItems": false,
+      "items": [
+        {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "title": "Int64"
+        },
+        {
+          "items": {
+            "type": "string",
+            "title": "Text"
+          },
+          "title": "List",
+          "type": "array"
+        }
+      ],
+      "maxItems": 2,
+      "minItems": 2,
+      "title": "Record (RecordArgument, fields = [field_aaa, field_bbb])",
+      "type": "array"
+    }
+  ],
+  "title": "Record (RecordArgument)"
+}

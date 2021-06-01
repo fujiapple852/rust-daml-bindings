@@ -1,0 +1,45 @@
+{
+  "oneOf": [
+    {
+      "type": "null"
+    },
+    {
+      "oneOf": [
+        {
+          "maxItems": 0,
+          "minItems": 0,
+          "type": "array"
+        },
+        {
+          "items": {
+            "oneOf": [
+              {
+                "maxItems": 0,
+                "minItems": 0,
+                "type": "array"
+              },
+              {
+                "items": {
+                  "type": [
+                    "integer",
+                    "string"
+                  ],
+                  "title": "Int64"
+                },
+                "maxItems": 1,
+                "minItems": 1,
+                "type": "array"
+              }
+            ],
+            "title": "Optional (depth > 1)"
+          },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+        }
+      ],
+      "title": "Optional (depth > 1)"
+    }
+  ],
+  "title": "Optional"
+}

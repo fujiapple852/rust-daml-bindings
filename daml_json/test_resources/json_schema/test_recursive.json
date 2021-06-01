@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Record (Rec)",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Record (Rec)",
+      "properties": {
+        "bar": {
+          "title": "Any (TestingTypes:DA.JsonTest:Rec)",
+          "description": "recursive data types are not yet supported"
+        },
+        "foo": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "foo",
+        "bar"
+      ]
+    },
+    {
+      "type": "array",
+      "title": "Record (Rec, fields = [foo, bar])",
+      "items": [
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Any (TestingTypes:DA.JsonTest:Rec)",
+          "description": "recursive data types are not yet supported"
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "additionalItems": false
+    }
+  ]
+}
