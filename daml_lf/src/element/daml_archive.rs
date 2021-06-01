@@ -1,6 +1,6 @@
 use crate::element::daml_package::DamlPackage;
 use crate::element::visitor::{DamlElementVisitor, DamlVisitableElement};
-use crate::element::{serialize, DamlData, DamlTyCon};
+use crate::element::{serialize, DamlData, DamlTyCon, DamlTyConName};
 #[cfg(feature = "full")]
 use crate::element::{DamlDefValue, DamlValueName};
 use crate::owned::ToStatic;
@@ -61,7 +61,15 @@ impl<'a> DamlArchive<'a> {
     ///
     /// DOCME
     pub fn data_by_tycon<'b>(&'a self, tycon: &'b DamlTyCon<'_>) -> Option<&'a DamlData<'a>> {
-        let (package_id, module_path, data_name) = tycon.tycon().reference_parts();
+        self.data_by_tycon_name(tycon.tycon())
+    }
+
+    /// Retrieve a `DamlData` contained within this `DamlArchive` referred to by the supplied `DamlTyConName` or `None`
+    /// if not such data item exists.
+    ///
+    /// DOCME
+    pub fn data_by_tycon_name<'b>(&'a self, tycon_name: &'b DamlTyConName<'_>) -> Option<&'a DamlData<'a>> {
+        let (package_id, module_path, data_name) = tycon_name.reference_parts();
         self.data(package_id, module_path, data_name)
     }
 

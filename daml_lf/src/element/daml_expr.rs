@@ -117,6 +117,13 @@ pub enum DamlValueName<'a> {
 }
 
 impl DamlValueName<'_> {
+    pub fn name(&self) -> &str {
+        match self {
+            DamlValueName::Local(local) => local.name(),
+            DamlValueName::NonLocal(non_local) => non_local.name(),
+        }
+    }
+
     /// Extract the package id, module path and name.
     #[doc(hidden)]
     pub(crate) fn reference_parts(&self) -> (&str, &[Cow<'_, str>], &str) {
