@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Record (PersonMap)",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Record (PersonMap)",
+      "properties": {
+        "m": {
+          "title": "GenMap",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": [
+              {
+                "$ref": "#/components/schemas/DA.JsonTest.Person"
+              },
+              {
+                "title": "Text",
+                "type": "string"
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "additionalItems": false
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "m"
+      ]
+    },
+    {
+      "type": "array",
+      "title": "Record (PersonMap, fields = [m])",
+      "items": [
+        {
+          "title": "GenMap",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": [
+              {
+                "$ref": "#/components/schemas/DA.JsonTest.Person"
+              },
+              {
+                "title": "Text",
+                "type": "string"
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "additionalItems": false
+          }
+        }
+      ],
+      "minItems": 1,
+      "maxItems": 1,
+      "additionalItems": false
+    }
+  ]
+}

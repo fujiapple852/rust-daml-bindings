@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Record (Rec)",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Record (Rec)",
+      "properties": {
+        "bar": {
+          "$ref": "#/components/schemas/DA.JsonTest.Rec"
+        },
+        "foo": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "foo",
+        "bar"
+      ]
+    },
+    {
+      "type": "array",
+      "title": "Record (Rec, fields = [foo, bar])",
+      "items": [
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "$ref": "#/components/schemas/DA.JsonTest.Rec"
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "additionalItems": false
+    }
+  ]
+}

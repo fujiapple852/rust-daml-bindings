@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Record (PatternRecord)",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Record (PatternRecord)",
+      "properties": {
+        "val": {
+          "title": "Optional",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "title": "Record (GenericWrapperRecord)",
+              "oneOf": [
+                {
+                  "type": "object",
+                  "title": "Record (GenericWrapperRecord)",
+                  "properties": {
+                    "value": {
+                      "title": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
+                      "comment": "inline recursive data types cannot be represented"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "value"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "title": "Record (GenericWrapperRecord, fields = [value])",
+                  "items": [
+                    {
+                      "title": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
+                      "comment": "inline recursive data types cannot be represented"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "additionalItems": false
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    {
+      "type": "array",
+      "title": "Record (PatternRecord, fields = [val])",
+      "items": [
+        {
+          "title": "Optional",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "title": "Record (GenericWrapperRecord)",
+              "oneOf": [
+                {
+                  "type": "object",
+                  "title": "Record (GenericWrapperRecord)",
+                  "properties": {
+                    "value": {
+                      "title": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
+                      "comment": "inline recursive data types cannot be represented"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "value"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "title": "Record (GenericWrapperRecord, fields = [value])",
+                  "items": [
+                    {
+                      "title": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
+                      "comment": "inline recursive data types cannot be represented"
+                    }
+                  ],
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "additionalItems": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "minItems": 1,
+      "maxItems": 1,
+      "additionalItems": false
+    }
+  ]
+}

@@ -8,7 +8,7 @@
       "properties": {
         "bar": {
           "title": "Any (TestingTypes:DA.JsonTest:Rec)",
-          "description": "recursive data types are not yet supported"
+          "comment": "inline recursive data types cannot be represented"
         },
         "foo": {
           "title": "Text",
@@ -31,7 +31,7 @@
         },
         {
           "title": "Any (TestingTypes:DA.JsonTest:Rec)",
-          "description": "recursive data types are not yet supported"
+          "comment": "inline recursive data types cannot be represented"
         }
       ],
       "minItems": 2,

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Record (TopRec)",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Record (TopRec)",
+      "properties": {
+        "top": {
+          "title": "Any (TestingTypes:DA.JsonTest:TopRec)",
+          "comment": "recursive data types with type parameters cannot be represented"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "top"
+      ]
+    },
+    {
+      "type": "array",
+      "title": "Record (TopRec, fields = [top])",
+      "items": [
+        {
+          "title": "Any (TestingTypes:DA.JsonTest:TopRec)",
+          "comment": "recursive data types with type parameters cannot be represented"
+        }
+      ],
+      "minItems": 1,
+      "maxItems": 1,
+      "additionalItems": false
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Record (Middle)",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Record (Middle)",
+      "properties": {
+        "middle": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "title": "Record (Bottom)",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Record (Bottom)",
+              "properties": {
+                "bottom": {
+                  "title": "Int64",
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "bottom"
+              ]
+            },
+            {
+              "type": "array",
+              "title": "Record (Bottom, fields = [bottom])",
+              "items": [
+                {
+                  "title": "Int64",
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1,
+              "additionalItems": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "middle"
+      ]
+    },
+    {
+      "type": "array",
+      "title": "Record (Middle, fields = [middle])",
+      "items": [
+        {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "title": "Record (Bottom)",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Record (Bottom)",
+              "properties": {
+                "bottom": {
+                  "title": "Int64",
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "bottom"
+              ]
+            },
+            {
+              "type": "array",
+              "title": "Record (Bottom, fields = [bottom])",
+              "items": [
+                {
+                  "title": "Int64",
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1,
+              "additionalItems": false
+            }
+          ]
+        }
+      ],
+      "minItems": 1,
+      "maxItems": 1,
+      "additionalItems": false
+    }
+  ]
+}

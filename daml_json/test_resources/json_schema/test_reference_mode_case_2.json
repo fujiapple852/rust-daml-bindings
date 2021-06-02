@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Record (OPerson)",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Record (OPerson)",
+      "properties": {
+        "bar": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "title": "Record (Oa)",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Record (Oa)",
+              "properties": {
+                "foo": {
+                  "title": "Optional",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$schema": "https://json-schema.org/draft/2020-12/schema",
+                      "title": "Record (Person)",
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "title": "Record (Person)",
+                          "properties": {
+                            "age": {
+                              "title": "Int64",
+                              "type": [
+                                "integer",
+                                "string"
+                              ]
+                            },
+                            "name": {
+                              "title": "Text",
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "name",
+                            "age"
+                          ]
+                        },
+                        {
+                          "type": "array",
+                          "title": "Record (Person, fields = [name, age])",
+                          "items": [
+                            {
+                              "title": "Text",
+                              "type": "string"
+                            },
+                            {
+                              "title": "Int64",
+                              "type": [
+                                "integer",
+                                "string"
+                              ]
+                            }
+                          ],
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "additionalItems": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": []
+            },
+            {
+              "type": "array",
+              "title": "Record (Oa, fields = [foo])",
+              "items": [
+                {
+                  "title": "Optional",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$schema": "https://json-schema.org/draft/2020-12/schema",
+                      "title": "Record (Person)",
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "title": "Record (Person)",
+                          "properties": {
+                            "age": {
+                              "title": "Int64",
+                              "type": [
+                                "integer",
+                                "string"
+                              ]
+                            },
+                            "name": {
+                              "title": "Text",
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "name",
+                            "age"
+                          ]
+                        },
+                        {
+                          "type": "array",
+                          "title": "Record (Person, fields = [name, age])",
+                          "items": [
+                            {
+                              "title": "Text",
+                              "type": "string"
+                            },
+                            {
+                              "title": "Int64",
+                              "type": [
+                                "integer",
+                                "string"
+                              ]
+                            }
+                          ],
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "additionalItems": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1,
+              "additionalItems": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "bar"
+      ]
+    },
+    {
+      "type": "array",
+      "title": "Record (OPerson, fields = [bar])",
+      "items": [
+        {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "title": "Record (Oa)",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Record (Oa)",
+              "properties": {
+                "foo": {
+                  "title": "Optional",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$schema": "https://json-schema.org/draft/2020-12/schema",
+                      "title": "Record (Person)",
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "title": "Record (Person)",
+                          "properties": {
+                            "age": {
+                              "title": "Int64",
+                              "type": [
+                                "integer",
+                                "string"
+                              ]
+                            },
+                            "name": {
+                              "title": "Text",
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "name",
+                            "age"
+                          ]
+                        },
+                        {
+                          "type": "array",
+                          "title": "Record (Person, fields = [name, age])",
+                          "items": [
+                            {
+                              "title": "Text",
+                              "type": "string"
+                            },
+                            {
+                              "title": "Int64",
+                              "type": [
+                                "integer",
+                                "string"
+                              ]
+                            }
+                          ],
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "additionalItems": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": []
+            },
+            {
+              "type": "array",
+              "title": "Record (Oa, fields = [foo])",
+              "items": [
+                {
+                  "title": "Optional",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$schema": "https://json-schema.org/draft/2020-12/schema",
+                      "title": "Record (Person)",
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "title": "Record (Person)",
+                          "properties": {
+                            "age": {
+                              "title": "Int64",
+                              "type": [
+                                "integer",
+                                "string"
+                              ]
+                            },
+                            "name": {
+                              "title": "Text",
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "name",
+                            "age"
+                          ]
+                        },
+                        {
+                          "type": "array",
+                          "title": "Record (Person, fields = [name, age])",
+                          "items": [
+                            {
+                              "title": "Text",
+                              "type": "string"
+                            },
+                            {
+                              "title": "Int64",
+                              "type": [
+                                "integer",
+                                "string"
+                              ]
+                            }
+                          ],
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "additionalItems": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1,
+              "additionalItems": false
+            }
+          ]
+        }
+      ],
+      "minItems": 1,
+      "maxItems": 1,
+      "additionalItems": false
+    }
+  ]
+}

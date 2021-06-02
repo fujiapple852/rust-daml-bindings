@@ -5,8 +5,8 @@ use serde_json::json;
 use serde_json::Value;
 
 use daml_lf::element::{
-    DamlArchive, DamlData, DamlEnum, DamlField, DamlRecord, DamlTemplate, DamlType, DamlTypeVarWithKind, DamlVar,
-    DamlVariant,
+    DamlArchive, DamlData, DamlEnum, DamlField, DamlRecord, DamlTemplate, DamlTyCon, DamlTyConName, DamlType,
+    DamlTypeVarWithKind, DamlVar, DamlVariant,
 };
 
 use crate::error::DamlJsonSchemaCodecError::NotSerializableDamlType;
@@ -59,18 +59,130 @@ impl Default for RenderTitle {
     }
 }
 
+/// Control whether nested `DamlTyCon` are referenced or inlined.
+///
+/// If `Inline` mode is set then the encoder will attempt to emit the target data type nested under the parent data
+/// type.
+///
+/// If `Reference` mode is set then the encoder will attempt to emit an absolute reference to a data type from a given
+/// `prefix`.  In this mode it is assumed the the target data type will be emitted elsewhere and made available under
+/// the `prefix`.
+///
+/// It is not possible to emit every possible `DamlTyCon` in the requested mode and so there are some specific rules
+/// which apply based on the requested mode, whether the target data type is recursive and whether the target type
+/// expects type parameters.
+///
+/// - Recursive: Indicates that the `DamlTyCon` resolves to a data type which (directly or indirectly) contains itself
+/// as a field or type argument.
+///
+/// - Type Parameters:  Indicates that the `DamlTyCon` resolves to a data type which has type one or more parameters
+/// that must be resolved before that data type can be emitted.
+///
+/// The following table enumerates how a `DamlTyCon` will be encoded for all possible cases:
+///
+/// | Mode      | Recursive? | Type params? | Encoding                                                     |
+/// |-----------|------------|--------------|--------------------------------------------------------------|
+/// | Inline    | No         | No           | 1 - Encode target type inline                                |
+/// | Inline    | No         | Yes          | 2 - Encode target type inline (with resolved type arguments) |
+/// | Inline    | Yes        | No           | 3 - Encode to accept any object                              |
+/// | Inline    | Yes        | Yes          | 4 - Encode to accept any object                              |
+/// | Reference | No         | No           | 5 - Encode as reference to target type                       |
+/// | Reference | No         | Yes          | 6 - Encode target type inline (fallback to #2)               |
+/// | Reference | Yes        | No           | 7 - Encode as reference to target type                       |
+/// | Reference | Yes        | Yes          | 8 - Encode as accept any object (no fallback possible)       |
+///
+/// Cases 1, 2, 5 & 7 are straightforward, whereas cases 3, 4, 6 & 8 are more complex:
+///
+/// * Cases 3 & 4:
+///
+/// If `Inline` mode is chosen and the `DamlTyCon` resolves to a data type which is recursive then the emitter emits a
+/// JSON schema object which matches any JSON type:
+///
+/// For example, given:
+///
+/// ```daml
+/// data Rec = Rec with foo: Text, bar: Rec
+/// ```
+///
+/// The data type `Rec` includes itself recursively and so cannot be emitted `Inline` and will instead be emitted as
+/// follows:
+///
+/// ```json
+/// {
+///    "title": "Any (Rec)",
+///    "comment": "inline recursive data types cannot be represented"
+/// }
+/// ```
+///
+/// * Case 6:
+///
+/// If `Reference` mode is chosen and the `DamlTyCon` resolves to a data type which expects type parameters we
+/// do not emit a reference as the fully resolved target data type is unknown.  In this case the emitter will
+/// `fallback` to `Inline` mode.
+///
+/// For example, given:
+///
+/// ```daml
+/// data Bottom a = Bottom with bottom: a
+/// data Middle = Middle with middle: Bottom Int
+/// ```
+///
+/// Attempting to emit the `middle: Bottom Int` field in `Reference` mode (with a prefix of `#/components/schemas/`)
+/// cannot emit the below reference as this does not account for the type parameter applied to `Bottom`, of which there
+/// are infinitely many:
+///
+/// ```json
+/// {
+///   "$ref": "#/components/schemas/Bottom"
+/// }
+/// ```
+///
+/// Instead, the schema for `Bottom Int` will be emitted `Inline`.
+///
+/// * Case 8:
+///
+/// Case 8 is similar to case 6, however, the `DamlTyCon` resolves to a data type which is also recursive.  In this
+/// case we cannot 'fallback' to `Inline` mode as recursive types cannot be inlined.  The emitter therefore emits a
+/// JSON schema object which matches any JSON type.
+///
+/// For example, given:
+///
+/// ```daml
+/// data TopRec a = TopRec with top: TopRec a
+/// ```
+///
+/// The structure `TopRec` is both recursive and has a type parameter and therefore cannot be emitted as a `$ref` nor
+/// can it 'fallback' to `Inline` mode.
+#[derive(Debug)]
+pub enum ReferenceMode {
+    /// Inline nested `DamlTyCon`.
+    Inline,
+    /// Reference nested `DamlTyCon` by `$ref` from `prefix`.
+    Reference {
+        prefix: String,
+    },
+}
+
+impl Default for ReferenceMode {
+    fn default() -> Self {
+        Self::Inline
+    }
+}
+
 /// JSON schema encoder configuration.
 #[derive(Debug, Default)]
 pub struct SchemaEncoderConfig {
     render_schema: RenderSchema,
     render_title: RenderTitle,
+    reference_mode: ReferenceMode,
 }
 
 impl SchemaEncoderConfig {
-    pub fn new(render_schema: RenderSchema, render_title: RenderTitle) -> Self {
+    pub fn new(render_schema: RenderSchema, render_title: RenderTitle, reference_mode: ReferenceMode) -> Self {
         Self {
             render_schema,
             render_title,
+            reference_mode,
         }
     }
 }
@@ -103,11 +215,16 @@ impl<'a> JsonSchemaEncoder<'a> {
     }
 
     /// Encode a `DamlType` as a JSON schema.
-    pub fn encode(&self, ty: &DamlType<'_>) -> DamlJsonSchemaCodecResult<Value> {
-        self.do_encode(ty, true, &[], &[])
+    pub fn encode_type(&self, ty: &DamlType<'_>) -> DamlJsonSchemaCodecResult<Value> {
+        self.do_encode_type(ty, true, &[], &[])
     }
 
-    /// Encode a `DamlRecord` as a JSON schema  .
+    /// Encode a `DamlData` as a JSON schema.
+    pub fn encode_data(&self, data: &DamlData<'_>) -> DamlJsonSchemaCodecResult<Value> {
+        self.do_encode_data(data, &[])
+    }
+
+    /// Encode a `DamlRecord` as a JSON schema.
     pub fn encode_record(&self, record: &DamlRecord<'_>) -> DamlJsonSchemaCodecResult<Value> {
         record
             .serializable()
@@ -635,7 +752,7 @@ impl<'a> JsonSchemaEncoder<'a> {
         })?)
     }
 
-    fn do_encode(
+    fn do_encode_type(
         &self,
         ty: &DamlType<'_>,
         top_level: bool,
@@ -652,25 +769,24 @@ impl<'a> JsonSchemaEncoder<'a> {
             DamlType::Date => self.encode_date(),
             DamlType::Int64 => self.encode_int64(),
             DamlType::Numeric(_) => self.encode_decimal(),
-            DamlType::List(tys) => self.encode_list(self.do_encode(tys.as_single()?, true, type_params, type_args)?),
+            DamlType::List(tys) =>
+                self.encode_list(self.do_encode_type(tys.as_single()?, true, type_params, type_args)?),
             DamlType::TextMap(tys) =>
-                self.encode_textmap(self.do_encode(tys.as_single()?, true, type_params, type_args)?),
+                self.encode_textmap(self.do_encode_type(tys.as_single()?, true, type_params, type_args)?),
             DamlType::GenMap(tys) => self.encode_genmap(
-                self.do_encode(tys.first().req()?, true, type_params, type_args)?,
-                self.do_encode(tys.last().req()?, true, type_params, type_args)?,
+                self.do_encode_type(tys.first().req()?, true, type_params, type_args)?,
+                self.do_encode_type(tys.last().req()?, true, type_params, type_args)?,
             ),
-            DamlType::Optional(nested) =>
-                self.encode_optional(self.do_encode(nested.as_single()?, false, type_params, type_args)?, top_level),
-            DamlType::TyCon(tycon) => {
-                let data = self
-                    .arc
-                    .data_by_tycon(tycon)
-                    .ok_or_else(|| DamlJsonSchemaCodecError::DataNotFound(tycon.tycon().to_string()))?;
-                self.encode_data(data, tycon.type_arguments())
-            },
-            DamlType::BoxedTyCon(tycon) => Ok(Self::encode_recursive(&tycon.tycon().to_string())),
-            DamlType::Var(v) =>
-                self.do_encode(Self::resolve_type_var(type_params, type_args, v)?, top_level, type_params, type_args),
+            DamlType::Optional(nested) => self
+                .encode_optional(self.do_encode_type(nested.as_single()?, false, type_params, type_args)?, top_level),
+            DamlType::TyCon(tycon) => self.encode_tycon(tycon),
+            DamlType::BoxedTyCon(tycon) => self.encode_boxed_tycon(tycon),
+            DamlType::Var(v) => self.do_encode_type(
+                Self::resolve_type_var(type_params, type_args, v)?,
+                top_level,
+                type_params,
+                type_args,
+            ),
             DamlType::Nat(_)
             | DamlType::Arrow
             | DamlType::Any
@@ -683,7 +799,56 @@ impl<'a> JsonSchemaEncoder<'a> {
         }
     }
 
-    fn encode_data(&self, data: &DamlData<'_>, type_args: &[DamlType<'_>]) -> DamlJsonSchemaCodecResult<Value> {
+    /// Encode a `DamlTyCon`.
+    ///
+    /// This covers cases 1, 2, 5 & 6 in the `ReferenceMode` documentation.
+    fn encode_tycon(&self, tycon: &DamlTyCon<'_>) -> DamlJsonSchemaCodecResult<Value> {
+        match &self.config.reference_mode {
+            ReferenceMode::Inline => {
+                // cases 1 & 2
+                let data = self.resolve_tycon(tycon)?;
+                self.do_encode_data(data, tycon.type_arguments())
+            },
+            ReferenceMode::Reference {
+                prefix,
+            } => {
+                let data = self.resolve_tycon(tycon)?;
+                if data.type_params().is_empty() {
+                    // case 5
+                    Ok(Self::encode_reference(prefix, tycon.tycon()))
+                } else {
+                    // case 6
+                    self.do_encode_data(data, tycon.type_arguments())
+                }
+            },
+        }
+    }
+
+    /// Encode a `DamlTyCon` which recursively (directly or indirectly) references itself.
+    ///
+    /// This covers cases 3, 4, 7 & 8 in the `ReferenceMode` documentation.
+    fn encode_boxed_tycon(&self, tycon: &DamlTyCon<'_>) -> DamlJsonSchemaCodecResult<Value> {
+        match &self.config.reference_mode {
+            ReferenceMode::Inline => {
+                // cases 3 & 4
+                Ok(Self::encode_inline_recursive(&tycon.tycon().to_string()))
+            },
+            ReferenceMode::Reference {
+                prefix,
+            } => {
+                let data = self.resolve_tycon(tycon)?;
+                if data.type_params().is_empty() {
+                    // case 7
+                    Ok(Self::encode_reference(prefix, tycon.tycon()))
+                } else {
+                    // case 8
+                    Ok(Self::encode_reference_recursive_with_type_params(&tycon.tycon().to_string()))
+                }
+            },
+        }
+    }
+
+    fn do_encode_data(&self, data: &DamlData<'_>, type_args: &[DamlType<'_>]) -> DamlJsonSchemaCodecResult<Value> {
         data.serializable()
             .then(|| match data {
                 DamlData::Template(template) =>
@@ -706,7 +871,7 @@ impl<'a> JsonSchemaEncoder<'a> {
         let fields_map = fields
             .iter()
             .map(|field| {
-                self.do_encode(field.ty(), true, type_params, type_args).map(|json_val| (field.name(), json_val))
+                self.do_encode_type(field.ty(), true, type_params, type_args).map(|json_val| (field.name(), json_val))
             })
             .collect::<DamlJsonSchemaCodecResult<BTreeMap<&str, Value>>>()?;
         let opt_fields = fields
@@ -735,7 +900,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     ) -> DamlJsonSchemaCodecResult<Value> {
         let fields_list = fields
             .iter()
-            .map(|field| self.do_encode(field.ty(), true, type_params, type_args))
+            .map(|field| self.do_encode_type(field.ty(), true, type_params, type_args))
             .collect::<DamlJsonSchemaCodecResult<Vec<Value>>>()?;
         let field_names = fields.iter().map(DamlField::name).join(", ");
         let item_count = fields_list.len();
@@ -762,7 +927,7 @@ impl<'a> JsonSchemaEncoder<'a> {
             properties: json!(
                {
                  "tag": { "type": "string", "enum": [daml_field.name()] },
-                 "value": self.do_encode(daml_field.ty(), true, type_params, type_args)?
+                 "value": self.do_encode_type(daml_field.ty(), true, type_params, type_args)?
                }
             ),
             required: vec!["tag", "value"],
@@ -770,14 +935,35 @@ impl<'a> JsonSchemaEncoder<'a> {
         })?)
     }
 
-    /// Recursive data types are not currently supported and so we emit a schema object which matches anything.
-    fn encode_recursive(name: &str) -> Value {
+    ///
+    fn encode_reference(prefix: &str, tycon: &DamlTyConName<'_>) -> Value {
+        json!({ "$ref": format!("{}{}.{}", prefix, tycon.module_path().join("."), tycon.data_name()) })
+    }
+
+    /// Inline recursive data types cannot be represented and so we emit a schema object which matches anything.
+    fn encode_inline_recursive(name: &str) -> Value {
         json!(
             {
                 "title": format!("Any ({})", name),
-                "description": "recursive data types are not yet supported"
+                "comment": "inline recursive data types cannot be represented"
             }
         )
+    }
+
+    /// Reference recursive data types with type parameters cannot be represented and so we emit a schema object which
+    /// matches anything.
+    fn encode_reference_recursive_with_type_params(name: &str) -> Value {
+        json!(
+            {
+                "title": format!("Any ({})", name),
+                "comment": "recursive data types with type parameters cannot be represented"
+            }
+        )
+    }
+
+    /// Resolve a `DamlTyCon` to a `DamlData` from the archive.
+    fn resolve_tycon(&self, tycon: &DamlTyCon<'_>) -> DamlJsonSchemaCodecResult<&DamlData<'_>> {
+        self.arc.data_by_tycon(tycon).ok_or_else(|| DamlJsonSchemaCodecError::DataNotFound(tycon.tycon().to_string()))
     }
 
     /// Resolve a `DamlVar` to a specific `DamlType` from the current type arguments by matching the position of the var
@@ -838,7 +1024,7 @@ mod tests {
     use super::*;
 
     static TESTING_TYPES_DAR_PATH: &str =
-        "../resources/testing_types_sandbox/archive/TestingTypes-1_2_0-sdk_1_13_0-lf_1_12.dar";
+        "../resources/testing_types_sandbox/archive/TestingTypes-1_3_0-sdk_1_13_0-lf_1_12.dar";
 
     #[macro_export]
     macro_rules! get_expected {
@@ -851,7 +1037,7 @@ mod tests {
     fn test_unit() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Unit;
         let expected = get_expected!("test_unit.json")?;
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -860,7 +1046,7 @@ mod tests {
     fn test_text() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Text;
         let expected = get_expected!("test_text.json")?;
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -869,7 +1055,7 @@ mod tests {
     fn test_party() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Party;
         let expected = get_expected!("test_party.json")?;
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -878,7 +1064,7 @@ mod tests {
     fn test_int64() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Int64;
         let expected = get_expected!("test_int64.json")?;
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -887,7 +1073,7 @@ mod tests {
     fn test_numeric() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Numeric(Box::new(DamlType::Nat(18)));
         let expected = get_expected!("test_numeric.json")?;
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -896,7 +1082,7 @@ mod tests {
     fn test_bool() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Bool;
         let expected = get_expected!("test_bool.json")?;
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -905,7 +1091,7 @@ mod tests {
     fn test_contract_id() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::ContractId(None);
         let expected = get_expected!("test_contract_id.json")?;
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -914,7 +1100,7 @@ mod tests {
     fn test_timestamp() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Timestamp;
         let expected = get_expected!("test_timestamp.json")?;
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -923,7 +1109,7 @@ mod tests {
     fn test_date() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Date;
         let expected = get_expected!("test_date.json")?;
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -933,7 +1119,7 @@ mod tests {
     fn test_optional_int64() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Optional(vec![DamlType::Int64]);
         let expected = get_expected!("test_optional_int64.json")?;
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -943,7 +1129,7 @@ mod tests {
     fn test_optional_optional_int64() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Optional(vec![DamlType::Optional(vec![DamlType::Int64])]);
         let expected = get_expected!("test_optional_optional_int64.json")?;
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -953,7 +1139,7 @@ mod tests {
     fn test_optional_optional_optional_int64() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Optional(vec![DamlType::Optional(vec![DamlType::Optional(vec![DamlType::Int64])])]);
         let expected = get_expected!("test_optional_optional_optional_int64.json")?;
-        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())
     }
@@ -963,7 +1149,7 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "RecordArgument");
         let expected = get_expected!("test_list_of_text.json")?;
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -973,7 +1159,7 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "MapTest"], "Bar");
         let expected = get_expected!("test_text_map_of_int64.json")?;
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -983,7 +1169,7 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "MapTest"], "Foo");
         let expected = get_expected!("test_gen_map_of_int_text.json")?;
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -993,7 +1179,7 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Person");
         let expected = get_expected!("test_record.json")?;
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1003,7 +1189,7 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "PingPong"], "Ping");
         let expected = get_expected!("test_template.json")?;
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1013,7 +1199,7 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Vehicle"], "SimpleColor");
         let expected = get_expected!("test_enum.json")?;
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1024,7 +1210,7 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Shape"], "Color");
         let expected = get_expected!("test_variant.json")?;
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1034,7 +1220,7 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Depth1");
         let expected = get_expected!("test_optional_depth1.json")?;
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1044,17 +1230,115 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Depth2");
         let expected = get_expected!("test_optional_depth2.json")?;
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
+        let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
 
+    /// Covers case 1 from `ReferenceMode` (inline, non-recursive, no type parameters)
     #[test]
-    fn test_recursive() -> DamlJsonSchemaCodecResult<()> {
+    fn test_reference_mode_case_1() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "PersonMap");
+        let expected = get_expected!("test_reference_mode_case_1.json")?;
+        let config = SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Inline);
+        let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    /// Covers case 2 from `ReferenceMode` (inline, non-recursive, with type parameters)
+    #[test]
+    fn test_reference_mode_case_2() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "OPerson");
+        let expected = get_expected!("test_reference_mode_case_2.json")?;
+        let config = SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Inline);
+        let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    /// Covers case 3 from `ReferenceMode` (inline, recursive, no type parameters)
+    #[test]
+    fn test_reference_mode_case_3() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Rec");
-        let expected = get_expected!("test_recursive.json")?;
-        let actual = JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[])?;
+        let expected = get_expected!("test_reference_mode_case_3.json")?;
+        let config = SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Inline);
+        let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    /// Covers case 4 from `ReferenceMode` (inline, recursive, with type parameters)
+    #[test]
+    fn test_reference_mode_case_4() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "GenericTypes"], "PatternRecord");
+        let expected = get_expected!("test_reference_mode_case_4.json")?;
+        let config = SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Inline);
+        let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    /// Covers case 5 from `ReferenceMode` (reference, non-recursive, no type parameters)
+    #[test]
+    fn test_reference_mode_case_5() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "PersonMap").req()?;
+        let expected = get_expected!("test_reference_mode_case_5.json")?;
+        let config =
+            SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Reference {
+                prefix: "#/components/schemas/".to_string(),
+            });
+        let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    /// Covers case 6 from `ReferenceMode` (reference, non-recursive, with type parameters)
+    #[test]
+    fn test_reference_mode_case_6() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "Middle").req()?;
+        let expected = get_expected!("test_reference_mode_case_6.json")?;
+        let config =
+            SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Reference {
+                prefix: "#/components/schemas/".to_string(),
+            });
+        let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    /// Covers case 7 from `ReferenceMode` (reference, recursive, no type parameters)
+    #[test]
+    fn test_reference_mode_case_7() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "Rec").req()?;
+        let expected = get_expected!("test_reference_mode_case_7.json")?;
+        let config =
+            SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Reference {
+                prefix: "#/components/schemas/".to_string(),
+            });
+        let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    /// Covers case 8 from `ReferenceMode` (reference, recursive, with type parameters)
+    #[test]
+    fn test_reference_mode_case_8() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "TopRec").req()?;
+        let expected = get_expected!("test_reference_mode_case_8.json")?;
+        let config =
+            SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Reference {
+                prefix: "#/components/schemas/".to_string(),
+            });
+        let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1063,7 +1347,7 @@ mod tests {
     fn test_fail_for_non_serializable_record() -> Result<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "HigherKindTest"], "HigherKindedData");
-        match JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[]) {
+        match JsonSchemaEncoder::new(arc).encode_type(&ty) {
             Err(DamlJsonSchemaCodecError::NotSerializableDamlType(s)) if s == "HigherKindedData" => Ok(()),
             Err(e) => panic!("expected different error: {}", e.to_string()),
             _ => panic!("expected error"),
@@ -1074,7 +1358,7 @@ mod tests {
     fn test_fail_for_generic_missing_type_arg() -> Result<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Oa");
-        match JsonSchemaEncoder::new(arc).do_encode(&ty, true, &[], &[]) {
+        match JsonSchemaEncoder::new(arc).encode_type(&ty) {
             Err(DamlJsonSchemaCodecError::TypeVarNotFoundInParams(s)) if s == "a" => Ok(()),
             Err(e) => panic!("expected different error: {}", e.to_string()),
             _ => panic!("expected error"),
@@ -1439,7 +1723,7 @@ mod tests {
     }
 
     fn do_validate_schema(arc: &DamlArchive<'_>, ty: &DamlType<'_>, instance: &Value, matches: bool) -> Result<()> {
-        let schema = JsonSchemaEncoder::new(arc).do_encode(ty, true, &[], &[])?;
+        let schema = JsonSchemaEncoder::new(arc).encode_type(ty)?;
         let compiled = JSONSchema::compile(&schema)?;
         let result = compiled.validate(instance);
         assert_eq!(matches, result.is_ok());
