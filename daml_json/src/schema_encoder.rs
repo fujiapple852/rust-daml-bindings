@@ -1024,7 +1024,7 @@ mod tests {
     use super::*;
 
     static TESTING_TYPES_DAR_PATH: &str =
-        "../resources/testing_types_sandbox/archive/TestingTypes-1_3_0-sdk_1_13_0-lf_1_12.dar";
+        "../resources/testing_types_sandbox/archive/TestingTypes-1_3_0-sdk_1_13_1-lf_1_12.dar";
 
     #[macro_export]
     macro_rules! get_expected {
@@ -1329,7 +1329,9 @@ mod tests {
     }
 
     /// Covers case 8 from `ReferenceMode` (reference, recursive, with type parameters)
+    /// TODO reinstate when we can add TopRec back in
     #[test]
+    #[ignore]
     fn test_reference_mode_case_8() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "TopRec").req()?;
