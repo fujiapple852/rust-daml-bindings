@@ -29,7 +29,7 @@ protocols buffers.
 This crate is guaranteed to compile on stable Rust 1.52 and up.
 
 # Supported DAML Version
-These bindings support `DAML-LF` versions `1.6`, `1.7`, `1.8`, `1.11` & `1.12` and have been tested against DAML SDKs up to `1.13.0`.
+These bindings support `DAML-LF` versions `1.6`, `1.7`, `1.8`, `1.11` & `1.12` and have been tested against DAML SDKs up to `1.13.1`.
 
 ## Crates
 The project provides the following crates:
