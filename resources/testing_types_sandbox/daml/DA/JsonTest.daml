@@ -15,4 +15,6 @@ data Rec = Rec with foo: Text, bar: Rec
 data Bottom a = Bottom with bottom: a
 data Middle = Middle with middle: Bottom Int
 data Top = Top with top: Middle
--- data TopRec a = TopRec with top: TopRec a
+
+data BottomRec a = BottomRec with val: a; top: BottomRec a
+data TopRec = TopRec with foo: BottomRec Int
