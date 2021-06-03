@@ -5,8 +5,8 @@ use serde_json::json;
 use serde_json::Value;
 
 use daml_lf::element::{
-    DamlArchive, DamlData, DamlEnum, DamlField, DamlRecord, DamlTemplate, DamlTyCon, DamlTyConName, DamlType,
-    DamlTypeVarWithKind, DamlVar, DamlVariant,
+    DamlArchive, DamlData, DamlEnum, DamlField, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind, DamlVar,
+    DamlVariant,
 };
 
 use crate::error::DamlJsonSchemaCodecError::NotSerializableDamlType;
@@ -224,22 +224,6 @@ impl<'a> JsonSchemaEncoder<'a> {
         (data.serializable() && data.type_params().is_empty())
             .then(|| self.do_encode_data(data, &[]))
             .unwrap_or_else(|| Err(NotSerializableDamlType(data.name().to_owned())))
-    }
-
-    /// Encode a `DamlRecord` as a JSON schema.
-    pub fn encode_record(&self, record: &DamlRecord<'_>) -> DamlJsonSchemaCodecResult<Value> {
-        record
-            .serializable()
-            .then(|| self.do_encode_record(record.name(), record.fields(), &[], &[]))
-            .unwrap_or_else(|| Err(NotSerializableDamlType(record.name().to_owned())))
-    }
-
-    /// Encode a `DamlTemplate` as a JSON schema.
-    pub fn encode_template(&self, template: &DamlTemplate<'_>) -> DamlJsonSchemaCodecResult<Value> {
-        template
-            .serializable()
-            .then(|| self.do_encode_record(template.name(), template.fields(), &[], &[]))
-            .unwrap_or_else(|| Err(NotSerializableDamlType(template.name().to_owned())))
     }
 
     /// Encode a Daml `Unit` type as JSON schema.
