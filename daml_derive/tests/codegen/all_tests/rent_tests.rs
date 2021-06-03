@@ -9,7 +9,7 @@ use daml::grpc_api::{CommandExecutor, DamlSimpleExecutorBuilder};
 use daml_derive::daml_codegen;
 use std::convert::TryInto;
 
-daml_codegen!(dar_file = r"resources/testing_types_sandbox/archive/TestingTypes-1_3_0-sdk_1_13_1-lf_1_12.dar");
+daml_codegen!(dar_file = r"resources/testing_types_sandbox/TestingTypes-latest.dar");
 
 #[tokio::test]
 async fn test_rent() -> TestResult {

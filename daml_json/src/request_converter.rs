@@ -235,8 +235,7 @@ mod tests {
     use daml_lf::DarFile;
     use serde_json::json;
 
-    static TESTING_TYPES_DAR_PATH: &str =
-        "../resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_9_0-lf_1_11.dar";
+    static TESTING_TYPES_DAR_PATH: &str = "../resources/testing_types_sandbox/TestingTypes-latest.dar";
 
     #[test]
     fn test_convert_create_request() -> Result<()> {
@@ -350,7 +349,7 @@ mod tests {
         let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
         let request_converter = JsonToGrpcRequestConverter::new(&arc);
         let request = DamlJsonCreateRequest::new(
-            "0a1ee41f95ffab0a3b49bbd6cb842d015ef6c991f1588df70a1cc4ebeca51e81:DA.RentDemo:RentalAgreement",
+            format!("{}:DA.RentDemo:RentalAgreement", arc.main_package_id()),
             json!(
                 {
                      "landlord": "Alice",

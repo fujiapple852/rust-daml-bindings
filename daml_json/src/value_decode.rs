@@ -317,8 +317,7 @@ mod tests {
     use maplit::hashmap;
     use serde_json::json;
 
-    static TESTING_TYPES_DAR_PATH: &str =
-        "../resources/testing_types_sandbox/archive/TestingTypes-1_0_0-sdk_1_9_0-lf_1_11.dar";
+    static TESTING_TYPES_DAR_PATH: &str = "../resources/testing_types_sandbox/TestingTypes-latest.dar";
 
     /// `{}` -> `() : ()`
     #[test]

@@ -1023,8 +1023,7 @@ mod tests {
 
     use super::*;
 
-    static TESTING_TYPES_DAR_PATH: &str =
-        "../resources/testing_types_sandbox/archive/TestingTypes-1_3_1-sdk_1_13_1-lf_1_12.dar";
+    static TESTING_TYPES_DAR_PATH: &str = "../resources/testing_types_sandbox/TestingTypes-latest.dar";
 
     #[macro_export]
     macro_rules! get_expected {

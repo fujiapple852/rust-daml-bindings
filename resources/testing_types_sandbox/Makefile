@@ -22,6 +22,9 @@ build:
 archive:
 	cp ${OUTPUT_PATH}/${OUTPUT_DAR_NAME}.dar archive
 
+archive-latest: archive
+	ln -sf archive/${OUTPUT_DAR_NAME}.dar ${DAR_NAME}-latest.dar
+
 inspect:
 	daml damlc inspect-dar .daml/dist/*
 
