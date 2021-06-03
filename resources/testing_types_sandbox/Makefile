@@ -1,12 +1,26 @@
 DAML_LF_VERSION = 1.12
+OUTPUT_PATH = .daml/dist
+DAR_NAME = TestingTypes
 
 SANDBOX_HOST = 127.0.0.1
 WALLCLOCK_PORT = 8080
 STATIC_PORT = 8081
 WALLCLOCK_UNSECURED_PORT = 8085
 JSON_BRIDGE_PORT = 7575
+
+SDK_VERSION := $(shell daml version | grep project | cut -d" " -f 3)
+DAR_VERSION := $(shell egrep "^version" daml.yaml | cut -d" " -f 2)
+OUTPUT_DAR_NAME := $(shell echo ${DAR_NAME}-${DAR_VERSION}-sdk_${SDK_VERSION}-lf_${DAML_LF_VERSION} | sed "s/\./_/g")
+OUTPUT_FULL = ${OUTPUT_PATH}/${OUTPUT_DAR_NAME}.dar
+
+.PHONY: build archive
+
 build:
-	daml build --target ${DAML_LF_VERSION}
+	rm -rf ${OUTPUT_PATH}
+	daml build --target ${DAML_LF_VERSION} --output ${OUTPUT_FULL}
+
+archive:
+	cp ${OUTPUT_PATH}/${OUTPUT_DAR_NAME}.dar archive
 
 inspect:
 	daml damlc inspect-dar .daml/dist/*
