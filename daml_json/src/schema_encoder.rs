@@ -221,7 +221,9 @@ impl<'a> JsonSchemaEncoder<'a> {
 
     /// Encode a `DamlData` as a JSON schema.
     pub fn encode_data(&self, data: &DamlData<'_>) -> DamlJsonSchemaCodecResult<Value> {
-        self.do_encode_data(data, &[])
+        (data.serializable() && data.type_params().is_empty())
+            .then(|| self.do_encode_data(data, &[]))
+            .unwrap_or_else(|| Err(NotSerializableDamlType(data.name().to_owned())))
     }
 
     /// Encode a `DamlRecord` as a JSON schema.
