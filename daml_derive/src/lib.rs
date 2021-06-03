@@ -708,7 +708,12 @@ pub fn daml_codegen(attr: proc_macro::TokenStream) -> proc_macro::TokenStream {
 #[doc(hidden)]
 #[derive(Debug, FromMeta)]
 struct CodeGeneratorParameters {
-    pub dar_file: String,
+    #[darling(default)]
+    pub dar_file: Option<String>,
+    #[darling(default)]
+    pub dar_file_env: Option<String>,
+    #[darling(default)]
+    pub dar_file_pointer: Option<String>,
     #[darling(multiple)]
     pub module_filter_regex: Vec<String>,
     #[darling(default)]

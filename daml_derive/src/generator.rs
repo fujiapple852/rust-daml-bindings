@@ -13,13 +13,30 @@ use daml_lf::element::{DamlChoice, DamlEnum, DamlRecord, DamlTemplate, DamlVaria
 use daml_lf::DarFile;
 use darling::FromMeta;
 use quote::quote;
+use std::env::var;
+use std::io::Read;
 use syn::{AttributeArgs, Data, DataStruct, DeriveInput, Fields, ItemImpl};
 
 /// Generate a Rust `TokenStream` representing the supplied DAML Archive.
 pub fn generate_tokens(args: AttributeArgs) -> proc_macro::TokenStream {
     let params: CodeGeneratorParameters = CodeGeneratorParameters::from_list(&args).unwrap_or_else(|e| panic!("{}", e));
-    let archive = DarFile::from_file(&params.dar_file)
-        .unwrap_or_else(|e| panic!("failed to load Dar file from {}, error was: {}", &params.dar_file, e.to_string()));
+    let dar_file_path = match (params.dar_file, params.dar_file_env, params.dar_file_pointer) {
+        (Some(dar_file), None, None) => dar_file,
+        (None, Some(dar_file_env), None) =>
+            var(&dar_file_env).unwrap_or_else(|_| panic!("failed to dar_file_env {}", &dar_file_env)),
+        (None, None, Some(dar_file_pointer)) => {
+            let mut pointer_file = std::fs::File::open(&dar_file_pointer)
+                .unwrap_or_else(|_| panic!("failed to open dar_file_pointer {}", &dar_file_pointer));
+            let mut line = String::new();
+            pointer_file
+                .read_to_string(&mut line)
+                .unwrap_or_else(|_| panic!("failed to read from dar_file_pointer {}", dar_file_pointer));
+            line
+        },
+        _ => panic!("exactly one of dar_file, dar_file_env or dar_file_pointer must be set"),
+    };
+    let archive = DarFile::from_file(&dar_file_path)
+        .unwrap_or_else(|e| panic!("failed to load Dar file from {}, error was: {}", &dar_file_path, e.to_string()));
     let filters: Vec<_> = params.module_filter_regex.iter().map(String::as_str).collect();
     let render_method = match &params.mode {
         Some(name) if name.to_ascii_lowercase() == "intermediate" => RenderMethod::Intermediate,
