@@ -113,15 +113,7 @@ impl<'a> DamlType<'a> {
         entity: &'b str,
         type_arguments: Vec<DamlType<'b>>,
     ) -> DamlType<'b> {
-        DamlType::TyCon(DamlTyCon::new(
-            DamlTyConName::Absolute(DamlAbsoluteTyCon::new(
-                entity.into(),
-                package_id.into(),
-                Cow::default(),
-                module.iter().map(AsRef::as_ref).map(Into::into).collect(),
-            )),
-            type_arguments,
-        ))
+        DamlType::TyCon(DamlTyCon::new_absolute_with_type_args(package_id, module, entity, type_arguments))
     }
 }
 
@@ -322,6 +314,23 @@ impl<'a> DamlTyCon<'a> {
         }
     }
 
+    pub fn new_absolute<'b, S: AsRef<str> + 'b>(
+        package_id: &'b str,
+        module: &'b [S],
+        entity: &'b str,
+    ) -> DamlTyCon<'b> {
+        Self::new_absolute_with_type_args(package_id, module, entity, vec![])
+    }
+
+    pub fn new_absolute_with_type_args<'b, S: AsRef<str> + 'b>(
+        package_id: &'b str,
+        module: &'b [S],
+        entity: &'b str,
+        type_arguments: Vec<DamlType<'b>>,
+    ) -> DamlTyCon<'b> {
+        DamlTyCon::new(DamlTyConName::new_absolute(package_id, module, entity), type_arguments)
+    }
+
     pub fn type_arguments(&self) -> &[DamlType<'_>] {
         &self.type_arguments
     }
@@ -387,6 +396,19 @@ impl<'a> DamlTyConName<'a> {
             DamlTyConName::NonLocal(non_local) => &non_local.data_name,
             DamlTyConName::Absolute(abs) => &abs.data_name,
         }
+    }
+
+    pub fn new_absolute<'b, S: AsRef<str> + 'b>(
+        package_id: &'b str,
+        module: &'b [S],
+        entity: &'b str,
+    ) -> DamlTyConName<'b> {
+        DamlTyConName::Absolute(DamlAbsoluteTyCon::new(
+            entity.into(),
+            package_id.into(),
+            Cow::default(),
+            module.iter().map(AsRef::as_ref).map(Into::into).collect(),
+        ))
     }
 
     /// Extract the package id, module path and data name.
