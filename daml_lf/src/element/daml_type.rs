@@ -7,6 +7,7 @@ use crate::element::{DamlField, DamlTypeVarWithKind, DamlVisitableElement};
 use crate::owned::ToStatic;
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::hash::{Hash, Hasher};
 
 /// Representation of a DAML type.
 #[derive(Debug, Serialize, Clone)]
@@ -340,6 +341,21 @@ impl<'a> DamlTyCon<'a> {
     }
 }
 
+impl Hash for DamlTyCon<'_> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.tycon.hash(state)
+    }
+}
+
+/// Equality for `DamlTyCon` is defined on the `DamlTyConName` only, `type_arguments` are not considered.
+impl PartialEq for DamlTyCon<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.tycon == other.tycon
+    }
+}
+
+impl Eq for DamlTyCon<'_> {}
+
 impl<'a> DamlVisitableElement<'a> for DamlTyCon<'a> {
     fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
         visitor.pre_visit_tycon(self);
@@ -358,7 +374,7 @@ impl ToStatic for DamlTyCon<'_> {
 }
 
 /// DOCME
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq)]
 pub enum DamlTyConName<'a> {
     Local(DamlLocalTyCon<'a>),
     NonLocal(DamlNonLocalTyCon<'a>),
@@ -466,7 +482,7 @@ impl ToStatic for DamlTyConName<'_> {
 }
 
 /// DOCME
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq)]
 pub struct DamlLocalTyCon<'a> {
     data_name: Cow<'a, str>,
     package_id: Cow<'a, str>,
@@ -527,7 +543,7 @@ impl ToStatic for DamlLocalTyCon<'_> {
 }
 
 /// DOCME
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq)]
 pub struct DamlNonLocalTyCon<'a> {
     data_name: Cow<'a, str>,
     source_package_id: Cow<'a, str>,
@@ -612,7 +628,7 @@ impl ToStatic for DamlNonLocalTyCon<'_> {
 }
 
 /// DOCME
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq)]
 pub struct DamlAbsoluteTyCon<'a> {
     data_name: Cow<'a, str>,
     package_id: Cow<'a, str>,
