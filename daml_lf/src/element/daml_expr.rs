@@ -124,6 +124,27 @@ impl DamlValueName<'_> {
         }
     }
 
+    pub fn package_id(&self) -> &str {
+        match self {
+            DamlValueName::Local(local) => local.package_id(),
+            DamlValueName::NonLocal(non_local) => non_local.target_package_id(),
+        }
+    }
+
+    pub fn package_name(&self) -> &str {
+        match self {
+            DamlValueName::Local(local) => local.package_name(),
+            DamlValueName::NonLocal(non_local) => non_local.target_package_name(),
+        }
+    }
+
+    pub fn module_path(&self) -> impl Iterator<Item = &str> {
+        match self {
+            DamlValueName::Local(local) => local.module_path.iter().map(AsRef::as_ref),
+            DamlValueName::NonLocal(non_local) => non_local.target_module_path.iter().map(AsRef::as_ref),
+        }
+    }
+
     /// Extract the package id, module path and name.
     #[doc(hidden)]
     pub(crate) fn reference_parts(&self) -> (&str, &[Cow<'_, str>], &str) {
