@@ -4,6 +4,8 @@ use crate::element::{
 use crate::owned::ToStatic;
 use serde::Serialize;
 use std::borrow::Cow;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Serialize, Clone)]
 pub enum DamlExpr<'a> {
@@ -152,6 +154,22 @@ impl DamlValueName<'_> {
             DamlValueName::Local(local) => (&local.package_id, &local.module_path, &local.name),
             DamlValueName::NonLocal(non_local) =>
                 (&non_local.target_package_id, &non_local.target_module_path, &non_local.name),
+        }
+    }
+}
+
+impl Display for DamlValueName<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            DamlValueName::Local(local) =>
+                write!(f, "{}:{}:{}", local.package_name, &local.module_path.join("."), local.name),
+            DamlValueName::NonLocal(non_local) => write!(
+                f,
+                "{}:{}:{}",
+                non_local.target_package_name,
+                &non_local.target_module_path.join("."),
+                non_local.name
+            ),
         }
     }
 }
