@@ -29,13 +29,13 @@ inspect:
 	daml damlc inspect-dar .daml/dist/*
 
 run-wallclock:
-	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_PORT} -l wallclock-sandbox -m wallclock -a es256
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_PORT} -l wallclock-sandbox -m wallclock -a es256 -e
 
 run-static:
-	./sandbox.sh -h ${SANDBOX_HOST} -p ${STATIC_PORT} -l static-sandbox -m static -a es256
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${STATIC_PORT} -l static-sandbox -m static -a es256 -e
 
 run-wallclock-unsecured:
-	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_UNSECURED_PORT} -l wallclock-unsecured-sandbox -m wallclock
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_UNSECURED_PORT} -l wallclock-unsecured-sandbox -m wallclock -e
 
 run-json-bridge:
 	./json_bridge.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_UNSECURED_PORT} -b ${JSON_BRIDGE_PORT}

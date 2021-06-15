@@ -41,6 +41,7 @@ impl<'a> DamlModule<'a> {
         flags: DamlFeatureFlags,
         synonyms: Vec<DamlDefTypeSyn<'a>>,
         data_types: HashMap<Cow<'a, str>, DamlData<'a>>,
+        exceptions: Vec<DamlDefException<'a>>,
         #[cfg(feature = "full")] values: HashMap<Cow<'a, str>, DamlDefValue<'a>>,
     ) -> Self {
         Self {
@@ -169,6 +170,7 @@ impl<'a> DamlModule<'a> {
             data_types: HashMap::default(),
             #[cfg(feature = "full")]
             values: HashMap::default(),
+            exceptions: Vec::default(),
         }
     }
 }
