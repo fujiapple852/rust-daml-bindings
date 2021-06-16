@@ -63,8 +63,7 @@
                             }
                           ],
                           "minItems": 2,
-                          "maxItems": 2,
-                          "additionalItems": false
+                          "maxItems": 2
                         }
                       ]
                     }
@@ -127,8 +126,7 @@
                             }
                           ],
                           "minItems": 2,
-                          "maxItems": 2,
-                          "additionalItems": false
+                          "maxItems": 2
                         }
                       ]
                     }
@@ -136,8 +134,7 @@
                 }
               ],
               "minItems": 1,
-              "maxItems": 1,
-              "additionalItems": false
+              "maxItems": 1
             }
           ]
         }
@@ -208,8 +205,7 @@
                             }
                           ],
                           "minItems": 2,
-                          "maxItems": 2,
-                          "additionalItems": false
+                          "maxItems": 2
                         }
                       ]
                     }
@@ -272,8 +268,7 @@
                             }
                           ],
                           "minItems": 2,
-                          "maxItems": 2,
-                          "additionalItems": false
+                          "maxItems": 2
                         }
                       ]
                     }
@@ -281,15 +276,13 @@
                 }
               ],
               "minItems": 1,
-              "maxItems": 1,
-              "additionalItems": false
+              "maxItems": 1
             }
           ]
         }
       ],
       "minItems": 1,
-      "maxItems": 1,
-      "additionalItems": false
+      "maxItems": 1
     }
   ]
 }

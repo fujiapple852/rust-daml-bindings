@@ -6,7 +6,6 @@
       "properties": {
         "foo": {
           "items": {
-            "additionalItems": false,
             "items": [
               {
                 "type": [
@@ -35,11 +34,9 @@
       "type": "object"
     },
     {
-      "additionalItems": false,
       "items": [
         {
           "items": {
-            "additionalItems": false,
             "items": [
               {
                 "type": [

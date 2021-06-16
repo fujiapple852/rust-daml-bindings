@@ -150,8 +150,6 @@ pub struct DamlJsonSchemaGenMapItems {
     pub min_items: usize,
     #[serde(rename = "maxItems")]
     pub max_items: usize,
-    #[serde(rename = "additionalItems")]
-    pub additional_items: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -229,8 +227,6 @@ pub struct DamlJsonSchemaRecordAsArray<'a> {
     pub min_items: usize,
     #[serde(rename = "maxItems")]
     pub max_items: usize,
-    #[serde(rename = "additionalItems")]
-    pub additional_items: bool,
 }
 
 #[derive(Debug, Serialize)]

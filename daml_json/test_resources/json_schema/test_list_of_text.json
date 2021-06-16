@@ -28,7 +28,6 @@
       "type": "object"
     },
     {
-      "additionalItems": false,
       "items": [
         {
           "type": [

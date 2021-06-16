@@ -40,7 +40,6 @@
       "type": "object"
     },
     {
-      "additionalItems": false,
       "items": [
         {
           "oneOf": [

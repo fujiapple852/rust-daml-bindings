@@ -185,8 +185,7 @@
                 }
               ],
               "minItems": 4,
-              "maxItems": 4,
-              "additionalItems": false
+              "maxItems": 4
             }
           ]
         }

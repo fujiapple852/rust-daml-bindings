@@ -23,7 +23,6 @@
       "type": "object"
     },
     {
-      "additionalItems": false,
       "items": [
         {
           "additionalProperties": {

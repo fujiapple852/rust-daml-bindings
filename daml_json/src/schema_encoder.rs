@@ -474,13 +474,17 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///     ],
     ///     "minItems": 2,
     ///     "maxItems": 2,
-    ///     "additionalItems": false
     ///   }
     /// }
     /// ```
     ///
     /// > ⓘ Note: The LF encoding specification states that _"any duplicate keys will cause the map to be treated as
     /// invalid"_ however this cannot be enforced by the JSON schema for this array of `[key, val]` arrays.
+    ///
+    /// > ⓘ Note: The validation of the `items` keyword has changed in the 2020-12 draft, however the specification
+    /// [notes](https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.2)
+    /// that 'the behavior of "items" without "prefixItems" is identical to that of the schema form of "items" in prior
+    /// drafts'
     fn encode_genmap(&self, ty_key: Value, ty_value: Value) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaGenMap {
             schema: self.schema_if_all(),
@@ -491,7 +495,6 @@ impl<'a> JsonSchemaEncoder<'a> {
                 items: [ty_key, ty_value],
                 min_items: 2,
                 max_items: 2,
-                additional_items: false,
             },
         })?)
     }
@@ -616,8 +619,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///         }
     ///       ],
     ///       "minItems": "...",
-    ///       "maxItems": "...",
-    ///       "additionalItems": false
+    ///       "maxItems": "..."
     ///     }
     ///   ]
     /// }
@@ -628,6 +630,11 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///
     /// > ⓘ Note: For the JSON list encoding, all fields will be included, and the order is significant. The
     /// `minItems` and `maxItems`will be set to reflect the number of fields on the record.
+    ///
+    /// > ⓘ Note: The validation of the `items` keyword has changed in the 2020-12 draft, however the specification
+    /// [notes](https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-00#section-10.3.1.2)
+    /// that 'the behavior of "items" without "prefixItems" is identical to that of the schema form of "items" in prior
+    /// drafts'
     fn do_encode_record(
         &self,
         name: &str,
@@ -898,7 +905,6 @@ impl<'a> JsonSchemaEncoder<'a> {
             items: fields_list,
             min_items: item_count,
             max_items: item_count,
-            additional_items: false,
         })?)
     }
 
@@ -1534,6 +1540,11 @@ mod tests {
             [[{"name": "Alice", "age": 10}, "Alice is 10"], [{"name": "Bob", "age": 6}, "Bob is 6"]]
         );
         validate_schema_for_arc_match(arc, &ty, &instance)
+    }
+
+    #[test]
+    fn test_validate_genmap_invalid() -> Result<()> {
+        validate_schema_no_match(&DamlType::GenMap(vec![DamlType::Int64, DamlType::Text]), &json!([[101, "foo", 102]]))
     }
 
     /// { foo: 42 }     -->  Oa { foo: Some 42 }        : Oa Int
