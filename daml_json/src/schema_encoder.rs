@@ -21,6 +21,7 @@ use crate::schema_data::{
 };
 use crate::util::AsSingleSliceExt;
 use crate::util::Required;
+use std::ops::Not;
 
 /// The JSON schema version.
 const SCHEMA_VERSION: &str = "https://json-schema.org/draft/2020-12/schema";
@@ -880,7 +881,7 @@ impl<'a> JsonSchemaEncoder<'a> {
         Ok(serde_json::to_value(DamlJsonSchemaRecordAsObject {
             ty: "object",
             title: self.title_if_all(&format!("Record ({})", name)),
-            properties: fields_map,
+            properties: fields_map.is_empty().not().then(|| fields_map),
             additional_properties: false,
             required: opt_fields,
         })?)
@@ -902,7 +903,7 @@ impl<'a> JsonSchemaEncoder<'a> {
         Ok(serde_json::to_value(DamlJsonSchemaRecordAsArray {
             ty: "array",
             title: self.title_if_all(&format!("Record ({}, fields = [{}])", name, field_names)),
-            items: fields_list,
+            items: (item_count > 0).then(|| fields_list),
             min_items: item_count,
             max_items: item_count,
         })?)
@@ -1172,6 +1173,16 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Person");
         let expected = get_expected!("test_record.json")?;
+        let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_empty_record() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "PingPong"], "ResetPingCount");
+        let expected = get_expected!("test_empty_record.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())

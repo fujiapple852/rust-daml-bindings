@@ -210,7 +210,8 @@ pub struct DamlJsonSchemaRecordAsObject<'a> {
     pub ty: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<&'a str>,
-    pub properties: BTreeMap<&'a str, Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub properties: Option<BTreeMap<&'a str, Value>>,
     #[serde(rename = "additionalProperties")]
     pub additional_properties: bool,
     pub required: Vec<&'a str>,
@@ -222,7 +223,8 @@ pub struct DamlJsonSchemaRecordAsArray<'a> {
     pub ty: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<&'a str>,
-    pub items: Vec<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub items: Option<Vec<Value>>,
     #[serde(rename = "minItems")]
     pub min_items: usize,
     #[serde(rename = "maxItems")]
