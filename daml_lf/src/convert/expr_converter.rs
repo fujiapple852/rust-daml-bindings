@@ -295,7 +295,7 @@ impl<'a> TryFrom<&DamlRecUpdWrapper<'a>> for DamlRecUpd<'a> {
     fn try_from(rec_upd: &DamlRecUpdWrapper<'a>) -> DamlLfConvertResult<Self> {
         let tycon = DamlTyCon::try_from(&rec_upd.wrap(&rec_upd.payload.tycon))?;
         let record = DamlExpr::try_from(&rec_upd.wrap(rec_upd.payload.record.as_ref()))?;
-        let update = DamlExpr::try_from(&rec_upd.wrap(rec_upd.payload.record.as_ref()))?;
+        let update = DamlExpr::try_from(&rec_upd.wrap(rec_upd.payload.update.as_ref()))?;
         let field = rec_upd.payload.field.resolve(rec_upd.context.package)?;
         Ok(DamlRecUpd::new(tycon, Box::new(record), Box::new(update), field))
     }
