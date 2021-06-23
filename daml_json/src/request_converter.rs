@@ -232,15 +232,14 @@ mod tests {
     use anyhow::Result;
     use daml::macros::daml_path;
     use daml_grpc::primitive_types::{DamlParty, DamlText};
-    use daml_lf::DarFile;
     use serde_json::json;
 
     static TESTING_TYPES_DAR_PATH: &str = "../resources/testing_types_sandbox/TestingTypes-latest.dar";
 
     #[test]
     fn test_convert_create_request() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateRequest::new(
             "DA.RentDemo:RentalAgreement",
             json!(
@@ -262,8 +261,8 @@ mod tests {
 
     #[test]
     fn test_convert_exercise_request() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonExerciseRequest::new(
             "DA.RentDemo:RentalAgreement",
             "#0:0",
@@ -287,8 +286,8 @@ mod tests {
 
     #[test]
     fn test_convert_exercise_by_key_request() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonExerciseByKeyRequest::new(
             "DA.PingPong:Ping",
             json!({ "sender" : "Alice", "count": 99 }),
@@ -314,8 +313,8 @@ mod tests {
 
     #[test]
     fn test_convert_create_and_exercise_request() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateAndExerciseRequest::new(
             "DA.RentDemo:RentalAgreement",
             json!(
@@ -346,8 +345,8 @@ mod tests {
 
     #[test]
     fn test_convert_create_request_with_package_id() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateRequest::new(
             format!("{}:DA.RentDemo:RentalAgreement", arc.main_package_id()),
             json!(
@@ -369,8 +368,8 @@ mod tests {
 
     #[test]
     fn test_convert_create_request_unknown_template_err() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateRequest::new("DA.RentDemo:FooTemplate", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::UnknownTemplateId(_)) => Ok(()),
@@ -381,8 +380,8 @@ mod tests {
 
     #[test]
     fn test_convert_create_request_unknown_module_err() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateRequest::new("Foo.RentDemo:RentalAgreement", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::UnknownTemplateId(_)) => Ok(()),
@@ -393,8 +392,8 @@ mod tests {
 
     #[test]
     fn test_convert_create_request_unknown_package_id_err() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateRequest::new("1234:DA.RentDemo:RentalAgreement", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::UnknownTemplateId(_)) => Ok(()),
@@ -405,8 +404,8 @@ mod tests {
 
     #[test]
     fn test_convert_create_request_expected_template_err() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateRequest::new("DA.PingPong:UserData", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::ExpectedTemplateError(_)) => Ok(()),
@@ -419,8 +418,8 @@ mod tests {
     #[test]
     #[ignore]
     fn test_convert_create_request_multiple_match_templates_err() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateRequest::new("DA.PingPong:UserData", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::MultipleMatchingTemplates(..)) => Ok(()),
@@ -431,8 +430,8 @@ mod tests {
 
     #[test]
     fn test_convert_exercise_request_unknown_choice_err() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonExerciseRequest::new("DA.RentDemo:RentalAgreement", "#0:0", "UnknownChoice", json!({}));
         match request_converter.convert_exercise_request(&request) {
             Err(DamlJsonReqConError::CodecError(DamlJsonCodecError::DataNotFound(_))) => Ok(()),
@@ -443,8 +442,8 @@ mod tests {
 
     #[test]
     fn test_convert_exercise_by_key_request_template_no_key_err() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonExerciseByKeyRequest::new("DA.RentDemo:RentalAgreement", json!({}), "Dummy", json!({}));
         match request_converter.convert_exercise_by_key_request(&request) {
             Err(DamlJsonReqConError::TemplateNoKeyError(_)) => Ok(()),
@@ -455,8 +454,8 @@ mod tests {
 
     #[test]
     fn test_convert_create_request_missing_field_err() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateRequest::new(
             "DA.RentDemo:RentalAgreement",
             json!(
@@ -475,8 +474,8 @@ mod tests {
 
     #[test]
     fn test_convert_create_and_exercise_request_missing_choice_field_err() -> Result<()> {
-        let arc = DarFile::from_file(TESTING_TYPES_DAR_PATH)?.to_owned_archive()?;
-        let request_converter = JsonToGrpcRequestConverter::new(&arc);
+        let arc = daml_archive();
+        let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateAndExerciseRequest::new(
             "DA.RentDemo:RentalAgreement",
             json!(
@@ -497,5 +496,9 @@ mod tests {
             Err(e) => panic!("{}", e.to_string()),
             _ => panic!("test should fail"),
         }
+    }
+
+    fn daml_archive() -> &'static DamlArchive<'static> {
+        crate::test_util::daml_archive(TESTING_TYPES_DAR_PATH)
     }
 }

@@ -1009,14 +1009,10 @@ impl<'a> JsonSchemaEncoder<'a> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use anyhow::Result;
     use assert_json_diff::assert_json_eq;
     use jsonschema::JSONSchema;
-    use once_cell::sync::OnceCell;
-
-    use daml_lf::DarFile;
-
-    use super::*;
 
     static TESTING_TYPES_DAR_PATH: &str = "../resources/testing_types_sandbox/TestingTypes-latest.dar";
 
@@ -1173,6 +1169,16 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Person");
         let expected = get_expected!("test_record.json")?;
+        let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_large_field_count() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "LargeExpr"], "Call");
+        let expected = get_expected!("test_large_field_count.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1740,11 +1746,6 @@ mod tests {
     }
 
     fn daml_archive() -> &'static DamlArchive<'static> {
-        static INSTANCE: OnceCell<DamlArchive<'_>> = OnceCell::new();
-        INSTANCE.get_or_init(|| {
-            let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)
-                .unwrap_or_else(|_| panic!("dar file not found: {}", TESTING_TYPES_DAR_PATH));
-            dar.to_owned_archive().expect("failed to convert dar to owned archive")
-        })
+        crate::test_util::daml_archive(TESTING_TYPES_DAR_PATH)
     }
 }

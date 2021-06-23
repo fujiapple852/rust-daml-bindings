@@ -1,0 +1,89 @@
+module DA.LargeExpr where
+
+type MasterKey = (Party, Text)
+
+template Master
+  with
+    oper : Party
+    pid : Text
+    foo2: Text
+    foo3: Text
+    foo4: Text
+    foo5: Text
+    foo6: Text
+    foo7: Text
+    foo8: Text
+    foo9: Text
+    foo10: Text
+    foo11: Text
+    foo12: Text
+    foo13: Text
+    foo14: Text
+    foo15: Text
+    foo16: Text
+    foo17: Text
+    foo18: Text
+    foo19: Text
+    foo20: Text
+    foo21: Text
+  where
+    signatory oper
+    key (oper, pid): MasterKey
+    maintainer key._1
+
+
+template RefDataOnboarding
+  with
+    oper : Party
+  where
+    signatory oper
+
+    controller oper can
+      nonconsuming Call : ContractId Master
+        with
+            pid : Text
+            foo2 : Text
+            foo3: Text
+            foo4: Text
+            foo5: Text
+            foo6: Text
+            foo7: Text
+            foo8: Text
+            foo9: Text
+            foo10: Text
+            foo11: Text
+            foo12: Text
+            foo13: Text
+            foo14: Text
+            foo15: Text
+            foo16: Text
+            foo17: Text
+            foo18: Text
+            foo19: Text
+            foo20: Text
+            foo21: Text
+        do
+            master <- fetchByKey @Master (oper, pid)
+            create master._2
+                with pid,
+                        foo2,
+                        foo3,
+                        foo4,
+                        foo5,
+                        foo6,
+                        foo7,
+                        foo8,
+                        foo9,
+                        foo10,
+                        foo11,
+                        foo12,
+                        foo13,
+                        foo14,
+                        foo15,
+                        foo16,
+                        foo17,
+                        foo18,
+                        foo19,
+                        foo20,
+                        foo21
+          

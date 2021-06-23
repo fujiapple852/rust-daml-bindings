@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Record (Call)",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Record (Call)",
+      "properties": {
+        "foo10": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo11": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo12": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo13": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo14": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo15": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo16": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo17": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo18": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo19": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo2": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo20": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo21": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo3": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo4": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo5": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo6": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo7": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo8": {
+          "title": "Text",
+          "type": "string"
+        },
+        "foo9": {
+          "title": "Text",
+          "type": "string"
+        },
+        "pid": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "pid",
+        "foo2",
+        "foo3",
+        "foo4",
+        "foo5",
+        "foo6",
+        "foo7",
+        "foo8",
+        "foo9",
+        "foo10",
+        "foo11",
+        "foo12",
+        "foo13",
+        "foo14",
+        "foo15",
+        "foo16",
+        "foo17",
+        "foo18",
+        "foo19",
+        "foo20",
+        "foo21"
+      ]
+    },
+    {
+      "type": "array",
+      "title": "Record (Call, fields = [pid, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9, foo10, foo11, foo12, foo13, foo14, foo15, foo16, foo17, foo18, foo19, foo20, foo21])",
+      "items": [
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        },
+        {
+          "title": "Text",
+          "type": "string"
+        }
+      ],
+      "minItems": 21,
+      "maxItems": 21
+    }
+  ]
+}

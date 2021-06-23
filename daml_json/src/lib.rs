@@ -62,3 +62,6 @@ mod schema_data;
 pub mod schema_encoder;
 
 mod util;
+
+#[cfg(test)]
+mod test_util;
