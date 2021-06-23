@@ -1,7 +1,5 @@
 use daml::json_api::schema_encoder::{ReferenceMode, RenderTitle};
 
-use crate::operation::PathStyle;
-
 #[derive(Copy, Clone, Debug)]
 pub enum OutputFormat {
     Json,
@@ -27,4 +25,26 @@ pub struct Config<'a> {
     pub emit_package_id: bool,
     pub include_archive_choice: bool,
     pub path_style: PathStyle,
+}
+
+///
+#[derive(Copy, Clone, Debug)]
+pub enum PathStyle {
+    Fragment,
+    Slash,
+}
+
+impl PathStyle {
+    pub const fn separator(self) -> char {
+        match self {
+            Self::Fragment => '#',
+            Self::Slash => '/',
+        }
+    }
+}
+
+impl Default for PathStyle {
+    fn default() -> Self {
+        Self::Fragment
+    }
 }

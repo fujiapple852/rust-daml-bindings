@@ -1,7 +1,8 @@
-use crate::common::DataId;
-use crate::format::{format_oas_template, format_path_regex_safe};
-use itertools::chain;
+use itertools::{chain, zip};
 use serde_json::Value;
+
+use crate::common::DataId;
+use crate::format::{format_daml_template, format_oas_template, format_path_regex_safe};
 
 /// Make Daml JSON API schema items.
 pub struct DamlJsonApiSchema {
@@ -42,7 +43,8 @@ impl DamlJsonApiSchema {
               "required": [
                 "status",
                 "errors"
-              ]
+              ],
+              "additionalProperties": false
             }
         )
     }
@@ -80,7 +82,8 @@ impl DamlJsonApiSchema {
               "required": [
                 "templateId",
                 "payload"
-              ]
+              ],
+              "additionalProperties": false
             }
         )
     }
@@ -108,7 +111,8 @@ impl DamlJsonApiSchema {
                 "payload",
                 "choice",
                 "argument"
-              ]
+              ],
+              "additionalProperties": false
             }
         )
     }
@@ -131,7 +135,8 @@ impl DamlJsonApiSchema {
                 "contractId",
                 "choice",
                 "argument"
-              ]
+              ],
+              "additionalProperties": false
             }
         )
     }
@@ -158,7 +163,8 @@ impl DamlJsonApiSchema {
                 "key",
                 "choice",
                 "argument"
-              ]
+              ],
+              "additionalProperties": false
             }
         )
     }
@@ -177,7 +183,8 @@ impl DamlJsonApiSchema {
                         }
                     },
                 },
-                "required": ["exerciseResult", "events"]
+                "required": ["exerciseResult", "events"],
+                "additionalProperties": false
             }
         ))
     }
@@ -194,7 +201,8 @@ impl DamlJsonApiSchema {
               },
               "required": [
                 "contractId"
-              ]
+              ],
+              "additionalProperties": false
             }
         )
     }
@@ -210,7 +218,8 @@ impl DamlJsonApiSchema {
               },
               "required": [
                 "templateId", "key"
-              ]
+              ],
+              "additionalProperties": false
             }
         )
     }
@@ -218,6 +227,216 @@ impl DamlJsonApiSchema {
     /// DOCME
     pub fn make_fetch_response(&self, template_id: &DataId) -> Value {
         Self::make_success_response(&Self::make_optional_result(&self.make_create_event(template_id)))
+    }
+
+    /// Make a Contracts Query Stream request (single).
+    ///
+    /// See [Contracts Query Stream](https://docs.daml.com/json-api/index.html#contracts-query-stream)
+    pub fn make_stream_query_single_request(&self, templates: &[DataId]) -> Value {
+        self.make_query_request(templates)
+    }
+
+    /// Make a Contracts Query Stream request (multi).
+    ///
+    /// See [Contracts Query Stream](https://docs.daml.com/json-api/index.html#contracts-query-stream)
+    pub fn make_stream_query_multi_request(&self, templates: &[DataId]) -> Value {
+        serde_json::json!(
+            {
+                "type": "array",
+                "items": self.make_query_request(templates),
+                "minItems": 1
+            }
+        )
+    }
+
+    /// Make a Contracts Query Stream request (offset).
+    ///
+    /// See [Contracts Query Stream](https://docs.daml.com/json-api/index.html#contracts-query-stream)
+    pub fn make_stream_query_offset_request() -> Value {
+        serde_json::json!(
+            {
+                "type": "object",
+                "properties": {
+                    "offset": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false
+            }
+        )
+    }
+
+    /// Make Fetch by Key Contracts Stream request.
+    ///
+    /// See [Fetch by Key Contracts Stream](https://docs.daml.com/json-api/index.html#fetch-by-key-contracts-stream)
+    pub fn make_stream_fetch_request(&self, templates: &[DataId], keys: &[Value]) -> Value {
+        let template_fetch_items =
+            zip(templates, keys).into_iter().map(|(t, k)| self.make_fetch_item(t, k)).collect::<Vec<_>>();
+        serde_json::json!(
+            {
+                "type": "array",
+                "description": "The application/json body that must be sent first, formatted according to the following rule",
+                "items": {
+                    "oneOf": template_fetch_items
+                },
+                "minItems": 1
+            }
+        )
+    }
+
+    /// Make Fetch & Query Stream events.
+    pub fn make_stream_events_response(&self, created: &[DataId], archived: &[DataId]) -> Value {
+        // TODO this is technically wrong as stream events don't contain warnings
+        // TODO is offset mandatory?
+        Self::make_success_response(&serde_json::json!(
+            {
+                "type": "object",
+                "properties": {
+                    "events": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": self.make_create_and_archive_stream_events(created, archived)
+                        }
+                    },
+                    "offset": {
+                        "type": "string"
+                    }
+                },
+                "required": ["events", "offset"],
+                "additionalProperties": false
+            }
+        ))
+    }
+
+    /// Make a warning response suitable for use by the streaming endpoints.
+    pub fn make_stream_warnings() -> Value {
+        serde_json::json!(
+            {
+                "type": "object",
+                "properties": {
+                    "unknownTemplateIds": {
+                        "type": "array",
+                        "description": "template ID strings",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": ["unknownTemplateIds"],
+                "additionalProperties": false
+            }
+        )
+    }
+
+    /// Make an error response suitable for the streaming API endpoints.
+    ///
+    /// Note: does not contain any optional warnings.
+    pub fn make_stream_errors() -> Value {
+        serde_json::json!(
+            {
+                "type": "object",
+                "properties": {
+                    "errors": {
+                        "type": "array",
+                        "description": "error messages",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "status": {
+                        "enum": [400, 401, 404, 500]
+                    }
+                },
+                "required": ["errors", "status"],
+                "additionalProperties": false
+            }
+        )
+    }
+
+    fn make_create_and_archive_stream_events(
+        &self,
+        create_template_ids: &[DataId],
+        archived_template_ids: &[DataId],
+    ) -> Value {
+        let active = create_template_ids.iter().map(|create| self.make_stream_created(create));
+        let archived = archived_template_ids.iter().map(|archive| self.make_stream_archived(archive));
+        chain(active, archived).collect()
+    }
+
+    fn make_stream_archived(&self, template_id: &DataId) -> Value {
+        serde_json::json!(
+            {
+                "type": "object",
+                "description": format!("archived: {}", format_daml_template(template_id)),
+                "properties": {
+                    "archived": self.make_archive_event(template_id),
+                },
+                "required": ["archived"],
+                "additionalProperties": false
+            }
+        )
+    }
+
+    fn make_stream_created(&self, template_id: &DataId) -> Value {
+        serde_json::json!(
+            {
+                "type": "object",
+                "description": format!("created: {}", format_daml_template(template_id)),
+                "properties": {
+                    "created": self.make_create_event(template_id),
+                    "matchedQueries": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "required": ["created", "matchedQueries"],
+                "additionalProperties": false
+            }
+        )
+    }
+
+    fn make_fetch_item(&self, template_id: &DataId, key: &Value) -> Value {
+        serde_json::json!(
+            {
+                "type": "object",
+                "description": format_daml_template(template_id),
+                "properties": {
+                    "templateId": self.make_template_pattern(template_id),
+                    "key": key,
+                },
+                "required": ["templateId", "key"],
+                "additionalProperties": false
+            }
+        )
+    }
+
+    fn make_query_request(&self, templates: &[DataId]) -> Value {
+        let template_patterns = templates.iter().map(|t| self.make_template_pattern(t)).collect::<Vec<_>>();
+        serde_json::json!(
+            {
+                "type": "object",
+                "properties": {
+                    "templateIds": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": template_patterns
+                        },
+                        "minItems": 1
+                    },
+                    "query": {
+                        "type": "object",
+                        "externalDocs": {
+                            "description": "See the Daml documentation for details of the query language",
+                            "url": "https://docs.daml.com/json-api/search-query-language.html"
+                        }
+                    }
+                },
+                "required": ["templateIds"],
+                "additionalProperties": false
+            }
+        )
     }
 
     /// Make a JSON schema value which represents a `$ref` reference to another schema item.
@@ -231,6 +450,7 @@ impl DamlJsonApiSchema {
               "type": "object",
               "properties": {
                 "status": {
+                  "type": "integer",
                   "const": 200
                 },
                 "result": result,
@@ -241,7 +461,8 @@ impl DamlJsonApiSchema {
               "required": [
                 "status",
                 "result"
-              ]
+              ],
+              "additionalProperties": false
             }
         )
     }
@@ -263,7 +484,8 @@ impl DamlJsonApiSchema {
                 "properties": {
                     "archived": self.make_archive_event(template_id),
                 },
-                "required": ["archived"]
+                "required": ["archived"],
+                "additionalProperties": false
             }
         )
     }
@@ -275,7 +497,8 @@ impl DamlJsonApiSchema {
                 "properties": {
                     "created": self.make_create_event(template_id),
                 },
-                "required": ["created"]
+                "required": ["created"],
+                "additionalProperties": false
             }
         )
     }
@@ -290,7 +513,8 @@ impl DamlJsonApiSchema {
                     },
                     "templateId": self.make_template_pattern(template_id)
                 },
-                "required": ["contractId", "templateId"]
+                "required": ["contractId", "templateId"],
+                "additionalProperties": false
             }
         )
     }
@@ -323,7 +547,8 @@ impl DamlJsonApiSchema {
                     },
                     "templateId": self.make_template_pattern(template_id)
                 },
-                "required": ["observers", "agreementText", "payload", "signatories", "contractId", "templateId"]
+                "required": ["observers", "agreementText", "payload", "signatories", "contractId", "templateId"],
+                "additionalProperties": false
             }
         )
     }

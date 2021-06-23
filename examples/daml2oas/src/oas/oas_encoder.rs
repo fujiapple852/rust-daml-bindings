@@ -6,10 +6,11 @@ use daml::lf::element::{DamlArchive, DamlModule, DamlPackage};
 use crate::common::ERROR_RESPONSE_SCHEMA_NAME;
 use crate::companion::CompanionData;
 use crate::component_encoder::ComponentEncoder;
+use crate::config::PathStyle;
 use crate::json_api_schema::DamlJsonApiSchema;
-use crate::openapi_data::{Components, Contact, Info, OpenAPI, Paths, Schema, Server, Tag};
-use crate::operation::PathStyle;
-use crate::path_item_encoder::PathItemEncoder;
+use crate::oas::openapi_data::{Components, Contact, Info, OpenAPI, Paths, Server, Tag};
+use crate::oas::path_item_encoder::PathItemEncoder;
+use crate::schema::Schema;
 use crate::util::{ChildModulePathOrError, Required};
 
 pub struct OpenAPIEncoder<'arc> {

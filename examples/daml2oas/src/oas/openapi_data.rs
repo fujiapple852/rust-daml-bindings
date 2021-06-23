@@ -1,7 +1,9 @@
 //! A minimal subset of `OpenAPI` data types required to encode a Daml Dar.
-use serde::Serialize;
-use serde_json::Value;
 use std::collections::BTreeMap;
+
+use serde::Serialize;
+
+use crate::schema::Schema;
 
 const OPEN_API_VERSION: &str = "3.1.0";
 const OPEN_API_SCHEMA_DIALECT: &str = "https://json-schema.org/draft/2020-12/schema";
@@ -233,20 +235,6 @@ impl MediaType {
     pub const fn new(schema: Schema) -> Self {
         Self {
             schema,
-        }
-    }
-}
-
-#[derive(Debug, Serialize)]
-pub struct Schema {
-    #[serde(flatten)]
-    pub value: Value,
-}
-
-impl Schema {
-    pub const fn new(value: Value) -> Self {
-        Self {
-            value,
         }
     }
 }

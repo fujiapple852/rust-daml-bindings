@@ -1,4 +1,5 @@
 use crate::common::DataId;
+use crate::config::PathStyle;
 use crate::format::format_oas_template;
 
 const API_VERSION_PATH: &str = "/v1";
@@ -6,28 +7,6 @@ const API_CREATE_PATH: &str = "create";
 const API_CREATE_AND_EXERCISE_PATH: &str = "create_and_exercise";
 const API_EXERCISE_PATH: &str = "exercise";
 const API_FETCH_PATH: &str = "fetch";
-
-///
-#[derive(Copy, Clone, Debug)]
-pub enum PathStyle {
-    Fragment,
-    Slash,
-}
-
-impl PathStyle {
-    pub const fn separator(self) -> char {
-        match self {
-            Self::Fragment => '#',
-            Self::Slash => '/',
-        }
-    }
-}
-
-impl Default for PathStyle {
-    fn default() -> Self {
-        Self::Fragment
-    }
-}
 
 /// A Daml OAS operation id maker.
 #[derive(Debug, Clone, Copy)]

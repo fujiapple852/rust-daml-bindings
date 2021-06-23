@@ -22,7 +22,7 @@ impl<T> NamedItem<T> {
 }
 
 /// A Daml data Id.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DataId {
     pub package_id: String,
     pub module_path: Vec<String>,

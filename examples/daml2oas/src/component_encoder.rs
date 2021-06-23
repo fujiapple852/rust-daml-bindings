@@ -7,12 +7,14 @@ use daml::lf::element::{DamlArchive, DamlData, DamlModule, DamlPackage};
 
 use crate::common::NamedItem;
 use crate::format::format_oas_data;
-use crate::openapi_data::Schema;
+use crate::schema::Schema;
 use crate::util::{ChildModulePathOrError, Required};
 
 type NamedSchema = NamedItem<Schema>;
 
-/// Encode Daml data types as OAS components.
+/// Encode Daml data types as JSON schema components.
+///
+/// This is designed to be used to generate OAS and A2S documents.
 pub struct ComponentEncoder<'arc> {
     archive: &'arc DamlArchive<'arc>,
     module_prefix: &'arc [&'arc str],

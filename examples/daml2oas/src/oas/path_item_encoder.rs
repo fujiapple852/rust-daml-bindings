@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+use itertools::{chain, process_results};
 use maplit::btreemap;
 use serde_json::Value;
 
@@ -8,16 +9,16 @@ use daml::lf::element::{
     DamlArchive, DamlChoice, DamlData, DamlDefKey, DamlModule, DamlPackage, DamlTemplate, DamlTyCon,
 };
 
-use crate::choice_event_extractor::ChoiceEventExtractor;
 use crate::common::{DataId, NamedItem, ARCHIVE_CHOICE_NAME, ERROR_RESPONSE_SCHEMA_NAME};
+use crate::config::PathStyle;
 use crate::format;
 use crate::format::{format_daml_template, format_path};
 use crate::json_api_schema::DamlJsonApiSchema;
-use crate::openapi_data::{MediaType, Operation, PathItem, RequestBody, Response, ResponseType, Responses, Schema};
-use crate::operation::OperationIdFactory;
-use crate::operation::PathStyle;
+use crate::oas::choice_event_extractor::ChoiceEventExtractor;
+use crate::oas::openapi_data::{MediaType, Operation, PathItem, RequestBody, Response, ResponseType, Responses};
+use crate::oas::operation::OperationIdFactory;
+use crate::schema::Schema;
 use crate::util::{ChildModulePathOrError, Required};
-use itertools::{chain, process_results};
 
 type NamedPathItem = NamedItem<PathItem>;
 

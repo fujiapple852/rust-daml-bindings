@@ -1,8 +1,8 @@
 [package]
 name = "daml2oas"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
-description = "Generate an OpenAPI specification for the Daml JSON API from a Dar file"
+description = "Generate OpenAPI and AsyncAPI specification documents for the Daml JSON API from a Dar file"
 edition = "2018"
 
 [dependencies]
