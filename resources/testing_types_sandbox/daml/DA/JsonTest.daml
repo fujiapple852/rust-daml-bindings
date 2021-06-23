@@ -11,10 +11,54 @@ data PersonMap = PersonMap with m : Map Person Text
 data Oa a = Oa with foo: Optional a
 data OPerson = OPerson with bar: Oa Person
 data Rec = Rec with foo: Text, bar: Rec
-
 data Bottom a = Bottom with bottom: a
 data Middle = Middle with middle: Bottom Int
 data Top = Top with top: Middle
 
 data BottomRec a = BottomRec with val: a; top: BottomRec a
 data TopRec = TopRec with foo: BottomRec Int
+
+template Outer
+  with
+    owner : Party
+    inner : ContractId Inner
+  where
+    signatory owner
+    controller owner can
+      nonconsuming OuterCall : ()
+        do
+          exercise inner InnerCall
+          exercise self Archive
+          return ()
+
+template Inner
+  with
+    owner : Party
+  where
+    signatory owner
+    controller owner can
+      InnerCall : ()
+        do
+          create Leaf with ..
+          return ()
+
+template Leaf
+  with
+    owner : Party
+  where
+    signatory owner
+
+template Account with
+    owner : Party
+    number : Text
+  where
+    signatory owner
+    key (owner, number) : (Party, Text)
+    maintainer key._1
+
+name2 = scenario do
+  alice <- getParty "Alice"
+  submit alice do
+    innerCid <- create Inner with owner = alice
+    outerCid <- create Outer with owner = alice; inner = innerCid
+    exercise outerCid OuterCall

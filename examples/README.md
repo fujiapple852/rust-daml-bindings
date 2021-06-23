@@ -30,5 +30,5 @@ $ cd darn && cargo run
 A tool which generate Daml JSON schemas
 
 ```bash
-$ cd daml_json_schema && cargo run
+$ cd daml2oas && cargo run
 ```

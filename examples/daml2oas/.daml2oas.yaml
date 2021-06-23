@@ -1,0 +1,10 @@
+title: MyApp 1.0 API Documentation
+summary: MyApp Daml JSON API
+description: OpenAPI specification for MyApp Daml JSON API
+version: 1.9.9
+contact:
+  name: Bob Smith
+  url: https://example.com/myapp
+  email: bob.smith@example.com
+servers:
+  - http://localhost:7575

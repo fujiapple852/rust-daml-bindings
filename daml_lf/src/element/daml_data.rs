@@ -403,6 +403,7 @@ impl ToStatic for DamlChoice<'_> {
     }
 }
 
+// TODO should not be public
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlDefKey<'a> {
     pub ty: DamlType<'a>,

@@ -27,7 +27,7 @@ use std::ops::Not;
 const SCHEMA_VERSION: &str = "https://json-schema.org/draft/2020-12/schema";
 
 /// Control which JSON schemas should include a `$schema` property.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum RenderSchema {
     /// Do not render the `$schema` property for any schemas
     None,
@@ -44,7 +44,7 @@ impl Default for RenderSchema {
 }
 
 /// Control which JSON schemas should include a `$schema` property.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum RenderTitle {
     /// Do not render the `title` property for any schemas
     None,
@@ -154,7 +154,7 @@ impl Default for RenderTitle {
 ///
 /// The structure `TopRec` is both recursive and has a type parameter and therefore cannot be emitted as a `$ref` nor
 /// can it 'fallback' to `Inline` mode.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ReferenceMode {
     /// Inline nested `DamlTyCon`.
     Inline,
