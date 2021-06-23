@@ -199,14 +199,14 @@ pub type DamlTypeSynName<'a> = DamlTyConName<'a>;
 
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlSyn<'a> {
-    pub tysyn: DamlTypeSynName<'a>,
+    pub tysyn: Box<DamlTypeSynName<'a>>,
     pub args: Vec<DamlType<'a>>,
 }
 
 impl<'a> DamlSyn<'a> {
     pub fn new(tysyn: DamlTypeSynName<'a>, args: Vec<DamlType<'a>>) -> Self {
         Self {
-            tysyn,
+            tysyn: Box::new(tysyn),
             args,
         }
     }
@@ -313,14 +313,14 @@ impl ToStatic for DamlForall<'_> {
 /// DOCME
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlTyCon<'a> {
-    tycon: DamlTyConName<'a>,
+    tycon: Box<DamlTyConName<'a>>,
     type_arguments: Vec<DamlType<'a>>,
 }
 
 impl<'a> DamlTyCon<'a> {
     pub fn new(tycon: DamlTyConName<'a>, type_arguments: Vec<DamlType<'a>>) -> Self {
         Self {
-            tycon,
+            tycon: Box::new(tycon),
             type_arguments,
         }
     }

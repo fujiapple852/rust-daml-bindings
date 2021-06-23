@@ -10,7 +10,7 @@ use std::fmt::{Display, Formatter};
 #[derive(Debug, Serialize, Clone)]
 pub enum DamlExpr<'a> {
     Var(Cow<'a, str>),
-    Val(DamlValueName<'a>),
+    Val(Box<DamlValueName<'a>>),
     Builtin(DamlBuiltinFunction),
     PrimCon(DamlPrimCon),
     PrimLit(DamlPrimLit<'a>),
@@ -80,7 +80,7 @@ impl ToStatic for DamlExpr<'_> {
     fn to_static(&self) -> Self::Static {
         match self {
             DamlExpr::Var(var) => DamlExpr::Var(var.to_static()),
-            DamlExpr::Val(val) => DamlExpr::Val(val.to_static()),
+            DamlExpr::Val(val) => DamlExpr::Val(Box::new(val.to_static())),
             DamlExpr::Builtin(builtin) => DamlExpr::Builtin(builtin.clone()),
             DamlExpr::PrimCon(prim_con) => DamlExpr::PrimCon(*prim_con),
             DamlExpr::PrimLit(prim_lit) => DamlExpr::PrimLit(prim_lit.to_static()),
@@ -790,14 +790,14 @@ impl ToStatic for DamlVariantCon<'_> {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlEnumCon<'a> {
-    tycon: DamlTyConName<'a>,
+    tycon: Box<DamlTyConName<'a>>,
     enum_con: Cow<'a, str>,
 }
 
 impl<'a> DamlEnumCon<'a> {
     pub fn new(tycon: DamlTyConName<'a>, enum_con: Cow<'a, str>) -> Self {
         Self {
-            tycon,
+            tycon: Box::new(tycon),
             enum_con,
         }
     }
@@ -1775,14 +1775,14 @@ impl ToStatic for DamlPure<'_> {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlCreate<'a> {
-    template: DamlTyConName<'a>,
+    template: Box<DamlTyConName<'a>>,
     expr: Box<DamlExpr<'a>>,
 }
 
 impl<'a> DamlCreate<'a> {
     pub fn new(template: DamlTyConName<'a>, expr: Box<DamlExpr<'a>>) -> Self {
         Self {
-            template,
+            template: Box::new(template),
             expr,
         }
     }
@@ -1815,7 +1815,7 @@ impl ToStatic for DamlCreate<'_> {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlExercise<'a> {
-    template: DamlTyConName<'a>,
+    template: Box<DamlTyConName<'a>>,
     cid: Box<DamlExpr<'a>>,
     arg: Box<DamlExpr<'a>>,
     choice: Cow<'a, str>,
@@ -1829,7 +1829,7 @@ impl<'a> DamlExercise<'a> {
         choice: Cow<'a, str>,
     ) -> Self {
         Self {
-            template,
+            template: Box::new(template),
             cid,
             arg,
             choice,
@@ -1878,7 +1878,7 @@ impl ToStatic for DamlExercise<'_> {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlExerciseByKey<'a> {
-    template: DamlTyConName<'a>,
+    template: Box<DamlTyConName<'a>>,
     choice: Cow<'a, str>,
     key: Box<DamlExpr<'a>>,
     arg: Box<DamlExpr<'a>>,
@@ -1892,7 +1892,7 @@ impl<'a> DamlExerciseByKey<'a> {
         arg: Box<DamlExpr<'a>>,
     ) -> Self {
         Self {
-            template,
+            template: Box::new(template),
             choice,
             key,
             arg,
@@ -1941,14 +1941,14 @@ impl ToStatic for DamlExerciseByKey<'_> {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlFetch<'a> {
-    template: DamlTyConName<'a>,
+    template: Box<DamlTyConName<'a>>,
     cid: Box<DamlExpr<'a>>,
 }
 
 impl<'a> DamlFetch<'a> {
     pub fn new(template: DamlTyConName<'a>, cid: Box<DamlExpr<'a>>) -> Self {
         Self {
-            template,
+            template: Box::new(template),
             cid,
         }
     }
@@ -1981,14 +1981,14 @@ impl ToStatic for DamlFetch<'_> {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlRetrieveByKey<'a> {
-    template: DamlTyConName<'a>,
+    template: Box<DamlTyConName<'a>>,
     key: Box<DamlExpr<'a>>,
 }
 
 impl<'a> DamlRetrieveByKey<'a> {
     pub fn new(template: DamlTyConName<'a>, key: Box<DamlExpr<'a>>) -> Self {
         Self {
-            template,
+            template: Box::new(template),
             key,
         }
     }

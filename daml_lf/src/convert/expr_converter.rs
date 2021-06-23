@@ -47,7 +47,7 @@ impl<'a> TryFrom<&DamlExprWrapper<'a>> for DamlExpr<'a> {
     fn try_from(expr: &DamlExprWrapper<'a>) -> DamlLfConvertResult<Self> {
         Ok(match expr.payload {
             DamlExprPayload::Var(var) => DamlExpr::Var(var.resolve(expr.context.package)?),
-            DamlExprPayload::Val(val) => DamlExpr::Val(DamlValueName::try_from(&expr.wrap(val))?),
+            DamlExprPayload::Val(val) => DamlExpr::Val(Box::new(DamlValueName::try_from(&expr.wrap(val))?)),
             DamlExprPayload::Builtin(builtin) => DamlExpr::Builtin(DamlBuiltinFunction::from(builtin)),
             DamlExprPayload::PrimCon(prim_con) => DamlExpr::PrimCon(DamlPrimCon::try_from(prim_con)?),
             DamlExprPayload::PrimLit(prim_lit) => DamlExpr::PrimLit(DamlPrimLit::try_from(&expr.wrap(prim_lit))?),
