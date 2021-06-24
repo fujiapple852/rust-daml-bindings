@@ -1,4 +1,4 @@
-DAML_LF_VERSION = 1.13
+DAML_LF_VERSION = 1.12
 OUTPUT_PATH = .daml/dist
 DAR_NAME = TestingTypes
 
@@ -29,13 +29,13 @@ inspect:
 	daml damlc inspect-dar .daml/dist/*
 
 run-wallclock:
-	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_PORT} -l wallclock-sandbox -m wallclock -a es256 -e
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_PORT} -l wallclock-sandbox -m wallclock -a es256
 
 run-static:
-	./sandbox.sh -h ${SANDBOX_HOST} -p ${STATIC_PORT} -l static-sandbox -m static -a es256 -e
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${STATIC_PORT} -l static-sandbox -m static -a es256
 
 run-wallclock-unsecured:
-	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_UNSECURED_PORT} -l wallclock-unsecured-sandbox -m wallclock -e
+	./sandbox.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_UNSECURED_PORT} -l wallclock-unsecured-sandbox -m wallclock
 
 run-json-bridge:
 	./json_bridge.sh -h ${SANDBOX_HOST} -p ${WALLCLOCK_UNSECURED_PORT} -b ${JSON_BRIDGE_PORT}
