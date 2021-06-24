@@ -319,41 +319,31 @@ impl<'a> TryFrom<&DamlTypeWrapper<'a>> for DamlType<'a> {
     type Error = DamlLfConvertError;
 
     fn try_from(daml_type: &DamlTypeWrapper<'a>) -> Result<Self, Self::Error> {
+        fn wrap_type_args<'b>(
+            daml_type: &DamlTypeWrapper<'b>,
+            args: &'b [DamlTypePayload<'b>],
+        ) -> DamlLfConvertResult<Vec<DamlType<'b>>> {
+            args.iter().map(|arg| DamlType::try_from(&daml_type.wrap(arg))).collect::<DamlLfConvertResult<Vec<_>>>()
+        }
+
         Ok(match daml_type.payload {
             DamlTypePayload::ContractId(Some(ty)) =>
                 DamlType::ContractId(Some(Box::new(DamlType::try_from(&daml_type.wrap(ty.as_ref()))?))),
             DamlTypePayload::ContractId(None) => DamlType::ContractId(None),
             DamlTypePayload::Int64 => DamlType::Int64,
-            DamlTypePayload::Numeric(inner_type) =>
-                DamlType::Numeric(Box::new(DamlType::try_from(&daml_type.wrap(inner_type.as_ref()))?)),
+            DamlTypePayload::Numeric(args) => DamlType::Numeric(wrap_type_args(daml_type, args)?),
             DamlTypePayload::Text => DamlType::Text,
             DamlTypePayload::Timestamp => DamlType::Timestamp,
             DamlTypePayload::Party => DamlType::Party,
             DamlTypePayload::Bool => DamlType::Bool,
             DamlTypePayload::Unit => DamlType::Unit,
             DamlTypePayload::Date => DamlType::Date,
-            DamlTypePayload::List(args) => DamlType::List(
-                args.iter()
-                    .map(|arg| DamlType::try_from(&daml_type.wrap(arg)))
-                    .collect::<DamlLfConvertResult<Vec<_>>>()?,
-            ),
+            DamlTypePayload::List(args) => DamlType::List(wrap_type_args(daml_type, args)?),
             DamlTypePayload::Update => DamlType::Update,
             DamlTypePayload::Scenario => DamlType::Scenario,
-            DamlTypePayload::TextMap(args) => DamlType::TextMap(
-                args.iter()
-                    .map(|arg| DamlType::try_from(&daml_type.wrap(arg)))
-                    .collect::<DamlLfConvertResult<Vec<_>>>()?,
-            ),
-            DamlTypePayload::GenMap(args) => DamlType::GenMap(
-                args.iter()
-                    .map(|arg| DamlType::try_from(&daml_type.wrap(arg)))
-                    .collect::<DamlLfConvertResult<Vec<_>>>()?,
-            ),
-            DamlTypePayload::Optional(args) => DamlType::Optional(
-                args.iter()
-                    .map(|arg| DamlType::try_from(&daml_type.wrap(arg)))
-                    .collect::<DamlLfConvertResult<Vec<_>>>()?,
-            ),
+            DamlTypePayload::TextMap(args) => DamlType::TextMap(wrap_type_args(daml_type, args)?),
+            DamlTypePayload::GenMap(args) => DamlType::GenMap(wrap_type_args(daml_type, args)?),
+            DamlTypePayload::Optional(args) => DamlType::Optional(wrap_type_args(daml_type, args)?),
             DamlTypePayload::TyCon(tycon_payload) => {
                 let tycon_wrapper = daml_type.wrap(tycon_payload);
                 let target_data_wrapper = resolve_tycon(tycon_wrapper)?;

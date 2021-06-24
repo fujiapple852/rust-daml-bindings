@@ -1061,7 +1061,7 @@ mod tests {
 
     #[test]
     fn test_numeric() -> DamlJsonSchemaCodecResult<()> {
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(18)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(18)]);
         let expected = get_expected!("test_numeric.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
@@ -1450,27 +1450,27 @@ mod tests {
 
     #[test]
     fn test_validate_numeric_with_decimal() -> Result<()> {
-        validate_schema_match(&DamlType::Numeric(Box::new(DamlType::Nat(18))), &json!(9.99))
+        validate_schema_match(&DamlType::Numeric(vec![DamlType::Nat(18)]), &json!(9.99))
     }
 
     #[test]
     fn test_validate_numeric_with_integer() -> Result<()> {
-        validate_schema_match(&DamlType::Numeric(Box::new(DamlType::Nat(18))), &json!(42))
+        validate_schema_match(&DamlType::Numeric(vec![DamlType::Nat(18)]), &json!(42))
     }
 
     #[test]
     fn test_validate_numeric_with_decimal_string() -> Result<()> {
-        validate_schema_match(&DamlType::Numeric(Box::new(DamlType::Nat(18))), &json!("3.14"))
+        validate_schema_match(&DamlType::Numeric(vec![DamlType::Nat(18)]), &json!("3.14"))
     }
 
     #[test]
     fn test_validate_numeric_with_integer_string() -> Result<()> {
-        validate_schema_match(&DamlType::Numeric(Box::new(DamlType::Nat(18))), &json!("42"))
+        validate_schema_match(&DamlType::Numeric(vec![DamlType::Nat(18)]), &json!("42"))
     }
 
     #[test]
     fn test_validate_numeric_invalid() -> Result<()> {
-        validate_schema_no_match(&DamlType::Numeric(Box::new(DamlType::Nat(18))), &json!([1, 2, 3]))
+        validate_schema_no_match(&DamlType::Numeric(vec![DamlType::Nat(18)]), &json!([1, 2, 3]))
     }
 
     #[test]

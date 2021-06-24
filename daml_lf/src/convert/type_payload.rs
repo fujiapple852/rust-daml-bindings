@@ -18,7 +18,7 @@ pub type DamlTypeWrapper<'a> = PayloadElementWrapper<'a, &'a DamlTypePayload<'a>
 pub enum DamlTypePayload<'a> {
     ContractId(Option<Box<DamlTypePayload<'a>>>),
     Int64,
-    Numeric(Box<DamlTypePayload<'a>>),
+    Numeric(Vec<DamlTypePayload<'a>>),
     Text,
     Timestamp,
     Party,
@@ -91,15 +91,12 @@ impl<'a> TryFrom<&'a Type> for DamlTypePayload<'a> {
                 PrimType::Unit => Ok(DamlTypePayload::Unit),
                 PrimType::Bool => Ok(DamlTypePayload::Bool),
                 PrimType::Int64 => Ok(DamlTypePayload::Int64),
-                PrimType::Numeric =>
-                    Ok(DamlTypePayload::Numeric(Box::new(DamlTypePayload::try_from(prim.args.first().req()?)?))),
-                PrimType::Decimal => Ok(DamlTypePayload::Numeric(Box::new(DamlTypePayload::Nat(LEGACY_DECIMAL_NAT)))),
+                PrimType::Numeric => Ok(DamlTypePayload::Numeric(try_from_type_args(&prim.args)?)),
+                PrimType::Decimal => Ok(DamlTypePayload::Numeric(vec![DamlTypePayload::Nat(LEGACY_DECIMAL_NAT)])),
                 PrimType::Text => Ok(DamlTypePayload::Text),
                 PrimType::Timestamp => Ok(DamlTypePayload::Timestamp),
                 PrimType::Party => Ok(DamlTypePayload::Party),
-                PrimType::List => Ok(DamlTypePayload::List(
-                    prim.args.iter().map(DamlTypePayload::try_from).collect::<DamlLfConvertResult<Vec<_>>>()?,
-                )),
+                PrimType::List => Ok(DamlTypePayload::List(try_from_type_args(&prim.args)?)),
                 PrimType::Update => Ok(DamlTypePayload::Update),
                 PrimType::Scenario => Ok(DamlTypePayload::Scenario),
                 PrimType::Date => Ok(DamlTypePayload::Date),
@@ -108,16 +105,10 @@ impl<'a> TryFrom<&'a Type> for DamlTypePayload<'a> {
                     args if !args.is_empty() => Err(DamlLfConvertError::UnexpectedContractIdTypeArguments),
                     _ => Ok(DamlTypePayload::ContractId(None)),
                 },
-                PrimType::Optional => Ok(DamlTypePayload::Optional(
-                    prim.args.iter().map(DamlTypePayload::try_from).collect::<DamlLfConvertResult<Vec<_>>>()?,
-                )),
+                PrimType::Optional => Ok(DamlTypePayload::Optional(try_from_type_args(&prim.args)?)),
                 PrimType::Arrow => Ok(DamlTypePayload::Arrow),
-                PrimType::Textmap => Ok(DamlTypePayload::TextMap(
-                    prim.args.iter().map(DamlTypePayload::try_from).collect::<DamlLfConvertResult<Vec<_>>>()?,
-                )),
-                PrimType::Genmap => Ok(DamlTypePayload::GenMap(
-                    prim.args.iter().map(DamlTypePayload::try_from).collect::<DamlLfConvertResult<Vec<_>>>()?,
-                )),
+                PrimType::Textmap => Ok(DamlTypePayload::TextMap(try_from_type_args(&prim.args)?)),
+                PrimType::Genmap => Ok(DamlTypePayload::GenMap(try_from_type_args(&prim.args)?)),
                 PrimType::Any => Ok(DamlTypePayload::Any),
                 PrimType::TypeRep => Ok(DamlTypePayload::TypeRep),
                 PrimType::Bignumeric => Ok(DamlTypePayload::Bignumeric),
@@ -162,7 +153,7 @@ impl<'a> TryFrom<&'a Syn> for DamlSynPayload<'a> {
 
     fn try_from(syn: &'a Syn) -> DamlLfConvertResult<Self> {
         let tysyn = DamlTypeSynNamePayload::try_from(syn.tysyn.as_ref().req()?)?;
-        let args = syn.args.iter().map(DamlTypePayload::try_from).collect::<DamlLfConvertResult<Vec<_>>>()?;
+        let args = try_from_type_args(&syn.args)?;
         Ok(DamlSynPayload::new(tysyn, args))
     }
 }
@@ -313,7 +304,7 @@ impl<'a> TryFrom<&'a Con> for DamlTyConPayload<'a> {
                 package_ref.try_into()?,
                 InternableDottedName::from(module_name),
                 InternableDottedName::from(data_name),
-                args.iter().map(DamlTypePayload::try_from).collect::<DamlLfConvertResult<_>>()?,
+                try_from_type_args(args)?,
             )),
             _ => Err(DamlLfConvertError::MissingRequiredField),
         }
@@ -416,9 +407,10 @@ impl<'a> TryFrom<&'a Var> for DamlVarPayload<'a> {
     type Error = DamlLfConvertError;
 
     fn try_from(var: &'a Var) -> DamlLfConvertResult<Self> {
-        Ok(DamlVarPayload::new(
-            InternableString::from(var.var.as_ref().req()?),
-            var.args.iter().map(DamlTypePayload::try_from).collect::<DamlLfConvertResult<_>>()?,
-        ))
+        Ok(DamlVarPayload::new(InternableString::from(var.var.as_ref().req()?), try_from_type_args(&var.args)?))
     }
+}
+
+fn try_from_type_args(args: &[Type]) -> DamlLfConvertResult<Vec<DamlTypePayload<'_>>> {
+    args.iter().map(DamlTypePayload::try_from).collect::<DamlLfConvertResult<Vec<_>>>()
 }

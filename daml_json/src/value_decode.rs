@@ -400,7 +400,7 @@ mod tests {
     #[test]
     fn test_numeric_f64() -> DamlJsonCodecResult<()> {
         let json_value = json!(1.0);
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(10)]);
         let expected = daml_value!(1.0);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -411,7 +411,7 @@ mod tests {
     #[test]
     fn test_numeric_f64_neg() -> DamlJsonCodecResult<()> {
         let json_value = json!(-1.0);
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(10)]);
         let expected = daml_value!(-1.0);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -422,7 +422,7 @@ mod tests {
     #[test]
     fn test_numeric_string() -> DamlJsonCodecResult<()> {
         let json_value = json!("1.23");
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(10)]);
         let expected = daml_value!(1.23);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -433,7 +433,7 @@ mod tests {
     #[test]
     fn test_numeric_string_neg() -> DamlJsonCodecResult<()> {
         let json_value = json!("-1.23");
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(10)]);
         let expected = daml_value!(-1.23);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -445,7 +445,7 @@ mod tests {
     #[allow(clippy::unreadable_literal)]
     fn test_numeric_f64_round() -> DamlJsonCodecResult<()> {
         let json_value = json!(0.30000000000000004);
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(10)]);
         let expected = daml_value!(0.3);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -456,7 +456,7 @@ mod tests {
     #[test]
     fn test_numeric_f64_sci() -> DamlJsonCodecResult<()> {
         let json_value = json!(2e3);
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(10)]);
         let expected = daml_value!(2000.0);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -467,7 +467,7 @@ mod tests {
     #[test]
     fn test_numeric_f64_neg_zero() -> DamlJsonCodecResult<()> {
         let json_value = json!(-0);
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(10)]);
         let expected = daml_value!(0.0);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -479,7 +479,7 @@ mod tests {
     #[allow(clippy::unreadable_literal)]
     fn test_numeric_f64_large() -> DamlJsonCodecResult<()> {
         let json_value = json!(9999999999999999999999999999.9999999999);
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(10)]);
         let expected = daml_value!(9999999999999999999999999999.9999999999);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -490,7 +490,7 @@ mod tests {
     #[test]
     fn test_numeric_f64_whole() -> DamlJsonCodecResult<()> {
         let json_value = json!(42);
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(10)]);
         let expected = daml_value!(42.0);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -501,7 +501,7 @@ mod tests {
     #[test]
     fn test_numeric_string_whole() -> DamlJsonCodecResult<()> {
         let json_value = json!("42");
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(10)]);
         let expected = daml_value!(42.0);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -512,7 +512,7 @@ mod tests {
     #[test]
     fn test_numeric_string_fails_garbage() {
         let json_value = json!("blah");
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(10)]);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty);
         assert!(actual.is_err());
     }
@@ -521,7 +521,7 @@ mod tests {
     #[test]
     fn test_numeric_string_fails_whitespace() {
         let json_value = json!("  42  ");
-        let ty = DamlType::Numeric(Box::new(DamlType::Nat(10)));
+        let ty = DamlType::Numeric(vec![DamlType::Nat(10)]);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty);
         assert!(actual.is_err());
     }

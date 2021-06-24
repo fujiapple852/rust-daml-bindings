@@ -78,7 +78,7 @@ impl<'a> From<&'a AttrType> for DamlType<'a> {
             AttrType::Unit => DamlType::Unit,
             AttrType::ContractId(_) => DamlType::ContractId(None),
             AttrType::Int64 => DamlType::Int64,
-            AttrType::Numeric => DamlType::Numeric(Box::new(DamlType::Nat(DEFAULT_NAT))),
+            AttrType::Numeric => DamlType::Numeric(vec![DamlType::Nat(DEFAULT_NAT)]),
             AttrType::Text => DamlType::Text,
             AttrType::Timestamp => DamlType::Timestamp,
             AttrType::Party => DamlType::Party,

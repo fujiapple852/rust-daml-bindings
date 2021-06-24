@@ -14,7 +14,7 @@ use std::hash::{Hash, Hasher};
 pub enum DamlType<'a> {
     ContractId(Option<Box<DamlType<'a>>>),
     Int64,
-    Numeric(Box<DamlType<'a>>),
+    Numeric(Vec<DamlType<'a>>),
     Text,
     Timestamp,
     Party,
@@ -81,9 +81,11 @@ impl<'a> DamlType<'a> {
                 var,
                 ..
             }) => var == type_var,
-            DamlType::Numeric(inner) => inner.contains_type_var(type_var),
-            DamlType::List(args) | DamlType::Optional(args) | DamlType::TextMap(args) | DamlType::GenMap(args) =>
-                args.iter().any(|arg| arg.contains_type_var(type_var)),
+            DamlType::List(args)
+            | DamlType::Optional(args)
+            | DamlType::TextMap(args)
+            | DamlType::GenMap(args)
+            | DamlType::Numeric(args) => args.iter().any(|arg| arg.contains_type_var(type_var)),
             DamlType::ContractId(inner) => inner.as_ref().map_or(false, |ty| ty.contains_type_var(type_var)),
             DamlType::TyCon(tycon) | DamlType::BoxedTyCon(tycon) =>
                 tycon.type_arguments.iter().any(|f| f.contains_type_var(type_var)),
@@ -129,9 +131,11 @@ impl<'a> DamlVisitableElement<'a> for DamlType<'a> {
         visitor.pre_visit_type(self);
         match self {
             DamlType::Var(var) => var.accept(visitor),
-            DamlType::Numeric(inner) => inner.accept(visitor),
-            DamlType::List(args) | DamlType::Optional(args) | DamlType::TextMap(args) | DamlType::GenMap(args) =>
-                args.iter().for_each(|arg| arg.accept(visitor)),
+            DamlType::List(args)
+            | DamlType::Optional(args)
+            | DamlType::TextMap(args)
+            | DamlType::GenMap(args)
+            | DamlType::Numeric(args) => args.iter().for_each(|arg| arg.accept(visitor)),
             DamlType::ContractId(tycon) => tycon.as_ref().map_or_else(|| {}, |dr| dr.accept(visitor)),
             DamlType::TyCon(tycon) | DamlType::BoxedTyCon(tycon) => tycon.accept(visitor),
             DamlType::Forall(forall) => forall.accept(visitor),
@@ -165,7 +169,7 @@ impl ToStatic for DamlType<'_> {
             DamlType::ContractId(inner) =>
                 DamlType::ContractId(inner.as_ref().map(|ty| Box::new(DamlType::to_static(ty)))),
             DamlType::Int64 => DamlType::Int64,
-            DamlType::Numeric(inner) => DamlType::Numeric(Box::new(inner.to_static())),
+            DamlType::Numeric(args) => DamlType::Numeric(args.iter().map(DamlType::to_static).collect()),
             DamlType::Text => DamlType::Text,
             DamlType::Timestamp => DamlType::Timestamp,
             DamlType::Party => DamlType::Party,

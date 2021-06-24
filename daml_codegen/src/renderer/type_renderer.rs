@@ -9,23 +9,17 @@ use std::iter;
 #[allow(clippy::match_same_arms)]
 pub fn quote_type(daml_type: &DamlType<'_>) -> TokenStream {
     match daml_type {
-        DamlType::Numeric(inner) => {
-            let prim_name_tokens = quote_escaped_ident(daml_type.name());
-            let prim_param_tokens = quote_type(inner);
-            quote!(
-                #prim_name_tokens<#prim_param_tokens>
-            )
-        },
-        DamlType::List(args) | DamlType::TextMap(args) | DamlType::Optional(args) => match args.as_slice() {
-            [arg] => {
-                let prim_name_tokens = quote_escaped_ident(daml_type.name());
-                let prim_param_tokens = quote_type(arg);
-                quote!(
-                    #prim_name_tokens<#prim_param_tokens>
-                )
+        DamlType::List(args) | DamlType::TextMap(args) | DamlType::Optional(args) | DamlType::Numeric(args) =>
+            match args.as_slice() {
+                [arg] => {
+                    let prim_name_tokens = quote_escaped_ident(daml_type.name());
+                    let prim_param_tokens = quote_type(arg);
+                    quote!(
+                        #prim_name_tokens<#prim_param_tokens>
+                    )
+                },
+                _ => panic!("expected exactly 1 type argument for {}, found {:?}", daml_type.name(), args),
             },
-            _ => panic!("expected exactly 1 type argument for {}, found {:?}", daml_type.name(), args),
-        },
         DamlType::GenMap(args) => match args.as_slice() {
             [k, v] => {
                 let prim_name_tokens = quote_escaped_ident(daml_type.name());
