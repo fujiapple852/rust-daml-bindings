@@ -1,6 +1,7 @@
-use daml::lf::element::DamlModule;
 use itertools::Itertools;
 use thiserror::Error;
+
+use daml::lf::element::DamlModule;
 
 #[derive(Error, Debug)]
 #[error("required value was not supplied")]

@@ -13,6 +13,7 @@ use crate::a2s::asyncapi_data::{
     WebSocketsChannelBinding,
 };
 use crate::common::DataId;
+use crate::filter::TemplateFilter;
 use crate::json_api_schema::DamlJsonApiSchema;
 use crate::schema::Schema;
 use crate::util::{ChildModulePathOrError, Required};
@@ -21,6 +22,7 @@ use crate::util::{ChildModulePathOrError, Required};
 pub struct ChannelItemEncoder<'arc> {
     archive: &'arc DamlArchive<'arc>,
     module_path: &'arc [&'arc str],
+    filter: &'arc TemplateFilter,
     json_type_schema_encoder: &'arc JsonSchemaEncoder<'arc>,
     json_api_schema: DamlJsonApiSchema,
 }
@@ -29,6 +31,7 @@ impl<'arc> ChannelItemEncoder<'arc> {
     pub fn new(
         archive: &'arc DamlArchive<'arc>,
         module_path: &'arc [&'arc str],
+        filter: &'arc TemplateFilter,
         reference_prefix: &'arc str,
         emit_package_id: bool,
         json_type_schema_encoder: &'arc JsonSchemaEncoder<'arc>,
@@ -36,6 +39,7 @@ impl<'arc> ChannelItemEncoder<'arc> {
         Self {
             archive,
             module_path,
+            filter,
             json_type_schema_encoder,
             json_api_schema: DamlJsonApiSchema::new(reference_prefix, emit_package_id),
         }
@@ -51,7 +55,11 @@ impl<'arc> ChannelItemEncoder<'arc> {
     }
 
     fn encode_query_channel_item(&self, templates: &[TemplateData]) -> ChannelItem {
-        let template_ids = templates.iter().cloned().map(|t| t.template_id).collect::<Vec<_>>();
+        let template_ids = templates
+            .iter()
+            .cloned()
+            .filter_map(|t| self.filter_contains(&t.template_id).then(|| t.template_id))
+            .collect::<Vec<_>>();
         let single_request = self.encode_query_single_request(&template_ids);
         let multi_request = self.encode_query_multi_request(&template_ids);
         let offset_request = Self::encode_query_offset_request();
@@ -69,8 +77,13 @@ impl<'arc> ChannelItemEncoder<'arc> {
     }
 
     fn encode_fetch_channel_item(&self, templates: &[TemplateData]) -> anyhow::Result<ChannelItem> {
-        let template_ids =
-            templates.iter().cloned().filter(|t| t.key.is_some()).map(|t| t.template_id).collect::<Vec<_>>();
+        let template_ids = templates
+            .iter()
+            .cloned()
+            .filter_map(|t| self.filter_contains(&t.template_id).then(|| t))
+            .filter(|t| t.key.is_some())
+            .map(|t| t.template_id)
+            .collect::<Vec<_>>();
         let template_keys = templates
             .iter()
             .filter(|t| t.key.is_some())
@@ -223,10 +236,34 @@ impl<'arc> ChannelItemEncoder<'arc> {
             .accept(&mut visitor);
         Ok(visitor.templates)
     }
+
+    /// Return true if the filter contains this template, false otherwise.
+    ///
+    /// If the filter is empty then true is returned.
+    fn filter_contains(&self, template: &DataId) -> bool {
+        fn package(item: &DataId, template: &DataId) -> bool {
+            match (item.package_id.as_ref(), template.package_id.as_ref()) {
+                (Some(i), Some(p)) => i == p,
+                _ => true,
+            }
+        }
+        fn name(item: &DataId, template: &DataId) -> bool {
+            item.entity == template.entity
+        }
+        fn module(item: &DataId, template: &DataId) -> bool {
+            item.module.iter().zip(template.module.iter()).all(|(x, y)| x == y)
+        }
+        self.filter.items.is_empty()
+            || self
+                .filter
+                .items
+                .keys()
+                .any(|item| package(item, template) && module(item, template) && name(item, template))
+    }
 }
 
 fn make_template_id<'a>(package_id: &str, module_path: impl Iterator<Item = &'a str>, name: &str) -> DataId {
-    DataId::new(package_id.to_string(), module_path.map(ToString::to_string).collect(), name.to_string())
+    DataId::new(Some(package_id.to_string()), module_path.map(ToString::to_string).collect(), name.to_string())
 }
 
 fn make_query_tag() -> Tag {

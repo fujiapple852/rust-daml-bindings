@@ -2,19 +2,19 @@ use std::collections::HashSet;
 
 use crate::common::ARCHIVE_CHOICE_NAME;
 use daml::lf::element::{
-    DamlArchive, DamlChoice, DamlCreate, DamlData, DamlElementVisitor, DamlExercise, DamlExerciseByKey, DamlModule,
-    DamlPackage, DamlTemplate, DamlTyCon, DamlValueName, DamlVisitableElement,
+    DamlArchive, DamlChoice, DamlCreate, DamlData, DamlElementVisitor, DamlExercise, DamlExerciseByKey, DamlTyCon,
+    DamlValueName, DamlVisitableElement,
 };
 use daml::lf::ToStatic;
 
 /// Extract the `ChoiceEvents` that can be produced by a given `DamlChoice`.
 pub trait ChoiceEventExtractor {
     /// Extract all events which may be created as an effect of invoking a `DamlChoice`.
-    fn extract_choice_events(
+    fn extract_choice_events<S: AsRef<str>>(
         &self,
-        package: &DamlPackage<'_>,
-        module: &DamlModule<'_>,
-        template: &DamlTemplate<'_>,
+        package_id: &str,
+        module: &[S],
+        template: &str,
         choice: &DamlChoice<'_>,
     ) -> ChoiceEvents<'_>;
 }
@@ -43,11 +43,11 @@ impl<'a> ChoiceEvents<'a> {
 }
 
 impl<'a> ChoiceEventExtractor for DamlArchive<'a> {
-    fn extract_choice_events(
+    fn extract_choice_events<S: AsRef<str>>(
         &self,
-        package: &DamlPackage<'_>,
-        module: &DamlModule<'_>,
-        template: &DamlTemplate<'_>,
+        package_id: &str,
+        module_path: &[S],
+        template_name: &str,
         choice: &DamlChoice<'_>,
     ) -> ChoiceEvents<'_> {
         let mut extractor = ChoiceEventVisitor {
@@ -58,9 +58,7 @@ impl<'a> ChoiceEventExtractor for DamlArchive<'a> {
         };
         choice.update().accept(&mut extractor);
         if choice.consuming() {
-            let template_name =
-                DamlTyCon::new_absolute(package.package_id(), &module.path().collect::<Vec<_>>(), template.name())
-                    .to_static();
+            let template_name = DamlTyCon::new_absolute(package_id, module_path, template_name).to_static();
             extractor.archived.insert(template_name);
         }
         ChoiceEvents::new(extractor.created, extractor.archived)

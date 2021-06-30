@@ -2,10 +2,16 @@
 #![allow(clippy::module_name_repetitions, clippy::must_use_candidate, clippy::missing_errors_doc)]
 #![forbid(unsafe_code)]
 
-use crate::a2s::AsyncAPI;
-use crate::a2s::AsyncAPIEncoder;
+use std::convert::TryFrom;
+use std::fs::File;
+use std::io;
+use std::io::Write;
+use std::path::PathBuf;
+
 use anyhow::{anyhow, Context, Result};
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand};
+use serde::Serialize;
+
 use companion::CompanionData;
 use config::PathStyle;
 use config::{Config, OutputFormat};
@@ -13,19 +19,22 @@ use daml::json_api::schema_encoder::{
     DataDict, JsonSchemaEncoder, ReferenceMode, RenderDescription, RenderSchema, RenderTitle, SchemaEncoderConfig,
 };
 use daml::lf::DarFile;
+use filter::{TemplateFilter, TemplateFilterInput};
 use oas::OpenAPI;
 use oas::OpenAPIEncoder;
-use serde::Serialize;
-use std::fs::File;
-use std::io;
-use std::io::Write;
-use std::path::PathBuf;
+
+use crate::a2s::AsyncAPI;
+use crate::a2s::AsyncAPIEncoder;
+use serde::de::DeserializeOwned;
 
 mod a2s;
+mod choice_event_extractor;
 mod common;
 mod companion;
 mod component_encoder;
 mod config;
+mod data_searcher;
+mod filter;
 mod format;
 mod json_api_schema;
 mod oas;
@@ -33,6 +42,7 @@ mod schema;
 mod util;
 
 const DEFAULT_DATA_DICT_FILE: &str = ".datadict.yaml";
+const DEFAULT_TEMPLATE_FILTER_FILE: &str = ".template_filter.yaml";
 const DEFAULT_COMPANION_FILE: &str = ".daml2oas.yaml";
 
 fn main() -> Result<()> {
@@ -43,6 +53,7 @@ fn main() -> Result<()> {
         .arg(make_output_arg())
         .arg(make_companion_file_arg())
         .arg(make_datadict_file_arg())
+        .arg(make_template_filter_file_arg())
         .arg(make_module_path_arg())
         .arg(make_data_title_arg())
         .arg(make_type_description_arg())
@@ -58,6 +69,7 @@ fn main() -> Result<()> {
         .arg(make_output_arg())
         .arg(make_companion_file_arg())
         .arg(make_datadict_file_arg())
+        .arg(make_template_filter_file_arg())
         .arg(make_module_path_arg())
         .arg(make_data_title_arg())
         .arg(make_type_description_arg())
@@ -115,6 +127,15 @@ fn make_datadict_file_arg() -> Arg<'static, 'static> {
         .takes_value(true)
         .required(false)
         .help("the data dictionary to use to augment the generated JSON schema")
+}
+
+fn make_template_filter_file_arg() -> Arg<'static, 'static> {
+    Arg::with_name("template-filter-file")
+        .short("t")
+        .long("template-filter-file")
+        .takes_value(true)
+        .required(false)
+        .help("the template filter to apply")
 }
 
 fn make_module_path_arg() -> Arg<'static, 'static> {
@@ -196,6 +217,7 @@ fn parse_config<'c>(matches: &'c ArgMatches<'_>) -> Config<'c> {
     let dar_file = matches.value_of("dar").unwrap().to_string();
     let companion_file = matches.value_of("companion-file").map(ToString::to_string);
     let data_dict_file = matches.value_of("datadict-file").map(ToString::to_string);
+    let template_filter_file = matches.value_of("template-filter-file").map(ToString::to_string);
 
     let format = match matches.value_of("format") {
         None => OutputFormat::Json,
@@ -243,6 +265,7 @@ fn parse_config<'c>(matches: &'c ArgMatches<'_>) -> Config<'c> {
         dar_file,
         companion_file,
         data_dict_file,
+        template_filter_file,
         format,
         output_file,
         module_path,
@@ -262,7 +285,8 @@ fn execute_oas(config: &Config<'_>) -> Result<()> {
     let dar = DarFile::from_file(&config.dar_file).context(format!("dar file not found: {}", &config.dar_file))?;
     let companion_data = get_companion_data(&config.companion_file)?;
     let data_dict = get_data_dict(&config.data_dict_file)?;
-    let oas = generate_openapi(&dar, config, &companion_data, data_dict)?;
+    let template_filter = get_template_filter(&config.template_filter_file)?;
+    let oas = generate_openapi(&dar, config, &companion_data, data_dict, &template_filter)?;
     write_document(&render(&oas, config.format)?, config.output_file.as_deref())
 }
 
@@ -271,6 +295,7 @@ fn generate_openapi(
     config: &Config<'_>,
     companion_data: &CompanionData,
     data_dict: DataDict,
+    template_filter: &TemplateFilter,
 ) -> Result<OpenAPI> {
     let encoder_config = SchemaEncoderConfig::new(
         RenderSchema::None,
@@ -284,6 +309,7 @@ fn generate_openapi(
         let generator = OpenAPIEncoder::new(
             archive,
             &config.module_path,
+            template_filter,
             config.reference_prefix,
             config.emit_package_id,
             config.include_archive_choice,
@@ -301,7 +327,8 @@ fn execute_a2s(config: &Config<'_>) -> Result<()> {
     let dar = DarFile::from_file(&config.dar_file).context(format!("dar file not found: {}", &config.dar_file))?;
     let companion_data = get_companion_data(&config.companion_file)?;
     let data_dict = get_data_dict(&config.data_dict_file)?;
-    let a2s = generate_asyncapi(&dar, config, &companion_data, data_dict)?;
+    let template_filter = get_template_filter(&config.template_filter_file)?;
+    let a2s = generate_asyncapi(&dar, config, &companion_data, data_dict, &template_filter)?;
     write_document(&render(&a2s, config.format)?, config.output_file.as_deref())
 }
 
@@ -310,6 +337,7 @@ fn generate_asyncapi(
     config: &Config<'_>,
     companion_data: &CompanionData,
     data_dict: DataDict,
+    template_filter: &TemplateFilter,
 ) -> Result<AsyncAPI> {
     let encoder_config = SchemaEncoderConfig::new(
         RenderSchema::None,
@@ -323,6 +351,7 @@ fn generate_asyncapi(
         let generator = AsyncAPIEncoder::new(
             archive,
             &config.module_path,
+            template_filter,
             config.reference_prefix,
             config.emit_package_id,
             companion_data,
@@ -334,63 +363,60 @@ fn generate_asyncapi(
 
 /// Common
 
-fn get_companion_data(companion_file_name: &Option<String>) -> Result<CompanionData> {
-    let path = companion_file_name.as_ref().map(PathBuf::from);
-    if let Some(path) = path {
-        if path.is_file() && path.exists() {
-            let f = std::fs::File::open(path)?;
-            Ok(serde_yaml::from_reader(f)?)
-        } else {
-            Err(anyhow!(format!("file {} not found", path.display())))
-        }
-    } else {
-        let path = PathBuf::from(DEFAULT_COMPANION_FILE);
-        if path.is_file() && path.exists() {
-            let f = std::fs::File::open(path)?;
-            Ok(serde_yaml::from_reader(f)?)
-        } else {
-            Ok(CompanionData::default())
-        }
-    }
+fn get_companion_data(filter_file_name: &Option<String>) -> Result<CompanionData> {
+    read_file(filter_file_name, DEFAULT_COMPANION_FILE)
+        .map_err(|err| anyhow!("failed to parse companion file").context(err))
 }
 
 fn get_data_dict(data_dict_file_name: &Option<String>) -> Result<DataDict> {
-    let path = data_dict_file_name.as_ref().map(PathBuf::from);
-    if let Some(path) = path {
+    read_file(data_dict_file_name, DEFAULT_DATA_DICT_FILE)
+        .map_err(|err| anyhow!("failed to parse datadict file").context(err))
+}
+
+fn get_template_filter(filter_file_name: &Option<String>) -> Result<TemplateFilter> {
+    let filter: TemplateFilterInput = read_file(filter_file_name, DEFAULT_TEMPLATE_FILTER_FILE)?;
+    TemplateFilter::try_from(filter).map_err(|err| anyhow!("failed to parse template filter file").context(err))
+}
+
+fn read_file<T: DeserializeOwned + Default, S: AsRef<str>>(file_name: &Option<String>, fallback: S) -> Result<T> {
+    let path = file_name.as_ref();
+    if let Some(name) = path {
+        let path = PathBuf::from(name);
         if path.is_file() && path.exists() {
             let f = std::fs::File::open(path)?;
-            Ok(serde_yaml::from_reader(f)?)
+            Ok(serde_yaml::from_reader(f).map_err(|err| anyhow!("failed to parse file {}", name).context(err))?)
         } else {
             Err(anyhow!(format!("file {} not found", path.display())))
         }
     } else {
-        let path = PathBuf::from(DEFAULT_DATA_DICT_FILE);
+        let path = PathBuf::from(fallback.as_ref());
         if path.is_file() && path.exists() {
             let f = std::fs::File::open(path)?;
-            Ok(serde_yaml::from_reader(f)?)
+            Ok(serde_yaml::from_reader(f)
+                .map_err(|err| anyhow!("failed to parse file {}", fallback.as_ref()).context(err))?)
         } else {
-            Ok(DataDict::default())
+            Ok(T::default())
         }
     }
 }
 
-fn render<S: Serialize>(oas: &S, format: OutputFormat) -> Result<String> {
+fn render<S: Serialize>(doc: &S, format: OutputFormat) -> Result<String> {
     match format {
-        OutputFormat::Json => Ok(serde_json::to_string_pretty(&oas)?),
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&doc)?),
         OutputFormat::Yaml => {
-            let json_string = serde_json::to_string(&oas)?;
+            let json_string = serde_json::to_string(&doc)?;
             let yaml_value: serde_yaml::Value = serde_yaml::from_str(&json_string)?;
             Ok(serde_yaml::to_string(&yaml_value)?)
         },
     }
 }
 
-fn write_document(oas: &str, path: Option<&str>) -> Result<()> {
+fn write_document(doc: &str, path: Option<&str>) -> Result<()> {
     if let Some(path) = path {
         let target = PathBuf::from(path);
         let mut file = File::create(target)?;
-        Ok(file.write_all(oas.as_bytes())?)
+        Ok(file.write_all(doc.as_bytes())?)
     } else {
-        Ok(io::stdout().write_all(oas.as_bytes())?)
+        Ok(io::stdout().write_all(doc.as_bytes())?)
     }
 }

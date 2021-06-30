@@ -9,12 +9,13 @@ use daml::lf::element::{
     DamlArchive, DamlChoice, DamlData, DamlDefKey, DamlModule, DamlPackage, DamlTemplate, DamlTyCon,
 };
 
+use crate::choice_event_extractor::ChoiceEventExtractor;
 use crate::common::{DataId, NamedItem, ARCHIVE_CHOICE_NAME, ERROR_RESPONSE_SCHEMA_NAME};
 use crate::config::PathStyle;
+use crate::filter::{ChoiceFilter, TemplateFilter};
 use crate::format;
 use crate::format::{format_daml_template, format_path};
 use crate::json_api_schema::DamlJsonApiSchema;
-use crate::oas::choice_event_extractor::ChoiceEventExtractor;
 use crate::oas::openapi_data::{MediaType, Operation, PathItem, RequestBody, Response, ResponseType, Responses};
 use crate::oas::operation::OperationIdFactory;
 use crate::schema::Schema;
@@ -26,6 +27,7 @@ type NamedPathItem = NamedItem<PathItem>;
 pub struct PathItemEncoder<'arc> {
     archive: &'arc DamlArchive<'arc>,
     module_path: &'arc [&'arc str],
+    filter: &'arc TemplateFilter,
     include_archive_choice: bool,
     operation_id_factory: OperationIdFactory,
     json_type_schema_encoder: &'arc JsonSchemaEncoder<'arc>,
@@ -33,9 +35,11 @@ pub struct PathItemEncoder<'arc> {
 }
 
 impl<'arc> PathItemEncoder<'arc> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         archive: &'arc DamlArchive<'arc>,
         module_path: &'arc [&'arc str],
+        filter: &'arc TemplateFilter,
         reference_prefix: &'arc str,
         emit_package_id: bool,
         include_archive_choice: bool,
@@ -45,6 +49,7 @@ impl<'arc> PathItemEncoder<'arc> {
         Self {
             archive,
             module_path,
+            filter,
             include_archive_choice,
             operation_id_factory: OperationIdFactory::new(path_style),
             json_type_schema_encoder,
@@ -78,7 +83,11 @@ impl<'arc> PathItemEncoder<'arc> {
         data: &DamlData<'_>,
     ) -> anyhow::Result<Vec<NamedPathItem>> {
         Ok(if let DamlData::Template(template) = data {
-            self.encode_template(package, module, template)?
+            if self.filter_contains(template) {
+                self.encode_template(package, module, template)?
+            } else {
+                vec![]
+            }
         } else {
             vec![]
         })
@@ -133,7 +142,7 @@ impl<'arc> PathItemEncoder<'arc> {
             .choices()
             .iter()
             .filter_map(|choice| {
-                self.should_include_choice(choice)
+                self.should_include_choice(module, template, choice)
                     .then(|| self.encode_template_exercise_by_id_choice(package, module, template, choice))
             })
             .collect::<anyhow::Result<Vec<_>>>()
@@ -149,7 +158,7 @@ impl<'arc> PathItemEncoder<'arc> {
             .choices()
             .iter()
             .filter_map(|choice| match template.key() {
-                Some(key) if self.should_include_choice(choice) =>
+                Some(key) if self.should_include_choice(module, template, choice) =>
                     Some(self.encode_template_exercise_by_key_choice(package, module, template, choice, key)),
                 _ => None,
             })
@@ -166,7 +175,7 @@ impl<'arc> PathItemEncoder<'arc> {
             .choices()
             .iter()
             .filter_map(|choice| {
-                self.should_include_choice(choice)
+                self.should_include_choice(module, template, choice)
                     .then(|| self.encode_template_create_and_exercise_choice(package, module, template, choice))
             })
             .collect::<anyhow::Result<Vec<_>>>()
@@ -309,7 +318,12 @@ impl<'arc> PathItemEncoder<'arc> {
         choice: &DamlChoice<'_>,
         include_creating_template: bool,
     ) -> (Vec<DataId>, Vec<DataId>) {
-        let events = self.archive.extract_choice_events(package, module, template, choice);
+        let events = self.archive.extract_choice_events(
+            package.package_id(),
+            &module.path().collect::<Vec<_>>(),
+            template.name(),
+            choice,
+        );
         let created = include_creating_template
             .then(|| make_template_id(package, module, template))
             .into_iter()
@@ -380,18 +394,66 @@ impl<'arc> PathItemEncoder<'arc> {
         }
     }
 
-    fn should_include_choice(&self, choice: &DamlChoice<'_>) -> bool {
+    /// Return true if the filter contains this template, false otherwise.
+    ///
+    /// If the filter is empty then true is returned.
+    fn filter_contains(&self, template: &DamlTemplate<'_>) -> bool {
+        fn package(item: &DataId, template: &DamlTemplate<'_>) -> bool {
+            item.package_id.as_ref().map_or(true, |pid| pid == template.package_id())
+        }
+        fn name(item: &DataId, template: &DamlTemplate<'_>) -> bool {
+            item.entity == template.name()
+        }
+        fn module(item: &DataId, template: &DamlTemplate<'_>) -> bool {
+            item.module.iter().zip(template.module_path()).all(|(x, y)| x == y)
+        }
+        self.filter.items.is_empty()
+            || self
+                .filter
+                .items
+                .keys()
+                .any(|item| package(item, template) && module(item, template) && name(item, template))
+    }
+
+    fn should_include_choice(
+        &self,
+        module: &DamlModule<'_>,
+        template: &DamlTemplate<'_>,
+        choice: &DamlChoice<'_>,
+    ) -> bool {
+        self.should_include_archived_choice(choice) && self.should_include_filtered_choice(module, template, choice)
+    }
+
+    fn should_include_archived_choice(&self, choice: &DamlChoice<'_>) -> bool {
         return self.include_archive_choice || (choice.name() != ARCHIVE_CHOICE_NAME);
+    }
+
+    fn should_include_filtered_choice(
+        &self,
+        module: &DamlModule<'_>,
+        template: &DamlTemplate<'_>,
+        choice: &DamlChoice<'_>,
+    ) -> bool {
+        self.filter.items.is_empty()
+            || self
+                .filter
+                .items
+                .get(&DataId::new(None, module.path().map(ToOwned::to_owned).collect(), template.name().to_string()))
+                .map_or(false, |choice_filter| match choice_filter {
+                    ChoiceFilter::None => false,
+                    ChoiceFilter::Selected(sel) => sel.iter().any(|i| i == choice.name()),
+                    ChoiceFilter::All => true,
+                })
     }
 }
 
 fn make_tags(template_id: &DataId) -> Vec<String> {
-    vec![format_path(&template_id.module_path)]
+    vec![format_path(&template_id.module)]
 }
 
 fn make_template_id(package: &DamlPackage<'_>, module: &DamlModule<'_>, template: &DamlTemplate<'_>) -> DataId {
     DataId::new(
-        package.package_id().to_string(),
+        Some(package.package_id().to_string()),
         module.path().map(ToString::to_string).collect(),
         template.name().to_string(),
     )
@@ -399,7 +461,7 @@ fn make_template_id(package: &DamlPackage<'_>, module: &DamlModule<'_>, template
 
 fn make_template_id_from_tycon(tycon: &DamlTyCon<'_>) -> DataId {
     DataId::new(
-        tycon.tycon().package_id().to_string(),
+        Some(tycon.tycon().package_id().to_string()),
         tycon.tycon().module_path().map(ToString::to_string).collect(),
         tycon.tycon().data_name().to_string(),
     )

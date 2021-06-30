@@ -17,6 +17,7 @@ pub struct Config<'a> {
     pub dar_file: String,
     pub companion_file: Option<String>,
     pub data_dict_file: Option<String>,
+    pub template_filter_file: Option<String>,
     pub format: OutputFormat,
     pub output_file: Option<String>,
     pub module_path: Vec<&'a str>,

@@ -7,6 +7,7 @@ use crate::common::ERROR_RESPONSE_SCHEMA_NAME;
 use crate::companion::CompanionData;
 use crate::component_encoder::ComponentEncoder;
 use crate::config::PathStyle;
+use crate::filter::TemplateFilter;
 use crate::json_api_schema::DamlJsonApiSchema;
 use crate::oas::openapi_data::{Components, Contact, Info, OpenAPI, Paths, Server, Tag};
 use crate::oas::path_item_encoder::PathItemEncoder;
@@ -16,6 +17,7 @@ use crate::util::{ChildModulePathOrError, Required};
 pub struct OpenAPIEncoder<'arc> {
     archive: &'arc DamlArchive<'arc>,
     module_path: &'arc [&'arc str],
+    filter: &'arc TemplateFilter,
     reference_prefix: &'arc str,
     emit_package_id: bool,
     include_archive_choice: bool,
@@ -29,6 +31,7 @@ impl<'arc> OpenAPIEncoder<'arc> {
     pub const fn new(
         archive: &'arc DamlArchive<'arc>,
         module_path: &'arc [&'arc str],
+        filter: &'arc TemplateFilter,
         reference_prefix: &'arc str,
         emit_package_id: bool,
         include_archive_choice: bool,
@@ -39,6 +42,7 @@ impl<'arc> OpenAPIEncoder<'arc> {
         Self {
             archive,
             module_path,
+            filter,
             reference_prefix,
             emit_package_id,
             include_archive_choice,
@@ -113,6 +117,7 @@ impl<'arc> OpenAPIEncoder<'arc> {
             PathItemEncoder::new(
                 self.archive,
                 self.module_path,
+                self.filter,
                 self.reference_prefix,
                 self.emit_package_id,
                 self.include_archive_choice,
@@ -124,7 +129,7 @@ impl<'arc> OpenAPIEncoder<'arc> {
     }
 
     fn encode_components(&self) -> anyhow::Result<Components> {
-        let encoder = ComponentEncoder::new(self.archive, self.module_path, &self.encoder);
+        let encoder = ComponentEncoder::new(self.archive, self.module_path, &self.encoder, self.filter);
         let mut schemas = encoder.encode_schema_components()?;
         schemas.insert(ERROR_RESPONSE_SCHEMA_NAME.to_string(), Schema::new(DamlJsonApiSchema::make_error_response()));
         Ok(Components::new(schemas))

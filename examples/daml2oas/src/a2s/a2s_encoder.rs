@@ -5,12 +5,14 @@ use crate::a2s::asyncapi_data::{AsyncAPI, Channels, Components, Info, Server, Se
 use crate::a2s::channel_item_encoder::ChannelItemEncoder;
 use crate::companion::CompanionData;
 use crate::component_encoder::ComponentEncoder;
+use crate::filter::TemplateFilter;
 use crate::util::Required;
 use std::collections::BTreeMap;
 
 pub struct AsyncAPIEncoder<'arc> {
     archive: &'arc DamlArchive<'arc>,
     module_path: &'arc [&'arc str],
+    filter: &'arc TemplateFilter,
     reference_prefix: &'arc str,
     emit_package_id: bool,
     companion_data: &'arc CompanionData,
@@ -21,6 +23,7 @@ impl<'arc> AsyncAPIEncoder<'arc> {
     pub const fn new(
         archive: &'arc DamlArchive<'arc>,
         module_path: &'arc [&'arc str],
+        filter: &'arc TemplateFilter,
         reference_prefix: &'arc str,
         emit_package_id: bool,
         companion_data: &'arc CompanionData,
@@ -29,6 +32,7 @@ impl<'arc> AsyncAPIEncoder<'arc> {
         Self {
             archive,
             module_path,
+            filter,
             reference_prefix,
             emit_package_id,
             companion_data,
@@ -80,6 +84,7 @@ impl<'arc> AsyncAPIEncoder<'arc> {
             ChannelItemEncoder::new(
                 self.archive,
                 self.module_path,
+                self.filter,
                 self.reference_prefix,
                 self.emit_package_id,
                 &self.encoder,
@@ -89,7 +94,7 @@ impl<'arc> AsyncAPIEncoder<'arc> {
     }
 
     fn encode_components(&self) -> anyhow::Result<Components> {
-        let encoder = ComponentEncoder::new(self.archive, self.module_path, &self.encoder);
+        let encoder = ComponentEncoder::new(self.archive, self.module_path, &self.encoder, self.filter);
         let schemas = encoder.encode_schema_components()?;
         Ok(Components::new(schemas))
     }

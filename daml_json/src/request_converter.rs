@@ -181,7 +181,7 @@ fn make_grpc_identifier(package_id: &str, module: &[String], entity: &str) -> Da
 ///
 /// Template ids are represented as JSON strings of the form `[package_id:]module:entity` in the DAML JSON API and as
 /// such this struct does is not required to be `Serialize` or `Deserialize`.
-#[derive(Debug)]
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct DamlJsonTemplateId {
     pub package_id: Option<String>,
     pub module: Vec<String>,

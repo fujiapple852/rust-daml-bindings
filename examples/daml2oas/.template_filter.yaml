@@ -1,0 +1,9 @@
+DA.Nested:NestedTemplate: all
+DA.PingPong:Ping:
+  selected:
+    - RespondPong
+    - ResetPingCount
+DA.PingPong:Pong:
+  selected:
+    - RespondPing
+DA.Shape:CircleTemplate: all

@@ -554,11 +554,11 @@ impl DamlJsonApiSchema {
     }
 
     fn make_template_pattern(&self, template_id: &DataId) -> Value {
-        let path = format_path_regex_safe(&template_id.module_path);
+        let path = format_path_regex_safe(&template_id.module);
         let pattern = if self.emit_package_id {
-            format!("^({}:)?{}:{}$", template_id.package_id, path, &template_id.name)
+            format!("^({}:)?{}:{}$", template_id.package_id.as_deref().unwrap_or_default(), path, &template_id.entity)
         } else {
-            format!("^(.+:)?{}:{}$", path, &template_id.name)
+            format!("^(.+:)?{}:{}$", path, &template_id.entity)
         };
         serde_json::json!(
             {
