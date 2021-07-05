@@ -26,6 +26,26 @@ impl<'a> DamlData<'a> {
         }
     }
 
+    /// The id of the package which contains this `DamlData`.
+    pub fn package_id(&self) -> &str {
+        match self {
+            DamlData::Record(record) => &record.package_id,
+            DamlData::Template(template) => &template.package_id,
+            DamlData::Variant(variant) => &variant.package_id,
+            DamlData::Enum(data_enum) => &data_enum.package_id,
+        }
+    }
+
+    /// The path to the module which contains this `DamlData`.
+    pub fn module_path(&self) -> impl Iterator<Item = &str> {
+        match self {
+            DamlData::Record(record) => record.module_path.iter().map(AsRef::as_ref),
+            DamlData::Template(template) => template.module_path.iter().map(AsRef::as_ref),
+            DamlData::Variant(variant) => variant.module_path.iter().map(AsRef::as_ref),
+            DamlData::Enum(data_enum) => data_enum.module_path.iter().map(AsRef::as_ref),
+        }
+    }
+
     /// The fields of this data type.
     pub fn fields(&self) -> &[DamlField<'_>] {
         match self {
@@ -472,6 +492,8 @@ impl ToStatic for DamlDefKey<'_> {
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlRecord<'a> {
     name: Cow<'a, str>,
+    package_id: Cow<'a, str>,
+    module_path: Vec<Cow<'a, str>>,
     fields: Vec<DamlField<'a>>,
     type_params: Vec<DamlTypeVarWithKind<'a>>,
     serializable: bool,
@@ -480,12 +502,16 @@ pub struct DamlRecord<'a> {
 impl<'a> DamlRecord<'a> {
     pub fn new(
         name: Cow<'a, str>,
+        package_id: Cow<'a, str>,
+        module_path: Vec<Cow<'a, str>>,
         fields: Vec<DamlField<'a>>,
         type_params: Vec<DamlTypeVarWithKind<'a>>,
         serializable: bool,
     ) -> Self {
         Self {
             name,
+            package_id,
+            module_path,
             fields,
             type_params,
             serializable,
@@ -494,6 +520,14 @@ impl<'a> DamlRecord<'a> {
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn package_id(&self) -> &str {
+        &self.package_id
+    }
+
+    pub fn module_path(&self) -> impl Iterator<Item = &str> {
+        self.module_path.iter().map(AsRef::as_ref)
     }
 
     pub fn fields(&self) -> &[DamlField<'a>] {
@@ -524,6 +558,8 @@ impl ToStatic for DamlRecord<'_> {
     fn to_static(&self) -> Self::Static {
         DamlRecord::new(
             self.name.to_static(),
+            self.package_id.to_static(),
+            self.module_path.iter().map(ToStatic::to_static).collect(),
             self.fields.iter().map(DamlField::to_static).collect(),
             self.type_params.iter().map(DamlTypeVarWithKind::to_static).collect(),
             self.serializable,
@@ -534,6 +570,8 @@ impl ToStatic for DamlRecord<'_> {
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlVariant<'a> {
     name: Cow<'a, str>,
+    package_id: Cow<'a, str>,
+    module_path: Vec<Cow<'a, str>>,
     fields: Vec<DamlField<'a>>,
     type_params: Vec<DamlTypeVarWithKind<'a>>,
     serializable: bool,
@@ -542,12 +580,16 @@ pub struct DamlVariant<'a> {
 impl<'a> DamlVariant<'a> {
     pub fn new(
         name: Cow<'a, str>,
+        package_id: Cow<'a, str>,
+        module_path: Vec<Cow<'a, str>>,
         fields: Vec<DamlField<'a>>,
         type_params: Vec<DamlTypeVarWithKind<'a>>,
         serializable: bool,
     ) -> Self {
         Self {
             name,
+            package_id,
+            module_path,
             fields,
             type_params,
             serializable,
@@ -556,6 +598,14 @@ impl<'a> DamlVariant<'a> {
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn package_id(&self) -> &str {
+        &self.package_id
+    }
+
+    pub fn module_path(&self) -> impl Iterator<Item = &str> {
+        self.module_path.iter().map(AsRef::as_ref)
     }
 
     pub fn fields(&self) -> &[DamlField<'a>] {
@@ -586,6 +636,8 @@ impl ToStatic for DamlVariant<'_> {
     fn to_static(&self) -> Self::Static {
         DamlVariant::new(
             self.name.to_static(),
+            self.package_id.to_static(),
+            self.module_path.iter().map(ToStatic::to_static).collect(),
             self.fields.iter().map(DamlField::to_static).collect(),
             self.type_params.iter().map(DamlTypeVarWithKind::to_static).collect(),
             self.serializable,
@@ -596,6 +648,8 @@ impl ToStatic for DamlVariant<'_> {
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlEnum<'a> {
     name: Cow<'a, str>,
+    package_id: Cow<'a, str>,
+    module_path: Vec<Cow<'a, str>>,
     constructors: Vec<Cow<'a, str>>,
     type_params: Vec<DamlTypeVarWithKind<'a>>,
     serializable: bool,
@@ -604,12 +658,16 @@ pub struct DamlEnum<'a> {
 impl<'a> DamlEnum<'a> {
     pub fn new(
         name: Cow<'a, str>,
+        package_id: Cow<'a, str>,
+        module_path: Vec<Cow<'a, str>>,
         constructors: Vec<Cow<'a, str>>,
         type_params: Vec<DamlTypeVarWithKind<'a>>,
         serializable: bool,
     ) -> Self {
         Self {
             name,
+            package_id,
+            module_path,
             constructors,
             type_params,
             serializable,
@@ -618,6 +676,14 @@ impl<'a> DamlEnum<'a> {
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn package_id(&self) -> &str {
+        &self.package_id
+    }
+
+    pub fn module_path(&self) -> impl Iterator<Item = &str> {
+        self.module_path.iter().map(AsRef::as_ref)
     }
 
     pub fn constructors(&self) -> impl Iterator<Item = &str> {
@@ -647,6 +713,8 @@ impl ToStatic for DamlEnum<'_> {
     fn to_static(&self) -> Self::Static {
         DamlEnum::new(
             self.name.to_static(),
+            self.package_id.to_static(),
+            self.module_path.iter().map(ToStatic::to_static).collect(),
             self.constructors.iter().map(ToStatic::to_static).collect(),
             self.type_params.iter().map(DamlTypeVarWithKind::to_static).collect(),
             self.serializable,

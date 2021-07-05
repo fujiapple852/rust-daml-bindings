@@ -13,7 +13,7 @@ impl<'a> From<&'a AttrRecord> for DamlRecord<'a> {
             .iter()
             .map(|arg| DamlTypeVarWithKind::new(Cow::from(arg), DamlKind::Star))
             .collect();
-        DamlRecord::new(Cow::from(&attr_record.name), fields, type_arguments, true)
+        DamlRecord::new(Cow::from(&attr_record.name), Cow::from(""), vec![], fields, type_arguments, true)
     }
 }
 
@@ -47,7 +47,7 @@ impl<'a> From<&'a AttrVariant> for DamlVariant<'a> {
             .iter()
             .map(|arg| DamlTypeVarWithKind::new(Cow::from(arg), DamlKind::Star))
             .collect();
-        DamlVariant::new(Cow::from(&attr_variant.name), variant_fields, type_arguments, true)
+        DamlVariant::new(Cow::from(&attr_variant.name), Cow::from(""), vec![], variant_fields, type_arguments, true)
     }
 }
 
@@ -58,7 +58,14 @@ impl<'a> From<&'a AttrEnum> for DamlEnum<'a> {
             .iter()
             .map(|arg| DamlTypeVarWithKind::new(Cow::from(arg), DamlKind::Star))
             .collect();
-        DamlEnum::new(Cow::from(&attr_enum.name), to_vec_str(&attr_enum.fields), type_arguments, true)
+        DamlEnum::new(
+            Cow::from(&attr_enum.name),
+            Cow::from(""),
+            vec![],
+            to_vec_str(&attr_enum.fields),
+            type_arguments,
+            true,
+        )
     }
 }
 

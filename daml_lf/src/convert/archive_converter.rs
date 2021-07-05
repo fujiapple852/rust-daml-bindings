@@ -129,6 +129,7 @@ impl<'a> TryFrom<DamlDefTypeSynWrapper<'a>> for DamlDefTypeSyn<'a> {
 }
 
 /// Convert from `DamlDataWrapper` to `DamlData`.
+#[allow(clippy::too_many_lines)]
 impl<'a> TryFrom<DamlDataWrapper<'a>> for DamlData<'a> {
     type Error = DamlLfConvertError;
 
@@ -137,10 +138,18 @@ impl<'a> TryFrom<DamlDataWrapper<'a>> for DamlData<'a> {
         Ok(match data.payload {
             DamlDataEnrichedPayload::Record(record) => {
                 let name = record.name.resolve_last(resolver)?;
+                let module_path = data.context.module.path.resolve(resolver)?;
                 let type_params = convert_type_var_params(data, &record.type_params)?;
                 let fields = convert_fields(data, &record.fields)?;
                 let serializable = record.serializable;
-                DamlData::Record(DamlRecord::new(name, fields, type_params, serializable))
+                DamlData::Record(DamlRecord::new(
+                    name,
+                    Cow::from(data.context.package.package_id),
+                    module_path,
+                    fields,
+                    type_params,
+                    serializable,
+                ))
             },
             DamlDataEnrichedPayload::Template(template) => {
                 let name = template.name.resolve_last(resolver)?;
@@ -187,13 +196,22 @@ impl<'a> TryFrom<DamlDataWrapper<'a>> for DamlData<'a> {
             },
             DamlDataEnrichedPayload::Variant(variant) => {
                 let name = variant.name.resolve_last(resolver)?;
+                let module_path = data.context.module.path.resolve(resolver)?;
                 let type_params = convert_type_var_params(data, &variant.type_params)?;
                 let fields = convert_fields(data, &variant.fields)?;
                 let serializable = variant.serializable;
-                DamlData::Variant(DamlVariant::new(name, fields, type_params, serializable))
+                DamlData::Variant(DamlVariant::new(
+                    name,
+                    Cow::from(data.context.package.package_id),
+                    module_path,
+                    fields,
+                    type_params,
+                    serializable,
+                ))
             },
             DamlDataEnrichedPayload::Enum(data_enum) => {
                 let name = data_enum.name.resolve_last(resolver)?;
+                let module_path = data.context.module.path.resolve(resolver)?;
                 let type_params = convert_type_var_params(data, &data_enum.type_params)?;
                 let constructors: Vec<Cow<'_, str>> = if data
                     .context
@@ -211,7 +229,14 @@ impl<'a> TryFrom<DamlDataWrapper<'a>> for DamlData<'a> {
                     data_enum.constructors_str.iter().map(Cow::from).collect()
                 };
                 let serializable = data_enum.serializable;
-                DamlData::Enum(DamlEnum::new(name, constructors, type_params, serializable))
+                DamlData::Enum(DamlEnum::new(
+                    name,
+                    Cow::from(data.context.package.package_id),
+                    module_path,
+                    constructors,
+                    type_params,
+                    serializable,
+                ))
             },
         })
     }
