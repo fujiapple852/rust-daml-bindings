@@ -1,6 +1,6 @@
 NAMESPACE = fujiapple
 REPOSITORY = rust-musl
-TAG = 1.52-v1
+TAG = 1.53-v1
 .PHONY: build push
 build-image:
 	docker build --network host -t ${NAMESPACE}/${REPOSITORY}:${TAG} -t ${NAMESPACE}/${REPOSITORY}:latest .

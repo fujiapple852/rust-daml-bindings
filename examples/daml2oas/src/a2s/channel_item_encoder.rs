@@ -68,14 +68,13 @@ impl<'arc> ChannelItemEncoder<'arc> {
         )
     }
 
-    #[allow(clippy::filter_map)] // deprecated, remove after Rust compiler upgrade
     fn encode_fetch_channel_item(&self, templates: &[TemplateData]) -> anyhow::Result<ChannelItem> {
         let template_ids =
             templates.iter().cloned().filter(|t| t.key.is_some()).map(|t| t.template_id).collect::<Vec<_>>();
         let template_keys = templates
             .iter()
             .filter(|t| t.key.is_some())
-            .flat_map(|t| t.key.as_ref().map(|k| self.json_type_schema_encoder.encode_type(k)))
+            .filter_map(|t| t.key.as_ref().map(|k| self.json_type_schema_encoder.encode_type(k)))
             .collect::<DamlJsonSchemaCodecResult<Vec<_>>>()?;
         let request = self.encode_fetch_request(&template_ids, &template_keys);
         let events = self.encode_fetch_ledger_events(&template_ids);

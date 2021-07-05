@@ -238,7 +238,7 @@ async fn test_allocate_party_no_hint() -> anyhow::Result<()> {
     let alice_client = new_client().await?;
     let allocate_parties_response = alice_client.allocate_party(None, Some("Joe Smith")).await?;
     assert_eq!(allocate_parties_response.display_name, Some("Joe Smith".to_owned()));
-    assert_eq!(allocate_parties_response.is_local, true);
+    assert!(allocate_parties_response.is_local);
     Ok(())
 }
 
@@ -248,7 +248,7 @@ async fn test_allocate_party_no_hint_no_display() -> anyhow::Result<()> {
     let alice_client = new_client().await?;
     let allocate_parties_response = alice_client.allocate_party(None, None).await?;
     assert_eq!(allocate_parties_response.display_name, None);
-    assert_eq!(allocate_parties_response.is_local, true);
+    assert!(allocate_parties_response.is_local);
     Ok(())
 }
 

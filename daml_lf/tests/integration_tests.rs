@@ -132,6 +132,6 @@ fn test_visitor() -> DamlLfResult<()> {
     let mut visitor = GatherEnumsVisitor::default();
     let dar = DarFile::from_file("test_resources/TestingTypes-1_0_0-sdk_0_13_55-lf_1_8.dar")?;
     dar.apply(|archive| archive.accept(&mut visitor))?;
-    assert_eq!(true, visitor.0.contains("SimpleColor"));
+    assert!(visitor.0.contains("SimpleColor"));
     Ok(())
 }

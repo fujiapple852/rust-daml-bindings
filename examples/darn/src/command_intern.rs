@@ -1,12 +1,15 @@
-use crate::DarnCommand;
+use std::str::FromStr;
+
 use anyhow::{Context, Result};
 use clap::{App, Arg, ArgGroup, ArgMatches, SubCommand};
-use daml::lf::{DamlLfPackage, DarFile};
 use itertools::Itertools;
 use prettytable::color::Color;
 use prettytable::format;
 use prettytable::{color, Attr, Cell, Row, Table};
-use std::str::FromStr;
+
+use daml::lf::{DamlLfPackage, DarFile};
+
+use crate::DarnCommand;
 
 /// Darn command for displaying interned strings and dotted names.
 pub struct CommandIntern {}
@@ -50,7 +53,7 @@ impl DarnCommand for CommandIntern {
         let filter: Vec<usize> = matches
             .values_of("index")
             .unwrap_or_default()
-            .map(|i|usize::from_str(i).context(format!("parsing index from '{}'", i)))
+            .map(|i| usize::from_str(i).context(format!("parsing index from '{}'", i)))
             .collect::<Result<Vec<_>>>()?;
         let show_mangled = matches.is_present("show-mangled");
         let sort = match (matches.is_present("order-by-index"), matches.is_present("order-by-name")) {
@@ -100,11 +103,11 @@ fn intern_string(dar_path: &str, show_mangled: bool, sort_order: &SortOrder, fil
             let mut table = Table::new();
             table.set_titles(Row::new(vec!["index", "rendered"].into_iter().map(Cell::new).collect()));
             table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-            res.iter().for_each(|(idx, rendered)| {
+            for (idx, rendered) in &res {
                 table.add_row(string_row(idx.to_string().as_str(), rendered, pick_color(rendered)));
-            });
+            }
             table.printstd();
-        },
+        }
     }
     Ok(())
 }
@@ -148,11 +151,11 @@ fn intern_dotted(dar_path: &str, show_mangled: bool, sort_order: &SortOrder, fil
             let mut table = Table::new();
             table.set_titles(Row::new(vec!["index", "rendered", "segments"].into_iter().map(Cell::new).collect()));
             table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-            res.iter().for_each(|(idx, rendered, segments)| {
+            for (idx, rendered, segments) in &res {
                 table.add_row(dotted_row(idx.to_string().as_str(), rendered, segments, pick_color(rendered)));
-            });
+            }
             table.printstd();
-        },
+        }
     }
     Ok(())
 }

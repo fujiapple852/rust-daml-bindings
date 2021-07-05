@@ -290,7 +290,7 @@ mod test {
     #[test]
     pub fn test_bool_value() -> TestResult {
         let value: DamlValue = daml_value![true];
-        assert_eq!(true, value.try_bool()?);
+        assert!(value.try_bool()?);
         Ok(())
     }
 

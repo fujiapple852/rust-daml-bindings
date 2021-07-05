@@ -104,7 +104,7 @@ async fn test_create_contract_and_exercise_choice() -> TestResult {
     let create_tx: &DamlTransaction = &created_transactions[0];
     let ping_created_event = match create_tx.events().first().ok_or(ERR_STR)? {
         DamlEvent::Created(e) => e,
-        _ => panic!(),
+        DamlEvent::Archived(_) => panic!(),
     };
     exercise_pong_choice(
         &ledger_client,
@@ -120,11 +120,11 @@ async fn test_create_contract_and_exercise_choice() -> TestResult {
     let exercise_tx: &DamlTransaction = &exercised_transactions[0];
     let ping_archived_event = match &exercise_tx.events()[0] {
         DamlEvent::Archived(e) => e,
-        _ => panic!(),
+        DamlEvent::Created(_) => panic!(),
     };
     let pong_created_event = match &exercise_tx.events()[1] {
         DamlEvent::Created(e) => e,
-        _ => panic!(),
+        DamlEvent::Archived(_) => panic!(),
     };
     assert_eq!(&create_command_id, create_tx.command_id());
     assert_eq!(&exercise_command_id, exercise_tx.command_id());

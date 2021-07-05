@@ -21,7 +21,6 @@
     clippy::used_underscore_binding,
     clippy::must_use_candidate,
     clippy::module_name_repetitions,
-    clippy::filter_map,
     clippy::future_not_send,
     clippy::missing_const_for_fn,
     clippy::match_wildcard_for_single_variants,

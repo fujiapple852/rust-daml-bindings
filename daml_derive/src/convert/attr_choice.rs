@@ -59,6 +59,6 @@ fn simple_method_name_and_type(arg: &FnArg) -> Option<AttrField> {
             },
             _ => None,
         },
-        _ => None,
+        FnArg::Receiver(_) => None,
     }
 }

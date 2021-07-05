@@ -80,7 +80,7 @@ async fn test_get_transaction_trees() -> TestResult {
         _ => panic!(),
     };
     assert_eq!(2, exercise_tx.events_by_id().len());
-    assert_eq!(true, ping_exercised_event.consuming());
+    assert!(ping_exercised_event.consuming());
     assert_eq!(&create_test_pp_id(&package_id, PING_ENTITY_NAME), ping_exercised_event.template_id());
     assert!(!ping_exercised_event.contract_id().is_empty());
     assert_eq!(HashSet::<&String>::from_iter(&parties), HashSet::from_iter(ping_exercised_event.witness_parties()));
@@ -108,7 +108,7 @@ async fn test_get_transaction_by_event_id() -> TestResult {
         ledger_client.transaction_service().get_transaction_by_event_id(&expected_event_id, parties).await?;
     let event = match &transaction.events_by_id()[&expected_event_id] {
         DamlTreeEvent::Created(e) => e,
-        _ => panic!(),
+        DamlTreeEvent::Exercised(_) => panic!(),
     };
     assert_eq!(&command_id, transaction.command_id());
     assert_eq!(&workflow_id, transaction.workflow_id());

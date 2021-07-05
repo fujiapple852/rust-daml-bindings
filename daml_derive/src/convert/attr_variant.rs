@@ -28,6 +28,6 @@ fn extract_enum_field_type(variant: &Variant) -> AttrType {
             } else {
                 unnamed.first().map(|pair| AttrType::from_type(&pair.ty)).expect("Field.ty")
             },
-        _ => panic!("only Unnamed or Unit enum variant expected"),
+        Fields::Named(_) => panic!("only Unnamed or Unit enum variant expected"),
     }
 }

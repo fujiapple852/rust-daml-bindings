@@ -405,7 +405,7 @@ mod test {
     #[test]
     pub fn test_nested_bool() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(false, *value.extract(daml_path![person/data/is_true#b])?);
+        assert!(!*value.extract(daml_path![person/data/is_true#b])?);
         Ok(())
     }
 
@@ -565,7 +565,7 @@ mod test {
     #[test]
     pub fn test_nested_optional_rec() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(true, *value.extract(daml_path![opt_rec?/is_cat?#b])?);
+        assert!(*value.extract(daml_path![opt_rec?/is_cat?#b])?);
         Ok(())
     }
 
