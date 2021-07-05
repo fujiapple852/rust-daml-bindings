@@ -9,10 +9,7 @@ use daml::grpc_api::{CommandExecutor, DamlSimpleExecutorBuilder};
 use daml_derive::daml_codegen;
 use std::convert::TryInto;
 
-daml_codegen!(
-    dar_file = r"resources/testing_types_sandbox/TestingTypes-latest.dar",
-    module_filter_regex = "DA.Nested"
-);
+daml_codegen!(dar_file = r"resources/testing_types_sandbox/TestingTypes-latest.dar", module_filter_regex = "DA.Nested");
 
 #[tokio::test]
 pub async fn test() -> TestResult {
