@@ -1,52 +1,53 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DA.JsonTest:Depth1",
+  "description": "Record (Depth1)",
   "oneOf": [
     {
-      "additionalProperties": false,
+      "type": "object",
+      "description": "Record (Depth1)",
       "properties": {
         "foo": {
+          "description": "Optional",
           "oneOf": [
             {
               "type": "null"
             },
             {
+              "description": "Int64",
               "type": [
                 "integer",
                 "string"
-              ],
-              "title": "Int64"
+              ]
             }
-          ],
-          "title": "Optional"
+          ]
         }
       },
-      "required": [],
-      "title": "Record (Depth1)",
-      "type": "object"
+      "additionalProperties": false,
+      "required": []
     },
     {
+      "type": "array",
+      "description": "Record (Depth1, fields = [foo])",
       "items": [
         {
+          "description": "Optional",
           "oneOf": [
             {
               "type": "null"
             },
             {
+              "description": "Int64",
               "type": [
                 "integer",
                 "string"
-              ],
-              "title": "Int64"
+              ]
             }
-          ],
-          "title": "Optional"
+          ]
         }
       ],
-      "maxItems": 1,
       "minItems": 1,
-      "title": "Record (Depth1, fields = [foo])",
-      "type": "array"
+      "maxItems": 1
     }
-  ],
-  "title": "Record (Depth1)"
+  ]
 }

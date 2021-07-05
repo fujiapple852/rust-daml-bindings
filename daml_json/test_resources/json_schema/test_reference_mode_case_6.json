@@ -1,21 +1,23 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Record (Middle)",
+  "title": "DA.JsonTest:Middle",
+  "description": "Record (Middle)",
   "oneOf": [
     {
       "type": "object",
-      "title": "Record (Middle)",
+      "description": "Record (Middle)",
       "properties": {
         "middle": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "Record (Bottom)",
+          "title": "DA.JsonTest:Bottom",
+          "description": "Record (Bottom)",
           "oneOf": [
             {
               "type": "object",
-              "title": "Record (Bottom)",
+              "description": "Record (Bottom)",
               "properties": {
                 "bottom": {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
@@ -29,10 +31,10 @@
             },
             {
               "type": "array",
-              "title": "Record (Bottom, fields = [bottom])",
+              "description": "Record (Bottom, fields = [bottom])",
               "items": [
                 {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
@@ -52,18 +54,19 @@
     },
     {
       "type": "array",
-      "title": "Record (Middle, fields = [middle])",
+      "description": "Record (Middle, fields = [middle])",
       "items": [
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "Record (Bottom)",
+          "title": "DA.JsonTest:Bottom",
+          "description": "Record (Bottom)",
           "oneOf": [
             {
               "type": "object",
-              "title": "Record (Bottom)",
+              "description": "Record (Bottom)",
               "properties": {
                 "bottom": {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
@@ -77,10 +80,10 @@
             },
             {
               "type": "array",
-              "title": "Record (Bottom, fields = [bottom])",
+              "description": "Record (Bottom, fields = [bottom])",
               "items": [
                 {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"

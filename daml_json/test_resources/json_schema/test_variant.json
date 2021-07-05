@@ -1,10 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Variant (Color)",
+  "title": "DA.Shape:Color",
+  "description": "Variant (Color)",
   "oneOf": [
     {
       "type": "object",
-      "title": "Variant (Color, tag=Red)",
+      "title": "Red",
+      "description": "Variant (Color, tag=Red)",
       "properties": {
         "tag": {
           "type": "string",
@@ -13,7 +15,7 @@
           ]
         },
         "value": {
-          "title": "Unit",
+          "description": "Unit",
           "type": "object",
           "additionalProperties": false
         }
@@ -26,7 +28,8 @@
     },
     {
       "type": "object",
-      "title": "Variant (Color, tag=Green)",
+      "title": "Green",
+      "description": "Variant (Color, tag=Green)",
       "properties": {
         "tag": {
           "type": "string",
@@ -35,7 +38,7 @@
           ]
         },
         "value": {
-          "title": "Unit",
+          "description": "Unit",
           "type": "object",
           "additionalProperties": false
         }
@@ -48,7 +51,8 @@
     },
     {
       "type": "object",
-      "title": "Variant (Color, tag=Blue)",
+      "title": "Blue",
+      "description": "Variant (Color, tag=Blue)",
       "properties": {
         "tag": {
           "type": "string",
@@ -57,7 +61,7 @@
           ]
         },
         "value": {
-          "title": "Unit",
+          "description": "Unit",
           "type": "object",
           "additionalProperties": false
         }
@@ -70,7 +74,8 @@
     },
     {
       "type": "object",
-      "title": "Variant (Color, tag=Custom)",
+      "title": "Custom",
+      "description": "Variant (Color, tag=Custom)",
       "properties": {
         "tag": {
           "type": "string",
@@ -79,10 +84,10 @@
           ]
         },
         "value": {
-          "title": "List",
+          "description": "List",
           "type": "array",
           "items": {
-            "title": "Int64",
+            "description": "Int64",
             "type": [
               "integer",
               "string"
@@ -98,7 +103,8 @@
     },
     {
       "type": "object",
-      "title": "Variant (Color, tag=Other)",
+      "title": "Other",
+      "description": "Variant (Color, tag=Other)",
       "properties": {
         "tag": {
           "type": "string",
@@ -108,35 +114,36 @@
         },
         "value": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "Record (RGBA)",
+          "title": "DA.Shape:RGBA",
+          "description": "Record (RGBA)",
           "oneOf": [
             {
               "type": "object",
-              "title": "Record (RGBA)",
+              "description": "Record (RGBA)",
               "properties": {
                 "alpha": {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
                   ]
                 },
                 "b": {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
                   ]
                 },
                 "g": {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
                   ]
                 },
                 "r": {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
@@ -153,31 +160,31 @@
             },
             {
               "type": "array",
-              "title": "Record (RGBA, fields = [r, g, b, alpha])",
+              "description": "Record (RGBA, fields = [r, g, b, alpha])",
               "items": [
                 {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
                   ]
                 },
                 {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
                   ]
                 },
                 {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
                   ]
                 },
                 {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"

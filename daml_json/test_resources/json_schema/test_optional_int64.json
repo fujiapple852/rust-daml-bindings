@@ -8,8 +8,8 @@
         "integer",
         "string"
       ],
-      "title": "Int64"
+      "description": "Int64"
     }
   ],
-  "title": "Optional"
+  "description": "Optional"
 }

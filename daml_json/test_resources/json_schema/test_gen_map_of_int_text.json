@@ -1,68 +1,69 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DA.MapTest:Foo",
+  "description": "Record (Foo)",
   "oneOf": [
     {
-      "additionalProperties": false,
+      "type": "object",
+      "description": "Record (Foo)",
       "properties": {
         "foo": {
+          "description": "GenMap",
+          "type": "array",
           "items": {
+            "type": "array",
             "items": [
               {
+                "description": "Int64",
                 "type": [
                   "integer",
                   "string"
-                ],
-                "title": "Int64"
+                ]
               },
               {
-                "type": "string",
-                "title": "Text"
+                "description": "Text",
+                "type": "string"
               }
             ],
-            "maxItems": 2,
             "minItems": 2,
-            "type": "array"
-          },
-          "title": "GenMap",
-          "type": "array"
+            "maxItems": 2
+          }
         }
       },
+      "additionalProperties": false,
       "required": [
         "foo"
-      ],
-      "title": "Record (Foo)",
-      "type": "object"
+      ]
     },
     {
+      "type": "array",
+      "description": "Record (Foo, fields = [foo])",
       "items": [
         {
+          "description": "GenMap",
+          "type": "array",
           "items": {
+            "type": "array",
             "items": [
               {
+                "description": "Int64",
                 "type": [
                   "integer",
                   "string"
-                ],
-                "title": "Int64"
+                ]
               },
               {
-                "type": "string",
-                "title": "Text"
+                "description": "Text",
+                "type": "string"
               }
             ],
-            "maxItems": 2,
             "minItems": 2,
-            "type": "array"
-          },
-          "title": "GenMap",
-          "type": "array"
+            "maxItems": 2
+          }
         }
       ],
-      "maxItems": 1,
       "minItems": 1,
-      "title": "Record (Foo, fields = [foo])",
-      "type": "array"
+      "maxItems": 1
     }
-  ],
-  "title": "Record (Foo)"
+  ]
 }

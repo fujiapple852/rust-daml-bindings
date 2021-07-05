@@ -1,56 +1,57 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DA.PingPong:Ping",
+  "description": "Record (Ping)",
   "oneOf": [
     {
-      "additionalProperties": false,
+      "type": "object",
+      "description": "Record (Ping)",
       "properties": {
         "count": {
+          "description": "Int64",
           "type": [
             "integer",
             "string"
-          ],
-          "title": "Int64"
+          ]
         },
         "receiver": {
-          "type": "string",
-          "title": "Party"
+          "description": "Party",
+          "type": "string"
         },
         "sender": {
-          "type": "string",
-          "title": "Party"
+          "description": "Party",
+          "type": "string"
         }
       },
+      "additionalProperties": false,
       "required": [
         "sender",
         "receiver",
         "count"
-      ],
-      "title": "Record (Ping)",
-      "type": "object"
+      ]
     },
     {
+      "type": "array",
+      "description": "Record (Ping, fields = [sender, receiver, count])",
       "items": [
         {
-          "type": "string",
-          "title": "Party"
+          "description": "Party",
+          "type": "string"
         },
         {
-          "type": "string",
-          "title": "Party"
+          "description": "Party",
+          "type": "string"
         },
         {
+          "description": "Int64",
           "type": [
             "integer",
             "string"
-          ],
-          "title": "Int64"
+          ]
         }
       ],
-      "maxItems": 3,
       "minItems": 3,
-      "title": "Record (Ping, fields = [sender, receiver, count])",
-      "type": "array"
+      "maxItems": 3
     }
-  ],
-  "title": "Record (Ping)"
+  ]
 }

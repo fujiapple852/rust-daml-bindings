@@ -9,7 +9,7 @@ pub struct DamlJsonSchemaUnit<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "type")]
     pub ty: &'static str,
     #[serde(rename = "additionalProperties")]
@@ -22,7 +22,7 @@ pub struct DamlJsonSchemaBool<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "type")]
     pub ty: &'static str,
 }
@@ -33,7 +33,7 @@ pub struct DamlJsonSchemaText<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "type")]
     pub ty: &'static str,
 }
@@ -44,7 +44,7 @@ pub struct DamlJsonSchemaParty<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "type")]
     pub ty: &'static str,
 }
@@ -55,7 +55,7 @@ pub struct DamlJsonSchemaContractId<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "type")]
     pub ty: &'static str,
 }
@@ -66,7 +66,7 @@ pub struct DamlJsonSchemaDate<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "type")]
     pub ty: &'static str,
 }
@@ -77,7 +77,7 @@ pub struct DamlJsonSchemaTimestamp<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "type")]
     pub ty: &'static str,
 }
@@ -88,7 +88,7 @@ pub struct DamlJsonSchemaInt64<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "type")]
     pub ty: Value,
 }
@@ -99,7 +99,7 @@ pub struct DamlJsonSchemaDecimal<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "type")]
     pub ty: Value,
 }
@@ -110,7 +110,7 @@ pub struct DamlJsonSchemaList<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "type")]
     pub ty: &'static str,
     pub items: Value,
@@ -122,7 +122,7 @@ pub struct DamlJsonSchemaTextMap<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "type")]
     pub ty: &'static str,
     #[serde(rename = "additionalProperties")]
@@ -135,7 +135,7 @@ pub struct DamlJsonSchemaGenMap<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "type")]
     pub ty: &'static str,
     pub items: DamlJsonSchemaGenMapItems,
@@ -165,7 +165,7 @@ pub struct DamlJsonSchemaOptionalTopLevel<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "oneOf")]
     pub one_of: [Value; 2],
 }
@@ -176,7 +176,7 @@ pub struct DamlJsonSchemaOptionalNonTopLevel<'a> {
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(rename = "oneOf")]
     pub one_of: [DamlJsonSchemaOptionalNonTopLevelOneOf; 2],
 }
@@ -200,6 +200,8 @@ pub struct DamlJsonSchemaRecord<'a> {
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<&'a str>,
     #[serde(rename = "oneOf")]
     pub one_of: [Value; 2],
 }
@@ -209,7 +211,7 @@ pub struct DamlJsonSchemaRecordAsObject<'a> {
     #[serde(rename = "type")]
     pub ty: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub properties: Option<BTreeMap<&'a str, Value>>,
     #[serde(rename = "additionalProperties")]
@@ -222,7 +224,7 @@ pub struct DamlJsonSchemaRecordAsArray<'a> {
     #[serde(rename = "type")]
     pub ty: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub items: Option<Vec<Value>>,
     #[serde(rename = "minItems")]
@@ -238,6 +240,8 @@ pub struct DamlJsonSchemaVariant<'a> {
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<&'a str>,
     #[serde(rename = "oneOf")]
     pub one_of: Vec<Value>,
 }
@@ -248,6 +252,8 @@ pub struct DamlJsonSchemaVariantArm<'a> {
     pub ty: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<&'a str>,
     pub properties: Value,
     #[serde(rename = "additionalProperties")]
     pub additional_properties: bool,
@@ -261,8 +267,20 @@ pub struct DamlJsonSchemaEnum<'a> {
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<&'a str>,
+    #[serde(rename = "oneOf")]
+    pub one_of: Vec<Value>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct DamlJsonSchemaEnumEntry<'a> {
     #[serde(rename = "type")]
     pub ty: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<&'a str>,
     #[serde(rename = "enum")]
     pub data_enum: Vec<&'a str>,
 }

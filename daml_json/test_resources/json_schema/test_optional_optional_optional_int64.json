@@ -24,22 +24,22 @@
                     "integer",
                     "string"
                   ],
-                  "title": "Int64"
+                  "description": "Int64"
                 },
                 "maxItems": 1,
                 "minItems": 1,
                 "type": "array"
               }
             ],
-            "title": "Optional (depth > 1)"
+            "description": "Optional (depth > 1)"
           },
           "maxItems": 1,
           "minItems": 1,
           "type": "array"
         }
       ],
-      "title": "Optional (depth > 1)"
+      "description": "Optional (depth > 1)"
     }
   ],
-  "title": "Optional"
+  "description": "Optional"
 }

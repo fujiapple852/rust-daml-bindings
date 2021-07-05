@@ -9,14 +9,14 @@
             "integer",
             "string"
           ],
-          "title": "Int64"
+          "description": "Int64"
         },
         "field_bbb": {
           "items": {
             "type": "string",
-            "title": "Text"
+            "description": "Text"
           },
-          "title": "List",
+          "description": "List",
           "type": "array"
         }
       },
@@ -24,7 +24,7 @@
         "field_aaa",
         "field_bbb"
       ],
-      "title": "Record (RecordArgument)",
+      "description": "Record (RecordArgument)",
       "type": "object"
     },
     {
@@ -34,22 +34,23 @@
             "integer",
             "string"
           ],
-          "title": "Int64"
+          "description": "Int64"
         },
         {
           "items": {
             "type": "string",
-            "title": "Text"
+            "description": "Text"
           },
-          "title": "List",
+          "description": "List",
           "type": "array"
         }
       ],
       "maxItems": 2,
       "minItems": 2,
-      "title": "Record (RecordArgument, fields = [field_aaa, field_bbb])",
+      "description": "Record (RecordArgument, fields = [field_aaa, field_bbb])",
       "type": "array"
     }
   ],
-  "title": "Record (RecordArgument)"
+  "title": "DA.VariantExamples:RecordArgument",
+  "description": "Record (RecordArgument)"
 }

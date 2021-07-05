@@ -1,42 +1,45 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Record (OPerson)",
+  "title": "DA.JsonTest:OPerson",
+  "description": "Record (OPerson)",
   "oneOf": [
     {
       "type": "object",
-      "title": "Record (OPerson)",
+      "description": "Record (OPerson)",
       "properties": {
         "bar": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "Record (Oa)",
+          "title": "DA.JsonTest:Oa",
+          "description": "Record (Oa)",
           "oneOf": [
             {
               "type": "object",
-              "title": "Record (Oa)",
+              "description": "Record (Oa)",
               "properties": {
                 "foo": {
-                  "title": "Optional",
+                  "description": "Optional",
                   "oneOf": [
                     {
                       "type": "null"
                     },
                     {
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
-                      "title": "Record (Person)",
+                      "title": "DA.JsonTest:Person",
+                      "description": "Record (Person)",
                       "oneOf": [
                         {
                           "type": "object",
-                          "title": "Record (Person)",
+                          "description": "Record (Person)",
                           "properties": {
                             "age": {
-                              "title": "Int64",
+                              "description": "Int64",
                               "type": [
                                 "integer",
                                 "string"
                               ]
                             },
                             "name": {
-                              "title": "Text",
+                              "description": "Text",
                               "type": "string"
                             }
                           },
@@ -48,14 +51,14 @@
                         },
                         {
                           "type": "array",
-                          "title": "Record (Person, fields = [name, age])",
+                          "description": "Record (Person, fields = [name, age])",
                           "items": [
                             {
-                              "title": "Text",
+                              "description": "Text",
                               "type": "string"
                             },
                             {
-                              "title": "Int64",
+                              "description": "Int64",
                               "type": [
                                 "integer",
                                 "string"
@@ -75,31 +78,32 @@
             },
             {
               "type": "array",
-              "title": "Record (Oa, fields = [foo])",
+              "description": "Record (Oa, fields = [foo])",
               "items": [
                 {
-                  "title": "Optional",
+                  "description": "Optional",
                   "oneOf": [
                     {
                       "type": "null"
                     },
                     {
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
-                      "title": "Record (Person)",
+                      "title": "DA.JsonTest:Person",
+                      "description": "Record (Person)",
                       "oneOf": [
                         {
                           "type": "object",
-                          "title": "Record (Person)",
+                          "description": "Record (Person)",
                           "properties": {
                             "age": {
-                              "title": "Int64",
+                              "description": "Int64",
                               "type": [
                                 "integer",
                                 "string"
                               ]
                             },
                             "name": {
-                              "title": "Text",
+                              "description": "Text",
                               "type": "string"
                             }
                           },
@@ -111,14 +115,14 @@
                         },
                         {
                           "type": "array",
-                          "title": "Record (Person, fields = [name, age])",
+                          "description": "Record (Person, fields = [name, age])",
                           "items": [
                             {
-                              "title": "Text",
+                              "description": "Text",
                               "type": "string"
                             },
                             {
-                              "title": "Int64",
+                              "description": "Int64",
                               "type": [
                                 "integer",
                                 "string"
@@ -146,39 +150,41 @@
     },
     {
       "type": "array",
-      "title": "Record (OPerson, fields = [bar])",
+      "description": "Record (OPerson, fields = [bar])",
       "items": [
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "Record (Oa)",
+          "title": "DA.JsonTest:Oa",
+          "description": "Record (Oa)",
           "oneOf": [
             {
               "type": "object",
-              "title": "Record (Oa)",
+              "description": "Record (Oa)",
               "properties": {
                 "foo": {
-                  "title": "Optional",
+                  "description": "Optional",
                   "oneOf": [
                     {
                       "type": "null"
                     },
                     {
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
-                      "title": "Record (Person)",
+                      "title": "DA.JsonTest:Person",
+                      "description": "Record (Person)",
                       "oneOf": [
                         {
                           "type": "object",
-                          "title": "Record (Person)",
+                          "description": "Record (Person)",
                           "properties": {
                             "age": {
-                              "title": "Int64",
+                              "description": "Int64",
                               "type": [
                                 "integer",
                                 "string"
                               ]
                             },
                             "name": {
-                              "title": "Text",
+                              "description": "Text",
                               "type": "string"
                             }
                           },
@@ -190,14 +196,14 @@
                         },
                         {
                           "type": "array",
-                          "title": "Record (Person, fields = [name, age])",
+                          "description": "Record (Person, fields = [name, age])",
                           "items": [
                             {
-                              "title": "Text",
+                              "description": "Text",
                               "type": "string"
                             },
                             {
-                              "title": "Int64",
+                              "description": "Int64",
                               "type": [
                                 "integer",
                                 "string"
@@ -217,31 +223,32 @@
             },
             {
               "type": "array",
-              "title": "Record (Oa, fields = [foo])",
+              "description": "Record (Oa, fields = [foo])",
               "items": [
                 {
-                  "title": "Optional",
+                  "description": "Optional",
                   "oneOf": [
                     {
                       "type": "null"
                     },
                     {
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
-                      "title": "Record (Person)",
+                      "title": "DA.JsonTest:Person",
+                      "description": "Record (Person)",
                       "oneOf": [
                         {
                           "type": "object",
-                          "title": "Record (Person)",
+                          "description": "Record (Person)",
                           "properties": {
                             "age": {
-                              "title": "Int64",
+                              "description": "Int64",
                               "type": [
                                 "integer",
                                 "string"
                               ]
                             },
                             "name": {
-                              "title": "Text",
+                              "description": "Text",
                               "type": "string"
                             }
                           },
@@ -253,14 +260,14 @@
                         },
                         {
                           "type": "array",
-                          "title": "Record (Person, fields = [name, age])",
+                          "description": "Record (Person, fields = [name, age])",
                           "items": [
                             {
-                              "title": "Text",
+                              "description": "Text",
                               "type": "string"
                             },
                             {
-                              "title": "Int64",
+                              "description": "Int64",
                               "type": [
                                 "integer",
                                 "string"

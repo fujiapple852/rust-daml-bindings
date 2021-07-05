@@ -1,16 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Record (Rec)",
+  "title": "DA.JsonTest:Rec",
+  "description": "Record (Rec)",
   "oneOf": [
     {
       "type": "object",
-      "title": "Record (Rec)",
+      "description": "Record (Rec)",
       "properties": {
         "bar": {
           "$ref": "#/components/schemas/DA.JsonTest.Rec"
         },
         "foo": {
-          "title": "Text",
+          "description": "Text",
           "type": "string"
         }
       },
@@ -22,10 +23,10 @@
     },
     {
       "type": "array",
-      "title": "Record (Rec, fields = [foo, bar])",
+      "description": "Record (Rec, fields = [foo, bar])",
       "items": [
         {
-          "title": "Text",
+          "description": "Text",
           "type": "string"
         },
         {

@@ -1,25 +1,27 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Record (TopRec)",
+  "title": "DA.JsonTest:TopRec",
+  "description": "Record (TopRec)",
   "oneOf": [
     {
       "type": "object",
-      "title": "Record (TopRec)",
+      "description": "Record (TopRec)",
       "properties": {
         "foo": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "Record (BottomRec)",
+          "title": "DA.JsonTest:BottomRec",
+          "description": "Record (BottomRec)",
           "oneOf": [
             {
               "type": "object",
-              "title": "Record (BottomRec)",
+              "description": "Record (BottomRec)",
               "properties": {
                 "top": {
-                  "title": "Any (TestingTypes:DA.JsonTest:BottomRec)",
+                  "description": "Any (TestingTypes:DA.JsonTest:BottomRec)",
                   "comment": "recursive data types with type parameters cannot be represented"
                 },
                 "val": {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
@@ -34,17 +36,17 @@
             },
             {
               "type": "array",
-              "title": "Record (BottomRec, fields = [val, top])",
+              "description": "Record (BottomRec, fields = [val, top])",
               "items": [
                 {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
                   ]
                 },
                 {
-                  "title": "Any (TestingTypes:DA.JsonTest:BottomRec)",
+                  "description": "Any (TestingTypes:DA.JsonTest:BottomRec)",
                   "comment": "recursive data types with type parameters cannot be represented"
                 }
               ],
@@ -61,22 +63,23 @@
     },
     {
       "type": "array",
-      "title": "Record (TopRec, fields = [foo])",
+      "description": "Record (TopRec, fields = [foo])",
       "items": [
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "Record (BottomRec)",
+          "title": "DA.JsonTest:BottomRec",
+          "description": "Record (BottomRec)",
           "oneOf": [
             {
               "type": "object",
-              "title": "Record (BottomRec)",
+              "description": "Record (BottomRec)",
               "properties": {
                 "top": {
-                  "title": "Any (TestingTypes:DA.JsonTest:BottomRec)",
+                  "description": "Any (TestingTypes:DA.JsonTest:BottomRec)",
                   "comment": "recursive data types with type parameters cannot be represented"
                 },
                 "val": {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
@@ -91,17 +94,17 @@
             },
             {
               "type": "array",
-              "title": "Record (BottomRec, fields = [val, top])",
+              "description": "Record (BottomRec, fields = [val, top])",
               "items": [
                 {
-                  "title": "Int64",
+                  "description": "Int64",
                   "type": [
                     "integer",
                     "string"
                   ]
                 },
                 {
-                  "title": "Any (TestingTypes:DA.JsonTest:BottomRec)",
+                  "description": "Any (TestingTypes:DA.JsonTest:BottomRec)",
                   "comment": "recursive data types with type parameters cannot be represented"
                 }
               ],

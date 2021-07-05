@@ -1,5 +1,5 @@
 {
   "type": "object",
-  "title": "Unit",
+  "description": "Unit",
   "additionalProperties": false
 }

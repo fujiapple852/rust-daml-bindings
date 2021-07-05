@@ -1,27 +1,29 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Record (PatternRecord)",
+  "title": "DA.GenericTypes:PatternRecord",
+  "description": "Record (PatternRecord)",
   "oneOf": [
     {
       "type": "object",
-      "title": "Record (PatternRecord)",
+      "description": "Record (PatternRecord)",
       "properties": {
         "val": {
-          "title": "Optional",
+          "description": "Optional",
           "oneOf": [
             {
               "type": "null"
             },
             {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "title": "Record (GenericWrapperRecord)",
+              "title": "DA.GenericTypes:GenericWrapperRecord",
+              "description": "Record (GenericWrapperRecord)",
               "oneOf": [
                 {
                   "type": "object",
-                  "title": "Record (GenericWrapperRecord)",
+                  "description": "Record (GenericWrapperRecord)",
                   "properties": {
                     "value": {
-                      "title": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
+                      "description": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
                       "comment": "inline recursive data types cannot be represented"
                     }
                   },
@@ -32,10 +34,10 @@
                 },
                 {
                   "type": "array",
-                  "title": "Record (GenericWrapperRecord, fields = [value])",
+                  "description": "Record (GenericWrapperRecord, fields = [value])",
                   "items": [
                     {
-                      "title": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
+                      "description": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
                       "comment": "inline recursive data types cannot be represented"
                     }
                   ],
@@ -52,24 +54,25 @@
     },
     {
       "type": "array",
-      "title": "Record (PatternRecord, fields = [val])",
+      "description": "Record (PatternRecord, fields = [val])",
       "items": [
         {
-          "title": "Optional",
+          "description": "Optional",
           "oneOf": [
             {
               "type": "null"
             },
             {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "title": "Record (GenericWrapperRecord)",
+              "title": "DA.GenericTypes:GenericWrapperRecord",
+              "description": "Record (GenericWrapperRecord)",
               "oneOf": [
                 {
                   "type": "object",
-                  "title": "Record (GenericWrapperRecord)",
+                  "description": "Record (GenericWrapperRecord)",
                   "properties": {
                     "value": {
-                      "title": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
+                      "description": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
                       "comment": "inline recursive data types cannot be represented"
                     }
                   },
@@ -80,10 +83,10 @@
                 },
                 {
                   "type": "array",
-                  "title": "Record (GenericWrapperRecord, fields = [value])",
+                  "description": "Record (GenericWrapperRecord, fields = [value])",
                   "items": [
                     {
-                      "title": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
+                      "description": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
                       "comment": "inline recursive data types cannot be represented"
                     }
                   ],

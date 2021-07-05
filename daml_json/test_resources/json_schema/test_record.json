@@ -1,47 +1,48 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DA.JsonTest:Person",
+  "description": "Record (Person)",
   "oneOf": [
     {
-      "additionalProperties": false,
+      "type": "object",
+      "description": "Record (Person)",
       "properties": {
         "age": {
+          "description": "Int64",
           "type": [
             "integer",
             "string"
-          ],
-          "title": "Int64"
+          ]
         },
         "name": {
-          "type": "string",
-          "title": "Text"
+          "description": "Text",
+          "type": "string"
         }
       },
+      "additionalProperties": false,
       "required": [
         "name",
         "age"
-      ],
-      "title": "Record (Person)",
-      "type": "object"
+      ]
     },
     {
+      "type": "array",
+      "description": "Record (Person, fields = [name, age])",
       "items": [
         {
-          "type": "string",
-          "title": "Text"
+          "description": "Text",
+          "type": "string"
         },
         {
+          "description": "Int64",
           "type": [
             "integer",
             "string"
-          ],
-          "title": "Int64"
+          ]
         }
       ],
-      "maxItems": 2,
       "minItems": 2,
-      "title": "Record (Person, fields = [name, age])",
-      "type": "array"
+      "maxItems": 2
     }
-  ],
-  "title": "Record (Person)"
+  ]
 }

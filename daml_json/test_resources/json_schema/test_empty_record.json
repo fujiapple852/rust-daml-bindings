@@ -1,16 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Record (ResetPingCount)",
+  "title": "DA.PingPong:ResetPingCount",
+  "description": "Record (ResetPingCount)",
   "oneOf": [
     {
       "type": "object",
-      "title": "Record (ResetPingCount)",
+      "description": "Record (ResetPingCount)",
       "additionalProperties": false,
       "required": []
     },
     {
       "type": "array",
-      "title": "Record (ResetPingCount, fields = [])",
+      "description": "Record (ResetPingCount, fields = [])",
       "minItems": 0,
       "maxItems": 0
     }

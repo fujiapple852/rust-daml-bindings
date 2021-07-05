@@ -1,46 +1,47 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DA.MapTest:Bar",
+  "description": "Record (Bar)",
   "oneOf": [
     {
-      "additionalProperties": false,
+      "type": "object",
+      "description": "Record (Bar)",
       "properties": {
         "bar": {
+          "description": "TextMap",
+          "type": "object",
           "additionalProperties": {
+            "description": "Int64",
             "type": [
               "integer",
               "string"
-            ],
-            "title": "Int64"
-          },
-          "title": "TextMap",
-          "type": "object"
+            ]
+          }
         }
       },
+      "additionalProperties": false,
       "required": [
         "bar"
-      ],
-      "title": "Record (Bar)",
-      "type": "object"
+      ]
     },
     {
+      "type": "array",
+      "description": "Record (Bar, fields = [bar])",
       "items": [
         {
+          "description": "TextMap",
+          "type": "object",
           "additionalProperties": {
+            "description": "Int64",
             "type": [
               "integer",
               "string"
-            ],
-            "title": "Int64"
-          },
-          "title": "TextMap",
-          "type": "object"
+            ]
+          }
         }
       ],
-      "maxItems": 1,
       "minItems": 1,
-      "title": "Record (Bar, fields = [bar])",
-      "type": "array"
+      "maxItems": 1
     }
-  ],
-  "title": "Record (Bar)"
+  ]
 }

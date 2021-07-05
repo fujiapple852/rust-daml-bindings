@@ -1,6 +1,10 @@
+#![allow(clippy::or_fun_call)]
+
 use std::collections::BTreeMap;
+use std::ops::Not;
 
 use itertools::Itertools;
+use serde::Deserialize;
 use serde_json::json;
 use serde_json::Value;
 
@@ -13,15 +17,27 @@ use crate::error::DamlJsonSchemaCodecError::NotSerializableDamlType;
 use crate::error::{DamlJsonSchemaCodecError, DamlJsonSchemaCodecResult};
 use crate::schema_data::{
     DamlJsonSchemaBool, DamlJsonSchemaContractId, DamlJsonSchemaDate, DamlJsonSchemaDecimal, DamlJsonSchemaEnum,
-    DamlJsonSchemaGenMap, DamlJsonSchemaGenMapItems, DamlJsonSchemaInt64, DamlJsonSchemaList, DamlJsonSchemaOptional,
-    DamlJsonSchemaOptionalNonTopLevel, DamlJsonSchemaOptionalNonTopLevelOneOf, DamlJsonSchemaOptionalTopLevel,
-    DamlJsonSchemaParty, DamlJsonSchemaRecord, DamlJsonSchemaRecordAsArray, DamlJsonSchemaRecordAsObject,
-    DamlJsonSchemaText, DamlJsonSchemaTextMap, DamlJsonSchemaTimestamp, DamlJsonSchemaUnit, DamlJsonSchemaVariant,
-    DamlJsonSchemaVariantArm,
+    DamlJsonSchemaEnumEntry, DamlJsonSchemaGenMap, DamlJsonSchemaGenMapItems, DamlJsonSchemaInt64, DamlJsonSchemaList,
+    DamlJsonSchemaOptional, DamlJsonSchemaOptionalNonTopLevel, DamlJsonSchemaOptionalNonTopLevelOneOf,
+    DamlJsonSchemaOptionalTopLevel, DamlJsonSchemaParty, DamlJsonSchemaRecord, DamlJsonSchemaRecordAsArray,
+    DamlJsonSchemaRecordAsObject, DamlJsonSchemaText, DamlJsonSchemaTextMap, DamlJsonSchemaTimestamp,
+    DamlJsonSchemaUnit, DamlJsonSchemaVariant, DamlJsonSchemaVariantArm,
 };
 use crate::util::AsSingleSliceExt;
 use crate::util::Required;
-use std::ops::Not;
+
+/// A data dictionary for augmenting the generated JSON Schema with `title` and `description` attributes.
+#[derive(Debug, Deserialize, Default)]
+pub struct DataDict(BTreeMap<String, DataDictEntry>);
+
+/// A data item in the data dictionary.
+#[derive(Debug, Deserialize, Default)]
+pub struct DataDictEntry {
+    title: Option<String>,
+    description: Option<String>,
+    #[serde(default)]
+    items: BTreeMap<String, String>,
+}
 
 /// The JSON schema version.
 const SCHEMA_VERSION: &str = "https://json-schema.org/draft/2020-12/schema";
@@ -43,18 +59,33 @@ impl Default for RenderSchema {
     }
 }
 
-/// Control which JSON schemas should include a `$schema` property.
+/// Control which JSON schemas should include a `title` property.
 #[derive(Debug, Copy, Clone)]
 pub enum RenderTitle {
     /// Do not render the `title` property for any schemas
     None,
     /// Render the `title` property for Daml data (Record, Template, Enum & Variant) schemas only.
     Data,
-    /// Render the `title` property for all schemas.
-    All,
 }
 
 impl Default for RenderTitle {
+    fn default() -> Self {
+        Self::Data
+    }
+}
+
+/// Control which JSON schemas should include a `description` property.
+#[derive(Debug, Copy, Clone)]
+pub enum RenderDescription {
+    /// Do not render the `description` property for any schemas
+    None,
+    /// Render the `description` property for Daml data (Record, Template, Enum & Variant) schemas only.
+    Data,
+    /// Render the `description` property for all schemas.
+    All,
+}
+
+impl Default for RenderDescription {
     fn default() -> Self {
         Self::All
     }
@@ -110,7 +141,7 @@ impl Default for RenderTitle {
 ///
 /// ```json
 /// {
-///    "title": "Any (Rec)",
+///    "description": "Any (Rec)",
 ///    "comment": "inline recursive data types cannot be represented"
 /// }
 /// ```
@@ -175,15 +206,25 @@ impl Default for ReferenceMode {
 pub struct SchemaEncoderConfig {
     render_schema: RenderSchema,
     render_title: RenderTitle,
+    render_description: RenderDescription,
     reference_mode: ReferenceMode,
+    data_dict: DataDict,
 }
 
 impl SchemaEncoderConfig {
-    pub fn new(render_schema: RenderSchema, render_title: RenderTitle, reference_mode: ReferenceMode) -> Self {
+    pub fn new(
+        render_schema: RenderSchema,
+        render_title: RenderTitle,
+        render_description: RenderDescription,
+        reference_mode: ReferenceMode,
+        data_dict: DataDict,
+    ) -> Self {
         Self {
             render_schema,
             render_title,
+            render_description,
             reference_mode,
+            data_dict,
         }
     }
 }
@@ -235,14 +276,14 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "type": "object",
-    ///   "title": "Unit",
+    ///   "description": "Unit",
     ///   "additionalProperties": false
     /// }
     /// ```
     fn encode_unit(&self) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaUnit {
             schema: self.schema_if_all(),
-            title: self.title_if_all("Unit"),
+            description: self.description_if_all("Unit"),
             ty: "object",
             additional_properties: false,
         })?)
@@ -256,13 +297,13 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "type": "boolean",
-    ///   "title": "Bool"
+    ///   "description": "Bool"
     /// }
     /// ```
     fn encode_bool(&self) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaBool {
             schema: self.schema_if_all(),
-            title: self.title_if_all("Bool"),
+            description: self.description_if_all("Bool"),
             ty: "boolean",
         })?)
     }
@@ -275,13 +316,13 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "type": "string",
-    ///   "title": "Text"
+    ///   "description": "Text"
     /// }
     /// ```
     fn encode_text(&self) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaText {
             schema: self.schema_if_all(),
-            title: self.title_if_all("Text"),
+            description: self.description_if_all("Text"),
             ty: "string",
         })?)
     }
@@ -294,13 +335,13 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "type": "string",
-    ///   "title": "Party"
+    ///   "description": "Party"
     /// }
     /// ```
     fn encode_party(&self) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaParty {
             schema: self.schema_if_all(),
-            title: self.title_if_all("Party"),
+            description: self.description_if_all("Party"),
             ty: "string",
         })?)
     }
@@ -313,13 +354,13 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "type": "string",
-    ///   "title": "ContractId"
+    ///   "description": "ContractId"
     /// }
     /// ```
     fn encode_contract_id(&self) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaContractId {
             schema: self.schema_if_all(),
-            title: self.title_if_all("ContractId"),
+            description: self.description_if_all("ContractId"),
             ty: "string",
         })?)
     }
@@ -332,13 +373,13 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "type": "string",
-    ///   "title": "Date"
+    ///   "description": "Date"
     /// }
     /// ```
     fn encode_date(&self) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaDate {
             schema: self.schema_if_all(),
-            title: self.title_if_all("Date"),
+            description: self.description_if_all("Date"),
             ty: "string",
         })?)
     }
@@ -351,13 +392,13 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "type": "string",
-    ///   "title": "Timestamp"
+    ///   "description": "Timestamp"
     /// }
     /// ```
     fn encode_timestamp(&self) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaTimestamp {
             schema: self.schema_if_all(),
-            title: self.title_if_all("Timestamp"),
+            description: self.description_if_all("Timestamp"),
             ty: "string",
         })?)
     }
@@ -370,13 +411,13 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "type": "string",
-    ///   "title": "Int64"
+    ///   "description": "Int64"
     /// }
     /// ```
     fn encode_int64(&self) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaInt64 {
             schema: self.schema_if_all(),
-            title: self.title_if_all("Int64"),
+            description: self.description_if_all("Int64"),
             ty: json!(["integer", "string"]),
         })?)
     }
@@ -389,13 +430,13 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "type": "string",
-    ///   "title": "Decimal"
+    ///   "description": "Decimal"
     /// }
     /// ```
     fn encode_decimal(&self) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaDecimal {
             schema: self.schema_if_all(),
-            title: self.title_if_all("Decimal"),
+            description: self.description_if_all("Decimal"),
             ty: json!(["number", "string"]),
         })?)
     }
@@ -408,7 +449,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "type": "array",
-    ///   "title": "List",
+    ///   "description": "List",
     ///   "items": {
     ///     "type": "..."
     ///   }
@@ -417,7 +458,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     fn encode_list(&self, items: Value) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaList {
             schema: self.schema_if_all(),
-            title: self.title_if_all("List"),
+            description: self.description_if_all("List"),
             ty: "array",
             items,
         })?)
@@ -432,7 +473,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "type": "object",
-    ///   "title": "TextMap",
+    ///   "description": "TextMap",
     ///   "additionalProperties": {
     ///     "type": "..."
     ///   }
@@ -446,7 +487,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     fn encode_textmap(&self, additional_properties: Value) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaTextMap {
             schema: self.schema_if_all(),
-            title: self.title_if_all("TextMap"),
+            description: self.description_if_all("TextMap"),
             ty: "object",
             additional_properties,
         })?)
@@ -461,7 +502,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///
     /// ```json
     /// {
-    ///   "title": "GenMap",
+    ///   "description": "GenMap",
     ///   "type": "array",
     ///   "items": {
     ///     "type": "array",
@@ -489,7 +530,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     fn encode_genmap(&self, ty_key: Value, ty_value: Value) -> DamlJsonSchemaCodecResult<Value> {
         Ok(serde_json::to_value(DamlJsonSchemaGenMap {
             schema: self.schema_if_all(),
-            title: self.title_if_all("GenMap"),
+            description: self.description_if_all("GenMap"),
             ty: "array",
             items: DamlJsonSchemaGenMapItems {
                 ty: "array",
@@ -508,7 +549,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///
     /// ```json
     /// {
-    ///   "title": "Optional",
+    ///   "description": "Optional",
     ///   "oneOf": [
     ///     {
     ///       "type": "null"
@@ -526,7 +567,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///
     /// ```json
     /// {
-    ///   "title": "Optional (depth > 1)",
+    ///   "description": "Optional (depth > 1)",
     ///   "oneOf": [
     ///     {
     ///       "type": "array",
@@ -554,13 +595,13 @@ impl<'a> JsonSchemaEncoder<'a> {
         if top_level {
             Ok(serde_json::to_value(DamlJsonSchemaOptional::TopLevel(DamlJsonSchemaOptionalTopLevel {
                 schema: self.schema_if_all(),
-                title: self.title_if_all("Optional"),
+                description: self.description_if_all("Optional"),
                 one_of: [json!({ "type": "null" }), nested],
             }))?)
         } else {
             Ok(serde_json::to_value(DamlJsonSchemaOptional::NonTopLevel(DamlJsonSchemaOptionalNonTopLevel {
                 schema: self.schema_if_all(),
-                title: self.title_if_all("Optional (depth > 1)"),
+                description: self.description_if_all("Optional (depth > 1)"),
                 one_of: [
                     DamlJsonSchemaOptionalNonTopLevelOneOf {
                         ty: "array",
@@ -587,10 +628,11 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "$schema": "https://json-schema.org/draft/2020-12/schema",
-    ///   "title": "Record (... name ...)",
+    ///   "title": "Foo.Bar:Baz",
+    ///   "description": "Record (... name ...)",
     ///   "oneOf": [
     ///     {
-    ///       "title": "Record ...",
+    ///       "description": "Record ...",
     ///       "type": "object",
     ///       "properties": {
     ///         "field1": {
@@ -609,7 +651,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///       ]
     ///     },
     ///     {
-    ///       "title": "Record ...",
+    ///       "description": "Record ...",
     ///       "type": "array",
     ///       "items": [
     ///         {
@@ -639,15 +681,19 @@ impl<'a> JsonSchemaEncoder<'a> {
     fn do_encode_record(
         &self,
         name: &str,
+        module_path: impl Iterator<Item = &'a str>,
         fields: &[DamlField<'_>],
         type_params: &[DamlTypeVarWithKind<'a>],
         type_args: &[DamlType<'_>],
     ) -> DamlJsonSchemaCodecResult<Value> {
+        let data_item_path = Self::format_data_item(module_path, name);
+        let (title, description) = self.get_title_and_description(&data_item_path);
         Ok(serde_json::to_value(DamlJsonSchemaRecord {
             schema: self.schema_if_data_or_all(),
-            title: self.title_if_data_or_all(&format!("Record ({})", name)),
+            title: title.or_else(|| self.title_if_data(&data_item_path)),
+            description: description.or(self.description_if_data_or_all(&format!("Record ({})", name))),
             one_of: [
-                self.do_encode_record_object(name, fields, type_args, type_params)?,
+                self.do_encode_record_object(name, &data_item_path, fields, type_params, type_args)?,
                 self.do_encode_record_list(name, fields, type_params, type_args)?,
             ],
         })?)
@@ -663,10 +709,12 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "$schema": "https://json-schema.org/draft/2020-12/schema",
-    ///   "title": "Variant (... name ...)",
+    ///   "title": "Foo.Bar:Baz",
+    ///   "description": "Variant (... name ...)",
     ///   "oneOf": [
     ///     {
-    ///       "title": "Variant ...",
+    ///       "title": "tag1",
+    ///       "description": "Variant ...",
     ///       "type": "object",
     ///       "properties": {
     ///         "tag": {
@@ -683,7 +731,8 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///       "required": [ "tag", "value" ]
     ///     },
     ///     {
-    ///       "title": "Variant ...",
+    ///       "title": "tag2",
+    ///       "description": "Variant ...",
     ///       "type": "object",
     ///       "properties": {
     ///         "tag": {
@@ -705,17 +754,21 @@ impl<'a> JsonSchemaEncoder<'a> {
     fn encode_variant(
         &self,
         variant: &DamlVariant<'_>,
+        module_path: impl Iterator<Item = &'a str>,
         type_params: &[DamlTypeVarWithKind<'a>],
         type_args: &[DamlType<'_>],
     ) -> DamlJsonSchemaCodecResult<Value> {
+        let data_item_path = Self::format_data_item(module_path, variant.name());
+        let (title, description) = self.get_title_and_description(&data_item_path);
         let all_arms = variant
             .fields()
             .iter()
-            .map(|field| self.encode_variant_arm(variant.name(), field, type_params, type_args))
+            .map(|field| self.encode_variant_arm(variant.name(), &data_item_path, field, type_params, type_args))
             .collect::<DamlJsonSchemaCodecResult<Vec<_>>>()?;
         Ok(serde_json::to_value(DamlJsonSchemaVariant {
             schema: self.schema_if_data_or_all(),
-            title: self.title_if_data_or_all(&format!("Variant ({})", variant.name())),
+            title: title.or_else(|| self.title_if_data(&data_item_path)),
+            description: description.or(self.description_if_data_or_all(&format!("Variant ({})", variant.name()))),
             one_of: all_arms,
         })?)
     }
@@ -728,21 +781,52 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```json
     /// {
     ///   "$schema": "https://json-schema.org/draft/2020-12/schema",
-    ///   "title": "Enum ...",
-    ///   "type": "string",
-    ///   "enum": [
-    ///     "Possible",
-    ///     "Enum",
-    ///     "Values"
+    ///   "title": "Foo.Bar:Baz",
+    ///   "description": "Enum ...",
+    ///   "oneOf": [
+    ///     {
+    ///       "type": "string",
+    ///       "title": "Red",
+    ///       "description": "Enum ...",
+    ///       "enum": [
+    ///         "Red"
+    ///       ]
+    ///     },
+    ///     {
+    ///       "type": "string",
+    ///       "title": "Green",
+    ///       "description": "Enum ...",
+    ///       "enum": [
+    ///         "Green"
+    ///       ]
+    ///     },
+    ///     {
+    ///       "type": "string",
+    ///       "title": "Blue",
+    ///       "description": "Enum ...",
+    ///       "enum": [
+    ///         "Blue"
+    ///       ]
+    ///     }
     ///   ]
     /// }
     /// ```
-    fn encode_enum(&self, data_enum: &DamlEnum<'_>) -> DamlJsonSchemaCodecResult<Value> {
+    fn encode_enum(
+        &self,
+        data_enum: &DamlEnum<'_>,
+        module_path: impl Iterator<Item = &'a str>,
+    ) -> DamlJsonSchemaCodecResult<Value> {
+        let data_item_path = Self::format_data_item(module_path, data_enum.name());
+        let (title, description) = self.get_title_and_description(&data_item_path);
+        let all_entries = data_enum
+            .constructors()
+            .map(|field| self.encode_enum_entry(data_enum.name(), &data_item_path, field))
+            .collect::<DamlJsonSchemaCodecResult<Vec<_>>>()?;
         Ok(serde_json::to_value(DamlJsonSchemaEnum {
             schema: self.schema_if_data_or_all(),
-            title: self.title_if_data_or_all(&format!("Enum ({})", data_enum.name())),
-            ty: "string",
-            data_enum: data_enum.constructors().collect::<Vec<&str>>(),
+            title: title.or_else(|| self.title_if_data(&data_item_path)),
+            description: description.or(self.description_if_data_or_all(&format!("Enum ({})", data_enum.name()))),
+            one_of: all_entries,
         })?)
     }
 
@@ -848,11 +932,17 @@ impl<'a> JsonSchemaEncoder<'a> {
         data.serializable()
             .then(|| match data {
                 DamlData::Template(template) =>
-                    self.do_encode_record(template.name(), template.fields(), &[], type_args),
-                DamlData::Record(record) =>
-                    self.do_encode_record(record.name(), record.fields(), record.type_params(), type_args),
-                DamlData::Variant(variant) => self.encode_variant(variant, variant.type_params(), type_args),
-                DamlData::Enum(data_enum) => self.encode_enum(data_enum),
+                    self.do_encode_record(template.name(), template.module_path(), template.fields(), &[], type_args),
+                DamlData::Record(record) => self.do_encode_record(
+                    record.name(),
+                    record.module_path(),
+                    record.fields(),
+                    record.type_params(),
+                    type_args,
+                ),
+                DamlData::Variant(variant) =>
+                    self.encode_variant(variant, variant.module_path(), variant.type_params(), type_args),
+                DamlData::Enum(data_enum) => self.encode_enum(data_enum, data_enum.module_path()),
             })
             .unwrap_or_else(|| Err(NotSerializableDamlType(data.name().to_owned())))
     }
@@ -860,30 +950,32 @@ impl<'a> JsonSchemaEncoder<'a> {
     fn do_encode_record_object(
         &self,
         name: &str,
+        data_item_path: &str,
         fields: &[DamlField<'_>],
-        type_args: &[DamlType<'_>],
         type_params: &[DamlTypeVarWithKind<'a>],
+        type_args: &[DamlType<'_>],
     ) -> DamlJsonSchemaCodecResult<Value> {
         let fields_map = fields
             .iter()
             .map(|field| {
-                self.do_encode_type(field.ty(), true, type_params, type_args).map(|json_val| (field.name(), json_val))
+                self.do_encode_type(field.ty(), true, type_params, type_args)
+                    .map(|json_val| self.update_desc_from_data_dict(json_val, data_item_path, field.name()))
             })
             .collect::<DamlJsonSchemaCodecResult<BTreeMap<&str, Value>>>()?;
-        let opt_fields = fields
+        let required = fields
             .iter()
             .filter_map(|field| match Self::is_optional_field(field, type_args, type_params) {
-                Ok(b) if !b => Some(Ok(field.name())),
+                Ok(is_opt) if !is_opt => Some(Ok(field.name())),
                 Ok(_) => None,
                 Err(e) => Some(Err(e)),
             })
             .collect::<DamlJsonSchemaCodecResult<Vec<_>>>()?;
         Ok(serde_json::to_value(DamlJsonSchemaRecordAsObject {
             ty: "object",
-            title: self.title_if_all(&format!("Record ({})", name)),
+            description: self.description_if_all(&format!("Record ({})", name)),
             properties: fields_map.is_empty().not().then(|| fields_map),
             additional_properties: false,
-            required: opt_fields,
+            required,
         })?)
     }
 
@@ -902,7 +994,7 @@ impl<'a> JsonSchemaEncoder<'a> {
         let item_count = fields_list.len();
         Ok(serde_json::to_value(DamlJsonSchemaRecordAsArray {
             ty: "array",
-            title: self.title_if_all(&format!("Record ({}, fields = [{}])", name, field_names)),
+            description: self.description_if_all(&format!("Record ({}, fields = [{}])", name, field_names)),
             items: (item_count > 0).then(|| fields_list),
             min_items: item_count,
             max_items: item_count,
@@ -912,13 +1004,28 @@ impl<'a> JsonSchemaEncoder<'a> {
     fn encode_variant_arm(
         &self,
         name: &str,
+        data_item_path: &str,
         daml_field: &DamlField<'_>,
         type_params: &[DamlTypeVarWithKind<'a>],
         type_args: &[DamlType<'_>],
     ) -> DamlJsonSchemaCodecResult<Value> {
+        let description = if let Some(DataDictEntry {
+            items: fields,
+            ..
+        }) = self.config.data_dict.0.get(data_item_path)
+        {
+            fields.get(daml_field.name()).map(AsRef::as_ref)
+        } else {
+            None
+        };
         Ok(serde_json::to_value(DamlJsonSchemaVariantArm {
             ty: "object",
-            title: self.title_if_all(&format!("Variant ({}, tag={})", name, daml_field.name())),
+            title: Some(daml_field.name()),
+            description: description.or(self.description_if_all(&format!(
+                "Variant ({}, tag={})",
+                name,
+                daml_field.name()
+            ))),
             properties: json!(
                {
                  "tag": { "type": "string", "enum": [daml_field.name()] },
@@ -927,6 +1034,24 @@ impl<'a> JsonSchemaEncoder<'a> {
             ),
             required: vec!["tag", "value"],
             additional_properties: false,
+        })?)
+    }
+
+    fn encode_enum_entry(&self, name: &str, data_item_path: &str, entry: &str) -> DamlJsonSchemaCodecResult<Value> {
+        let description = if let Some(DataDictEntry {
+            items: fields,
+            ..
+        }) = self.config.data_dict.0.get(data_item_path)
+        {
+            fields.get(entry).map(AsRef::as_ref)
+        } else {
+            None
+        };
+        Ok(serde_json::to_value(DamlJsonSchemaEnumEntry {
+            ty: "string",
+            title: Some(entry),
+            description: description.or(self.description_if_all(&format!("Enum ({}, tag={})", name, entry))),
+            data_enum: vec![entry],
         })?)
     }
 
@@ -939,7 +1064,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     fn encode_inline_recursive(name: &str) -> Value {
         json!(
             {
-                "title": format!("Any ({})", name),
+                "description": format!("Any ({})", name),
                 "comment": "inline recursive data types cannot be represented"
             }
         )
@@ -950,7 +1075,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     fn encode_reference_recursive_with_type_params(name: &str) -> Value {
         json!(
             {
-                "title": format!("Any ({})", name),
+                "description": format!("Any ({})", name),
                 "comment": "recursive data types with type parameters cannot be represented"
             }
         )
@@ -990,6 +1115,51 @@ impl<'a> JsonSchemaEncoder<'a> {
         }
     }
 
+    /// Update the `description` in a `json_val` if this data item and field is defined in the `DataDict`.
+    fn update_desc_from_data_dict<'f>(
+        &self,
+        json_val: Value,
+        data_item_path: &str,
+        field_name: &'f str,
+    ) -> (&'f str, Value) {
+        let mut json_val = json_val;
+        if let Some(DataDictEntry {
+            items: fields,
+            ..
+        }) = self.config.data_dict.0.get(data_item_path)
+        {
+            if let Some(desc) = fields.get(field_name) {
+                json_val.as_object_mut().unwrap().insert(String::from("description"), json!(desc));
+            }
+        }
+        (field_name, json_val)
+    }
+
+    /// Lookup the data dictionary for a given key and resolve `title` and `description` if they are defined.
+    fn get_title_and_description(&self, key: &str) -> (Option<&str>, Option<&str>) {
+        match self.config.data_dict.0.get(key).as_ref() {
+            Some(DataDictEntry {
+                title: Some(title),
+                description: Some(description),
+                ..
+            }) => (Some(title.as_str()), Some(description.as_str())),
+            Some(DataDictEntry {
+                title: Some(title),
+                ..
+            }) => (Some(title.as_str()), None),
+            Some(DataDictEntry {
+                description: Some(description),
+                ..
+            }) => (None, Some(description.as_str())),
+            _ => (None, None),
+        }
+    }
+
+    fn format_data_item(module_path: impl Iterator<Item = &'a str>, data: &str) -> String {
+        let mut it = module_path;
+        format!("{}:{}", it.join("."), data)
+    }
+
     fn schema_if_all(&self) -> Option<&'static str> {
         matches!(self.config.render_schema, RenderSchema::All).then(|| SCHEMA_VERSION)
     }
@@ -998,21 +1168,26 @@ impl<'a> JsonSchemaEncoder<'a> {
         matches!(self.config.render_schema, RenderSchema::Data | RenderSchema::All).then(|| SCHEMA_VERSION)
     }
 
-    fn title_if_all<'t>(&self, title: &'t str) -> Option<&'t str> {
-        matches!(self.config.render_title, RenderTitle::All).then(|| title)
+    fn title_if_data<'t>(&self, title: &'t str) -> Option<&'t str> {
+        matches!(self.config.render_title, RenderTitle::Data).then(|| title)
     }
 
-    fn title_if_data_or_all<'t>(&self, title: &'t str) -> Option<&'t str> {
-        matches!(self.config.render_title, RenderTitle::Data | RenderTitle::All).then(|| title)
+    fn description_if_all<'t>(&self, description: &'t str) -> Option<&'t str> {
+        matches!(self.config.render_description, RenderDescription::All).then(|| description)
+    }
+
+    fn description_if_data_or_all<'t>(&self, description: &'t str) -> Option<&'t str> {
+        matches!(self.config.render_description, RenderDescription::Data | RenderDescription::All).then(|| description)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use anyhow::Result;
     use assert_json_diff::assert_json_eq;
     use jsonschema::JSONSchema;
+
+    use super::*;
 
     static TESTING_TYPES_DAR_PATH: &str = "../resources/testing_types_sandbox/TestingTypes-latest.dar";
 
@@ -1215,7 +1390,6 @@ mod tests {
     }
 
     #[test]
-    #[allow(clippy::too_many_lines)]
     fn test_variant() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Shape"], "Color");
@@ -1251,7 +1425,7 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "PersonMap");
         let expected = get_expected!("test_reference_mode_case_1.json")?;
-        let config = SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Inline);
+        let config = get_schema_config_inline();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1263,7 +1437,7 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "OPerson");
         let expected = get_expected!("test_reference_mode_case_2.json")?;
-        let config = SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Inline);
+        let config = get_schema_config_inline();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1275,7 +1449,7 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Rec");
         let expected = get_expected!("test_reference_mode_case_3.json")?;
-        let config = SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Inline);
+        let config = get_schema_config_inline();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1287,7 +1461,7 @@ mod tests {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "GenericTypes"], "PatternRecord");
         let expected = get_expected!("test_reference_mode_case_4.json")?;
-        let config = SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Inline);
+        let config = get_schema_config_inline();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1299,10 +1473,7 @@ mod tests {
         let arc = daml_archive();
         let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "PersonMap").req()?;
         let expected = get_expected!("test_reference_mode_case_5.json")?;
-        let config =
-            SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Reference {
-                prefix: "#/components/schemas/".to_string(),
-            });
+        let config = get_schema_config_reference();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1314,10 +1485,7 @@ mod tests {
         let arc = daml_archive();
         let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "Middle").req()?;
         let expected = get_expected!("test_reference_mode_case_6.json")?;
-        let config =
-            SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Reference {
-                prefix: "#/components/schemas/".to_string(),
-            });
+        let config = get_schema_config_reference();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1329,10 +1497,7 @@ mod tests {
         let arc = daml_archive();
         let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "Rec").req()?;
         let expected = get_expected!("test_reference_mode_case_7.json")?;
-        let config =
-            SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Reference {
-                prefix: "#/components/schemas/".to_string(),
-            });
+        let config = get_schema_config_reference();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1344,10 +1509,7 @@ mod tests {
         let arc = daml_archive();
         let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "TopRec").req()?;
         let expected = get_expected!("test_reference_mode_case_8.json")?;
-        let config =
-            SchemaEncoderConfig::new(RenderSchema::default(), RenderTitle::default(), ReferenceMode::Reference {
-                prefix: "#/components/schemas/".to_string(),
-            });
+        let config = get_schema_config_reference();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
         assert_json_eq!(actual, expected);
         Ok(())
@@ -1680,6 +1842,22 @@ mod tests {
     }
 
     #[test]
+    fn test_validate_enum() -> Result<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Vehicle"], "SimpleColor");
+        let instance = json!("Red");
+        validate_schema_for_arc_match(arc, &ty, &instance)
+    }
+
+    #[test]
+    fn test_validate_enum_unknown_ctor() -> Result<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Vehicle"], "SimpleColor");
+        let instance = json!("Yellow");
+        validate_schema_for_arc_no_match(arc, &ty, &instance)
+    }
+
+    #[test]
     fn test_validate_complex_as_object_omit_opt_field() -> Result<()> {
         let arc = daml_archive();
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Nested"], "NestedTemplate");
@@ -1743,6 +1921,26 @@ mod tests {
         let result = compiled.validate(instance);
         assert_eq!(matches, result.is_ok());
         Ok(())
+    }
+
+    fn get_schema_config_reference() -> SchemaEncoderConfig {
+        get_schema_config(ReferenceMode::Reference {
+            prefix: "#/components/schemas/".to_string(),
+        })
+    }
+
+    fn get_schema_config_inline() -> SchemaEncoderConfig {
+        get_schema_config(ReferenceMode::Inline)
+    }
+
+    fn get_schema_config(reference_mode: ReferenceMode) -> SchemaEncoderConfig {
+        SchemaEncoderConfig::new(
+            RenderSchema::default(),
+            RenderTitle::Data,
+            RenderDescription::default(),
+            reference_mode,
+            DataDict::default(),
+        )
     }
 
     fn daml_archive() -> &'static DamlArchive<'static> {

@@ -3,5 +3,5 @@
     "integer",
     "string"
   ],
-  "title": "Int64"
+  "description": "Int64"
 }

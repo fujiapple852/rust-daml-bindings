@@ -1,82 +1,83 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DA.JsonTest:Depth2",
+  "description": "Record (Depth2)",
   "oneOf": [
     {
-      "additionalProperties": false,
+      "type": "object",
+      "description": "Record (Depth2)",
       "properties": {
         "foo": {
+          "description": "Optional",
           "oneOf": [
             {
               "type": "null"
             },
             {
+              "description": "Optional (depth > 1)",
               "oneOf": [
                 {
-                  "maxItems": 0,
+                  "type": "array",
                   "minItems": 0,
-                  "type": "array"
+                  "maxItems": 0
                 },
                 {
+                  "type": "array",
                   "items": {
+                    "description": "Int64",
                     "type": [
                       "integer",
                       "string"
-                    ],
-                    "title": "Int64"
+                    ]
                   },
-                  "maxItems": 1,
                   "minItems": 1,
-                  "type": "array"
+                  "maxItems": 1
                 }
-              ],
-              "title": "Optional (depth > 1)"
+              ]
             }
-          ],
-          "title": "Optional"
+          ]
         }
       },
-      "required": [],
-      "title": "Record (Depth2)",
-      "type": "object"
+      "additionalProperties": false,
+      "required": []
     },
     {
+      "type": "array",
+      "description": "Record (Depth2, fields = [foo])",
       "items": [
         {
+          "description": "Optional",
           "oneOf": [
             {
               "type": "null"
             },
             {
+              "description": "Optional (depth > 1)",
               "oneOf": [
                 {
-                  "maxItems": 0,
+                  "type": "array",
                   "minItems": 0,
-                  "type": "array"
+                  "maxItems": 0
                 },
                 {
+                  "type": "array",
                   "items": {
+                    "description": "Int64",
                     "type": [
                       "integer",
                       "string"
-                    ],
-                    "title": "Int64"
+                    ]
                   },
-                  "maxItems": 1,
                   "minItems": 1,
-                  "type": "array"
+                  "maxItems": 1
                 }
-              ],
-              "title": "Optional (depth > 1)"
+              ]
             }
-          ],
-          "title": "Optional"
+          ]
         }
       ],
-      "maxItems": 1,
       "minItems": 1,
-      "title": "Record (Depth2, fields = [foo])",
-      "type": "array"
+      "maxItems": 1
     }
-  ],
-  "title": "Record (Depth2)"
+  ]
 }

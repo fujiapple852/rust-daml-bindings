@@ -1,10 +1,31 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "enum": [
-    "Red",
-    "Green",
-    "Blue"
-  ],
-  "title": "Enum (SimpleColor)",
-  "type": "string"
+  "title": "DA.Vehicle:SimpleColor",
+  "description": "Enum (SimpleColor)",
+  "oneOf": [
+    {
+      "type": "string",
+      "title": "Red",
+      "description": "Enum (SimpleColor, tag=Red)",
+      "enum": [
+        "Red"
+      ]
+    },
+    {
+      "type": "string",
+      "title": "Green",
+      "description": "Enum (SimpleColor, tag=Green)",
+      "enum": [
+        "Green"
+      ]
+    },
+    {
+      "type": "string",
+      "title": "Blue",
+      "description": "Enum (SimpleColor, tag=Blue)",
+      "enum": [
+        "Blue"
+      ]
+    }
+  ]
 }

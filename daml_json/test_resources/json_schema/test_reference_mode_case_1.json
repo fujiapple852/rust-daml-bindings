@@ -1,34 +1,36 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Record (PersonMap)",
+  "title": "DA.JsonTest:PersonMap",
+  "description": "Record (PersonMap)",
   "oneOf": [
     {
       "type": "object",
-      "title": "Record (PersonMap)",
+      "description": "Record (PersonMap)",
       "properties": {
         "m": {
-          "title": "GenMap",
+          "description": "GenMap",
           "type": "array",
           "items": {
             "type": "array",
             "items": [
               {
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "title": "Record (Person)",
+                "title": "DA.JsonTest:Person",
+                "description": "Record (Person)",
                 "oneOf": [
                   {
                     "type": "object",
-                    "title": "Record (Person)",
+                    "description": "Record (Person)",
                     "properties": {
                       "age": {
-                        "title": "Int64",
+                        "description": "Int64",
                         "type": [
                           "integer",
                           "string"
                         ]
                       },
                       "name": {
-                        "title": "Text",
+                        "description": "Text",
                         "type": "string"
                       }
                     },
@@ -40,14 +42,14 @@
                   },
                   {
                     "type": "array",
-                    "title": "Record (Person, fields = [name, age])",
+                    "description": "Record (Person, fields = [name, age])",
                     "items": [
                       {
-                        "title": "Text",
+                        "description": "Text",
                         "type": "string"
                       },
                       {
-                        "title": "Int64",
+                        "description": "Int64",
                         "type": [
                           "integer",
                           "string"
@@ -60,7 +62,7 @@
                 ]
               },
               {
-                "title": "Text",
+                "description": "Text",
                 "type": "string"
               }
             ],
@@ -76,31 +78,32 @@
     },
     {
       "type": "array",
-      "title": "Record (PersonMap, fields = [m])",
+      "description": "Record (PersonMap, fields = [m])",
       "items": [
         {
-          "title": "GenMap",
+          "description": "GenMap",
           "type": "array",
           "items": {
             "type": "array",
             "items": [
               {
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "title": "Record (Person)",
+                "title": "DA.JsonTest:Person",
+                "description": "Record (Person)",
                 "oneOf": [
                   {
                     "type": "object",
-                    "title": "Record (Person)",
+                    "description": "Record (Person)",
                     "properties": {
                       "age": {
-                        "title": "Int64",
+                        "description": "Int64",
                         "type": [
                           "integer",
                           "string"
                         ]
                       },
                       "name": {
-                        "title": "Text",
+                        "description": "Text",
                         "type": "string"
                       }
                     },
@@ -112,14 +115,14 @@
                   },
                   {
                     "type": "array",
-                    "title": "Record (Person, fields = [name, age])",
+                    "description": "Record (Person, fields = [name, age])",
                     "items": [
                       {
-                        "title": "Text",
+                        "description": "Text",
                         "type": "string"
                       },
                       {
-                        "title": "Int64",
+                        "description": "Int64",
                         "type": [
                           "integer",
                           "string"
@@ -132,7 +135,7 @@
                 ]
               },
               {
-                "title": "Text",
+                "description": "Text",
                 "type": "string"
               }
             ],

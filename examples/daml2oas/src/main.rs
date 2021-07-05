@@ -4,13 +4,13 @@
 
 use crate::a2s::AsyncAPI;
 use crate::a2s::AsyncAPIEncoder;
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand};
 use companion::CompanionData;
 use config::PathStyle;
 use config::{Config, OutputFormat};
 use daml::json_api::schema_encoder::{
-    JsonSchemaEncoder, ReferenceMode, RenderSchema, RenderTitle, SchemaEncoderConfig,
+    DataDict, JsonSchemaEncoder, ReferenceMode, RenderDescription, RenderSchema, RenderTitle, SchemaEncoderConfig,
 };
 use daml::lf::DarFile;
 use oas::OpenAPI;
@@ -19,7 +19,6 @@ use serde::Serialize;
 use std::fs::File;
 use std::io;
 use std::io::Write;
-use std::path::Path;
 use std::path::PathBuf;
 
 mod a2s;
@@ -33,6 +32,9 @@ mod oas;
 mod schema;
 mod util;
 
+const DEFAULT_DATA_DICT_FILE: &str = ".datadict.yaml";
+const DEFAULT_COMPANION_FILE: &str = ".daml2oas.yaml";
+
 fn main() -> Result<()> {
     let oas = SubCommand::with_name("oas")
         .about("Generate an OpenAPI document from the given Dar file")
@@ -40,8 +42,10 @@ fn main() -> Result<()> {
         .arg(make_format_arg())
         .arg(make_output_arg())
         .arg(make_companion_file_arg())
+        .arg(make_datadict_file_arg())
         .arg(make_module_path_arg())
-        .arg(make_describe_type_arg())
+        .arg(make_data_title_arg())
+        .arg(make_type_description_arg())
         .arg(make_reference_prefix_arg())
         .arg(make_reference_mode_arg())
         .arg(make_include_package_id_arg())
@@ -53,8 +57,10 @@ fn main() -> Result<()> {
         .arg(make_format_arg())
         .arg(make_output_arg())
         .arg(make_companion_file_arg())
+        .arg(make_datadict_file_arg())
         .arg(make_module_path_arg())
-        .arg(make_describe_type_arg())
+        .arg(make_data_title_arg())
+        .arg(make_type_description_arg())
         .arg(make_reference_prefix_arg())
         .arg(make_reference_mode_arg())
         .arg(make_include_package_id_arg());
@@ -98,9 +104,17 @@ fn make_companion_file_arg() -> Arg<'static, 'static> {
         .short("c")
         .long("companion-file")
         .takes_value(true)
-        .default_value(".daml2oas.yaml")
         .required(false)
         .help("the companion yaml file with auxiliary data to inject into the generated OAS document")
+}
+
+fn make_datadict_file_arg() -> Arg<'static, 'static> {
+    Arg::with_name("datadict-file")
+        .short("d")
+        .long("datadict-file")
+        .takes_value(true)
+        .required(false)
+        .help("the data dictionary to use to augment the generated JSON schema")
 }
 
 fn make_module_path_arg() -> Arg<'static, 'static> {
@@ -112,15 +126,24 @@ fn make_module_path_arg() -> Arg<'static, 'static> {
         .help("module path prefix in the form Foo.Bar.Baz")
 }
 
-fn make_describe_type_arg() -> Arg<'static, 'static> {
-    Arg::with_name("describe-types")
-        .short("t")
-        .long("describe-types")
+fn make_data_title_arg() -> Arg<'static, 'static> {
+    Arg::with_name("data-title")
+        .long("data-title")
+        .takes_value(true)
+        .possible_values(&["none", "data"])
+        .default_value("data")
+        .required(false)
+        .help("include the `title` property describing the data item name (i.e. Foo.Bar:Baz)")
+}
+
+fn make_type_description_arg() -> Arg<'static, 'static> {
+    Arg::with_name("type-description")
+        .long("type-description")
         .takes_value(true)
         .possible_values(&["none", "data", "all"])
         .default_value("all")
         .required(false)
-        .help("include the `title` property describing the types")
+        .help("include the `description` property describing the Daml type")
 }
 
 fn make_reference_prefix_arg() -> Arg<'static, 'static> {
@@ -171,7 +194,9 @@ fn make_path_style_arg() -> Arg<'static, 'static> {
 
 fn parse_config<'c>(matches: &'c ArgMatches<'_>) -> Config<'c> {
     let dar_file = matches.value_of("dar").unwrap().to_string();
-    let companion_file = matches.value_of("companion-file").unwrap().to_string();
+    let companion_file = matches.value_of("companion-file").map(ToString::to_string);
+    let data_dict_file = matches.value_of("datadict-file").map(ToString::to_string);
+
     let format = match matches.value_of("format") {
         None => OutputFormat::Json,
         Some(s) if s == "json" => OutputFormat::Json,
@@ -180,13 +205,22 @@ fn parse_config<'c>(matches: &'c ArgMatches<'_>) -> Config<'c> {
     };
     let output_file = matches.value_of("output").map(ToString::to_string);
     let module_path = matches.value_of("module-path").map(|v| v.split('.').collect::<Vec<_>>()).unwrap_or_default();
-    let render_title = match matches.value_of("describe-types") {
+
+    let render_title = match matches.value_of("data-title") {
         None => RenderTitle::None,
         Some(s) if s == "none" => RenderTitle::None,
         Some(s) if s == "data" => RenderTitle::Data,
-        Some(s) if s == "all" => RenderTitle::All,
-        Some(s) => panic!("unknown describe-types {}", s),
+        Some(s) => panic!("unknown data-title {}", s),
     };
+
+    let render_description = match matches.value_of("type-description") {
+        None => RenderDescription::None,
+        Some(s) if s == "none" => RenderDescription::None,
+        Some(s) if s == "data" => RenderDescription::Data,
+        Some(s) if s == "all" => RenderDescription::All,
+        Some(s) => panic!("unknown type-description {}", s),
+    };
+
     let reference_prefix = matches.value_of("reference-prefix").unwrap();
     let reference_mode = match matches.value_of("reference-mode") {
         None => ReferenceMode::default(),
@@ -208,10 +242,12 @@ fn parse_config<'c>(matches: &'c ArgMatches<'_>) -> Config<'c> {
     Config {
         dar_file,
         companion_file,
+        data_dict_file,
         format,
         output_file,
         module_path,
         render_title,
+        render_description,
         reference_prefix,
         reference_mode,
         emit_package_id,
@@ -225,13 +261,24 @@ fn parse_config<'c>(matches: &'c ArgMatches<'_>) -> Config<'c> {
 fn execute_oas(config: &Config<'_>) -> Result<()> {
     let dar = DarFile::from_file(&config.dar_file).context(format!("dar file not found: {}", &config.dar_file))?;
     let companion_data = get_companion_data(&config.companion_file)?;
-    let oas = generate_openapi(&dar, config, &companion_data)?;
+    let data_dict = get_data_dict(&config.data_dict_file)?;
+    let oas = generate_openapi(&dar, config, &companion_data, data_dict)?;
     write_document(&render(&oas, config.format)?, config.output_file.as_deref())
 }
 
-fn generate_openapi(dar_file: &DarFile, config: &Config<'_>, companion_data: &CompanionData) -> Result<OpenAPI> {
-    let encoder_config =
-        SchemaEncoderConfig::new(RenderSchema::None, config.render_title, config.reference_mode.clone());
+fn generate_openapi(
+    dar_file: &DarFile,
+    config: &Config<'_>,
+    companion_data: &CompanionData,
+    data_dict: DataDict,
+) -> Result<OpenAPI> {
+    let encoder_config = SchemaEncoderConfig::new(
+        RenderSchema::None,
+        config.render_title,
+        config.render_description,
+        config.reference_mode.clone(),
+        data_dict,
+    );
     dar_file.apply(|archive| {
         let encoder = JsonSchemaEncoder::new_with_config(archive, encoder_config);
         let generator = OpenAPIEncoder::new(
@@ -253,13 +300,24 @@ fn generate_openapi(dar_file: &DarFile, config: &Config<'_>, companion_data: &Co
 fn execute_a2s(config: &Config<'_>) -> Result<()> {
     let dar = DarFile::from_file(&config.dar_file).context(format!("dar file not found: {}", &config.dar_file))?;
     let companion_data = get_companion_data(&config.companion_file)?;
-    let a2s = generate_asyncapi(&dar, config, &companion_data)?;
+    let data_dict = get_data_dict(&config.data_dict_file)?;
+    let a2s = generate_asyncapi(&dar, config, &companion_data, data_dict)?;
     write_document(&render(&a2s, config.format)?, config.output_file.as_deref())
 }
 
-fn generate_asyncapi(dar_file: &DarFile, config: &Config<'_>, companion_data: &CompanionData) -> Result<AsyncAPI> {
-    let encoder_config =
-        SchemaEncoderConfig::new(RenderSchema::None, config.render_title, config.reference_mode.clone());
+fn generate_asyncapi(
+    dar_file: &DarFile,
+    config: &Config<'_>,
+    companion_data: &CompanionData,
+    data_dict: DataDict,
+) -> Result<AsyncAPI> {
+    let encoder_config = SchemaEncoderConfig::new(
+        RenderSchema::None,
+        config.render_title,
+        config.render_description,
+        config.reference_mode.clone(),
+        data_dict,
+    );
     dar_file.apply(|archive| {
         let encoder = JsonSchemaEncoder::new_with_config(archive, encoder_config);
         let generator = AsyncAPIEncoder::new(
@@ -276,13 +334,43 @@ fn generate_asyncapi(dar_file: &DarFile, config: &Config<'_>, companion_data: &C
 
 /// Common
 
-fn get_companion_data(companion_file_name: impl AsRef<Path>) -> Result<CompanionData> {
-    let path = companion_file_name.as_ref();
-    if path.exists() {
-        let f = std::fs::File::open(path)?;
-        Ok(serde_yaml::from_reader(f)?)
+fn get_companion_data(companion_file_name: &Option<String>) -> Result<CompanionData> {
+    let path = companion_file_name.as_ref().map(PathBuf::from);
+    if let Some(path) = path {
+        if path.is_file() && path.exists() {
+            let f = std::fs::File::open(path)?;
+            Ok(serde_yaml::from_reader(f)?)
+        } else {
+            Err(anyhow!(format!("file {} not found", path.display())))
+        }
     } else {
-        Ok(CompanionData::default())
+        let path = PathBuf::from(DEFAULT_COMPANION_FILE);
+        if path.is_file() && path.exists() {
+            let f = std::fs::File::open(path)?;
+            Ok(serde_yaml::from_reader(f)?)
+        } else {
+            Ok(CompanionData::default())
+        }
+    }
+}
+
+fn get_data_dict(data_dict_file_name: &Option<String>) -> Result<DataDict> {
+    let path = data_dict_file_name.as_ref().map(PathBuf::from);
+    if let Some(path) = path {
+        if path.is_file() && path.exists() {
+            let f = std::fs::File::open(path)?;
+            Ok(serde_yaml::from_reader(f)?)
+        } else {
+            Err(anyhow!(format!("file {} not found", path.display())))
+        }
+    } else {
+        let path = PathBuf::from(DEFAULT_DATA_DICT_FILE);
+        if path.is_file() && path.exists() {
+            let f = std::fs::File::open(path)?;
+            Ok(serde_yaml::from_reader(f)?)
+        } else {
+            Ok(DataDict::default())
+        }
     }
 }
 
