@@ -12,9 +12,7 @@ copyleft = "deny"
 allow-osi-fsf-free = "neither"
 default = "deny"
 confidence-threshold = 0.8
-exceptions = [
-    { allow = ["Zlib"], name = "adler32", version = "*" },
-]
+exceptions = []
 
 [[licenses.clarify]]
 name = "ring"
