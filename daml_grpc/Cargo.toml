@@ -21,11 +21,11 @@ uuid = { version = "0.8", features = [ "v4" ] }
 chrono = "0.4"
 bigdecimal = "0.2"
 bytes = "1"
-tonic = { version = "0.4", features = [ "tls", "tls-roots" ] }
+tonic = { version = "0.5", features = [ "tls", "tls-roots" ] }
 hyper = { version = "0.14", features = [ "full" ] } # TODO remove when tonic support connect timeout
-prost = "0.7"
-prost-derive = "0.7"
-prost-types = "0.7"
+prost = "0.8"
+prost-derive = "0.8"
+prost-types = "0.8"
 async-trait = "0.1"
 itertools = "0.10"
 tracing = "0.1"
@@ -38,5 +38,5 @@ anyhow = "1.0"
 tracing-subscriber = "0.2"
 
 [build-dependencies]
-tonic-build = "0.4"
+tonic-build = "0.5"
 itertools = "0.10"

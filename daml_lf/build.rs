@@ -10,7 +10,7 @@ const PROTO_ROOT_PATH: &str = "resources/protobuf";
 
 fn main() -> Result<(), Box<dyn error::Error>> {
     let all_protos = get_all_protos(ALL_PROTO_SRC_PATHS)?;
-    prost_build::compile_protos(all_protos.as_slice(), vec![PROTO_ROOT_PATH.into()].as_slice())?;
+    prost_build::compile_protos(all_protos.as_slice(), vec![PROTO_ROOT_PATH].as_slice())?;
     Ok(())
 }
 
