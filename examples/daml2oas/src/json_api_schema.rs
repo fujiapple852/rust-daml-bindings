@@ -575,7 +575,7 @@ impl DamlJsonApiSchema {
     fn make_optional_result(result: &Value) -> Value {
         serde_json::json!(
             {
-              "oneOf": [ { "type": "null" }, result ]
+              "oneOf": [ result, { "type": "null", "description": "Contract not found" } ]
             }
         )
     }
