@@ -2,7 +2,7 @@ use crate::element::daml_field::DamlField;
 use crate::element::visitor::DamlElementVisitor;
 #[cfg(feature = "full")]
 use crate::element::{DamlExpr, DamlPrimLit};
-use crate::element::{DamlType, DamlTypeVarWithKind, DamlVisitableElement};
+use crate::element::{DamlTyConName, DamlType, DamlTypeVarWithKind, DamlVisitableElement};
 use crate::owned::ToStatic;
 use serde::Serialize;
 use std::borrow::Cow;
@@ -113,6 +113,51 @@ impl ToStatic for DamlData<'_> {
             DamlData::Variant(variant) => DamlData::Variant(variant.to_static()),
             DamlData::Enum(data_enum) => DamlData::Enum(data_enum.to_static()),
         }
+    }
+}
+
+/// Convenience impl to compare a `DamlTyConName` with a `DamlData`.
+impl PartialEq<DamlTyConName<'_>> for DamlData<'_> {
+    fn eq(&self, tycon: &DamlTyConName<'_>) -> bool {
+        tycon.package_id() == self.package_id()
+            && tycon.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && tycon.data_name() == self.name()
+    }
+}
+
+/// Convenience impl to compare a `DamlTemplate` with a `DamlData`.
+impl PartialEq<DamlTemplate<'_>> for DamlData<'_> {
+    fn eq(&self, other: &DamlTemplate<'_>) -> bool {
+        other.package_id() == self.package_id()
+            && other.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && other.name() == self.name()
+    }
+}
+
+/// Convenience impl to compare a `DamlRecord` with a `DamlData`.
+impl PartialEq<DamlRecord<'_>> for DamlData<'_> {
+    fn eq(&self, other: &DamlRecord<'_>) -> bool {
+        other.package_id() == self.package_id()
+            && other.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && other.name() == self.name()
+    }
+}
+
+/// Convenience impl to compare a `DamlVariant` with a `DamlData`.
+impl PartialEq<DamlVariant<'_>> for DamlData<'_> {
+    fn eq(&self, other: &DamlVariant<'_>) -> bool {
+        other.package_id() == self.package_id()
+            && other.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && other.name() == self.name()
+    }
+}
+
+/// Convenience impl to compare a `DamlEnum` with a `DamlData`.
+impl PartialEq<DamlEnum<'_>> for DamlData<'_> {
+    fn eq(&self, other: &DamlEnum<'_>) -> bool {
+        other.package_id() == self.package_id()
+            && other.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && other.name() == self.name()
     }
 }
 
@@ -291,6 +336,15 @@ impl ToStatic for DamlTemplate<'_> {
             self.key.as_ref().map(DamlDefKey::to_static),
             self.serializable,
         )
+    }
+}
+
+/// Convenience impl to compare a `DamlData` with a `DamlTemplate`.
+impl PartialEq<DamlData<'_>> for DamlTemplate<'_> {
+    fn eq(&self, data: &DamlData<'_>) -> bool {
+        data.package_id() == self.package_id()
+            && data.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && data.name() == self.name()
     }
 }
 
@@ -591,6 +645,15 @@ impl ToStatic for DamlRecord<'_> {
     }
 }
 
+/// Convenience impl to compare a `DamlData` with a `DamlRecord`.
+impl PartialEq<DamlData<'_>> for DamlRecord<'_> {
+    fn eq(&self, data: &DamlData<'_>) -> bool {
+        data.package_id() == self.package_id()
+            && data.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && data.name() == self.name()
+    }
+}
+
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlVariant<'a> {
     name: Cow<'a, str>,
@@ -669,6 +732,15 @@ impl ToStatic for DamlVariant<'_> {
     }
 }
 
+/// Convenience impl to compare a `DamlData` with a `DamlVariant`.
+impl PartialEq<DamlData<'_>> for DamlVariant<'_> {
+    fn eq(&self, data: &DamlData<'_>) -> bool {
+        data.package_id() == self.package_id()
+            && data.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && data.name() == self.name()
+    }
+}
+
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlEnum<'a> {
     name: Cow<'a, str>,
@@ -743,5 +815,14 @@ impl ToStatic for DamlEnum<'_> {
             self.type_params.iter().map(DamlTypeVarWithKind::to_static).collect(),
             self.serializable,
         )
+    }
+}
+
+/// Convenience impl to compare a `DamlData` with a `DamlEnum`.
+impl PartialEq<DamlData<'_>> for DamlEnum<'_> {
+    fn eq(&self, data: &DamlData<'_>) -> bool {
+        data.package_id() == self.package_id()
+            && data.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && data.name() == self.name()
     }
 }

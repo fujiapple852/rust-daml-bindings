@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use serde::Serialize;
 
 use crate::element::visitor::DamlElementVisitor;
-use crate::element::{DamlField, DamlTypeVarWithKind, DamlVisitableElement};
+use crate::element::{DamlData, DamlField, DamlTypeVarWithKind, DamlVisitableElement};
 use crate::owned::ToStatic;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -492,6 +492,13 @@ impl ToStatic for DamlTyConName<'_> {
             DamlTyConName::NonLocal(non_local) => DamlTyConName::NonLocal(non_local.to_static()),
             DamlTyConName::Absolute(absolute) => DamlTyConName::Absolute(absolute.to_static()),
         }
+    }
+}
+
+/// Convenience impl to compare a `DamlData` with a `DamlTyConName`.
+impl PartialEq<DamlData<'_>> for DamlTyConName<'_> {
+    fn eq(&self, data: &DamlData<'_>) -> bool {
+        data == self
     }
 }
 
