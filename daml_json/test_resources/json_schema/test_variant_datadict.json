@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DA.Shape:Color",
+  "description": "The color of a shape",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Red",
+      "description": "The color red",
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": [
+            "Red"
+          ]
+        },
+        "value": {
+          "description": "Unit",
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "tag",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "title": "Green",
+      "description": "The color green",
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": [
+            "Green"
+          ]
+        },
+        "value": {
+          "description": "Unit",
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "tag",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "title": "Blue",
+      "description": "The color blue",
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": [
+            "Blue"
+          ]
+        },
+        "value": {
+          "description": "Unit",
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "tag",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "title": "Custom",
+      "description": "A custom color",
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": [
+            "Custom"
+          ]
+        },
+        "value": {
+          "description": "List",
+          "type": "array",
+          "items": {
+            "description": "Int64",
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "tag",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "title": "Other",
+      "description": "A custom RBGA value",
+      "properties": {
+        "tag": {
+          "type": "string",
+          "enum": [
+            "Other"
+          ]
+        },
+        "value": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "title": "DA.Shape:RGBA",
+          "description": "A color defined as an RBGA value",
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Record (RGBA)",
+              "properties": {
+                "alpha": {
+                  "description": "The alpha value",
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                },
+                "b": {
+                  "description": "The color blue",
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                },
+                "g": {
+                  "description": "The color green",
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                },
+                "r": {
+                  "description": "The color red",
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "r",
+                "g",
+                "b",
+                "alpha"
+              ]
+            },
+            {
+              "type": "array",
+              "description": "Record (RGBA, fields = [r, g, b, alpha])",
+              "items": [
+                {
+                  "description": "Int64",
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                },
+                {
+                  "description": "Int64",
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                },
+                {
+                  "description": "Int64",
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                },
+                {
+                  "description": "Int64",
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                }
+              ],
+              "minItems": 4,
+              "maxItems": 4
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "tag",
+        "value"
+      ]
+    }
+  ]
+}

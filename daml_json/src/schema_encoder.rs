@@ -1198,6 +1198,13 @@ mod tests {
         };
     }
 
+    #[macro_export]
+    macro_rules! get_datadict {
+        ($name : literal) => {
+            serde_yaml::from_str::<DataDict>(include_str!(concat!("../test_resources/json_schema/", $name)))
+        };
+    }
+
     #[test]
     fn test_unit() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::Unit;
@@ -1511,6 +1518,54 @@ mod tests {
         let expected = get_expected!("test_reference_mode_case_8.json")?;
         let config = get_schema_config_reference();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_record_datadict() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Person");
+        let expected = get_expected!("test_record_datadict.json")?;
+        let datadict = get_datadict!("datadict.yaml").unwrap();
+        let config = get_schema_config(ReferenceMode::Inline, datadict);
+        let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_template_datadict() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "PingPong"], "Ping");
+        let expected = get_expected!("test_template_datadict.json")?;
+        let datadict = get_datadict!("datadict.yaml").unwrap();
+        let config = get_schema_config(ReferenceMode::Inline, datadict);
+        let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_enum_datadict() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Vehicle"], "SimpleColor");
+        let expected = get_expected!("test_enum_datadict.json")?;
+        let datadict = get_datadict!("datadict.yaml").unwrap();
+        let config = get_schema_config(ReferenceMode::Inline, datadict);
+        let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
+        assert_json_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_variant_datadict() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Shape"], "Color");
+        let expected = get_expected!("test_variant_datadict.json")?;
+        let datadict = get_datadict!("datadict.yaml").unwrap();
+        let config = get_schema_config(ReferenceMode::Inline, datadict);
+        let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
         Ok(())
     }
@@ -1925,22 +1980,25 @@ mod tests {
     }
 
     fn get_schema_config_reference() -> SchemaEncoderConfig {
-        get_schema_config(ReferenceMode::Reference {
-            prefix: "#/components/schemas/".to_string(),
-        })
+        get_schema_config(
+            ReferenceMode::Reference {
+                prefix: "#/components/schemas/".to_string(),
+            },
+            DataDict::default(),
+        )
     }
 
     fn get_schema_config_inline() -> SchemaEncoderConfig {
-        get_schema_config(ReferenceMode::Inline)
+        get_schema_config(ReferenceMode::Inline, DataDict::default())
     }
 
-    fn get_schema_config(reference_mode: ReferenceMode) -> SchemaEncoderConfig {
+    fn get_schema_config(reference_mode: ReferenceMode, datadict: DataDict) -> SchemaEncoderConfig {
         SchemaEncoderConfig::new(
             RenderSchema::default(),
             RenderTitle::Data,
             RenderDescription::default(),
             reference_mode,
-            DataDict::default(),
+            datadict,
         )
     }
 

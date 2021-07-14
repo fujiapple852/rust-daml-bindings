@@ -1,0 +1,31 @@
+DA.JsonTest:Person:
+  title: Person
+  description: Represents a person
+  items:
+    age: the age of the person
+    name: the full name of the person
+DA.PingPong:Ping:
+  items:
+    sender: The sender of the Ping or Pong
+    receiver: The receiver of the Ping or Pong
+DA.Vehicle:SimpleColor:
+  description: The color of the vehicle
+  items:
+    Red: The color red
+    Green: The color green
+    Blue: The color blue
+DA.Shape:Color:
+  description: The color of a shape
+  items:
+    Red: The color red
+    Green: The color green
+    Blue: The color blue
+    Custom: A custom color
+    Other: A custom RBGA value
+DA.Shape:RGBA:
+  description: A color defined as an RBGA value
+  items:
+    r: The color red
+    g: The color green
+    b: The color blue
+    alpha: The alpha value

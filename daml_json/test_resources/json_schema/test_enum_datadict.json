@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DA.Vehicle:SimpleColor",
+  "description": "The color of the vehicle",
+  "oneOf": [
+    {
+      "type": "string",
+      "title": "Red",
+      "description": "The color red",
+      "enum": [
+        "Red"
+      ]
+    },
+    {
+      "type": "string",
+      "title": "Green",
+      "description": "The color green",
+      "enum": [
+        "Green"
+      ]
+    },
+    {
+      "type": "string",
+      "title": "Blue",
+      "description": "The color blue",
+      "enum": [
+        "Blue"
+      ]
+    }
+  ]
+}

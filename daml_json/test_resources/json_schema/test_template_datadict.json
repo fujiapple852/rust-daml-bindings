@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DA.PingPong:Ping",
+  "description": "Record (Ping)",
+  "oneOf": [
+    {
+      "type": "object",
+      "description": "Record (Ping)",
+      "properties": {
+        "count": {
+          "description": "Int64",
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "receiver": {
+          "description": "The receiver of the Ping or Pong",
+          "type": "string"
+        },
+        "sender": {
+          "description": "The sender of the Ping or Pong",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "sender",
+        "receiver",
+        "count"
+      ]
+    },
+    {
+      "type": "array",
+      "description": "Record (Ping, fields = [sender, receiver, count])",
+      "items": [
+        {
+          "description": "Party",
+          "type": "string"
+        },
+        {
+          "description": "Party",
+          "type": "string"
+        },
+        {
+          "description": "Int64",
+          "type": [
+            "integer",
+            "string"
+          ]
+        }
+      ],
+      "minItems": 3,
+      "maxItems": 3
+    }
+  ]
+}
