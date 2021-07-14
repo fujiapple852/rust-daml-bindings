@@ -1183,7 +1183,7 @@ impl<'a> JsonSchemaEncoder<'a> {
 
 #[cfg(test)]
 mod tests {
-    use anyhow::Result;
+    use anyhow::{anyhow, Result};
     use assert_json_diff::assert_json_eq;
     use jsonschema::JSONSchema;
 
@@ -1917,7 +1917,8 @@ mod tests {
 
     fn do_validate_schema(arc: &DamlArchive<'_>, ty: &DamlType<'_>, instance: &Value, matches: bool) -> Result<()> {
         let schema = JsonSchemaEncoder::new(arc).encode_type(ty)?;
-        let compiled = JSONSchema::compile(&schema)?;
+        let compiled =
+            JSONSchema::compile(&schema).map_err(|e| anyhow!("failed to compile schema: {}", e.to_string()))?;
         let result = compiled.validate(instance);
         assert_eq!(matches, result.is_ok());
         Ok(())
