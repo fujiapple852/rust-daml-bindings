@@ -297,6 +297,8 @@ impl ToStatic for DamlTemplate<'_> {
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlChoice<'a> {
     name: Cow<'a, str>,
+    package_id: Cow<'a, str>,
+    module_path: Vec<Cow<'a, str>>,
     fields: Vec<DamlField<'a>>,
     return_type: DamlType<'a>,
     consuming: bool,
@@ -313,6 +315,8 @@ impl<'a> DamlChoice<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         name: Cow<'a, str>,
+        package_id: Cow<'a, str>,
+        module_path: Vec<Cow<'a, str>>,
         fields: Vec<DamlField<'a>>,
         return_type: DamlType<'a>,
         consuming: bool,
@@ -323,6 +327,8 @@ impl<'a> DamlChoice<'a> {
     ) -> Self {
         Self {
             name,
+            package_id,
+            module_path,
             fields,
             return_type,
             consuming,
@@ -336,9 +342,17 @@ impl<'a> DamlChoice<'a> {
         }
     }
 
-    pub fn new_with_default(name: Cow<'a, str>, fields: Vec<DamlField<'a>>, return_type: DamlType<'a>) -> Self {
+    pub fn new_with_default(
+        name: Cow<'a, str>,
+        package_id: Cow<'a, str>,
+        module_path: Vec<Cow<'a, str>>,
+        fields: Vec<DamlField<'a>>,
+        return_type: DamlType<'a>,
+    ) -> Self {
         Self {
             name,
+            package_id,
+            module_path,
             fields,
             return_type,
             consuming: false,
@@ -354,6 +368,14 @@ impl<'a> DamlChoice<'a> {
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn package_id(&self) -> &str {
+        &self.package_id
+    }
+
+    pub fn module_path(&self) -> impl Iterator<Item = &str> {
+        self.module_path.iter().map(AsRef::as_ref)
     }
 
     pub fn fields(&self) -> &[DamlField<'a>] {
@@ -409,6 +431,8 @@ impl ToStatic for DamlChoice<'_> {
     fn to_static(&self) -> Self::Static {
         DamlChoice::new(
             self.name.to_static(),
+            self.package_id.to_static(),
+            self.module_path.iter().map(ToStatic::to_static).collect(),
             self.fields.iter().map(DamlField::to_static).collect(),
             self.return_type.to_static(),
             self.consuming,

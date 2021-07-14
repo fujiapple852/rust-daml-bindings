@@ -33,6 +33,8 @@ impl<'a> From<&'a AttrChoice> for DamlChoice<'a> {
     fn from(attr_choice: &'a AttrChoice) -> Self {
         DamlChoice::new_with_default(
             Cow::from(&attr_choice.choice_name),
+            Cow::from(""),
+            vec![],
             attr_choice.choice_arguments.iter().map(DamlField::from).collect(),
             DamlType::from(&attr_choice.choice_return_type),
         )

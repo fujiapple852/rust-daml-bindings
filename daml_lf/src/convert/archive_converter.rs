@@ -248,6 +248,7 @@ impl<'a> TryFrom<DamlChoiceWrapper<'a>> for DamlChoice<'a> {
 
     fn try_from(choice: DamlChoiceWrapper<'a>) -> DamlLfConvertResult<Self> {
         let name = choice.payload.name.resolve(choice.context.package)?;
+        let module_path = choice.context.module.path.resolve(choice.context.package)?;
         let resolved_type = match &choice.payload.argument_type {
             DamlTypePayload::Interned(i) => choice.context.package.resolve_type(*i)?,
             ty => ty,
@@ -283,6 +284,8 @@ impl<'a> TryFrom<DamlChoiceWrapper<'a>> for DamlChoice<'a> {
             };
         Ok(DamlChoice::new(
             name,
+            Cow::from(choice.context.package.package_id),
+            module_path,
             fields,
             return_type,
             consuming,
