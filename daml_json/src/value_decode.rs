@@ -116,6 +116,7 @@ impl<'a> JsonValueDecoder<'a> {
             | DamlType::TypeRep
             | DamlType::Bignumeric
             | DamlType::RoundingMode
+            | DamlType::AnyException
             | DamlType::Update
             | DamlType::Scenario
             | DamlType::Forall(_)

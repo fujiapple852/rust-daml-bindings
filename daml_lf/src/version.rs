@@ -17,6 +17,7 @@ impl LanguageVersion {
     pub const V1_11: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V11);
     pub const V1_12: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V12);
     pub const V1_13: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V13);
+    pub const V1_14: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V14);
     pub const V1_2: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V2);
     pub const V1_3: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V3);
     pub const V1_4: LanguageVersion = LanguageVersion::Lv1(LanguageV1MinorVersion::V4);
@@ -156,6 +157,7 @@ pub enum LanguageV1MinorVersion {
     V11,
     V12,
     V13,
+    V14,
     Dev,
 }
 
@@ -174,6 +176,7 @@ impl Display for LanguageV1MinorVersion {
             LanguageV1MinorVersion::V11 => write!(f, "11"),
             LanguageV1MinorVersion::V12 => write!(f, "12"),
             LanguageV1MinorVersion::V13 => write!(f, "13"),
+            LanguageV1MinorVersion::V14 => write!(f, "14"),
             LanguageV1MinorVersion::Dev => write!(f, "dev"),
         }
     }
@@ -196,6 +199,7 @@ impl TryFrom<&str> for LanguageV1MinorVersion {
             "11" => Ok(LanguageV1MinorVersion::V11),
             "12" => Ok(LanguageV1MinorVersion::V12),
             "13" => Ok(LanguageV1MinorVersion::V13),
+            "14" => Ok(LanguageV1MinorVersion::V14),
             "dev" => Ok(LanguageV1MinorVersion::Dev),
             _ => Err(DamlLfError::new_unknown_version(minor_version)),
         }
@@ -219,7 +223,8 @@ mod tests {
         assert!(LanguageV1MinorVersion::V8 < LanguageV1MinorVersion::V11);
         assert!(LanguageV1MinorVersion::V11 < LanguageV1MinorVersion::V12);
         assert!(LanguageV1MinorVersion::V12 < LanguageV1MinorVersion::V13);
-        assert!(LanguageV1MinorVersion::V13 < LanguageV1MinorVersion::Dev);
+        assert!(LanguageV1MinorVersion::V13 < LanguageV1MinorVersion::V14);
+        assert!(LanguageV1MinorVersion::V14 < LanguageV1MinorVersion::Dev);
     }
 
     #[test]
@@ -242,7 +247,8 @@ mod tests {
         assert!(LanguageVersion::V1_8 < LanguageVersion::V1_11);
         assert!(LanguageVersion::V1_11 < LanguageVersion::V1_12);
         assert!(LanguageVersion::V1_12 < LanguageVersion::V1_13);
-        assert!(LanguageVersion::V1_13 < LanguageVersion::V1_DEV);
+        assert!(LanguageVersion::V1_13 < LanguageVersion::V1_14);
+        assert!(LanguageVersion::V1_14 < LanguageVersion::V1_DEV);
     }
 
     #[test]

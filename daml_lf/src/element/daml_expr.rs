@@ -37,6 +37,9 @@ pub enum DamlExpr<'a> {
     ToAny(DamlToAny<'a>),
     FromAny(DamlFromAny<'a>),
     TypeRep(DamlType<'a>),
+    ToAnyException(DamlToAnyException<'a>),
+    FromAnyException(DamlFromAnyException<'a>),
+    Throw(DamlThrow<'a>),
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlExpr<'a> {
@@ -68,6 +71,9 @@ impl<'a> DamlVisitableElement<'a> for DamlExpr<'a> {
             DamlExpr::ToAny(to_any) => to_any.accept(visitor),
             DamlExpr::FromAny(from_any) => from_any.accept(visitor),
             DamlExpr::TypeRep(ty) | DamlExpr::OptionalNone(ty) | DamlExpr::Nil(ty) => ty.accept(visitor),
+            DamlExpr::ToAnyException(to_any_exception) => to_any_exception.accept(visitor),
+            DamlExpr::FromAnyException(from_any_exception) => from_any_exception.accept(visitor),
+            DamlExpr::Throw(throw) => throw.accept(visitor),
             DamlExpr::Var(_) => {},
         }
         visitor.post_visit_expr(self);
@@ -107,6 +113,10 @@ impl ToStatic for DamlExpr<'_> {
             DamlExpr::ToAny(to_any) => DamlExpr::ToAny(to_any.to_static()),
             DamlExpr::FromAny(from_any) => DamlExpr::FromAny(from_any.to_static()),
             DamlExpr::TypeRep(ty) => DamlExpr::TypeRep(ty.to_static()),
+            DamlExpr::ToAnyException(to_any_exception) => DamlExpr::ToAnyException(to_any_exception.to_static()),
+            DamlExpr::FromAnyException(from_any_exception) =>
+                DamlExpr::FromAnyException(from_any_exception.to_static()),
+            DamlExpr::Throw(throw) => DamlExpr::Throw(throw.to_static()),
         }
     }
 }
@@ -373,6 +383,7 @@ pub enum DamlBuiltinFunction {
     ExplodeText,
     AppendText,
     Error,
+    AnyExceptionMessage,
     LeqInt64,
     LeqDecimal,
     LeqNumeric,
@@ -401,19 +412,19 @@ pub enum DamlBuiltinFunction {
     GreaterTimestamp,
     GreaterDate,
     GreaterParty,
-    ToTextInt64,
-    ToTextDecimal,
-    ToTextNumeric,
-    ToTextText,
-    ToTextTimestamp,
-    ToTextDate,
-    ToQuotedTextParty,
-    ToTextParty,
-    FromTextParty,
-    FromTextInt64,
-    FromTextDecimal,
-    FromTextNumeric,
-    ToTextContractId,
+    Int64ToText,
+    DecimalToText,
+    NumericToText,
+    TextToText,
+    TimestampToText,
+    DateToText,
+    PartyToQuotedText,
+    PartyToText,
+    TextToParty,
+    TextToInt64,
+    TextToDecimal,
+    TextToNumeric,
+    ContractIdToText,
     Sha256Text,
     DateToUnixDays,
     UnixDaysToDate,
@@ -437,8 +448,8 @@ pub enum DamlBuiltinFunction {
     EqualTypeRep,
     Trace,
     CoerceContractId,
-    TextFromCodePoints,
-    TextToCodePoints,
+    CodePointsToText,
+    TextPointsToCode,
     ScaleBignumeric,
     PrecisionBignumeric,
     AddBignumeric,
@@ -446,10 +457,10 @@ pub enum DamlBuiltinFunction {
     MulBignumeric,
     DivBignumeric,
     ShiftBignumeric,
-    ToNumericBignumeric,
     ShiftRightBignumeric,
-    ToBignumericNumeric,
-    ToTextBignumeric,
+    BigNumericToNumeric,
+    NumericToBigNumeric,
+    BigNumericToText,
     GenmapEmpty,
     GenmapInsert,
     GenmapLookup,
@@ -1693,6 +1704,7 @@ pub enum DamlUpdate<'a> {
     LookupByKey(DamlRetrieveByKey<'a>),
     FetchByKey(DamlRetrieveByKey<'a>),
     EmbedExpr(DamlUpdateEmbedExpr<'a>),
+    TryCatch(DamlTryCatch<'a>),
 }
 
 impl<'a> DamlVisitableElement<'a> for DamlUpdate<'a> {
@@ -1708,6 +1720,7 @@ impl<'a> DamlVisitableElement<'a> for DamlUpdate<'a> {
             DamlUpdate::LookupByKey(retrieve_by_key) | DamlUpdate::FetchByKey(retrieve_by_key) =>
                 retrieve_by_key.accept(visitor),
             DamlUpdate::EmbedExpr(embed_expr) => embed_expr.accept(visitor),
+            DamlUpdate::TryCatch(try_catch) => try_catch.accept(visitor),
             DamlUpdate::GetTime => {},
         }
         visitor.post_visit_update(self);
@@ -1729,6 +1742,7 @@ impl ToStatic for DamlUpdate<'_> {
             DamlUpdate::LookupByKey(retrieve_by_key) => DamlUpdate::LookupByKey(retrieve_by_key.to_static()),
             DamlUpdate::FetchByKey(retrieve_by_key) => DamlUpdate::FetchByKey(retrieve_by_key.to_static()),
             DamlUpdate::EmbedExpr(embed_expr) => DamlUpdate::EmbedExpr(embed_expr.to_static()),
+            DamlUpdate::TryCatch(try_catch) => DamlUpdate::TryCatch(try_catch.to_static()),
         }
     }
 }
@@ -2187,5 +2201,199 @@ impl ToStatic for DamlScenarioEmbedExpr<'_> {
 
     fn to_static(&self) -> Self::Static {
         DamlScenarioEmbedExpr::new(self.ty.to_static(), Box::new(self.body.to_static()))
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct DamlToAnyException<'a> {
+    ty: DamlType<'a>,
+    expr: Box<DamlExpr<'a>>,
+}
+
+impl<'a> DamlToAnyException<'a> {
+    pub fn new(ty: DamlType<'a>, expr: Box<DamlExpr<'a>>) -> Self {
+        Self {
+            ty,
+            expr,
+        }
+    }
+
+    pub fn ty(&self) -> &DamlType<'a> {
+        &self.ty
+    }
+
+    pub fn expr(&self) -> &DamlExpr<'a> {
+        self.expr.as_ref()
+    }
+}
+
+impl<'a> DamlVisitableElement<'a> for DamlToAnyException<'a> {
+    fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
+        visitor.pre_visit_to_any_exception(self);
+        self.ty.accept(visitor);
+        self.expr.accept(visitor);
+        visitor.post_visit_to_any_exception(self);
+    }
+}
+
+impl ToStatic for DamlToAnyException<'_> {
+    type Static = DamlToAnyException<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlToAnyException::new(self.ty.to_static(), Box::new(self.expr.to_static()))
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct DamlFromAnyException<'a> {
+    ty: DamlType<'a>,
+    expr: Box<DamlExpr<'a>>,
+}
+
+impl<'a> DamlFromAnyException<'a> {
+    pub fn new(ty: DamlType<'a>, expr: Box<DamlExpr<'a>>) -> Self {
+        Self {
+            ty,
+            expr,
+        }
+    }
+
+    pub fn ty(&self) -> &DamlType<'a> {
+        &self.ty
+    }
+
+    pub fn expr(&self) -> &DamlExpr<'a> {
+        self.expr.as_ref()
+    }
+}
+
+impl<'a> DamlVisitableElement<'a> for DamlFromAnyException<'a> {
+    fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
+        visitor.pre_visit_from_any_exception(self);
+        self.ty.accept(visitor);
+        self.expr.accept(visitor);
+        visitor.post_visit_from_any_exception(self);
+    }
+}
+
+impl ToStatic for DamlFromAnyException<'_> {
+    type Static = DamlFromAnyException<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlFromAnyException::new(self.ty.to_static(), Box::new(self.expr.to_static()))
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct DamlThrow<'a> {
+    return_type: DamlType<'a>,
+    exception_type: DamlType<'a>,
+    exception_expr: Box<DamlExpr<'a>>,
+}
+
+impl<'a> DamlThrow<'a> {
+    pub fn new(return_type: DamlType<'a>, exception_type: DamlType<'a>, exception_expr: Box<DamlExpr<'a>>) -> Self {
+        Self {
+            return_type,
+            exception_type,
+            exception_expr,
+        }
+    }
+
+    pub fn return_type(&self) -> &DamlType<'a> {
+        &self.return_type
+    }
+
+    pub fn exception_type(&self) -> &DamlType<'a> {
+        &self.exception_type
+    }
+
+    pub fn exception_expr(&self) -> &DamlExpr<'a> {
+        self.exception_expr.as_ref()
+    }
+}
+
+impl<'a> DamlVisitableElement<'a> for DamlThrow<'a> {
+    fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
+        visitor.pre_visit_throw(self);
+        self.return_type.accept(visitor);
+        self.exception_type.accept(visitor);
+        self.exception_expr.accept(visitor);
+        visitor.post_visit_throw(self);
+    }
+}
+
+impl ToStatic for DamlThrow<'_> {
+    type Static = DamlThrow<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlThrow::new(
+            self.return_type.to_static(),
+            self.exception_type.to_static(),
+            Box::new(self.exception_expr.to_static()),
+        )
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct DamlTryCatch<'a> {
+    return_type: DamlType<'a>,
+    try_expr: Box<DamlExpr<'a>>,
+    var: Cow<'a, str>,
+    catch_expr: Box<DamlExpr<'a>>,
+}
+
+impl<'a> DamlTryCatch<'a> {
+    pub fn new(
+        return_type: DamlType<'a>,
+        try_expr: Box<DamlExpr<'a>>,
+        var: Cow<'a, str>,
+        catch_expr: Box<DamlExpr<'a>>,
+    ) -> Self {
+        Self {
+            return_type,
+            try_expr,
+            var,
+            catch_expr,
+        }
+    }
+
+    pub fn return_type(&self) -> &DamlType<'a> {
+        &self.return_type
+    }
+
+    pub fn try_expr(&self) -> &DamlExpr<'a> {
+        self.try_expr.as_ref()
+    }
+
+    pub fn var(&self) -> &str {
+        &self.var
+    }
+
+    pub fn catch_expr(&self) -> &DamlExpr<'a> {
+        self.catch_expr.as_ref()
+    }
+}
+
+impl<'a> DamlVisitableElement<'a> for DamlTryCatch<'a> {
+    fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor) {
+        visitor.pre_visit_try_catch(self);
+        self.return_type.accept(visitor);
+        self.try_expr.accept(visitor);
+        self.catch_expr.accept(visitor);
+        visitor.post_visit_try_catch(self);
+    }
+}
+
+impl ToStatic for DamlTryCatch<'_> {
+    type Static = DamlTryCatch<'static>;
+
+    fn to_static(&self) -> Self::Static {
+        DamlTryCatch::new(
+            self.return_type.to_static(),
+            Box::new(self.try_expr.to_static()),
+            self.var.to_static(),
+            Box::new(self.catch_expr.to_static()),
+        )
     }
 }

@@ -5,7 +5,7 @@ pub mod com {
             include!(concat!(env!("OUT_DIR"), "/daml_lf_1.rs"));
         }
         pub mod daml_lf {
-            include!(concat!(env!("OUT_DIR"), "/daml_lf_1_13.rs"));
+            include!(concat!(env!("OUT_DIR"), "/daml_lf_1_14.rs"));
         }
     }
 }

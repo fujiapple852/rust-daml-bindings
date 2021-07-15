@@ -56,6 +56,7 @@ impl<'a> IsRenderable<'a> {
             | DamlType::TypeRep
             | DamlType::Bignumeric
             | DamlType::RoundingMode
+            | DamlType::AnyException
             | DamlType::Forall(_)
             | DamlType::Struct(_)
             | DamlType::Syn(_) => false,

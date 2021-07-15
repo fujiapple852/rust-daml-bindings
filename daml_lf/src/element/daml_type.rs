@@ -34,6 +34,7 @@ pub enum DamlType<'a> {
     TypeRep,
     Bignumeric,
     RoundingMode,
+    AnyException,
     Update,
     Scenario,
     Forall(DamlForall<'a>),
@@ -66,6 +67,7 @@ impl<'a> DamlType<'a> {
             DamlType::Any => "None (Any)",
             DamlType::TypeRep => "None (TypeRep)",
             DamlType::RoundingMode => "None (RoundingMode)",
+            DamlType::AnyException => "None (AnyException)",
             DamlType::Bignumeric => "None (Bignumeric)",
             DamlType::Nat(_) => "Nat",
             DamlType::Forall(_) => "Forall",
@@ -106,6 +108,7 @@ impl<'a> DamlType<'a> {
             | DamlType::TypeRep
             | DamlType::Bignumeric
             | DamlType::RoundingMode
+            | DamlType::AnyException
             | DamlType::Nat(_) => false,
         }
     }
@@ -155,6 +158,7 @@ impl<'a> DamlVisitableElement<'a> for DamlType<'a> {
             | DamlType::TypeRep
             | DamlType::Bignumeric
             | DamlType::RoundingMode
+            | DamlType::AnyException
             | DamlType::Nat(_) => {},
         }
         visitor.post_visit_type(self);
@@ -189,6 +193,7 @@ impl ToStatic for DamlType<'_> {
             DamlType::TypeRep => DamlType::TypeRep,
             DamlType::Bignumeric => DamlType::Bignumeric,
             DamlType::RoundingMode => DamlType::RoundingMode,
+            DamlType::AnyException => DamlType::AnyException,
             DamlType::Update => DamlType::Update,
             DamlType::Scenario => DamlType::Scenario,
             DamlType::Forall(forall) => DamlType::Forall(forall.to_static()),

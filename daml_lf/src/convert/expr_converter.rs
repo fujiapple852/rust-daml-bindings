@@ -4,11 +4,12 @@ use crate::convert::expr_payload::{
     DamlCaseAltConsWrapper, DamlCaseAltEnumWrapper, DamlCaseAltOptionalSomeWrapper, DamlCaseAltSumPayload,
     DamlCaseAltSumWrapper, DamlCaseAltVariantWrapper, DamlCaseAltWrapper, DamlCaseWrapper, DamlCommitWrapper,
     DamlConsWrapper, DamlCreateWrapper, DamlEnumConWrapper, DamlExerciseByKeyWrapper, DamlExerciseWrapper,
-    DamlExprPayload, DamlExprWrapper, DamlFetchWrapper, DamlFieldWithExprWrapper, DamlFromAnyWrapper,
-    DamlOptionalSomeWrapper, DamlPrimConPayload, DamlPrimLitPayload, DamlPrimLitWrapper, DamlPureWrapper,
-    DamlRecConWrapper, DamlRecProjWrapper, DamlRecUpdWrapper, DamlRetrieveByKeyWrapper, DamlScenarioEmbedExprWrapper,
-    DamlScenarioPayload, DamlScenarioWrapper, DamlStructConWrapper, DamlStructProjWrapper, DamlStructUpdWrapper,
-    DamlToAnyWrapper, DamlTyAbsWrapper, DamlTyAppWrapper, DamlUpdateEmbedExprWrapper, DamlUpdatePayload,
+    DamlExprPayload, DamlExprWrapper, DamlFetchWrapper, DamlFieldWithExprWrapper, DamlFromAnyExceptionWrapper,
+    DamlFromAnyWrapper, DamlOptionalSomeWrapper, DamlPrimConPayload, DamlPrimLitPayload, DamlPrimLitWrapper,
+    DamlPureWrapper, DamlRecConWrapper, DamlRecProjWrapper, DamlRecUpdWrapper, DamlRetrieveByKeyWrapper,
+    DamlScenarioEmbedExprWrapper, DamlScenarioPayload, DamlScenarioWrapper, DamlStructConWrapper,
+    DamlStructProjWrapper, DamlStructUpdWrapper, DamlThrowWrapper, DamlToAnyExceptionWrapper, DamlToAnyWrapper,
+    DamlTryCatchWrapper, DamlTyAbsWrapper, DamlTyAppWrapper, DamlUpdateEmbedExprWrapper, DamlUpdatePayload,
     DamlUpdateWrapper, DamlValueNameWrapper, DamlVarWithTypeWrapper, DamlVariantConWrapper, RoundingModePayload,
 };
 use crate::convert::package_payload::DamlPackagePayload;
@@ -16,10 +17,11 @@ use crate::element::{
     DamlAbs, DamlApp, DamlBinding, DamlBlock, DamlBuiltinFunction, DamlCase, DamlCaseAlt, DamlCaseAltCons,
     DamlCaseAltEnum, DamlCaseAltOptionalSome, DamlCaseAltSum, DamlCaseAltVariant, DamlCommit, DamlCons, DamlCreate,
     DamlDefValue, DamlEnumCon, DamlExercise, DamlExerciseByKey, DamlExpr, DamlFetch, DamlFieldWithExpr, DamlFromAny,
-    DamlLocalValueName, DamlNonLocalValueName, DamlOptionalSome, DamlPrimCon, DamlPrimLit, DamlPure, DamlRecCon,
-    DamlRecProj, DamlRecUpd, DamlRetrieveByKey, DamlScenario, DamlScenarioEmbedExpr, DamlStructCon, DamlStructProj,
-    DamlStructUpd, DamlToAny, DamlTyAbs, DamlTyApp, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind,
-    DamlUpdate, DamlUpdateEmbedExpr, DamlValueName, DamlVarWithType, DamlVariantCon, RoundingMode,
+    DamlFromAnyException, DamlLocalValueName, DamlNonLocalValueName, DamlOptionalSome, DamlPrimCon, DamlPrimLit,
+    DamlPure, DamlRecCon, DamlRecProj, DamlRecUpd, DamlRetrieveByKey, DamlScenario, DamlScenarioEmbedExpr,
+    DamlStructCon, DamlStructProj, DamlStructUpd, DamlThrow, DamlToAny, DamlToAnyException, DamlTryCatch, DamlTyAbs,
+    DamlTyApp, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind, DamlUpdate, DamlUpdateEmbedExpr, DamlValueName,
+    DamlVarWithType, DamlVariantCon, RoundingMode,
 };
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
 use std::borrow::Cow;
@@ -79,6 +81,11 @@ impl<'a> TryFrom<&DamlExprWrapper<'a>> for DamlExpr<'a> {
             DamlExprPayload::ToAny(to_any) => DamlExpr::ToAny(DamlToAny::try_from(&expr.wrap(to_any))?),
             DamlExprPayload::FromAny(from_any) => DamlExpr::FromAny(DamlFromAny::try_from(&expr.wrap(from_any))?),
             DamlExprPayload::TypeRep(ty) => DamlExpr::TypeRep(DamlType::try_from(&expr.wrap(ty))?),
+            DamlExprPayload::ToAnyException(to_any_exception) =>
+                DamlExpr::ToAnyException(DamlToAnyException::try_from(&expr.wrap(to_any_exception))?),
+            DamlExprPayload::FromAnyException(from_any_exception) =>
+                DamlExpr::FromAnyException(DamlFromAnyException::try_from(&expr.wrap(from_any_exception))?),
+            DamlExprPayload::Throw(throw) => DamlExpr::Throw(DamlThrow::try_from(&expr.wrap(throw))?),
         })
     }
 }
@@ -116,6 +123,7 @@ impl<'a> From<&DamlBuiltinFunctionPayload> for DamlBuiltinFunction {
             DamlBuiltinFunctionPayload::ExplodeText => DamlBuiltinFunction::ExplodeText,
             DamlBuiltinFunctionPayload::AppendText => DamlBuiltinFunction::AppendText,
             DamlBuiltinFunctionPayload::Error => DamlBuiltinFunction::Error,
+            DamlBuiltinFunctionPayload::AnyExceptionMessage => DamlBuiltinFunction::AnyExceptionMessage,
             DamlBuiltinFunctionPayload::LeqInt64 => DamlBuiltinFunction::LeqInt64,
             DamlBuiltinFunctionPayload::LeqDecimal => DamlBuiltinFunction::LeqDecimal,
             DamlBuiltinFunctionPayload::LeqNumeric => DamlBuiltinFunction::LeqNumeric,
@@ -144,19 +152,19 @@ impl<'a> From<&DamlBuiltinFunctionPayload> for DamlBuiltinFunction {
             DamlBuiltinFunctionPayload::GreaterTimestamp => DamlBuiltinFunction::GreaterTimestamp,
             DamlBuiltinFunctionPayload::GreaterDate => DamlBuiltinFunction::GreaterDate,
             DamlBuiltinFunctionPayload::GreaterParty => DamlBuiltinFunction::GreaterParty,
-            DamlBuiltinFunctionPayload::ToTextInt64 => DamlBuiltinFunction::ToTextInt64,
-            DamlBuiltinFunctionPayload::ToTextDecimal => DamlBuiltinFunction::ToTextDecimal,
-            DamlBuiltinFunctionPayload::ToTextNumeric => DamlBuiltinFunction::ToTextNumeric,
-            DamlBuiltinFunctionPayload::ToTextText => DamlBuiltinFunction::ToTextText,
-            DamlBuiltinFunctionPayload::ToTextTimestamp => DamlBuiltinFunction::ToTextTimestamp,
-            DamlBuiltinFunctionPayload::ToTextDate => DamlBuiltinFunction::ToTextDate,
-            DamlBuiltinFunctionPayload::ToQuotedTextParty => DamlBuiltinFunction::ToQuotedTextParty,
-            DamlBuiltinFunctionPayload::ToTextParty => DamlBuiltinFunction::ToTextParty,
-            DamlBuiltinFunctionPayload::FromTextParty => DamlBuiltinFunction::FromTextParty,
-            DamlBuiltinFunctionPayload::FromTextInt64 => DamlBuiltinFunction::FromTextInt64,
-            DamlBuiltinFunctionPayload::FromTextDecimal => DamlBuiltinFunction::FromTextDecimal,
-            DamlBuiltinFunctionPayload::FromTextNumeric => DamlBuiltinFunction::FromTextNumeric,
-            DamlBuiltinFunctionPayload::ToTextContractId => DamlBuiltinFunction::ToTextContractId,
+            DamlBuiltinFunctionPayload::Int64ToText => DamlBuiltinFunction::Int64ToText,
+            DamlBuiltinFunctionPayload::DecimalToText => DamlBuiltinFunction::DecimalToText,
+            DamlBuiltinFunctionPayload::NumericToText => DamlBuiltinFunction::NumericToText,
+            DamlBuiltinFunctionPayload::TextToText => DamlBuiltinFunction::TextToText,
+            DamlBuiltinFunctionPayload::TimestampToText => DamlBuiltinFunction::TimestampToText,
+            DamlBuiltinFunctionPayload::DateToText => DamlBuiltinFunction::DateToText,
+            DamlBuiltinFunctionPayload::PartyToQuotedText => DamlBuiltinFunction::PartyToQuotedText,
+            DamlBuiltinFunctionPayload::PartyToText => DamlBuiltinFunction::PartyToText,
+            DamlBuiltinFunctionPayload::TextToParty => DamlBuiltinFunction::TextToParty,
+            DamlBuiltinFunctionPayload::TextToInt64 => DamlBuiltinFunction::TextToInt64,
+            DamlBuiltinFunctionPayload::TextToDecimal => DamlBuiltinFunction::TextToDecimal,
+            DamlBuiltinFunctionPayload::TextToNumeric => DamlBuiltinFunction::TextToNumeric,
+            DamlBuiltinFunctionPayload::ContractIdToText => DamlBuiltinFunction::ContractIdToText,
             DamlBuiltinFunctionPayload::Sha256Text => DamlBuiltinFunction::Sha256Text,
             DamlBuiltinFunctionPayload::DateToUnixDays => DamlBuiltinFunction::DateToUnixDays,
             DamlBuiltinFunctionPayload::UnixDaysToDate => DamlBuiltinFunction::UnixDaysToDate,
@@ -180,8 +188,8 @@ impl<'a> From<&DamlBuiltinFunctionPayload> for DamlBuiltinFunction {
             DamlBuiltinFunctionPayload::EqualTypeRep => DamlBuiltinFunction::EqualTypeRep,
             DamlBuiltinFunctionPayload::Trace => DamlBuiltinFunction::Trace,
             DamlBuiltinFunctionPayload::CoerceContractId => DamlBuiltinFunction::CoerceContractId,
-            DamlBuiltinFunctionPayload::TextFromCodePoints => DamlBuiltinFunction::TextFromCodePoints,
-            DamlBuiltinFunctionPayload::TextToCodePoints => DamlBuiltinFunction::TextToCodePoints,
+            DamlBuiltinFunctionPayload::CodePointsToText => DamlBuiltinFunction::CodePointsToText,
+            DamlBuiltinFunctionPayload::TextPointsToCode => DamlBuiltinFunction::TextPointsToCode,
             DamlBuiltinFunctionPayload::GenmapEmpty => DamlBuiltinFunction::GenmapEmpty,
             DamlBuiltinFunctionPayload::GenmapInsert => DamlBuiltinFunction::GenmapInsert,
             DamlBuiltinFunctionPayload::GenmapLookup => DamlBuiltinFunction::GenmapLookup,
@@ -201,10 +209,10 @@ impl<'a> From<&DamlBuiltinFunctionPayload> for DamlBuiltinFunction {
             DamlBuiltinFunctionPayload::MulBignumeric => DamlBuiltinFunction::MulBignumeric,
             DamlBuiltinFunctionPayload::DivBignumeric => DamlBuiltinFunction::DivBignumeric,
             DamlBuiltinFunctionPayload::ShiftBignumeric => DamlBuiltinFunction::ShiftBignumeric,
-            DamlBuiltinFunctionPayload::ToNumericBignumeric => DamlBuiltinFunction::ToNumericBignumeric,
             DamlBuiltinFunctionPayload::ShiftRightBignumeric => DamlBuiltinFunction::ShiftRightBignumeric,
-            DamlBuiltinFunctionPayload::ToBignumericNumeric => DamlBuiltinFunction::ToBignumericNumeric,
-            DamlBuiltinFunctionPayload::ToTextBignumeric => DamlBuiltinFunction::ToTextBignumeric,
+            DamlBuiltinFunctionPayload::BigNumericToNumeric => DamlBuiltinFunction::BigNumericToNumeric,
+            DamlBuiltinFunctionPayload::NumericToBigNumeric => DamlBuiltinFunction::NumericToBigNumeric,
+            DamlBuiltinFunctionPayload::BigNumericToText => DamlBuiltinFunction::BigNumericToText,
         }
     }
 }
@@ -603,6 +611,8 @@ impl<'a> TryFrom<&DamlUpdateWrapper<'a>> for DamlUpdate<'a> {
                 DamlUpdate::FetchByKey(DamlRetrieveByKey::try_from(&update.wrap(retrieve_by_key))?),
             DamlUpdatePayload::EmbedExpr(embed_expr) =>
                 DamlUpdate::EmbedExpr(DamlUpdateEmbedExpr::try_from(&update.wrap(embed_expr))?),
+            DamlUpdatePayload::TryCatch(try_catch) =>
+                DamlUpdate::TryCatch(DamlTryCatch::try_from(&update.wrap(try_catch))?),
         })
     }
 }
@@ -758,5 +768,48 @@ impl<'a> TryFrom<&DamlValueNameWrapper<'a>> for DamlValueName<'a> {
                 target_module_path,
             )))
         }
+    }
+}
+
+impl<'a> TryFrom<&DamlToAnyExceptionWrapper<'a>> for DamlToAnyException<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(to_any_exception: &DamlToAnyExceptionWrapper<'a>) -> DamlLfConvertResult<Self> {
+        let ty = DamlType::try_from(&to_any_exception.wrap(&to_any_exception.payload.ty))?;
+        let expr = DamlExpr::try_from(&to_any_exception.wrap(to_any_exception.payload.expr.as_ref()))?;
+        Ok(DamlToAnyException::new(ty, Box::new(expr)))
+    }
+}
+
+impl<'a> TryFrom<&DamlFromAnyExceptionWrapper<'a>> for DamlFromAnyException<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(from_any_exception: &DamlFromAnyExceptionWrapper<'a>) -> DamlLfConvertResult<Self> {
+        let ty = DamlType::try_from(&from_any_exception.wrap(&from_any_exception.payload.ty))?;
+        let expr = DamlExpr::try_from(&from_any_exception.wrap(from_any_exception.payload.expr.as_ref()))?;
+        Ok(DamlFromAnyException::new(ty, Box::new(expr)))
+    }
+}
+
+impl<'a> TryFrom<&DamlThrowWrapper<'a>> for DamlThrow<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(throw: &DamlThrowWrapper<'a>) -> DamlLfConvertResult<Self> {
+        let return_type = DamlType::try_from(&throw.wrap(&throw.payload.return_type))?;
+        let exception_type = DamlType::try_from(&throw.wrap(&throw.payload.exception_type))?;
+        let exception_expr = DamlExpr::try_from(&throw.wrap(throw.payload.exception_expr.as_ref()))?;
+        Ok(DamlThrow::new(return_type, exception_type, Box::new(exception_expr)))
+    }
+}
+
+impl<'a> TryFrom<&DamlTryCatchWrapper<'a>> for DamlTryCatch<'a> {
+    type Error = DamlLfConvertError;
+
+    fn try_from(try_catch: &DamlTryCatchWrapper<'a>) -> DamlLfConvertResult<Self> {
+        let return_type = DamlType::try_from(&try_catch.wrap(&try_catch.payload.return_type))?;
+        let try_expr = DamlExpr::try_from(&try_catch.wrap(try_catch.payload.try_expr.as_ref()))?;
+        let var = try_catch.payload.var.resolve(try_catch.context.package)?;
+        let catch_expr = DamlExpr::try_from(&try_catch.wrap(try_catch.payload.catch_expr.as_ref()))?;
+        Ok(DamlTryCatch::new(return_type, Box::new(try_expr), var, Box::new(catch_expr)))
     }
 }
