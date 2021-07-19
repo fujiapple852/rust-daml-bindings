@@ -16,6 +16,8 @@ anyhow = "1.0"
 thiserror = "1.0"
 itertools = "0.10"
 maplit = "1.0"
+log = "0.4"
+simple_logger = "1.1"
 
 [profile.release]
 lto = true

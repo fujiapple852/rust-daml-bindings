@@ -1,26 +1,25 @@
 use std::collections::BTreeMap;
 
-use itertools::{chain, process_results};
-use maplit::btreemap;
-use serde_json::Value;
-
-use daml::json_api::schema_encoder::JsonSchemaEncoder;
-use daml::lf::element::{
-    DamlArchive, DamlChoice, DamlData, DamlDefKey, DamlModule, DamlPackage, DamlTemplate, DamlTyCon,
-};
-
 use crate::choice_event_extractor::ChoiceEventExtractor;
 use crate::common::{DataId, NamedItem, ARCHIVE_CHOICE_NAME, ERROR_RESPONSE_SCHEMA_NAME, GENERAL_OPERATION_TAG};
 use crate::companion::{CompanionData, OperationInfo};
 use crate::config::PathStyle;
 use crate::filter::{ChoiceFilter, TemplateFilter};
 use crate::format;
-use crate::format::{format_daml_template, format_path};
+use crate::format::{format_daml_template, format_path_slice};
+use crate::format::{format_path, format_template};
 use crate::json_api_schema::DamlJsonApiSchema;
 use crate::oas::openapi_data::{MediaType, Operation, PathItem, RequestBody, Response, ResponseType, Responses};
 use crate::oas::operation::OperationIdFactory;
 use crate::schema::Schema;
 use crate::util::{ChildModulePathOrError, Required};
+use daml::json_api::schema_encoder::JsonSchemaEncoder;
+use daml::lf::element::{
+    DamlArchive, DamlChoice, DamlData, DamlDefKey, DamlModule, DamlPackage, DamlTemplate, DamlTyCon,
+};
+use itertools::{chain, process_results};
+use maplit::btreemap;
+use serde_json::Value;
 
 pub const CREATE_OPERATION: &str = "/v1/create";
 pub const CREATE_AND_EXERCISE_OPERATION: &str = "/v1/create_and_exercise";
@@ -79,10 +78,12 @@ impl<'arc> PathItemEncoder<'arc> {
     }
 
     fn encode_package(&self, package: &DamlPackage<'_>) -> anyhow::Result<Vec<NamedPathItem>> {
+        log::info!("encoding package {}", package.name());
         self.encode_module(package, package.root_module().child_module_path_or_err(self.module_path)?)
     }
 
     fn encode_module(&self, package: &DamlPackage<'_>, module: &DamlModule<'_>) -> anyhow::Result<Vec<NamedPathItem>> {
+        log::info!("encoding module {}", format_path(module.path()));
         let dt_iter = module.data_types().map(|dt| self.encode_data(package, module, dt));
         let child_mod_iter = module.child_modules().map(|m| self.encode_module(package, m));
         process_results(chain(dt_iter, child_mod_iter), |ita| ita.flatten().collect::<Vec<_>>())
@@ -96,8 +97,10 @@ impl<'arc> PathItemEncoder<'arc> {
     ) -> anyhow::Result<Vec<NamedPathItem>> {
         Ok(if let DamlData::Template(template) = data {
             if self.filter_contains(template) {
+                log::info!("encoding template {}", format_template(template));
                 self.encode_template(package, module, template)?
             } else {
+                log::info!("skipped template {} (not in filter)", format_template(template));
                 vec![]
             }
         } else {
@@ -144,6 +147,7 @@ impl<'arc> PathItemEncoder<'arc> {
         module: &DamlModule<'_>,
         template: &DamlTemplate<'_>,
     ) -> NamedPathItem {
+        log::info!("encoding create path for template {}", format_template(template));
         let template_id = make_template_id(package, module, template);
         let operation_id = self.operation_id_factory.create_by_id(&template_id);
         let tags = make_tags(&template_id);
@@ -212,6 +216,7 @@ impl<'arc> PathItemEncoder<'arc> {
         let template_id = make_template_id(package, module, template);
         let description = self.get_fetch_by_id_description(&format_daml_template(&template_id));
         let operation_id = self.operation_id_factory.fetch_by_id(&template_id);
+        log::info!("encoding fetch by id path for template {} ({})", format_template(template), operation_id);
         let tags = make_tags(&template_id);
         let request = DamlJsonApiSchema::make_fetch_by_id_request();
         let response = self.json_api_schema.make_fetch_response(&template_id);
@@ -227,6 +232,8 @@ impl<'arc> PathItemEncoder<'arc> {
         key: &DamlDefKey<'_>,
     ) -> anyhow::Result<NamedPathItem> {
         let template_id = make_template_id(package, module, template);
+        let operation_id = self.operation_id_factory.fetch_by_key(&template_id);
+        log::info!("encoding fetch by key path for template {} ({})", format_template(template), operation_id);
         let key_encoded = self.json_type_schema_encoder.encode_type(key.ty())?;
         let description = self.get_fetch_by_key_description(&format_daml_template(&template_id));
         let operation_id = self.operation_id_factory.fetch_by_key(&template_id);
@@ -245,6 +252,13 @@ impl<'arc> PathItemEncoder<'arc> {
         choice: &DamlChoice<'_>,
     ) -> anyhow::Result<NamedPathItem> {
         let template_id = make_template_id(package, module, template);
+        let operation_id = self.operation_id_factory.exercise_by_id(&template_id, choice.name());
+        log::info!(
+            "encoding exercise by id path for template {} choice {} ({})",
+            format_template(template),
+            choice.name(),
+            operation_id
+        );
         let return_type_ref = self.json_type_schema_encoder.encode_type(choice.return_type())?;
         let (created, archived) = self.extract_exercise_events(package, module, template, choice);
         let description = self.get_exercise_by_id_description(&format_daml_template(&template_id), choice.name());
@@ -266,6 +280,13 @@ impl<'arc> PathItemEncoder<'arc> {
         key: &DamlDefKey<'_>,
     ) -> anyhow::Result<NamedPathItem> {
         let template_id = make_template_id(package, module, template);
+        let operation_id = self.operation_id_factory.exercise_by_key(&template_id, choice.name());
+        log::info!(
+            "encoding exercise by key path for template {} choice {} ({})",
+            format_template(template),
+            choice.name(),
+            operation_id
+        );
         let return_type_ref = self.json_type_schema_encoder.encode_type(choice.return_type())?;
         let (created, archived) = self.extract_exercise_events(package, module, template, choice);
         let key_encoded = self.json_type_schema_encoder.encode_type(key.ty())?;
@@ -288,6 +309,13 @@ impl<'arc> PathItemEncoder<'arc> {
         choice: &DamlChoice<'_>,
     ) -> anyhow::Result<NamedPathItem> {
         let template_id = make_template_id(package, module, template);
+        let operation_id = self.operation_id_factory.create_and_exercise(&template_id, choice.name());
+        log::info!(
+            "encoding create and exercise for template {} choice {} ({})",
+            format_template(template),
+            choice.name(),
+            operation_id
+        );
         let return_type_ref = self.json_type_schema_encoder.encode_type(choice.return_type())?;
         let (created, archived) = self.extract_create_and_exercise_events(package, module, template, choice);
         let description = self.get_create_and_exercise_description(&format_daml_template(&template_id), choice.name());
@@ -553,7 +581,7 @@ impl<'arc> PathItemEncoder<'arc> {
 }
 
 fn make_tags(template_id: &DataId) -> Vec<String> {
-    vec![format_path(&template_id.module)]
+    vec![format_path_slice(&template_id.module)]
 }
 
 fn make_template_id(package: &DamlPackage<'_>, module: &DamlModule<'_>, template: &DamlTemplate<'_>) -> DataId {

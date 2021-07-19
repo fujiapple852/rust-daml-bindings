@@ -1,4 +1,5 @@
 use daml::json_api::schema_encoder::{ReferenceMode, RenderDescription, RenderTitle};
+use log::LevelFilter;
 
 #[derive(Copy, Clone, Debug)]
 pub enum OutputFormat {
@@ -29,6 +30,7 @@ pub struct Config<'a> {
     pub include_archive_choice: bool,
     pub include_general_operations: bool,
     pub path_style: PathStyle,
+    pub level_filter: LevelFilter,
 }
 
 ///
