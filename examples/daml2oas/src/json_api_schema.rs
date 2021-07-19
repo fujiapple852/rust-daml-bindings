@@ -2,7 +2,7 @@ use itertools::{chain, zip};
 use serde_json::Value;
 
 use crate::common::DataId;
-use crate::format::{format_daml_template, format_oas_template, format_path_regex_safe};
+use crate::format::{format_daml_template, format_oas_template, format_path_slice_regex_safe};
 
 /// Make Daml JSON API schema items.
 pub struct DamlJsonApiSchema {
@@ -837,7 +837,7 @@ impl DamlJsonApiSchema {
     }
 
     fn make_template_pattern_schema(&self, template_id: &DataId) -> Value {
-        let path = format_path_regex_safe(&template_id.module);
+        let path = format_path_slice_regex_safe(&template_id.module);
         let pattern = if self.emit_package_id {
             format!("^({}:)?{}:{}$", template_id.package_id.as_deref().unwrap_or_default(), path, &template_id.entity)
         } else {

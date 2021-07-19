@@ -66,6 +66,7 @@ impl<'arc> OpenAPIEncoder<'arc> {
     }
 
     fn encode_info(&self) -> anyhow::Result<Info> {
+        log::info!("encoding info");
         let title =
             self.companion_data.title.as_ref().map_or_else(|| self.archive.name().to_string(), ToString::to_string);
         let description = self
@@ -102,10 +103,13 @@ impl<'arc> OpenAPIEncoder<'arc> {
             .as_deref()
             .or_else(|| self.archive.main_package().and_then(DamlPackage::version))
             .req()?;
-        Ok(Info::new(title, self.companion_data.summary.clone(), Some(contact), description, version))
+        let info = Info::new(title, self.companion_data.summary.clone(), Some(contact), description, version);
+        log::debug!("Info: {:#?}", info);
+        Ok(info)
     }
 
     fn encode_servers(&self) -> Vec<Server> {
+        log::info!("encoding servers");
         self.companion_data
             .servers
             .as_ref()
@@ -116,6 +120,7 @@ impl<'arc> OpenAPIEncoder<'arc> {
     }
 
     fn encode_paths(&self) -> anyhow::Result<Paths> {
+        log::info!("encoding paths");
         Ok(Paths::new(
             PathItemEncoder::new(
                 self.archive,
@@ -134,6 +139,7 @@ impl<'arc> OpenAPIEncoder<'arc> {
     }
 
     fn encode_components(&self) -> anyhow::Result<Components> {
+        log::info!("encoding components");
         let encoder = ComponentEncoder::new(self.archive, self.module_path, &self.encoder, self.filter);
         let mut schemas = encoder.encode_schema_components()?;
         schemas.insert(ERROR_RESPONSE_SCHEMA_NAME.to_string(), Schema::new(DamlJsonApiSchema::make_error_response()));
@@ -141,6 +147,7 @@ impl<'arc> OpenAPIEncoder<'arc> {
     }
 
     fn encode_tags(&self) -> anyhow::Result<Vec<Tag>> {
+        log::info!("encoding tags");
         let root = self.archive.main_package().req()?.root_module().child_module_path_or_err(self.module_path)?;
         Ok(std::iter::once(Tag::new(GENERAL_OPERATION_TAG.to_string(), None))
             .chain(self.module_path(root).into_iter())

@@ -25,7 +25,9 @@ use oas::OpenAPIEncoder;
 
 use crate::a2s::AsyncAPI;
 use crate::a2s::AsyncAPIEncoder;
+use log::LevelFilter;
 use serde::de::DeserializeOwned;
+use simple_logger::SimpleLogger;
 
 mod a2s;
 mod choice_event_extractor;
@@ -49,6 +51,7 @@ fn main() -> Result<()> {
     let oas = App::new("oas")
         .about("Generate an OpenAPI document from the given Dar file")
         .arg(make_dar_arg())
+        .arg(make_log_level_arg())
         .arg(make_format_arg())
         .arg(make_output_arg())
         .arg(make_companion_file_arg())
@@ -66,6 +69,7 @@ fn main() -> Result<()> {
     let a2s = App::new("a2s")
         .about("Generate an AsyncAPI document from the given Dar file")
         .arg(make_dar_arg())
+        .arg(make_log_level_arg())
         .arg(make_format_arg())
         .arg(make_output_arg())
         .arg(make_companion_file_arg())
@@ -95,6 +99,10 @@ fn main() -> Result<()> {
 
 fn make_dar_arg() -> Arg<'static> {
     Arg::new("dar").help("Sets the input dar file to use").required(true).index(1)
+}
+
+fn make_log_level_arg() -> Arg<'static> {
+    Arg::new("v").required(false).short('v').multiple_occurrences(true).help("Sets the level of verbosity")
 }
 
 fn make_format_arg() -> Arg<'static> {
@@ -223,10 +231,14 @@ fn make_path_style_arg() -> Arg<'static> {
 
 fn parse_config(matches: &ArgMatches) -> Config<'_> {
     let dar_file = matches.value_of("dar").unwrap().to_string();
+    let level_filter = match matches.occurrences_of("v") {
+        0 => LevelFilter::Off,
+        1 => LevelFilter::Info,
+        _ => LevelFilter::Debug,
+    };
     let companion_file = matches.value_of("companion-file").map(ToString::to_string);
     let data_dict_file = matches.value_of("datadict-file").map(ToString::to_string);
     let template_filter_file = matches.value_of("template-filter-file").map(ToString::to_string);
-
     let format = match matches.value_of("format") {
         None => OutputFormat::Json,
         Some(s) if s == "json" => OutputFormat::Json,
@@ -235,14 +247,12 @@ fn parse_config(matches: &ArgMatches) -> Config<'_> {
     };
     let output_file = matches.value_of("output").map(ToString::to_string);
     let module_path = matches.value_of("module-path").map(|v| v.split('.').collect::<Vec<_>>()).unwrap_or_default();
-
     let render_title = match matches.value_of("data-title") {
         None => RenderTitle::None,
         Some(s) if s == "none" => RenderTitle::None,
         Some(s) if s == "data" => RenderTitle::Data,
         Some(s) => panic!("unknown data-title {}", s),
     };
-
     let render_description = match matches.value_of("type-description") {
         None => RenderDescription::None,
         Some(s) if s == "none" => RenderDescription::None,
@@ -250,7 +260,6 @@ fn parse_config(matches: &ArgMatches) -> Config<'_> {
         Some(s) if s == "all" => RenderDescription::All,
         Some(s) => panic!("unknown type-description {}", s),
     };
-
     let reference_prefix = matches.value_of("reference-prefix").unwrap();
     let reference_mode = match matches.value_of("reference-mode") {
         None => ReferenceMode::default(),
@@ -288,18 +297,29 @@ fn parse_config(matches: &ArgMatches) -> Config<'_> {
         include_archive_choice,
         include_general_operations,
         path_style,
+        level_filter,
     }
 }
 
 /// OAS
 
 fn execute_oas(config: &Config<'_>) -> Result<()> {
+    SimpleLogger::new().with_level(config.level_filter).init().unwrap();
+    log::info!("Generating OAS specification documents for {}", config.dar_file);
+    log::info!("Loading dar file...");
     let dar = DarFile::from_file(&config.dar_file).context(format!("dar file not found: {}", &config.dar_file))?;
+    log::info!("Loading companion data file...");
     let companion_data = get_companion_data(&config.companion_file)?;
+    log::info!("Loading data dict file...");
     let data_dict = get_data_dict(&config.data_dict_file)?;
+    log::info!("Loading template filter file...");
     let template_filter = get_template_filter(&config.template_filter_file)?;
+    log::info!("Generating API document...");
     let oas = generate_openapi(&dar, config, &companion_data, data_dict, &template_filter)?;
-    write_document(&render(&oas, config.format)?, config.output_file.as_deref())
+    log::info!("Rendering API document...");
+    let rendered = render(&oas, config.format)?;
+    log::info!("Writing API document...");
+    write_document(&rendered, config.output_file.as_deref())
 }
 
 fn generate_openapi(
@@ -337,6 +357,8 @@ fn generate_openapi(
 /// A2S
 
 fn execute_a2s(config: &Config<'_>) -> Result<()> {
+    SimpleLogger::new().with_level(config.level_filter).init().unwrap();
+    log::info!("Generating A2S specification documents for {}", config.dar_file);
     let dar = DarFile::from_file(&config.dar_file).context(format!("dar file not found: {}", &config.dar_file))?;
     let companion_data = get_companion_data(&config.companion_file)?;
     let data_dict = get_data_dict(&config.data_dict_file)?;
