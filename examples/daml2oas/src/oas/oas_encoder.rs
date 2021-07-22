@@ -122,6 +122,7 @@ impl<'arc> OpenAPIEncoder<'arc> {
                 self.emit_package_id,
                 self.include_archive_choice,
                 self.path_style,
+                self.companion_data,
                 &self.encoder,
             )
             .encode_path_items()?,

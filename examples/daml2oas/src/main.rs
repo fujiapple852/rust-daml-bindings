@@ -43,7 +43,7 @@ mod util;
 
 const DEFAULT_DATA_DICT_FILE: &str = ".datadict.yaml";
 const DEFAULT_TEMPLATE_FILTER_FILE: &str = ".template_filter.yaml";
-const DEFAULT_COMPANION_FILE: &str = ".daml2oas.yaml";
+const DEFAULT_COMPANION_FILE: &str = ".companion.yaml";
 
 fn main() -> Result<()> {
     let oas = SubCommand::with_name("oas")

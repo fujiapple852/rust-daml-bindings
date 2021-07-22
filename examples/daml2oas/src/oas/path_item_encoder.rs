@@ -11,6 +11,7 @@ use daml::lf::element::{
 
 use crate::choice_event_extractor::ChoiceEventExtractor;
 use crate::common::{DataId, NamedItem, ARCHIVE_CHOICE_NAME, ERROR_RESPONSE_SCHEMA_NAME};
+use crate::companion::{CompanionData, OperationInfo};
 use crate::config::PathStyle;
 use crate::filter::{ChoiceFilter, TemplateFilter};
 use crate::format;
@@ -23,13 +24,14 @@ use crate::util::{ChildModulePathOrError, Required};
 
 type NamedPathItem = NamedItem<PathItem>;
 
-/// DOCME
+/// Encode OAS Path Items for a given Daml Archive.
 pub struct PathItemEncoder<'arc> {
     archive: &'arc DamlArchive<'arc>,
     module_path: &'arc [&'arc str],
     filter: &'arc TemplateFilter,
     include_archive_choice: bool,
     operation_id_factory: OperationIdFactory,
+    companion_data: &'arc CompanionData,
     json_type_schema_encoder: &'arc JsonSchemaEncoder<'arc>,
     json_api_schema: DamlJsonApiSchema,
 }
@@ -44,6 +46,7 @@ impl<'arc> PathItemEncoder<'arc> {
         emit_package_id: bool,
         include_archive_choice: bool,
         path_style: PathStyle,
+        companion_data: &'arc CompanionData,
         json_type_schema_encoder: &'arc JsonSchemaEncoder<'arc>,
     ) -> Self {
         Self {
@@ -52,6 +55,7 @@ impl<'arc> PathItemEncoder<'arc> {
             filter,
             include_archive_choice,
             operation_id_factory: OperationIdFactory::new(path_style),
+            companion_data,
             json_type_schema_encoder,
             json_api_schema: DamlJsonApiSchema::new(reference_prefix, emit_package_id),
         }
@@ -125,10 +129,10 @@ impl<'arc> PathItemEncoder<'arc> {
         let template_id = make_template_id(package, module, template);
         let operation_id = self.operation_id_factory.create_by_id(&template_id);
         let tags = make_tags(&template_id);
-        let summary = format!("Create a contract of the {} template", format_daml_template(&template_id));
+        let description = self.get_create_description(&format_daml_template(&template_id));
         let request = self.json_api_schema.make_create_request(&template_id);
         let response = self.json_api_schema.make_create_response(&template_id);
-        let path_item = self.make_path_item(summary, operation_id.clone(), tags, request, response);
+        let path_item = self.make_path_item(description, operation_id.clone(), tags, request, response);
         NamedPathItem::new(operation_id, path_item)
     }
 
@@ -188,12 +192,12 @@ impl<'arc> PathItemEncoder<'arc> {
         template: &DamlTemplate<'_>,
     ) -> NamedPathItem {
         let template_id = make_template_id(package, module, template);
-        let summary = format!("Fetch a contract of the {} template by contract id", format_daml_template(&template_id));
+        let description = self.get_fetch_by_id_description(&format_daml_template(&template_id));
         let operation_id = self.operation_id_factory.fetch_by_id(&template_id);
         let tags = make_tags(&template_id);
         let request = DamlJsonApiSchema::make_fetch_by_id_request();
         let response = self.json_api_schema.make_fetch_response(&template_id);
-        let path_item = self.make_path_item(summary, operation_id.clone(), tags, request, response);
+        let path_item = self.make_path_item(description, operation_id.clone(), tags, request, response);
         NamedPathItem::new(operation_id, path_item)
     }
 
@@ -206,12 +210,12 @@ impl<'arc> PathItemEncoder<'arc> {
     ) -> anyhow::Result<NamedPathItem> {
         let template_id = make_template_id(package, module, template);
         let key_encoded = self.json_type_schema_encoder.encode_type(key.ty())?;
-        let summary = format!("Fetch a contract of the {} template by key", format_daml_template(&template_id));
+        let description = self.get_fetch_by_key_description(&format_daml_template(&template_id));
         let operation_id = self.operation_id_factory.fetch_by_key(&template_id);
         let tags = make_tags(&template_id);
         let request = self.json_api_schema.make_fetch_by_key_request(&template_id, &key_encoded);
         let response = self.json_api_schema.make_fetch_response(&template_id);
-        let path_item = self.make_path_item(summary, operation_id.clone(), tags, request, response);
+        let path_item = self.make_path_item(description, operation_id.clone(), tags, request, response);
         Ok(NamedPathItem::new(operation_id, path_item))
     }
 
@@ -225,17 +229,13 @@ impl<'arc> PathItemEncoder<'arc> {
         let template_id = make_template_id(package, module, template);
         let return_type_ref = self.json_type_schema_encoder.encode_type(choice.return_type())?;
         let (created, archived) = self.extract_exercise_events(package, module, template, choice);
-        let summary = format!(
-            "Exercise the {} choice on a contract of the {} template by contract id",
-            choice.name(),
-            format_daml_template(&template_id)
-        );
+        let description = self.get_exercise_by_id_description(&format_daml_template(&template_id), choice.name());
         let operation_id = self.operation_id_factory.exercise_by_id(&template_id, choice.name());
         let tags = make_tags(&template_id);
         let args = self.make_args(&template_id, choice.name());
         let request = self.json_api_schema.make_exercise_by_id_request(&template_id, choice.name(), &args);
         let response = self.json_api_schema.make_exercise_response(&return_type_ref, &created, &archived);
-        let path_item = self.make_path_item(summary, operation_id.clone(), tags, request, response);
+        let path_item = self.make_path_item(description, operation_id.clone(), tags, request, response);
         Ok(NamedPathItem::new(operation_id, path_item))
     }
 
@@ -251,18 +251,14 @@ impl<'arc> PathItemEncoder<'arc> {
         let return_type_ref = self.json_type_schema_encoder.encode_type(choice.return_type())?;
         let (created, archived) = self.extract_exercise_events(package, module, template, choice);
         let key_encoded = self.json_type_schema_encoder.encode_type(key.ty())?;
-        let summary = format!(
-            "Exercise the {} choice on a contract of the {} template by contract key",
-            choice.name(),
-            format_daml_template(&template_id),
-        );
+        let description = self.get_exercise_by_key_description(&format_daml_template(&template_id), choice.name());
         let operation_id = self.operation_id_factory.exercise_by_key(&template_id, choice.name());
         let tags = make_tags(&template_id);
         let args = self.make_args(&template_id, choice.name());
         let request =
             self.json_api_schema.make_exercise_by_key_request(&template_id, choice.name(), &args, &key_encoded);
         let response = self.json_api_schema.make_exercise_response(&return_type_ref, &created, &archived);
-        let path_item = self.make_path_item(summary, operation_id.clone(), tags, request, response);
+        let path_item = self.make_path_item(description, operation_id.clone(), tags, request, response);
         Ok(NamedPathItem::new(operation_id, path_item))
     }
 
@@ -276,17 +272,13 @@ impl<'arc> PathItemEncoder<'arc> {
         let template_id = make_template_id(package, module, template);
         let return_type_ref = self.json_type_schema_encoder.encode_type(choice.return_type())?;
         let (created, archived) = self.extract_create_and_exercise_events(package, module, template, choice);
-        let summary = format!(
-            "Create a contract of the {} template and immediately exercise the {} choice on it",
-            format_daml_template(&template_id),
-            choice.name(),
-        );
+        let description = self.get_create_and_exercise_description(&format_daml_template(&template_id), choice.name());
         let operation_id = self.operation_id_factory.create_and_exercise(&template_id, choice.name());
         let tags = make_tags(&template_id);
         let args = self.make_args(&template_id, choice.name());
         let request = self.json_api_schema.make_create_and_exercise_request(&template_id, choice.name(), &args);
         let response = self.json_api_schema.make_exercise_response(&return_type_ref, &created, &archived);
-        let path_item = self.make_path_item(summary, operation_id.clone(), tags, request, response);
+        let path_item = self.make_path_item(description, operation_id.clone(), tags, request, response);
         Ok(NamedPathItem::new(operation_id, path_item))
     }
 
@@ -335,7 +327,7 @@ impl<'arc> PathItemEncoder<'arc> {
 
     fn make_path_item(
         &self,
-        summary: String,
+        description: String,
         operation_id: String,
         tags: Vec<String>,
         request: Value,
@@ -343,7 +335,7 @@ impl<'arc> PathItemEncoder<'arc> {
     ) -> PathItem {
         let body = Self::make_json_request_body(request);
         let responses = self.make_json_responses_with_error(response);
-        let post_operation = Operation::new(Some(summary), Some(operation_id), tags, body, responses);
+        let post_operation = Operation::new(Some(description), Some(operation_id), tags, body, responses);
         PathItem::new(Some(post_operation))
     }
 
@@ -392,6 +384,61 @@ impl<'arc> PathItemEncoder<'arc> {
         btreemap! {
             "application/json".to_string() => MediaType::new(Schema::new(schema))
         }
+    }
+
+    fn get_create_description(&self, template_path: &str) -> String {
+        self.get_operation_info(template_path)
+            .and_then(|op| op.create.clone())
+            .unwrap_or_else(|| format!("Create a contract of the {} template", template_path))
+    }
+
+    fn get_fetch_by_id_description(&self, template_path: &str) -> String {
+        self.get_operation_info(template_path)
+            .and_then(|op| op.fetch_by_id.clone())
+            .unwrap_or_else(|| format!("Fetch a contract of the {} template by contract id", template_path))
+    }
+
+    fn get_fetch_by_key_description(&self, template_path: &str) -> String {
+        self.get_operation_info(template_path)
+            .and_then(|op| op.fetch_by_key.clone())
+            .unwrap_or_else(|| format!("Fetch a contract of the {} template by contract key", template_path))
+    }
+
+    fn get_exercise_by_id_description(&self, template_path: &str, choice: &str) -> String {
+        self.get_operation_info(template_path)
+            .and_then(|op| op.exercise_by_id.as_ref())
+            .and_then(|choices| choices.get(choice).map(ToString::to_string))
+            .unwrap_or_else(|| {
+                format!("Exercise the {} choice on a contract of the {} template by contract id", template_path, choice)
+            })
+    }
+
+    fn get_exercise_by_key_description(&self, template_path: &str, choice: &str) -> String {
+        self.get_operation_info(template_path)
+            .and_then(|op| op.exercise_by_key.as_ref())
+            .and_then(|choices| choices.get(choice).map(ToString::to_string))
+            .unwrap_or_else(|| {
+                format!(
+                    "Exercise the {} choice on a contract of the {} template by contract key",
+                    template_path, choice
+                )
+            })
+    }
+
+    fn get_create_and_exercise_description(&self, template_path: &str, choice: &str) -> String {
+        self.get_operation_info(template_path)
+            .and_then(|op| op.create_and_exercise.as_ref())
+            .and_then(|choices| choices.get(choice).map(ToString::to_string))
+            .unwrap_or_else(|| {
+                format!(
+                    "Create a contract of the {} template and immediately exercise the {} choice on it",
+                    template_path, choice
+                )
+            })
+    }
+
+    fn get_operation_info(&self, template_path: &str) -> Option<&OperationInfo> {
+        self.companion_data.operations.as_ref().and_then(|a| a.get(template_path))
     }
 
     /// Return true if the filter contains this template, false otherwise.

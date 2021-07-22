@@ -1,0 +1,23 @@
+title: MyApp 1.0 API Documentation
+summary: MyApp Daml JSON API
+description: OpenAPI specification for MyApp Daml JSON API
+version: 1.9.9
+contact:
+  name: Bob Smith
+  url: https://example.com/myapp
+  email: bob.smith@example.com
+servers:
+  - http://localhost:7575
+operations:
+  DA.PingPong:Pong:
+    create: create a Pong!
+    createAndExercise:
+      RespondPing: create a Pong and then respond with a Ping
+    exerciseById:
+      RespondPing: respond with a Ping by id
+      Archive: archive the contract by id
+    exerciseByKey:
+      RespondPing: respond with a Ping by key
+      Archive: archive the contract by key
+    fetchById: fetch a Pong contract by id from the ledger
+    fetchByKey: fetch a Pong contract by key from the ledger
