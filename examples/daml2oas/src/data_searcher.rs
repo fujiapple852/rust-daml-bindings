@@ -1,12 +1,6 @@
-use std::collections::HashSet;
-
-use daml::lf::element::{
-    DamlArchive, DamlChoice, DamlData, DamlElementVisitor, DamlField, DamlTemplate, DamlTyCon, DamlType,
-    DamlVisitableElement,
-};
-
 use crate::choice_event_extractor::ChoiceEventExtractor;
 use crate::filter::ChoiceFilter;
+use daml::lf::element::{DamlArchive, DamlChoice, DamlData, DamlField, DamlTemplate, DamlTyCon, DamlType};
 
 /// Search for any usage of a `DamlData` needle in a `DamlTemplate` haystack.
 pub struct DamlEntitySearcher<'v> {
@@ -81,17 +75,52 @@ impl<'v> DamlEntitySearcher<'v> {
                 choice,
             )
             .created()
-            .any(|c| c.tycon().data_name() == self.needle.name())
+            .any(|c| self.check_event(c))
+    }
+
+    fn check_event(&self, tycon: &DamlTyCon<'_>) -> bool {
+        self.check_tycon_name(tycon) || self.check_tycon(tycon)
+    }
+
+    fn check_tycon_name(&self, tycon: &DamlTyCon<'_>) -> bool {
+        tycon.tycon() == self.needle
+    }
+
+    fn check_data(&self, data: &DamlData<'_>) -> bool {
+        match data {
+            DamlData::Template(template) => self.check_fields(template.fields()),
+            DamlData::Record(record) => self.check_fields(record.fields()),
+            DamlData::Variant(variant) => self.check_fields(variant.fields()),
+            DamlData::Enum(_) => false,
+        }
     }
 
     fn check_fields(&self, fields: &[DamlField<'_>]) -> bool {
-        fields.iter().any(|field| self.check_type(field.ty()))
+        fields.iter().any(|f| self.check_field(f))
+    }
+
+    fn check_field(&self, field: &DamlField<'_>) -> bool {
+        self.check_type(field.ty())
     }
 
     fn check_type(&self, ty: &DamlType<'_>) -> bool {
-        let mut vis = DataVisitor::new(self.archive, self.needle);
-        ty.accept(&mut vis);
-        vis.found
+        match ty {
+            DamlType::TyCon(tycon) | DamlType::BoxedTyCon(tycon) => self.check_tycon(tycon),
+            DamlType::ContractId(ty) => ty.as_deref().map_or(false, |ty| self.check_type(ty)),
+            DamlType::List(args) | DamlType::TextMap(args) | DamlType::GenMap(args) | DamlType::Optional(args) =>
+                args.iter().any(|ty| self.check_type(ty)),
+            _ => false,
+        }
+    }
+
+    fn check_tycon(&self, tycon: &DamlTyCon<'_>) -> bool {
+        if tycon.tycon() == self.needle {
+            true
+        } else {
+            self.archive
+                .data_by_tycon(tycon)
+                .map_or_else(|| panic!("data_by_tycon returned None for {:?}", tycon), |data| self.check_data(data))
+        }
     }
 
     /// Check if the target data is in the scope of the choice filer.
@@ -101,41 +130,6 @@ impl<'v> DamlEntitySearcher<'v> {
             ChoiceFilter::All => true,
             ChoiceFilter::Selected(selected) =>
                 selected.iter().any(|selected_choice| selected_choice == self.needle.name()),
-        }
-    }
-}
-
-struct DataVisitor<'v> {
-    archive: &'v DamlArchive<'v>,
-    needle: &'v DamlData<'v>,
-    visited: HashSet<String>,
-    found: bool,
-}
-
-impl<'v> DataVisitor<'v> {
-    pub fn new(archive: &'v DamlArchive<'v>, needle: &'v DamlData<'_>) -> Self {
-        Self {
-            archive,
-            needle,
-            visited: HashSet::default(),
-            found: false,
-        }
-    }
-}
-
-impl DamlElementVisitor for DataVisitor<'_> {
-    fn pre_visit_tycon<'a>(&mut self, tycon: &'a DamlTyCon<'a>) {
-        let name = tycon.tycon().to_string();
-        if !self.visited.contains(&name) {
-            self.visited.insert(name);
-            if tycon.tycon() == self.needle {
-                self.found = true;
-            }
-            let data = self
-                .archive
-                .data_by_tycon(tycon)
-                .unwrap_or_else(|| panic!("data_by_tycon returned None for {:?}", tycon));
-            data.accept(self)
         }
     }
 }
