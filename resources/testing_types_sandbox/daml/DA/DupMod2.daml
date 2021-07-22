@@ -1,0 +1,11 @@
+module DA.DupMod2 where
+
+data DupData = DupData with foo : Int
+    deriving (Eq, Show)
+
+template DupTemplate
+  with
+    party : Party
+    dup : DupData
+  where
+    signatory party

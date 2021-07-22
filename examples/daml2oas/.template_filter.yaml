@@ -7,3 +7,4 @@ DA.PingPong:Pong:
   selected:
     - RespondPing
 DA.Shape:CircleTemplate: all
+DA.DupUsage:DupUsage: all

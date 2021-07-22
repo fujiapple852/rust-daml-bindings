@@ -1,0 +1,13 @@
+module DA.DupUsage where
+
+import DA.DupMod1
+
+template DupUsage
+  with
+    party : Party
+  where
+    signatory party
+    controller party can
+      Call : ContractId DupTemplate
+        do create DupTemplate with party; dup = DupData with foo = 1
+        
