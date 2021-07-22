@@ -116,11 +116,23 @@ impl ToStatic for DamlData<'_> {
     }
 }
 
+impl PartialEq<DamlData<'_>> for DamlData<'_> {
+    fn eq(&self, other: &DamlData<'_>) -> bool {
+        match (self, other) {
+            (DamlData::Record(a), DamlData::Record(b)) => a.eq(b),
+            (DamlData::Template(a), DamlData::Template(b)) => a.eq(b),
+            (DamlData::Variant(a), DamlData::Variant(b)) => a.eq(b),
+            (DamlData::Enum(a), DamlData::Enum(b)) => a.eq(b),
+            _ => false,
+        }
+    }
+}
+
 /// Convenience impl to compare a `DamlTyConName` with a `DamlData`.
 impl PartialEq<DamlTyConName<'_>> for DamlData<'_> {
     fn eq(&self, tycon: &DamlTyConName<'_>) -> bool {
         tycon.package_id() == self.package_id()
-            && tycon.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && cmp_all(tycon.module_path(), self.module_path())
             && tycon.data_name() == self.name()
     }
 }
@@ -129,7 +141,7 @@ impl PartialEq<DamlTyConName<'_>> for DamlData<'_> {
 impl PartialEq<DamlTemplate<'_>> for DamlData<'_> {
     fn eq(&self, other: &DamlTemplate<'_>) -> bool {
         other.package_id() == self.package_id()
-            && other.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && cmp_all(other.module_path(), self.module_path())
             && other.name() == self.name()
     }
 }
@@ -138,7 +150,7 @@ impl PartialEq<DamlTemplate<'_>> for DamlData<'_> {
 impl PartialEq<DamlRecord<'_>> for DamlData<'_> {
     fn eq(&self, other: &DamlRecord<'_>) -> bool {
         other.package_id() == self.package_id()
-            && other.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && cmp_all(other.module_path(), self.module_path())
             && other.name() == self.name()
     }
 }
@@ -147,7 +159,7 @@ impl PartialEq<DamlRecord<'_>> for DamlData<'_> {
 impl PartialEq<DamlVariant<'_>> for DamlData<'_> {
     fn eq(&self, other: &DamlVariant<'_>) -> bool {
         other.package_id() == self.package_id()
-            && other.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && cmp_all(other.module_path(), self.module_path())
             && other.name() == self.name()
     }
 }
@@ -156,7 +168,7 @@ impl PartialEq<DamlVariant<'_>> for DamlData<'_> {
 impl PartialEq<DamlEnum<'_>> for DamlData<'_> {
     fn eq(&self, other: &DamlEnum<'_>) -> bool {
         other.package_id() == self.package_id()
-            && other.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && cmp_all(other.module_path(), self.module_path())
             && other.name() == self.name()
     }
 }
@@ -339,11 +351,19 @@ impl ToStatic for DamlTemplate<'_> {
     }
 }
 
+impl PartialEq<DamlTemplate<'_>> for DamlTemplate<'_> {
+    fn eq(&self, other: &DamlTemplate<'_>) -> bool {
+        other.package_id() == self.package_id()
+            && cmp_all(other.module_path(), self.module_path())
+            && other.name() == self.name()
+    }
+}
+
 /// Convenience impl to compare a `DamlData` with a `DamlTemplate`.
 impl PartialEq<DamlData<'_>> for DamlTemplate<'_> {
     fn eq(&self, data: &DamlData<'_>) -> bool {
         data.package_id() == self.package_id()
-            && data.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && cmp_all(data.module_path(), self.module_path())
             && data.name() == self.name()
     }
 }
@@ -645,11 +665,19 @@ impl ToStatic for DamlRecord<'_> {
     }
 }
 
+impl PartialEq<DamlRecord<'_>> for DamlRecord<'_> {
+    fn eq(&self, other: &DamlRecord<'_>) -> bool {
+        other.package_id() == self.package_id()
+            && cmp_all(other.module_path(), self.module_path())
+            && other.name() == self.name()
+    }
+}
+
 /// Convenience impl to compare a `DamlData` with a `DamlRecord`.
 impl PartialEq<DamlData<'_>> for DamlRecord<'_> {
     fn eq(&self, data: &DamlData<'_>) -> bool {
         data.package_id() == self.package_id()
-            && data.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && cmp_all(data.module_path(), self.module_path())
             && data.name() == self.name()
     }
 }
@@ -732,11 +760,19 @@ impl ToStatic for DamlVariant<'_> {
     }
 }
 
+impl PartialEq<DamlVariant<'_>> for DamlVariant<'_> {
+    fn eq(&self, other: &DamlVariant<'_>) -> bool {
+        other.package_id() == self.package_id()
+            && cmp_all(other.module_path(), self.module_path())
+            && other.name() == self.name()
+    }
+}
+
 /// Convenience impl to compare a `DamlData` with a `DamlVariant`.
 impl PartialEq<DamlData<'_>> for DamlVariant<'_> {
     fn eq(&self, data: &DamlData<'_>) -> bool {
         data.package_id() == self.package_id()
-            && data.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && cmp_all(data.module_path(), self.module_path())
             && data.name() == self.name()
     }
 }
@@ -818,11 +854,23 @@ impl ToStatic for DamlEnum<'_> {
     }
 }
 
+impl PartialEq<DamlEnum<'_>> for DamlEnum<'_> {
+    fn eq(&self, other: &DamlEnum<'_>) -> bool {
+        other.package_id() == self.package_id()
+            && cmp_all(other.module_path(), self.module_path())
+            && other.name() == self.name()
+    }
+}
+
 /// Convenience impl to compare a `DamlData` with a `DamlEnum`.
 impl PartialEq<DamlData<'_>> for DamlEnum<'_> {
     fn eq(&self, data: &DamlData<'_>) -> bool {
         data.package_id() == self.package_id()
-            && data.module_path().zip(self.module_path()).all(|(x, y)| x == y)
+            && cmp_all(data.module_path(), self.module_path())
             && data.name() == self.name()
     }
+}
+
+fn cmp_all<'a>(left: impl Iterator<Item = &'a str>, right: impl Iterator<Item = &'a str>) -> bool {
+    left.zip(right).all(|(x, y)| x == y)
 }
