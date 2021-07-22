@@ -357,10 +357,14 @@ impl<'a> JsonSchemaEncoder<'a> {
     ///   "description": "ContractId"
     /// }
     /// ```
-    fn encode_contract_id(&self) -> DamlJsonSchemaCodecResult<Value> {
+    fn encode_contract_id(&self, template_path: &Option<String>) -> DamlJsonSchemaCodecResult<Value> {
+        let description = match template_path.as_deref() {
+            Some(tid) => self.description_if_all(&format!("ContractId ({})", tid)).map(ToString::to_string),
+            None => self.description_if_all("ContractId").map(ToString::to_string),
+        };
         Ok(serde_json::to_value(DamlJsonSchemaContractId {
             schema: self.schema_if_all(),
-            description: self.description_if_all("ContractId"),
+            description,
             ty: "string",
         })?)
     }
@@ -841,7 +845,7 @@ impl<'a> JsonSchemaEncoder<'a> {
             DamlType::Unit => self.encode_unit(),
             DamlType::Bool => self.encode_bool(),
             DamlType::Text => self.encode_text(),
-            DamlType::ContractId(_) => self.encode_contract_id(),
+            DamlType::ContractId(cid) => self.encode_contract_id(&cid.as_ref().map(|ty| Self::tycon_path(ty))),
             DamlType::Party => self.encode_party(),
             DamlType::Timestamp => self.encode_timestamp(),
             DamlType::Date => self.encode_date(),
@@ -1161,6 +1165,14 @@ impl<'a> JsonSchemaEncoder<'a> {
         format!("{}:{}", it.join("."), data)
     }
 
+    fn tycon_path(cid: &'a DamlType<'a>) -> String {
+        match cid {
+            DamlType::TyCon(tycon) | DamlType::BoxedTyCon(tycon) =>
+                Self::format_data_item(tycon.tycon().module_path(), tycon.tycon().data_name()),
+            _ => "".to_string(),
+        }
+    }
+
     fn schema_if_all(&self) -> Option<&'static str> {
         matches!(self.config.render_schema, RenderSchema::All).then(|| SCHEMA_VERSION)
     }
@@ -1264,6 +1276,17 @@ mod tests {
     fn test_contract_id() -> DamlJsonSchemaCodecResult<()> {
         let ty = DamlType::ContractId(None);
         let expected = get_expected!("test_contract_id.json")?;
+        let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
+        assert_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_contract_id_for_template() -> DamlJsonSchemaCodecResult<()> {
+        let arc = daml_archive();
+        let ping_ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "PingPong"], "Ping");
+        let ty = DamlType::ContractId(Some(Box::new(ping_ty)));
+        let expected = get_expected!("test_contract_id_for_template.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
         assert_eq!(actual, expected);
         Ok(())

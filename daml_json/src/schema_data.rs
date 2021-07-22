@@ -50,12 +50,12 @@ pub struct DamlJsonSchemaParty<'a> {
 }
 
 #[derive(Debug, Serialize)]
-pub struct DamlJsonSchemaContractId<'a> {
+pub struct DamlJsonSchemaContractId {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "$schema")]
     pub schema: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<&'a str>,
+    pub description: Option<String>,
     #[serde(rename = "type")]
     pub ty: &'static str,
 }
