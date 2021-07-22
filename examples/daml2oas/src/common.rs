@@ -7,6 +7,9 @@ pub const ERROR_RESPONSE_SCHEMA_NAME: &str = "ErrorResponse";
 /// The name of the `Archive` choice available on all templates.
 pub const ARCHIVE_CHOICE_NAME: &str = "Archive";
 
+/// The tag used for general (non-template specific) operations.
+pub const GENERAL_OPERATION_TAG: &str = "General";
+
 /// A fully qualified entity.
 pub type DataId = DamlJsonTemplateId;
 

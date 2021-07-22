@@ -27,6 +27,7 @@ pub struct Config<'a> {
     pub reference_mode: ReferenceMode,
     pub emit_package_id: bool,
     pub include_archive_choice: bool,
+    pub include_general_operations: bool,
     pub path_style: PathStyle,
 }
 

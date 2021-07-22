@@ -10,7 +10,7 @@ use daml::lf::element::{
 };
 
 use crate::choice_event_extractor::ChoiceEventExtractor;
-use crate::common::{DataId, NamedItem, ARCHIVE_CHOICE_NAME, ERROR_RESPONSE_SCHEMA_NAME};
+use crate::common::{DataId, NamedItem, ARCHIVE_CHOICE_NAME, ERROR_RESPONSE_SCHEMA_NAME, GENERAL_OPERATION_TAG};
 use crate::companion::{CompanionData, OperationInfo};
 use crate::config::PathStyle;
 use crate::filter::{ChoiceFilter, TemplateFilter};
@@ -22,6 +22,11 @@ use crate::oas::operation::OperationIdFactory;
 use crate::schema::Schema;
 use crate::util::{ChildModulePathOrError, Required};
 
+pub const CREATE_OPERATION: &str = "/v1/create";
+pub const CREATE_AND_EXERCISE_OPERATION: &str = "/v1/create_and_exercise";
+pub const EXERCISE_OPERATION: &str = "/v1/exercise";
+pub const FETCH_OPERATION: &str = "/v1/fetch";
+
 type NamedPathItem = NamedItem<PathItem>;
 
 /// Encode OAS Path Items for a given Daml Archive.
@@ -30,6 +35,7 @@ pub struct PathItemEncoder<'arc> {
     module_path: &'arc [&'arc str],
     filter: &'arc TemplateFilter,
     include_archive_choice: bool,
+    include_general_operations: bool,
     operation_id_factory: OperationIdFactory,
     companion_data: &'arc CompanionData,
     json_type_schema_encoder: &'arc JsonSchemaEncoder<'arc>,
@@ -45,6 +51,7 @@ impl<'arc> PathItemEncoder<'arc> {
         reference_prefix: &'arc str,
         emit_package_id: bool,
         include_archive_choice: bool,
+        include_general_operations: bool,
         path_style: PathStyle,
         companion_data: &'arc CompanionData,
         json_type_schema_encoder: &'arc JsonSchemaEncoder<'arc>,
@@ -54,6 +61,7 @@ impl<'arc> PathItemEncoder<'arc> {
             module_path,
             filter,
             include_archive_choice,
+            include_general_operations,
             operation_id_factory: OperationIdFactory::new(path_style),
             companion_data,
             json_type_schema_encoder,
@@ -110,6 +118,15 @@ impl<'arc> PathItemEncoder<'arc> {
         let fetch_by_id = self.encode_template_fetch_by_id(package, module, template);
         let fetch_by_key =
             template.key().map(|key| self.encode_template_fetch_by_key(package, module, template, key)).transpose()?;
+        let general = if self.include_general_operations {
+            let general_create = self.encode_template_general_create();
+            let general_create_and_exercise = self.encode_template_general_create_and_exercise();
+            let general_exercise = self.encode_template_general_exercise();
+            let general_fetch = self.encode_template_general_fetch();
+            vec![general_create, general_create_and_exercise, general_exercise, general_fetch]
+        } else {
+            vec![]
+        };
         Ok(std::iter::once(create)
             .into_iter()
             .chain(create_and_exercise)
@@ -117,6 +134,7 @@ impl<'arc> PathItemEncoder<'arc> {
             .chain(exercise_by_key)
             .chain(std::iter::once(fetch_by_id))
             .chain(fetch_by_key)
+            .chain(general)
             .collect())
     }
 
@@ -280,6 +298,46 @@ impl<'arc> PathItemEncoder<'arc> {
         let response = self.json_api_schema.make_exercise_response(&return_type_ref, &created, &archived);
         let path_item = self.make_path_item(description, operation_id.clone(), tags, request, response);
         Ok(NamedPathItem::new(operation_id, path_item))
+    }
+
+    fn encode_template_general_create(&self) -> NamedPathItem {
+        let operation_id = CREATE_OPERATION.to_string();
+        let tags = vec![GENERAL_OPERATION_TAG.to_string()];
+        let description = "Create a contract".to_string();
+        let request = DamlJsonApiSchema::make_general_create_request();
+        let response = DamlJsonApiSchema::make_general_create_response();
+        let path_item = self.make_path_item(description, operation_id.clone(), tags, request, response);
+        NamedPathItem::new(operation_id, path_item)
+    }
+
+    fn encode_template_general_create_and_exercise(&self) -> NamedPathItem {
+        let operation_id = CREATE_AND_EXERCISE_OPERATION.to_string();
+        let tags = vec![GENERAL_OPERATION_TAG.to_string()];
+        let description = "Create a contract and immediately exercise a choice".to_string();
+        let request = DamlJsonApiSchema::make_general_create_and_exercise_request();
+        let response = DamlJsonApiSchema::make_general_exercise_response();
+        let path_item = self.make_path_item(description, operation_id.clone(), tags, request, response);
+        NamedPathItem::new(operation_id, path_item)
+    }
+
+    fn encode_template_general_exercise(&self) -> NamedPathItem {
+        let operation_id = EXERCISE_OPERATION.to_string();
+        let tags = vec![GENERAL_OPERATION_TAG.to_string()];
+        let description = "Exercise a choice on a contract".to_string();
+        let request = DamlJsonApiSchema::make_general_exercise_request();
+        let response = DamlJsonApiSchema::make_general_exercise_response();
+        let path_item = self.make_path_item(description, operation_id.clone(), tags, request, response);
+        NamedPathItem::new(operation_id, path_item)
+    }
+
+    fn encode_template_general_fetch(&self) -> NamedPathItem {
+        let operation_id = FETCH_OPERATION.to_string();
+        let tags = vec![GENERAL_OPERATION_TAG.to_string()];
+        let description = "Fetch a contract".to_string();
+        let request = DamlJsonApiSchema::make_general_fetch_request();
+        let response = DamlJsonApiSchema::make_general_fetch_response();
+        let path_item = self.make_path_item(description, operation_id.clone(), tags, request, response);
+        NamedPathItem::new(operation_id, path_item)
     }
 
     fn extract_exercise_events(

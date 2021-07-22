@@ -3,7 +3,7 @@ use itertools::Itertools;
 use daml::json_api::schema_encoder::JsonSchemaEncoder;
 use daml::lf::element::{DamlArchive, DamlModule, DamlPackage};
 
-use crate::common::ERROR_RESPONSE_SCHEMA_NAME;
+use crate::common::{ERROR_RESPONSE_SCHEMA_NAME, GENERAL_OPERATION_TAG};
 use crate::companion::CompanionData;
 use crate::component_encoder::ComponentEncoder;
 use crate::config::PathStyle;
@@ -21,6 +21,7 @@ pub struct OpenAPIEncoder<'arc> {
     reference_prefix: &'arc str,
     emit_package_id: bool,
     include_archive_choice: bool,
+    include_general_operations: bool,
     path_style: PathStyle,
     companion_data: &'arc CompanionData,
     encoder: JsonSchemaEncoder<'arc>,
@@ -35,6 +36,7 @@ impl<'arc> OpenAPIEncoder<'arc> {
         reference_prefix: &'arc str,
         emit_package_id: bool,
         include_archive_choice: bool,
+        include_general_operations: bool,
         path_style: PathStyle,
         companion_data: &'arc CompanionData,
         encoder: JsonSchemaEncoder<'arc>,
@@ -46,6 +48,7 @@ impl<'arc> OpenAPIEncoder<'arc> {
             reference_prefix,
             emit_package_id,
             include_archive_choice,
+            include_general_operations,
             path_style,
             companion_data,
             encoder,
@@ -121,6 +124,7 @@ impl<'arc> OpenAPIEncoder<'arc> {
                 self.reference_prefix,
                 self.emit_package_id,
                 self.include_archive_choice,
+                self.include_general_operations,
                 self.path_style,
                 self.companion_data,
                 &self.encoder,
@@ -138,7 +142,9 @@ impl<'arc> OpenAPIEncoder<'arc> {
 
     fn encode_tags(&self) -> anyhow::Result<Vec<Tag>> {
         let root = self.archive.main_package().req()?.root_module().child_module_path_or_err(self.module_path)?;
-        Ok(self.module_path(root))
+        Ok(std::iter::once(Tag::new(GENERAL_OPERATION_TAG.to_string(), None))
+            .chain(self.module_path(root).into_iter())
+            .collect())
     }
 
     fn module_path(&self, module: &DamlModule<'_>) -> Vec<Tag> {

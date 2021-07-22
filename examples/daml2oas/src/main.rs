@@ -61,6 +61,7 @@ fn main() -> Result<()> {
         .arg(make_reference_mode_arg())
         .arg(make_include_package_id_arg())
         .arg(make_include_archive_choice_arg())
+        .arg(make_include_general_operations_arg())
         .arg(make_path_style_arg());
     let a2s = SubCommand::with_name("a2s")
         .about("Generate an AsyncAPI document from the given Dar file")
@@ -202,6 +203,13 @@ fn make_include_archive_choice_arg() -> Arg<'static, 'static> {
         .help("include the Archive choice which is available on every template")
 }
 
+fn make_include_general_operations_arg() -> Arg<'static, 'static> {
+    Arg::with_name("include-general-operations").long("include-general-operations").required(false).help(
+        "include the general (non-template specific) /v1/create, /v1/exercise, /v1/create-and-exercise & /v1/fetch \
+         endpoints",
+    )
+}
+
 fn make_path_style_arg() -> Arg<'static, 'static> {
     Arg::with_name("path-style")
         .short("s")
@@ -254,6 +262,9 @@ fn parse_config<'c>(matches: &'c ArgMatches<'_>) -> Config<'c> {
     };
     let emit_package_id = matches.is_present("include-package-id");
     let include_archive_choice = matches.is_present("include-archive-choice");
+
+    let include_general_operations = matches.is_present("include-general-operations");
+
     let path_style = match matches.value_of("path-style") {
         None => PathStyle::default(),
         Some(s) if s == "fragment" => PathStyle::Fragment,
@@ -275,6 +286,7 @@ fn parse_config<'c>(matches: &'c ArgMatches<'_>) -> Config<'c> {
         reference_mode,
         emit_package_id,
         include_archive_choice,
+        include_general_operations,
         path_style,
     }
 }
@@ -313,6 +325,7 @@ fn generate_openapi(
             config.reference_prefix,
             config.emit_package_id,
             config.include_archive_choice,
+            config.include_general_operations,
             config.path_style,
             companion_data,
             encoder,
