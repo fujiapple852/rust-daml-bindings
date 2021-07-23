@@ -7,7 +7,7 @@ repository = "https://github.com/fujiapple852/rust-daml-bindings"
 license = "Apache-2.0"
 keywords = ["daml", "api", "ledger"]
 categories = ["development-tools"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 daml_lf = { path = "../daml_lf" }

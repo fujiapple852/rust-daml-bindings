@@ -3,7 +3,7 @@ name = "darn"
 version = "0.5.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
 description = "Tools for working with DAML Archives and ledgers"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 daml = { path = "../../daml", features = [ "grpc", "sandbox", "lf_full", "util" ] }
