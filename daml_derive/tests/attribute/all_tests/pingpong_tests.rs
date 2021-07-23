@@ -19,9 +19,9 @@ fn test_local_round_trip() -> TestResult {
     assert_eq!(&expected_id.module_name(), &Ping::package_id().module_name());
     assert_eq!(&expected_id.entity_name(), &Ping::package_id().entity_name());
     let ping_value: DamlValue = ping.serialize_into();
-    assert_eq!("Alice", ping_value.extract(daml_path!(sender#p))?);
-    assert_eq!("Bob", ping_value.extract(daml_path!(receiver#p))?);
-    assert_eq!(&0, ping_value.extract(daml_path!(count#i))?);
+    assert_eq!("Alice", ping_value.extract(daml_path!(sender::p))?);
+    assert_eq!("Bob", ping_value.extract(daml_path!(receiver::p))?);
+    assert_eq!(&0, ping_value.extract(daml_path!(count::i))?);
     let ping_again: Ping = ping_value.deserialize_into()?;
     assert_eq!("Alice", ping_again.sender);
     assert_eq!("Bob", ping_again.receiver);

@@ -253,9 +253,9 @@ mod tests {
         let command = request_converter.convert_create_request(&request)?;
         assert_eq!("RentalAgreement", command.template_id().entity_name());
         assert_eq!("DA.RentDemo", command.template_id().module_name());
-        assert_eq!(&DamlParty::from("Alice"), command.create_arguments().extract(daml_path![landlord#p])?);
-        assert_eq!(&DamlParty::from("Bob"), command.create_arguments().extract(daml_path![tenant#p])?);
-        assert_eq!(&DamlText::from("test terms"), command.create_arguments().extract(daml_path![terms#t])?);
+        assert_eq!(&DamlParty::from("Alice"), command.create_arguments().extract(daml_path![landlord::p])?);
+        assert_eq!(&DamlParty::from("Bob"), command.create_arguments().extract(daml_path![tenant::p])?);
+        assert_eq!(&DamlText::from("test terms"), command.create_arguments().extract(daml_path![terms::t])?);
         Ok(())
     }
 
@@ -279,8 +279,8 @@ mod tests {
         assert_eq!("DA.RentDemo", command.template_id().module_name());
         assert_eq!("#0:0", command.contract_id());
         assert_eq!("Accept", command.choice());
-        assert_eq!(&DamlText::from("this is foo"), command.choice_argument().extract(daml_path![foo#t])?);
-        assert_eq!(&100, command.choice_argument().extract(daml_path![bar#i])?);
+        assert_eq!(&DamlText::from("this is foo"), command.choice_argument().extract(daml_path![foo::t])?);
+        assert_eq!(&100, command.choice_argument().extract(daml_path![bar::i])?);
         Ok(())
     }
 
@@ -302,12 +302,12 @@ mod tests {
         let command = request_converter.convert_exercise_by_key_request(&request)?;
         assert_eq!("Ping", command.template_id().entity_name());
         assert_eq!("DA.PingPong", command.template_id().module_name());
-        assert_eq!(&DamlParty::from("Alice"), command.contract_key().extract(daml_path![sender#p])?);
-        assert_eq!(&99, command.contract_key().extract(daml_path![count#i])?);
+        assert_eq!(&DamlParty::from("Alice"), command.contract_key().extract(daml_path![sender::p])?);
+        assert_eq!(&99, command.contract_key().extract(daml_path![count::i])?);
         assert_eq!("FromUserData", command.choice());
-        assert_eq!(&5, command.choice_argument().extract(daml_path![new_count#i])?);
-        assert_eq!(&DamlParty::from("Bob"), command.choice_argument().extract(daml_path![new_data/name#p])?);
-        assert_eq!(&55, command.choice_argument().extract(daml_path![new_data/new_value#i])?);
+        assert_eq!(&5, command.choice_argument().extract(daml_path![new_count::i])?);
+        assert_eq!(&DamlParty::from("Bob"), command.choice_argument().extract(daml_path![new_data / name::p])?);
+        assert_eq!(&55, command.choice_argument().extract(daml_path![new_data / new_value::i])?);
         Ok(())
     }
 
@@ -334,12 +334,12 @@ mod tests {
         let command = request_converter.convert_create_and_exercise_request(&request)?;
         assert_eq!("RentalAgreement", command.template_id().entity_name());
         assert_eq!("DA.RentDemo", command.template_id().module_name());
-        assert_eq!(&DamlParty::from("Alice"), command.create_arguments().extract(daml_path![landlord#p])?);
-        assert_eq!(&DamlParty::from("Bob"), command.create_arguments().extract(daml_path![tenant#p])?);
-        assert_eq!(&DamlText::from("test terms"), command.create_arguments().extract(daml_path![terms#t])?);
+        assert_eq!(&DamlParty::from("Alice"), command.create_arguments().extract(daml_path![landlord::p])?);
+        assert_eq!(&DamlParty::from("Bob"), command.create_arguments().extract(daml_path![tenant::p])?);
+        assert_eq!(&DamlText::from("test terms"), command.create_arguments().extract(daml_path![terms::t])?);
         assert_eq!("Accept", command.choice());
-        assert_eq!(&DamlText::from("this is foo"), command.choice_argument().extract(daml_path![foo#t])?);
-        assert_eq!(&100, command.choice_argument().extract(daml_path![bar#i])?);
+        assert_eq!(&DamlText::from("this is foo"), command.choice_argument().extract(daml_path![foo::t])?);
+        assert_eq!(&100, command.choice_argument().extract(daml_path![bar::i])?);
         Ok(())
     }
 
@@ -360,9 +360,9 @@ mod tests {
         let command = request_converter.convert_create_request(&request)?;
         assert_eq!("RentalAgreement", command.template_id().entity_name());
         assert_eq!("DA.RentDemo", command.template_id().module_name());
-        assert_eq!(&DamlParty::from("Alice"), command.create_arguments().extract(daml_path![landlord#p])?);
-        assert_eq!(&DamlParty::from("Bob"), command.create_arguments().extract(daml_path![tenant#p])?);
-        assert_eq!(&DamlText::from("test terms"), command.create_arguments().extract(daml_path![terms#t])?);
+        assert_eq!(&DamlParty::from("Alice"), command.create_arguments().extract(daml_path![landlord::p])?);
+        assert_eq!(&DamlParty::from("Bob"), command.create_arguments().extract(daml_path![tenant::p])?);
+        assert_eq!(&DamlText::from("test terms"), command.create_arguments().extract(daml_path![terms::t])?);
         Ok(())
     }
 

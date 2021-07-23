@@ -554,7 +554,7 @@ mod tests {
     fn test_date() -> DamlJsonCodecResult<()> {
         let json_value = json!("2019-06-18");
         let ty = DamlType::Date;
-        let expected = daml_value!("2019-06-18"#d);
+        let expected = daml_value!("2019-06-18"::d);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -565,7 +565,7 @@ mod tests {
     fn test_date_min() -> DamlJsonCodecResult<()> {
         let json_value = json!("9999-12-31");
         let ty = DamlType::Date;
-        let expected = daml_value!("9999-12-31"#d);
+        let expected = daml_value!("9999-12-31"::d);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -576,7 +576,7 @@ mod tests {
     fn test_date_max() -> DamlJsonCodecResult<()> {
         let json_value = json!("0001-01-01");
         let ty = DamlType::Date;
-        let expected = daml_value!("0001-01-01"#d);
+        let expected = daml_value!("0001-01-01"::d);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -596,7 +596,7 @@ mod tests {
     fn test_timestamp_full() -> DamlJsonCodecResult<()> {
         let json_value = json!("1990-11-09T04:30:23.1234569Z");
         let ty = DamlType::Timestamp;
-        let expected = daml_value!("1990-11-09T04:30:23.1234569Z"#t);
+        let expected = daml_value!("1990-11-09T04:30:23.1234569Z"::t);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -607,7 +607,7 @@ mod tests {
     fn test_timestamp_no_sub_sec() -> DamlJsonCodecResult<()> {
         let json_value = json!("1990-11-09T04:30:23Z");
         let ty = DamlType::Timestamp;
-        let expected = daml_value!("1990-11-09T04:30:23Z"#t);
+        let expected = daml_value!("1990-11-09T04:30:23Z"::t);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -618,7 +618,7 @@ mod tests {
     fn test_timestamp_no_micros() -> DamlJsonCodecResult<()> {
         let json_value = json!("1990-11-09T04:30:23.123Z");
         let ty = DamlType::Timestamp;
-        let expected = daml_value!("1990-11-09T04:30:23.123Z"#t);
+        let expected = daml_value!("1990-11-09T04:30:23.123Z"::t);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -629,7 +629,7 @@ mod tests {
     fn test_timestamp_min() -> DamlJsonCodecResult<()> {
         let json_value = json!("0001-01-01T00:00:00Z");
         let ty = DamlType::Timestamp;
-        let expected = daml_value!("0001-01-01T00:00:00Z"#t);
+        let expected = daml_value!("0001-01-01T00:00:00Z"::t);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -640,7 +640,7 @@ mod tests {
     fn test_timestamp_max() -> DamlJsonCodecResult<()> {
         let json_value = json!("9999-12-31T23:59:59.999999Z");
         let ty = DamlType::Timestamp;
-        let expected = daml_value!("9999-12-31T23:59:59.999999Z"#t);
+        let expected = daml_value!("9999-12-31T23:59:59.999999Z"::t);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -651,7 +651,7 @@ mod tests {
     fn test_party() -> DamlJsonCodecResult<()> {
         let json_value = json!("Alice");
         let ty = DamlType::Party;
-        let expected = daml_value!("Alice"#p);
+        let expected = daml_value!("Alice"::p);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -662,7 +662,7 @@ mod tests {
     fn test_contract_id() -> DamlJsonCodecResult<()> {
         let json_value = json!("foo:bar#baz");
         let ty = DamlType::ContractId(None);
-        let expected = daml_value!("foo:bar#baz"#c);
+        let expected = daml_value!("foo:bar#baz"::c);
         let actual = JsonValueDecoder::new(&DamlArchive::default()).decode(&json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -823,7 +823,7 @@ mod tests {
              "terms": "test terms",
         });
         let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "RentDemo"], "RentalAgreement");
-        let expected = daml_value!({landlord: "Alice"#p, tenant: "Bob"#p, terms: "test terms"});
+        let expected = daml_value!({landlord: "Alice"::p, tenant: "Bob"::p, terms: "test terms"});
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -835,7 +835,7 @@ mod tests {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!(["Alice", "Bob", 0]);
         let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "PingPong"], "Ping");
-        let expected = daml_value!({sender: "Alice"#p, receiver: "Bob"#p, count: 0});
+        let expected = daml_value!({sender: "Alice"::p, receiver: "Bob"::p, count: 0});
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
         Ok(())
@@ -983,13 +983,13 @@ mod tests {
         }]);
         let ty = DamlType::List(vec![DamlType::make_tycon(&dar.main.hash, &["DA", "RentDemo"], "RentalAgreement")]);
         let expected = daml_value!([{
-            landlord: "Alice"#p,
-            tenant: "Bob"#p,
+            landlord: "Alice"::p,
+            tenant: "Bob"::p,
             terms: "test terms"
         },
         {
-            landlord: "John"#p,
-            tenant: "Paul"#p,
+            landlord: "John"::p,
+            tenant: "Paul"::p,
             terms: "more test terms"
         }]);
         let actual = decode_apply(&dar, &json_value, &ty)?;
@@ -1066,8 +1066,8 @@ mod tests {
         }});
         let ty = DamlType::TextMap(vec![DamlType::make_tycon(&dar.main.hash, &["DA", "RentDemo"], "RentalAgreement")]);
         let expected = DamlValue::Map(DamlTextMap::from(hashmap! {
-            "first".to_owned() => daml_value!({landlord: "Alice"#p, tenant: "Bob"#p, terms: "test terms"}),
-            "last".to_owned() => daml_value!({landlord: "John"#p, tenant: "Paul"#p, terms: "more test terms"})
+            "first".to_owned() => daml_value!({landlord: "Alice"::p, tenant: "Bob"::p, terms: "test terms"}),
+            "last".to_owned() => daml_value!({landlord: "John"::p, tenant: "Paul"::p, terms: "more test terms"})
         }));
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);

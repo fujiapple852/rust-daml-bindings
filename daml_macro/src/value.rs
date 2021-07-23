@@ -19,35 +19,35 @@
 ///                 | '{' '=>' variant DamlValue '}'        // Variant
 ///                 | '{' '?=' DamlValue '}'                // Optional (Some)
 ///                 | '{' '?!' '}'                          // Optional (None)
-///                 | identifier ('#' type)?                // String identifier
-///                 | literal ('#' type)?                   // String literal
-///                 | (expression) ('#' type)?              // DamlValue expression
+///                 | identifier ('::' type)?               // String identifier
+///                 | literal ('::' type)?                  // String literal
+///                 | (expression) ('::' type)?             // DamlValue expression
 /// ```
 ///
 /// Note that this syntax is not whitespace sensitive.
 ///
 /// The supported optional `type` specifiers are:
 ///
-/// | code   | name        | type                    | example                    |
-/// |--------|-------------|-------------------------| ----------------------------
-/// | `p`    | party       | `DamlValue::Party`      | `"Alice"#p`                |
-/// | `c`    | contract id | `DamlValue::ContractId` | `"#1:1"#c`                 |
-/// | `d`    | date        | `DamlValue::Date`       | `"2019-01-01"#d`           |
-/// | `t`    | timestamp   | `DamlValue::Timestamp`  | `"2019-01-01T01:23:45Z"#t` |
+/// | code   | name        | type                    | example                     |
+/// |--------|-------------|-------------------------| -----------------------------
+/// | `p`    | party       | `DamlValue::Party`      | `"Alice"::p`                |
+/// | `c`    | contract id | `DamlValue::ContractId` | `"#1:1"::c`                 |
+/// | `d`    | date        | `DamlValue::Date`       | `"2019-01-01"::d`           |
+/// | `t`    | timestamp   | `DamlValue::Timestamp`  | `"2019-01-01T01:23:45Z"::t` |
 ///
 /// String literal used without a type specifier are assumed to be [`DamlValue::Text`] therefore type specifiers are
-/// only required for [`DamlValue::Party`] (#p) and [`DamlValue::ContractId`] (#c).
+/// only required for [`DamlValue::Party`] (::p) and [`DamlValue::ContractId`] (::c).
 ///
 /// # Limitations
 ///
 /// Data values passed as expressions (as opposed to simple literal values or identifiers) must be placed inside
 /// parentheses.
 ///
-/// For example you may specify `my_party_name_str#p` where `my_party_name_str` is the identifier of an
-/// in-scope variable containing a &str but you may not specify `get_party_name_str()#p` where `get_party_name_str()`
+/// For example you may specify `my_party_name_str::p` where `my_party_name_str` is the identifier of an
+/// in-scope variable containing a &str but you may not specify `get_party_name_str()::p` where `get_party_name_str()`
 /// is a function (and therefore an expression).
 ///
-/// To support such cases either use `(get_party_name_str())#p` or provide a [`DamlValue`]
+/// To support such cases either use `(get_party_name_str())::p` or provide a [`DamlValue`]
 /// `DamlValue::new_party(get_party_name_str())`.
 ///
 /// There is currently no support for [`DamlValue::Map`], ['DamlValue::GenMap'] or [`DamlValue::Enum`].
@@ -63,7 +63,7 @@
 ///     // the DamlValue being created is a DamlValue::Record
 ///     {
 ///         // party is DamlValue::Party specified as a literal with a type suffix
-///         party: "Alice"#p,
+///         party: "Alice"::p,
 ///
 ///         // a nested DamlValue::Record
 ///         trade: {
@@ -76,7 +76,7 @@
 ///             counterparty: (DamlValue::new_party("B".to_owned() + "ob")),
 ///
 ///             // trader is a DamlValue::Party literal built from an expression
-///             trader: ("Ali".to_owned() + "ce")#p,
+///             trader: ("Ali".to_owned() + "ce")::p,
 ///
 ///             // trade_details is a DamlValue::Variant specifying SimpleDetails which contains
 ///             // a nested DamlValue::Record)
@@ -125,7 +125,7 @@ macro_rules! daml_value {
     //
     // Covers DamlValue::List case
     //
-    ([ $( $value:tt $( # $type:ident )? ),* ]) => {
+    ([ $( $value:tt $( :: $type:ident )? ),* ]) => {
         {
             use $crate::daml_grpc::data::value::DamlValue;
             #[allow(unused_mut)]
@@ -141,7 +141,7 @@ macro_rules! daml_value {
     //
     // Covers DamlValue::Record case
     //
-    ( { $( $label:ident : $value:tt $( # $type:ident )? ),* } ) => {
+    ( { $( $label:ident : $value:tt $( :: $type:ident )? ),* } ) => {
         {
             use $crate::daml_grpc::data::value::{DamlValue, DamlRecordBuilder};
             #[allow(unused_mut)]
@@ -199,16 +199,16 @@ macro_rules! daml_value {
     //
     // Covers DamlValue::Party, DamlValue::ContractId, DamlValue::Timestamp & DamlValue::Date cases
     //
-    ($party:tt # p) => {
+    ($party:tt :: p) => {
         daml_value!(@priv p $party)
     };
-    ($contract:tt # c) => {
+    ($contract:tt :: c) => {
         daml_value!(@priv c $contract)
     };
-    ($timestamp:tt # t) => {
+    ($timestamp:tt :: t) => {
         daml_value!(@priv t $timestamp)
     };
-    ($date:tt # d) => {
+    ($date:tt :: d) => {
         daml_value!(@priv d $date)
     };
 
@@ -261,7 +261,7 @@ mod test {
 
     #[test]
     pub fn test_party_literal() -> TestResult {
-        let value: DamlValue = daml_value!["Test"#p];
+        let value: DamlValue = daml_value!["Test"::p];
         assert_eq!("Test", value.try_party()?);
         Ok(())
     }
@@ -275,7 +275,7 @@ mod test {
 
     #[test]
     pub fn test_contract_id_literal() -> TestResult {
-        let value: DamlValue = daml_value!["123"#c];
+        let value: DamlValue = daml_value!["123"::c];
         assert_eq!("123", value.try_contract_id()?);
         Ok(())
     }
@@ -303,7 +303,7 @@ mod test {
 
     #[test]
     pub fn test_timestamp_value() -> TestResult {
-        let value: DamlValue = daml_value!["2019-01-02T03:45:56Z"#t];
+        let value: DamlValue = daml_value!["2019-01-02T03:45:56Z"::t];
         assert_eq!(make_timestamp("2019-01-02T03:45:56Z")?, value.try_timestamp()?);
         Ok(())
     }
@@ -318,7 +318,7 @@ mod test {
 
     #[test]
     pub fn test_date_literal() -> TestResult {
-        let value: DamlValue = daml_value!["2019-01-02"#d];
+        let value: DamlValue = daml_value!["2019-01-02"::d];
         assert_eq!(make_date("2019-01-02")?, value.try_date()?);
         Ok(())
     }
@@ -341,8 +341,8 @@ mod test {
     #[test]
     pub fn test_simple_record() -> TestResult {
         let value: DamlValue = daml_value![{
-            sender: "Alice"#p,
-            receiver: "Bob"#p,
+            sender: "Alice"::p,
+            receiver: "Bob"::p,
             count: 0
         }];
         assert_eq!("Alice", value.try_record()?.fields()[0].value().try_party()?);
@@ -368,8 +368,8 @@ mod test {
     #[test]
     pub fn test_optional_record() -> TestResult {
         let value: DamlValue = daml_value![{?={
-            sender: "Alice"#p,
-            receiver: "Bob"#p,
+            sender: "Alice"::p,
+            receiver: "Bob"::p,
             count: 0
         }}];
         assert_eq!("Alice", value.try_optional()?.ok_or("not ok")?.try_record()?.fields()[0].value().try_party()?);
@@ -388,7 +388,7 @@ mod test {
 
     #[test]
     pub fn test_variant_party_literal() -> TestResult {
-        let value: DamlValue = daml_value![{=>PartyId "Bob"#p}];
+        let value: DamlValue = daml_value![{=>PartyId "Bob"::p}];
         assert_eq!("Bob", value.try_variant()?.value().try_party()?);
         assert_eq!("PartyId", value.try_variant()?.constructor());
         Ok(())
@@ -397,8 +397,8 @@ mod test {
     #[test]
     pub fn test_variant_record() -> TestResult {
         let value: DamlValue = daml_value![{=>Variant1 {
-            sender: "Alice"#p,
-            receiver: "Bob"#p,
+            sender: "Alice"::p,
+            receiver: "Bob"::p,
             count: 0
         }}];
         assert_eq!("Alice", value.try_variant()?.value().try_record()?.fields()[0].value().try_party()?);
@@ -435,8 +435,8 @@ mod test {
     #[test]
     pub fn test_nested_variant_record_optional() -> TestResult {
         let value: DamlValue = daml_value![{
-            sender: "Alice"#p,
-            receiver: "Bob"#p,
+            sender: "Alice"::p,
+            receiver: "Bob"::p,
             count: 0,
             data: {=>foo {
                 mand_text: "test",
@@ -470,12 +470,12 @@ mod test {
     #[test]
     pub fn test_nested_record() -> TestResult {
         let value: DamlValue = daml_value![{
-            sender: "Alice"#p,
-            receiver: "Bob"#p,
+            sender: "Alice"::p,
+            receiver: "Bob"::p,
             data: {
                 count: 0,
                 fruit: "apple",
-                contractId: "#1:1"#c
+                contractId: "#1:1"::c
             }
         }];
         assert_eq!("Alice", value.try_record()?.fields()[0].value().try_party()?);
@@ -532,7 +532,7 @@ mod test {
                 foo: "bar",
                 bar: "foo"
             },
-            "Bob"#p,
+            "Bob"::p,
             10
             ]
         );
@@ -561,9 +561,9 @@ mod test {
         let dob = "1999-12-31";
         let home_address = "somewhere";
         let value: DamlValue = daml_value![{
-            party: party#p,
+            party: party::p,
             age: age,
-            dob: dob#d,
+            dob: dob::d,
             sex: "Male",
             address: home_address
         }];

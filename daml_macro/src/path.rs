@@ -13,8 +13,8 @@
 /// Path expressions take the following form (pseudo-regex syntax):
 ///
 /// ``` txt
-/// field ( '{' '=>' variant '}' )? ( '[' index ']' )? ( '?' )?  (  '/'  ...  )*  ( '#' type )?
-/// ----- ------------------------- ------------------ --------  -  ---  ---  --  -------------
+/// field ( '{' '=>' variant '}' )? ( '[' index ']' )? ( '?' )?  (  '/'  ...  )*  ( '::' type )?
+/// ----- ------------------------- ------------------ --------  -  ---  ---  --  --------------
 ///  (1)              (2)                   (3)          (4)     |  (5)  (6)  |        (7)
 /// ```
 ///
@@ -24,7 +24,7 @@
 /// Syntax Items:
 ///
 /// 1. the `field` of the current [`DamlValue::Record`] to traverse
-/// 2. extract the [`DamlValue`] if `field` is a [`DamlValue::Variant`] and `varient` matches the constructor.
+/// 2. extract the [`DamlValue`] if `field` is a [`DamlValue::Variant`] and `variant` matches the constructor.
 /// 3. extract the [`DamlValue`] from list at `index` (expression) if `field` is a [`DamlValue::List`]
 /// 4. extract the [`DamlValue`] if `field` is a [`DamlValue::Optional`]
 /// 5. a separator between `field` entries
@@ -51,7 +51,7 @@
 /// processing of the path expression continues.  If the optional is `None` then a [`MissingRequiredField`] error
 /// will be returned.
 ///
-/// The final `field` may optionally have a `type` specifier by appending a `#` character followed by one
+/// The final `field` may optionally have a `type` specifier by appending a `::` token followed by one
 /// of several supported `type` specifier codes.  If no `type` specifier code is provided then the expression will
 /// return a [`DamlValue`] otherwise a type appropriate to the specifier will be returned.
 ///
@@ -101,10 +101,10 @@
 /// # use bigdecimal::BigDecimal;
 /// # fn main() -> DamlResult<()> {
 /// let value = daml_value![{
-///     party: "Alice"#p,
+///     party: "Alice"::p,
 ///     trade: {
 ///         trade_id: 123,
-///         counterparty: "Bob"#p,
+///         counterparty: "Bob"::p,
 ///         trade_details: {
 ///             ticker: "GOOG",
 ///             prices: [1231.54, 1234.85, 1237.92]
@@ -112,13 +112,13 @@
 ///         order_type: {?= "MarketOrder"}
 ///     }
 /// }];
-/// assert_eq!("Alice", value.extract(daml_path![party#p])?);
-/// assert_eq!(123, *value.extract(daml_path![trade/trade_id#i])?);
-/// assert_eq!("Bob", value.extract(daml_path![trade/counterparty#p])?);
-/// assert_eq!("GOOG", value.extract(daml_path![trade/trade_details/ticker#t])?);
+/// assert_eq!("Alice", value.extract(daml_path![party::p])?);
+/// assert_eq!(123, *value.extract(daml_path![trade/trade_id::i])?);
+/// assert_eq!("Bob", value.extract(daml_path![trade/counterparty::p])?);
+/// assert_eq!("GOOG", value.extract(daml_path![trade/trade_details/ticker::t])?);
 /// assert_eq!(&BigDecimal::try_from(1234.85).unwrap(),
-///                 value.extract(daml_path![trade/trade_details/prices[1]#f])?);
-/// assert_eq!("MarketOrder", value.extract(daml_path![trade/order_type?#t])?);
+///                 value.extract(daml_path![trade/trade_details/prices[1]::f])?);
+/// assert_eq!("MarketOrder", value.extract(daml_path![trade/order_type?::t])?);
 /// # Ok(())
 /// # }
 /// ```
@@ -165,7 +165,7 @@ macro_rules! daml_path {
     // The macro has become very complex and should be rewritten as a procedural macro.
 
     // final path element (list + optional case)
-    ( @priv $record:ident / $path:ident $( { => $variant:ident } )? [ $index:expr ] ? $( # $type:ident )? ) => {
+    ( @priv $record:ident / $path:ident $( { => $variant:ident } )? [ $index:expr ] ? $( :: $type:ident )? ) => {
         {
             let field_value = daml_path!(@get_record_field $record, $path);
             let variant_value = daml_path!(@get_variant_value field_value, $($variant)? )?;
@@ -176,7 +176,7 @@ macro_rules! daml_path {
     };
 
     // final path element (list case)
-    ( @priv $record:ident / $path:ident $( { => $variant:ident } )? [ $index:expr ] $( # $type:ident )? ) => {
+    ( @priv $record:ident / $path:ident $( { => $variant:ident } )? [ $index:expr ] $( :: $type:ident )? ) => {
         {
             let field_value = daml_path!(@get_record_field $record, $path);
             let variant_value = daml_path!(@get_variant_value field_value, $($variant)? )?;
@@ -186,7 +186,7 @@ macro_rules! daml_path {
     };
 
     // final path element
-    ( @priv $record:ident / $path:ident $( { => $variant:ident } )? $( # $type:ident )? ) => {
+    ( @priv $record:ident / $path:ident $( { => $variant:ident } )? $( :: $type:ident )? ) => {
         {
             let field_value = daml_path!(@get_record_field $record, $path);
             let variant_value = daml_path!(@get_variant_value field_value, $($variant)? )?;
@@ -195,7 +195,7 @@ macro_rules! daml_path {
     };
 
     // final path element (optional case)
-    ( @priv $record:ident / $path:ident $( { => $variant:ident } )? ? $( # $type:ident )? ) => {
+    ( @priv $record:ident / $path:ident $( { => $variant:ident } )? ? $( :: $type:ident )? ) => {
         {
             let field_value = daml_path!(@get_record_field $record, $path);
             let variant_value = daml_path!(@get_variant_value field_value, $($variant)? )?;
@@ -362,7 +362,7 @@ mod test {
     #[test]
     pub fn test_top_party() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("Alice", value.extract(daml_path![sender#p])?);
+        assert_eq!("Alice", value.extract(daml_path![sender::p])?);
         Ok(())
     }
 
@@ -370,21 +370,21 @@ mod test {
     pub fn test_record_top_party() -> TestResult {
         let value: DamlValue = get_test_value();
         let record: &DamlRecord = value.try_record()?;
-        assert_eq!("Alice", record.extract(daml_path![sender#p])?);
+        assert_eq!("Alice", record.extract(daml_path![sender::p])?);
         Ok(())
     }
 
     #[test]
     pub fn test_nested_party() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("Sue", value.extract(daml_path![person/party#p])?);
+        assert_eq!("Sue", value.extract(daml_path![person / party::p])?);
         Ok(())
     }
 
     #[test]
     pub fn test_nested_contract() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("#1:1", value.extract(daml_path![person/data/contractId#c])?);
+        assert_eq!("#1:1", value.extract(daml_path![person / data / contractId::c])?);
         Ok(())
     }
 
@@ -398,42 +398,42 @@ mod test {
     #[test]
     pub fn test_nested_int64() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(0_i64, *value.extract(daml_path![person/data/count#i])?);
+        assert_eq!(0_i64, *value.extract(daml_path![person / data / count::i])?);
         Ok(())
     }
 
     #[test]
     pub fn test_nested_bool() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert!(!*value.extract(daml_path![person/data/is_true#b])?);
+        assert!(!*value.extract(daml_path![person / data / is_true::b])?);
         Ok(())
     }
 
     #[test]
     pub fn test_nested_unit() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!((), *value.extract(daml_path![person/empty#u])?);
+        assert_eq!((), *value.extract(daml_path![person / empty::u])?);
         Ok(())
     }
 
     #[test]
     pub fn test_top_numeric() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(&BigDecimal::try_from(1.23).unwrap(), value.extract(daml_path![height#f])?);
+        assert_eq!(&BigDecimal::try_from(1.23).unwrap(), value.extract(daml_path![height::f])?);
         Ok(())
     }
 
     #[test]
     pub fn test_top_date() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(&make_date("2019-01-02")?, value.extract(daml_path![today#d])?);
+        assert_eq!(&make_date("2019-01-02")?, value.extract(daml_path![today::d])?);
         Ok(())
     }
 
     #[test]
     pub fn test_top_datetime() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(&make_timestamp("2019-01-02T03:45:56Z")?, value.extract(daml_path![right_now#s])?);
+        assert_eq!(&make_timestamp("2019-01-02T03:45:56Z")?, value.extract(daml_path![right_now::s])?);
         Ok(())
     }
 
@@ -456,7 +456,7 @@ mod test {
         let value: DamlValue = get_test_value();
         assert_eq!(
             &DamlVariant::new("Foo", Box::new(DamlValue::new_text("I'm a Foo")), None),
-            value.extract(daml_path![variant_text#v])?
+            value.extract(daml_path![variant_text::v])?
         );
         Ok(())
     }
@@ -464,44 +464,44 @@ mod test {
     #[test]
     pub fn test_nested_text() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("apple", value.extract(daml_path![person/data/fruit#t])?);
+        assert_eq!("apple", value.extract(daml_path![person / data / fruit::t])?);
         Ok(())
     }
 
     #[test]
     pub fn test_nested_record() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(4, value.extract(daml_path![person/data#r])?.fields().len());
+        assert_eq!(4, value.extract(daml_path![person / data::r])?.fields().len());
         Ok(())
     }
 
     #[test]
     pub fn test_nested_list() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(3, value.extract(daml_path![person/stats#l])?.len());
+        assert_eq!(3, value.extract(daml_path![person / stats::l])?.len());
         Ok(())
     }
 
     #[test]
     pub fn test_list_item() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("a", value.extract(daml_path![items#l])?[0].extract(daml_path![a#t])?);
-        assert_eq!("b", value.extract(daml_path![items#l])?[1].extract(daml_path![b#t])?);
+        assert_eq!("a", value.extract(daml_path![items::l])?[0].extract(daml_path![a::t])?);
+        assert_eq!("b", value.extract(daml_path![items::l])?[1].extract(daml_path![b::t])?);
         Ok(())
     }
 
     #[test]
     pub fn test_top_list_record_item_text() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("a", value.extract(daml_path![items[0]/a#t])?);
+        assert_eq!("a", value.extract(daml_path![items[0] / a::t])?);
         Ok(())
     }
 
     #[test]
     pub fn test_top_list_leaf_item_text() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("foo", value.extract(daml_path![simple_list[0]#t])?);
-        assert_eq!("bar", value.extract(daml_path![simple_list[1]#t])?);
+        assert_eq!("foo", value.extract(daml_path![simple_list[0]::t])?);
+        assert_eq!("bar", value.extract(daml_path![simple_list[1]::t])?);
         Ok(())
     }
 
@@ -515,7 +515,7 @@ mod test {
     #[test]
     pub fn test_list_index_expression() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("bar", value.extract(daml_path![simple_list[2 - 1]#t])?);
+        assert_eq!("bar", value.extract(daml_path![simple_list[2 - 1]::t])?);
         Ok(())
     }
 
@@ -529,7 +529,7 @@ mod test {
     #[test]
     pub fn test_nested_list_item_int64() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(1, *value.extract(daml_path![person/stats[0]#i])?);
+        assert_eq!(1, *value.extract(daml_path![person/stats[0]::i])?);
         Ok(())
     }
 
@@ -544,49 +544,49 @@ mod test {
     #[test]
     pub fn test_list_in_list_of_record() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(99, *value.extract(daml_path![items[1]/the_list[0]#i])?);
+        assert_eq!(99, *value.extract(daml_path![items[1]/the_list[0]::i])?);
         Ok(())
     }
 
     #[test]
     pub fn test_optional_int() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(123, *value.extract(daml_path![opt_int?#i])?);
+        assert_eq!(123, *value.extract(daml_path![opt_int?::i])?);
         Ok(())
     }
 
     #[test]
     pub fn test_optional_rec() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("cat", value.extract(daml_path![opt_rec?/pet#t])?);
+        assert_eq!("cat", value.extract(daml_path![opt_rec? / pet::t])?);
         Ok(())
     }
 
     #[test]
     pub fn test_nested_optional_rec() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert!(*value.extract(daml_path![opt_rec?/is_cat?#b])?);
+        assert!(*value.extract(daml_path![opt_rec?/is_cat?::b])?);
         Ok(())
     }
 
     #[test]
     pub fn test_list_of_optional_final() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(1, *value.extract(daml_path![list_of_opt[0]?#i])?);
+        assert_eq!(1, *value.extract(daml_path![list_of_opt[0]?::i])?);
         Ok(())
     }
 
     #[test]
     pub fn test_list_of_optional_non_final() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("a", value.extract(daml_path![list_of_opt_rec[0]?/a#t])?);
+        assert_eq!("a", value.extract(daml_path![list_of_opt_rec[0]? / a::t])?);
         Ok(())
     }
 
     #[test]
     pub fn test_top_named_variant_text() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("I'm a Foo", value.extract(daml_path![variant_text{=>Foo}#t])?);
+        assert_eq!("I'm a Foo", value.extract(daml_path![variant_text{=>Foo}::t])?);
         Ok(())
     }
 
@@ -600,70 +600,70 @@ mod test {
     #[test]
     pub fn test_top_any_variant_text() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("I'm a Foo", value.extract(daml_path![variant_text{=>__}#t])?);
+        assert_eq!("I'm a Foo", value.extract(daml_path![variant_text{=>__}::t])?);
         Ok(())
     }
 
     #[test]
     pub fn test_top_named_variant_optional_int() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(999, *value.extract(daml_path![variant_opt_int{=>Foo}?#i])?);
+        assert_eq!(999, *value.extract(daml_path![variant_opt_int{=>Foo}?::i])?);
         Ok(())
     }
 
     #[test]
     pub fn test_top_named_variant_list() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("One", value.extract(daml_path![variant_list{=>Foo}[0]#t])?);
+        assert_eq!("One", value.extract(daml_path![variant_list{=>Foo}[0]::t])?);
         Ok(())
     }
 
     #[test]
     pub fn test_top_named_variant_list_optional() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("Two", value.extract(daml_path![variant_list_opt{=>Foo}[1]?#t])?);
+        assert_eq!("Two", value.extract(daml_path![variant_list_opt{=>Foo}[1]?::t])?);
         Ok(())
     }
 
     #[test]
     pub fn test_nested_named_variant_int() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(4, *value.extract(daml_path![other{=>Cat}/paw_count#i])?);
+        assert_eq!(4, *value.extract(daml_path![other{=>Cat}/paw_count::i])?);
         Ok(())
     }
 
     #[test]
     pub fn test_nested_any_variant_int() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!(4, *value.extract(daml_path![other{=>__}/paw_count#i])?);
+        assert_eq!(4, *value.extract(daml_path![other{=>__}/paw_count::i])?);
         Ok(())
     }
 
     #[test]
     pub fn test_nested_named_variant_optional_int() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("Red", value.extract(daml_path![other_opt{=>Fruit}?/color#t])?);
+        assert_eq!("Red", value.extract(daml_path![other_opt{=>Fruit}?/color::t])?);
         Ok(())
     }
 
     #[test]
     pub fn test_nested_named_variant_list() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("Blue", value.extract(daml_path![other_var_list{=>Foo}[0]/color#t])?);
+        assert_eq!("Blue", value.extract(daml_path![other_var_list{=>Foo}[0]/color::t])?);
         Ok(())
     }
 
     #[test]
     pub fn test_nested_named_variant_list_optional() -> TestResult {
         let value: DamlValue = get_test_value();
-        assert_eq!("Green", value.extract(daml_path![other_var_list_opt{=>Foo}[0]?/color#t])?);
+        assert_eq!("Green", value.extract(daml_path![other_var_list_opt{=>Foo}[0]?/color::t])?);
         Ok(())
     }
 
     #[test]
     pub fn test_top_no_result_function() {
         let value: DamlValue = get_test_value();
-        assert_eq!("Alice", value.extract(daml_path![sender#p]).expect("should not fail"));
+        assert_eq!("Alice", value.extract(daml_path![sender::p]).expect("should not fail"));
     }
 
     #[test]
@@ -689,7 +689,7 @@ mod test {
     #[test]
     pub fn test_wrong_type_field() {
         let value: DamlValue = get_test_value();
-        let result = value.extract(daml_path![sender#i]);
+        let result = value.extract(daml_path![sender::i]);
         match result {
             Err(DamlError::UnexpectedType(expected, actual)) => {
                 assert_eq!("Int64", expected);
@@ -702,7 +702,7 @@ mod test {
     #[test]
     pub fn test_list_index_out_of_range() {
         let value: DamlValue = get_test_value();
-        let result = value.extract(daml_path![items[99]#i]);
+        let result = value.extract(daml_path![items[99]::i]);
         match result {
             Err(DamlError::ListIndexOutOfRange(idx)) => assert_eq!(99, idx),
             _ => panic!("expected failure"),
@@ -712,7 +712,7 @@ mod test {
     #[test]
     pub fn test_bad_variant() {
         let value: DamlValue = get_test_value();
-        let result = value.extract(daml_path![variant_text{=>Bar}#t]);
+        let result = value.extract(daml_path![variant_text{=>Bar}::t]);
         match result {
             Err(DamlError::UnexpectedVariant(expected, actual)) => {
                 assert_eq!("Bar", expected);
@@ -724,14 +724,14 @@ mod test {
 
     fn get_test_value() -> DamlValue {
         daml_value![{
-            sender: "Alice"#p,
-            receiver: "Bob"#p,
+            sender: "Alice"::p,
+            receiver: "Bob"::p,
             person: {
-                party: "Sue"#p,
+                party: "Sue"::p,
                 data: {
                     count: 0,
                     fruit: "apple",
-                    contractId: "#1:1"#c,
+                    contractId: "#1:1"::c,
                     is_true: false
                 },
                 stats: [1, 2, 3],
@@ -740,8 +740,8 @@ mod test {
             height: 1.23,
             items: [{a: "a"}, {b: "b", the_list: [99, 98, 101]}],
             simple_list: ["foo", "bar", ["text in nested list"]],
-            today: "2019-01-02"#d,
-            right_now: "2019-01-02T03:45:56Z"#t,
+            today: "2019-01-02"::d,
+            right_now: "2019-01-02T03:45:56Z"::t,
             opt_int: {?= 123},
             opt_rec: {?= {
                 pet: "cat",

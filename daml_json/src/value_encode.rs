@@ -245,7 +245,7 @@ mod tests {
 
     #[test]
     fn test_date() -> DamlJsonCodecResult<()> {
-        let grpc_value = daml_value!("2019-06-18"#d);
+        let grpc_value = daml_value!("2019-06-18"::d);
         let expected = json!("2019-06-18");
         let actual = JsonValueEncoder::default().encode_value(&grpc_value)?;
         assert_eq!(actual, expected);
@@ -254,7 +254,7 @@ mod tests {
 
     #[test]
     fn test_date_min() -> DamlJsonCodecResult<()> {
-        let grpc_value = daml_value!("9999-12-31"#d);
+        let grpc_value = daml_value!("9999-12-31"::d);
         let expected = json!("9999-12-31");
         let actual = JsonValueEncoder::default().encode_value(&grpc_value)?;
         assert_eq!(actual, expected);
@@ -263,7 +263,7 @@ mod tests {
 
     #[test]
     fn test_date_max() -> DamlJsonCodecResult<()> {
-        let grpc_value = daml_value!("0001-01-01"#d);
+        let grpc_value = daml_value!("0001-01-01"::d);
         let expected = json!("0001-01-01");
         let actual = JsonValueEncoder::default().encode_value(&grpc_value)?;
         assert_eq!(actual, expected);
@@ -272,7 +272,7 @@ mod tests {
 
     #[test]
     fn test_timestamp_full() -> DamlJsonCodecResult<()> {
-        let grpc_value = daml_value!("1990-11-09T04:30:23.1234569Z"#t);
+        let grpc_value = daml_value!("1990-11-09T04:30:23.1234569Z"::t);
         let expected = json!("1990-11-09T04:30:23.123Z");
         let actual = JsonValueEncoder::default().encode_value(&grpc_value)?;
         assert_eq!(actual, expected);
@@ -281,7 +281,7 @@ mod tests {
 
     #[test]
     fn test_timestamp_no_sub_sec() -> DamlJsonCodecResult<()> {
-        let grpc_value = daml_value!("1990-11-09T04:30:23Z"#t);
+        let grpc_value = daml_value!("1990-11-09T04:30:23Z"::t);
         let expected = json!("1990-11-09T04:30:23.000Z");
         let actual = JsonValueEncoder::default().encode_value(&grpc_value)?;
         assert_eq!(actual, expected);
@@ -290,7 +290,7 @@ mod tests {
 
     #[test]
     fn test_timestamp_no_micros() -> DamlJsonCodecResult<()> {
-        let grpc_value = daml_value!("1990-11-09T04:30:23.123Z"#t);
+        let grpc_value = daml_value!("1990-11-09T04:30:23.123Z"::t);
         let expected = json!("1990-11-09T04:30:23.123Z");
         let actual = JsonValueEncoder::default().encode_value(&grpc_value)?;
         assert_eq!(actual, expected);
@@ -299,7 +299,7 @@ mod tests {
 
     #[test]
     fn test_timestamp_min() -> DamlJsonCodecResult<()> {
-        let grpc_value = daml_value!("0001-01-01T00:00:00Z"#t);
+        let grpc_value = daml_value!("0001-01-01T00:00:00Z"::t);
         let expected = json!("0001-01-01T00:00:00.000Z");
         let actual = JsonValueEncoder::default().encode_value(&grpc_value)?;
         assert_eq!(actual, expected);
@@ -308,7 +308,7 @@ mod tests {
 
     #[test]
     fn test_timestamp_max() -> DamlJsonCodecResult<()> {
-        let grpc_value = daml_value!("9999-12-31T23:59:59.999999Z"#t);
+        let grpc_value = daml_value!("9999-12-31T23:59:59.999999Z"::t);
         let expected = json!("9999-12-31T23:59:59.999Z");
         let actual = JsonValueEncoder::default().encode_value(&grpc_value)?;
         assert_eq!(actual, expected);
@@ -317,7 +317,7 @@ mod tests {
 
     #[test]
     fn test_party() -> DamlJsonCodecResult<()> {
-        let grpc_value = daml_value!("Alice"#p);
+        let grpc_value = daml_value!("Alice"::p);
         let expected = json!("Alice");
         let actual = JsonValueEncoder::default().encode_value(&grpc_value)?;
         assert_eq!(actual, expected);
@@ -326,7 +326,7 @@ mod tests {
 
     #[test]
     fn test_contract_id() -> DamlJsonCodecResult<()> {
-        let grpc_value = daml_value!("#0:0"#c);
+        let grpc_value = daml_value!("#0:0"::c);
         let expected = json!("#0:0");
         let actual = JsonValueEncoder::default().encode_value(&grpc_value)?;
         assert_eq!(actual, expected);
@@ -425,7 +425,7 @@ mod tests {
 
     #[test]
     fn test_record() -> DamlJsonCodecResult<()> {
-        let grpc_value = daml_value!({landlord: "Alice"#p, tenant: "Bob"#p, terms: "test terms"});
+        let grpc_value = daml_value!({landlord: "Alice"::p, tenant: "Bob"::p, terms: "test terms"});
         let expected = json!({
              "landlord": "Alice",
              "tenant": "Bob",
@@ -545,13 +545,13 @@ mod tests {
     #[test]
     fn test_list_record() -> DamlJsonCodecResult<()> {
         let grpc_value = daml_value!([{
-            landlord: "Alice"#p,
-            tenant: "Bob"#p,
+            landlord: "Alice"::p,
+            tenant: "Bob"::p,
             terms: "test terms"
         },
         {
-            landlord: "John"#p,
-            tenant: "Paul"#p,
+            landlord: "John"::p,
+            tenant: "Paul"::p,
             terms: "more test terms"
         }]);
         let expected = json!([{
@@ -604,8 +604,8 @@ mod tests {
     #[test]
     fn test_textmap_record() -> DamlJsonCodecResult<()> {
         let grpc_value = DamlValue::Map(DamlTextMap::from(hashmap! {
-            "first".to_owned() => daml_value!({landlord: "Alice"#p, tenant: "Bob"#p, terms: "test terms"}),
-            "last".to_owned() => daml_value!({landlord: "John"#p, tenant: "Paul"#p, terms: "more test terms"})
+            "first".to_owned() => daml_value!({landlord: "Alice"::p, tenant: "Bob"::p, terms: "test terms"}),
+            "last".to_owned() => daml_value!({landlord: "John"::p, tenant: "Paul"::p, terms: "more test terms"})
         }));
         let expected = json!({
         "first": {

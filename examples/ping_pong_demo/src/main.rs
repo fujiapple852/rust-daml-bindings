@@ -65,8 +65,8 @@ async fn create_connection(uri: &str) -> Result<DamlGrpcClient> {
 
 async fn send_initial_ping(ledger_client: &DamlGrpcClient, package_id: &str, party: &str) -> Result<()> {
     let ping_record: DamlRecord = daml_value![{
-        sender: PARTY_ALICE#p,
-        receiver: PARTY_BOB#p,
+        sender: PARTY_ALICE::p,
+        receiver: PARTY_BOB::p,
         count: 0
     }]
     .try_into()?;
@@ -109,8 +109,8 @@ async fn process_event(
 ) -> Result<Option<()>> {
     let entity_name = created_event.template_id().entity_name();
     let contract_id = created_event.contract_id();
-    let receiver = created_event.create_arguments().extract(daml_path![receiver#p])?;
-    let count = *created_event.create_arguments().extract(daml_path![count#i])?;
+    let receiver = created_event.create_arguments().extract(daml_path![receiver::p])?;
+    let count = *created_event.create_arguments().extract(daml_path![count::i])?;
     if count <= 10 {
         if party == receiver {
             info!("{} received:\t{} ({}) with count {}", receiver, entity_name, contract_id, count);
