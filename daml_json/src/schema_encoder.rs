@@ -836,7 +836,7 @@ impl<'a> JsonSchemaEncoder<'a> {
 
     fn do_encode_type(
         &self,
-        ty: &DamlType<'_>,
+        ty: &'a DamlType<'a>,
         top_level: bool,
         type_params: &[DamlTypeVarWithKind<'_>],
         type_args: &[DamlType<'_>],

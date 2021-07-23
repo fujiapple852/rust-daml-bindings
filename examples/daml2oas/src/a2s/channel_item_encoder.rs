@@ -222,7 +222,7 @@ impl<'arc> ChannelItemEncoder<'arc> {
             fn pre_visit_template<'a>(&mut self, template: &'a DamlTemplate<'a>) {
                 let template_id = make_template_id(template.package_id(), template.module_path(), template.name());
                 let key = template.key().map(|k| k.ty().to_static());
-                self.templates.push(TemplateData::new(template_id, key))
+                self.templates.push(TemplateData::new(template_id, key));
             }
         }
         let mut visitor = TemplateVisitor {

@@ -104,7 +104,7 @@ pub async fn create_ping_contract(
 ) -> TestResult {
     let ping_record = create_test_ping_record(ALICE_PARTY, BOB_PARTY, count);
     let commands_factory = create_test_command_factory(workflow_id, application_id, ALICE_PARTY);
-    let template_id = create_test_pp_id(&package_id, PING_ENTITY_NAME);
+    let template_id = create_test_pp_id(package_id, PING_ENTITY_NAME);
     let create_command = DamlCommand::Create(DamlCreateCommand::new(template_id, ping_record));
     let create_commands = commands_factory.make_command_with_id(create_command, create_command_id);
     ledger_client.command_service().submit_and_wait(create_commands).await?;

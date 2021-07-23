@@ -51,7 +51,7 @@ impl<'a> DamlArchive<'a> {
         self.packages.values().find(|p| p.name() == name)
     }
 
-    /// Return the main [`DamlPackage`] in this [`DamlArchive`] or `None` if no such package exists.`
+    /// Return the main [`DamlPackage`] in this [`DamlArchive`] or `None` if no such package exists.
     pub fn main_package(&self) -> Option<&DamlPackage<'_>> {
         self.packages.get(&self.main_package_id)
     }

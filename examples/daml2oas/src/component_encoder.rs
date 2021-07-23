@@ -58,11 +58,11 @@ impl<'arc> ComponentEncoder<'arc> {
     fn encode_module(&self, module: &DamlModule<'_>) -> Result<Vec<NamedSchema>> {
         let mut result = Vec::new();
         for sub in module.child_modules() {
-            result.extend(self.encode_module(sub)?)
+            result.extend(self.encode_module(sub)?);
         }
         for dt in module.data_types() {
             if self.filter_contains(dt)? && is_supported(dt) {
-                result.push(self.encode_data(module, dt)?)
+                result.push(self.encode_data(module, dt)?);
             }
         }
         Ok(result)

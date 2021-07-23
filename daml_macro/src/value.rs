@@ -50,7 +50,7 @@
 /// To support such cases either use `(get_party_name_str())::p` or provide a [`DamlValue`]
 /// `DamlValue::new_party(get_party_name_str())`.
 ///
-/// There is currently no support for [`DamlValue::Map`], ['DamlValue::GenMap'] or [`DamlValue::Enum`].
+/// There is currently no support for [`DamlValue::Map`], [`DamlValue::GenMap`] or [`DamlValue::Enum`].
 ///
 /// # Examples
 ///

@@ -564,7 +564,7 @@ fn from_modules<'a, T: Iterator<Item = DamlModuleWrapper<'a>>>(modules: T) -> Da
 /// go, and adds the `node_to_add` node as the leaf node.
 fn add_module_to_tree<'a>(node: &mut DamlModule<'a>, node_to_add: DamlModule<'a>, remaining_path: &[&'a str]) {
     if let Some(&child_mod_name) = remaining_path.first() {
-        add_module_to_tree(node.child_module_or_new(child_mod_name), node_to_add, &remaining_path[1..])
+        add_module_to_tree(node.child_module_or_new(child_mod_name), node_to_add, &remaining_path[1..]);
     } else {
         node.take_from(node_to_add);
     }

@@ -422,7 +422,7 @@ impl DamlJsonClient {
 
     #[instrument(skip(self))]
     async fn upload_dar_request(&self, bytes: Vec<u8>) -> DamlJsonResult<DamlJsonUploadDarResponse> {
-        Ok(self.post_bytes(Self::url(&self.config.url, PACKAGES_REST)?, bytes).await?)
+        self.post_bytes(Self::url(&self.config.url, PACKAGES_REST)?, bytes).await
     }
 
     #[instrument(skip(self))]

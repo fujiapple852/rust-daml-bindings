@@ -89,7 +89,7 @@
 ///
 /// All `type` specifiers return references, even for simple copy types, and so must be dereferenced as needed.
 ///
-/// There is currently no support for [`DamlValue::Map`], ['DamlValue::GenMap'] or [`DamlValue::Enum`].
+/// There is currently no support for [`DamlValue::Map`], [`DamlValue::GenMap`] or [`DamlValue::Enum`].
 ///
 /// # Examples
 ///

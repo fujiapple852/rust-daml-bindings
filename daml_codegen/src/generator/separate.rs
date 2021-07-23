@@ -20,7 +20,7 @@ pub fn generate_archive_separate(
 ) -> Result<(), Error> {
     let ctx = RenderContext::with_archive(archive, RenderFilterMode::default());
     for package in archive.packages() {
-        generate_package_source(&ctx, package, output_path, module_matcher, render_method)?
+        generate_package_source(&ctx, package, output_path, module_matcher, render_method)?;
     }
     Ok(())
 }

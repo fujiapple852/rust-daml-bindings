@@ -107,7 +107,7 @@ fn intern_string(dar_path: &str, show_mangled: bool, sort_order: &SortOrder, fil
                 table.add_row(string_row(idx.to_string().as_str(), rendered, pick_color(rendered)));
             }
             table.printstd();
-        }
+        },
     }
     Ok(())
 }
@@ -155,7 +155,7 @@ fn intern_dotted(dar_path: &str, show_mangled: bool, sort_order: &SortOrder, fil
                 table.add_row(dotted_row(idx.to_string().as_str(), rendered, segments, pick_color(rendered)));
             }
             table.printstd();
-        }
+        },
     }
     Ok(())
 }

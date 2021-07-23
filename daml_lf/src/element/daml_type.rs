@@ -362,7 +362,7 @@ impl<'a> DamlTyCon<'a> {
 
 impl Hash for DamlTyCon<'_> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.tycon.hash(state)
+        self.tycon.hash(state);
     }
 }
 

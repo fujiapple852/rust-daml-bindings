@@ -388,7 +388,7 @@ mod test {
     }
 
     #[test]
-    pub fn test_invalid_format() -> DamlLfResult<()> {
+    pub fn test_invalid_format() {
         let manifest_str = "
             |Main-Dalf: A.dalf
             |Dalfs: B.dalf, C.dalf, A.dalf, E.dalf
@@ -402,6 +402,5 @@ mod test {
                 assert_eq!("unexpected value for daml-lf, found anything-different-from-daml-lf", s),
             _ => panic!("expected failure"),
         }
-        Ok(())
     }
 }
