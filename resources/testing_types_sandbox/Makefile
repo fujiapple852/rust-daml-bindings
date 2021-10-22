@@ -1,4 +1,4 @@
-DAML_LF_VERSION = 1.13
+DAML_LF_VERSION = 1.14
 OUTPUT_PATH = .daml/dist
 DAR_NAME = TestingTypes
 
