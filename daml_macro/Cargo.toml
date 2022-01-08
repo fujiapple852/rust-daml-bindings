@@ -13,7 +13,7 @@ rust-version = "1.56"
 [dependencies]
 daml_grpc = { path = "../daml_grpc" }
 chrono = "0.4"
-bigdecimal = "0.2"
+bigdecimal = "0.3"
 
 [dev-dependencies]
 daml = { path = "../daml", features = [ "grpc" ] }
