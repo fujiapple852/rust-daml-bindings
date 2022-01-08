@@ -26,7 +26,7 @@ tonic = { version = "0.5", features = [ "tls", "tls-roots" ] }
 hyper = { version = "0.14", features = [ "full" ] } # TODO remove when tonic support connect timeout
 prost = "0.8"
 prost-derive = "0.9"
-prost-types = "0.8"
+prost-types = "0.9"
 async-trait = "0.1"
 itertools = "0.10"
 tracing = "0.1"
