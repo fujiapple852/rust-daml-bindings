@@ -15,6 +15,6 @@ daml_lf = { path = "../daml_lf" }
 quote = "1.0"
 proc-macro2 = "1.0"
 itertools = "0.10"
-heck = "0.3"
+heck = "0.4"
 regex = "1.2"
 clap = "2.33"
