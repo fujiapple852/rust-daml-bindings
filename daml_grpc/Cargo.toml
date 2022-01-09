@@ -22,7 +22,7 @@ uuid = { version = "0.8", features = [ "v4" ] }
 chrono = "0.4"
 bigdecimal = "0.3"
 bytes = "1"
-tonic = { version = "0.5", features = [ "tls", "tls-roots" ] }
+tonic = { version = "0.6", features = [ "tls", "tls-roots" ] }
 hyper = { version = "0.14", features = [ "full" ] } # TODO remove when tonic support connect timeout
 prost = "0.8"
 prost-derive = "0.9"
