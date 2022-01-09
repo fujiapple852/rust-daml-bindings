@@ -420,7 +420,7 @@ impl DamlGrpcClient {
     pub(crate) async fn dummy_for_testing() -> Self {
         DamlGrpcClient {
             config: DamlGrpcClientConfig::default(),
-            channel: Channel::builder(Uri::from_static("http://dummy.for.testing")).connect_lazy().unwrap(),
+            channel: Channel::builder(Uri::from_static("http://dummy.for.testing")).connect_lazy(),
             ledger_identity: String::default(),
         }
     }
