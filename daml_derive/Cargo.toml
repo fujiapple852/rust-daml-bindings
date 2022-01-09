@@ -19,7 +19,7 @@ daml_lf = { path = "../daml_lf" }
 syn = { version = "1.0", features = ["full"] }
 quote = "1.0"
 proc-macro2 = "1.0"
-darling = "0.12.0"
+darling = "0.13.1"
 itertools = "0.10"
 
 [dev-dependencies]
