@@ -29,5 +29,5 @@ thiserror = "1.0"
 trim-margin = "0.1"
 
 [build-dependencies]
-prost-build = "0.8"
+prost-build = "0.9"
 itertools = "0.10"
