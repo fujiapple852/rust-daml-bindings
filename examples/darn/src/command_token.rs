@@ -1,6 +1,6 @@
 use crate::DarnCommand;
 use anyhow::Result;
-use clap::{App, AppSettings, Arg, ArgGroup, ArgMatches, SubCommand};
+use clap::{App, AppSettings, Arg, ArgGroup, ArgMatches};
 use daml::util::DamlSandboxTokenBuilder;
 
 /// Darn command for generating DAML Sandbox auth tokens.
@@ -11,11 +11,11 @@ impl DarnCommand for CommandToken {
         "token"
     }
 
-    fn args<'a, 'b>(&self) -> App<'a, 'b> {
+    fn args<'a, 'b>(&self) -> App<'a> {
         args()
     }
 
-    fn execute(&self, matches: &ArgMatches<'_>) -> Result<()> {
+    fn execute(&self, matches: &ArgMatches) -> Result<()> {
         execute(matches)
     }
 }
@@ -36,100 +36,100 @@ enum OutputFormat {
     Both,
 }
 
-fn args<'a, 'b>() -> App<'a, 'b> {
-    SubCommand::with_name("token")
+fn args<'a>() -> App<'a> {
+    App::new("token")
         .about("Generate a DAML sandbox token")
         .setting(AppSettings::DeriveDisplayOrder)
         .arg(
-            Arg::with_name("expiry")
+            Arg::new("expiry")
                 .long("expiry")
-                .short("e")
+                .short('e')
                 .takes_value(true)
                 .value_name("timestamp")
                 .help("Sets the token expiry time (unix timestamp)"),
         )
         .arg(
-            Arg::with_name("duration")
+            Arg::new("duration")
                 .long("duration")
-                .short("d")
+                .short('d')
                 .takes_value(true)
                 .value_name("seconds")
                 .help("Sets the duration of the token (seconds)"),
         )
         .arg(
-            Arg::with_name("token-type")
+            Arg::new("token-type")
                 .long("token-type")
-                .short("t")
+                .short('t')
                 .takes_value(true)
                 .possible_values(&["rs256", "es256"])
                 .required(true)
                 .help("Sets the token type"),
         )
         .arg(
-            Arg::with_name("key-file")
+            Arg::new("key-file")
                 .long("key-file")
-                .short("k")
+                .short('k')
                 .takes_value(true)
                 .value_name("filename")
                 .required(true)
                 .help("The file to use to sign the token"),
         )
         .arg(
-            Arg::with_name("ledger-id")
+            Arg::new("ledger-id")
                 .long("ledger-id")
-                .short("l")
+                .short('l')
                 .takes_value(true)
                 .required(true)
                 .help("Sets the token ledgerId"),
         )
         .arg(
-            Arg::with_name("participant-id")
+            Arg::new("participant-id")
                 .long("participant-id")
-                .short("P")
+                .short('P')
                 .takes_value(true)
                 .help("Sets the token participantId"),
         )
         .arg(
-            Arg::with_name("application-id")
+            Arg::new("application-id")
                 .long("application-id")
-                .short("A")
+                .short('A')
                 .takes_value(true)
                 .help("Sets the token applicationId"),
         )
         .arg(
-            Arg::with_name("act-as")
+            Arg::new("act-as")
                 .long("act-as")
-                .short("a")
-                .multiple(true)
+                .short('a')
+                .multiple_values(true)
                 .use_delimiter(true)
                 .takes_value(true)
                 .value_name("party")
                 .help("Sets the token actAs list"),
         )
         .arg(
-            Arg::with_name("read-as")
+            Arg::new("read-as")
                 .long("read-as")
-                .short("r")
-                .multiple(true)
+                .short('r')
+                .multiple_values(true)
                 .use_delimiter(true)
                 .takes_value(true)
                 .value_name("party")
                 .help("Sets the token readAs list"),
         )
-        .arg(Arg::with_name("admin").long("admin").short("S").help("Sets the token admin flag"))
+        .arg(Arg::new("admin").long("admin").short('S').help("Sets the token admin flag"))
         .arg(
-            Arg::with_name("output")
+            Arg::new("output")
                 .long("output")
-                .short("o")
+                .short('o')
                 .takes_value(true)
                 .possible_values(&["token", "json", "both"])
                 .default_value("token")
                 .help("Sets the output format"),
         )
-        .group(ArgGroup::with_name("ttl").args(&["expiry", "duration"]).required(true))
+        .group(ArgGroup::new("ttl").args(&["expiry", "duration"]).required(true))
 }
 
-fn execute(matches: &ArgMatches<'_>) -> Result<()> {
+fn execute(matches: &ArgMatches) -> Result<()> {
     let admin = matches.is_present("admin");
     let act_as: Vec<String> = matches.values_of("act-as").unwrap_or_default().map(ToOwned::to_owned).collect();
     let read_as: Vec<String> = matches.values_of("read-as").unwrap_or_default().map(ToOwned::to_owned).collect();

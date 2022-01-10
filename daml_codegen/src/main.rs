@@ -6,19 +6,25 @@ fn main() {
     let matches = App::new("DAML codegen for Rust")
         .version("0.1.0")
         .about("Generate Rust code for working with DAML types")
-        .arg(Arg::with_name("dar").help("Sets the input Dar file to use").required(true).index(1))
-        .arg(Arg::with_name("output").short("o").long("output-dir").takes_value(true).help("Sets the output path"))
-        .arg(Arg::with_name("verbose").short("v").long("verbose").multiple(true).help("Sets the level of verbosity"))
+        .arg(Arg::new("dar").help("Sets the input Dar file to use").required(true).index(1))
+        .arg(Arg::new("output").short('o').long("output-dir").takes_value(true).help("Sets the output path"))
         .arg(
-            Arg::with_name("filter")
-                .short("f")
+            Arg::new("verbose")
+                .short('v')
+                .long("verbose")
+                .multiple_occurrences(true)
+                .help("Sets the level of verbosity"),
+        )
+        .arg(
+            Arg::new("filter")
+                .short('f')
                 .long("module-filter")
                 .takes_value(true)
-                .multiple(true)
+                .multiple_values(true)
                 .help("Sets the regex module filter to apply"),
         )
-        .arg(Arg::with_name("intermediate").short("i").long("render-intermediate").help("Generate intermediate types"))
-        .arg(Arg::with_name("combine").short("c").long("combine-modules").help("Combine modules as a single file"))
+        .arg(Arg::new("intermediate").short('i').long("render-intermediate").help("Generate intermediate types"))
+        .arg(Arg::new("combine").short('c').long("combine-modules").help("Combine modules as a single file"))
         .get_matches();
     let dar_file = matches.value_of("dar").unwrap();
     let output_path = matches.value_of("output").unwrap_or(".");
