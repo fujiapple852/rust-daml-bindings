@@ -5,3 +5,23 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
+  - package-ecosystem: "cargo"
+    directory: "/examples/ping_pong_demo"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "cargo"
+    directory: "/examples/rental_demo"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "cargo"
+    directory: "/examples/daml2oas"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "cargo"
+    directory: "/examples/darn"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
