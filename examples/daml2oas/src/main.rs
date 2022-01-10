@@ -9,7 +9,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use anyhow::{anyhow, Context, Result};
-use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand};
+use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches};
 use serde::Serialize;
 
 use companion::CompanionData;
@@ -46,7 +46,7 @@ const DEFAULT_TEMPLATE_FILTER_FILE: &str = ".template_filter.yaml";
 const DEFAULT_COMPANION_FILE: &str = ".companion.yaml";
 
 fn main() -> Result<()> {
-    let oas = SubCommand::with_name("oas")
+    let oas = App::new("oas")
         .about("Generate an OpenAPI document from the given Dar file")
         .arg(make_dar_arg())
         .arg(make_format_arg())
@@ -63,7 +63,7 @@ fn main() -> Result<()> {
         .arg(make_include_archive_choice_arg())
         .arg(make_include_general_operations_arg())
         .arg(make_path_style_arg());
-    let a2s = SubCommand::with_name("a2s")
+    let a2s = App::new("a2s")
         .about("Generate an AsyncAPI document from the given Dar file")
         .arg(make_dar_arg())
         .arg(make_format_arg())
@@ -81,25 +81,25 @@ fn main() -> Result<()> {
         .version(crate_version!())
         .about(crate_description!())
         .setting(AppSettings::ArgRequiredElseHelp)
-        .set_term_width(0)
+        .term_width(0)
         .subcommand(oas)
         .subcommand(a2s)
         .get_matches();
     match matches.subcommand() {
-        ("oas", Some(sub)) => execute_oas(&parse_config(sub))?,
-        ("a2s", Some(sub)) => execute_a2s(&parse_config(sub))?,
+        Some(("oas", sub)) => execute_oas(&parse_config(sub))?,
+        Some(("a2s", sub)) => execute_a2s(&parse_config(sub))?,
         _ => {},
     };
     Ok(())
 }
 
-fn make_dar_arg() -> Arg<'static, 'static> {
-    Arg::with_name("dar").help("Sets the input dar file to use").required(true).index(1)
+fn make_dar_arg() -> Arg<'static> {
+    Arg::new("dar").help("Sets the input dar file to use").required(true).index(1)
 }
 
-fn make_format_arg() -> Arg<'static, 'static> {
-    Arg::with_name("format")
-        .short("f")
+fn make_format_arg() -> Arg<'static> {
+    Arg::new("format")
+        .short('f')
         .long("format")
         .takes_value(true)
         .possible_values(&["json", "yaml"])
@@ -108,48 +108,48 @@ fn make_format_arg() -> Arg<'static, 'static> {
         .help("the output format")
 }
 
-fn make_output_arg() -> Arg<'static, 'static> {
-    Arg::with_name("output").short("o").long("output").takes_value(true).required(false).help("the output file path")
+fn make_output_arg() -> Arg<'static> {
+    Arg::new("output").short('o').long("output").takes_value(true).required(false).help("the output file path")
 }
 
-fn make_companion_file_arg() -> Arg<'static, 'static> {
-    Arg::with_name("companion-file")
-        .short("c")
+fn make_companion_file_arg() -> Arg<'static> {
+    Arg::new("companion-file")
+        .short('c')
         .long("companion-file")
         .takes_value(true)
         .required(false)
         .help("the companion yaml file with auxiliary data to inject into the generated OAS document")
 }
 
-fn make_datadict_file_arg() -> Arg<'static, 'static> {
-    Arg::with_name("datadict-file")
-        .short("d")
+fn make_datadict_file_arg() -> Arg<'static> {
+    Arg::new("datadict-file")
+        .short('d')
         .long("datadict-file")
         .takes_value(true)
         .required(false)
         .help("the data dictionary to use to augment the generated JSON schema")
 }
 
-fn make_template_filter_file_arg() -> Arg<'static, 'static> {
-    Arg::with_name("template-filter-file")
-        .short("t")
+fn make_template_filter_file_arg() -> Arg<'static> {
+    Arg::new("template-filter-file")
+        .short('t')
         .long("template-filter-file")
         .takes_value(true)
         .required(false)
         .help("the template filter to apply")
 }
 
-fn make_module_path_arg() -> Arg<'static, 'static> {
-    Arg::with_name("module-path")
-        .short("m")
+fn make_module_path_arg() -> Arg<'static> {
+    Arg::new("module-path")
+        .short('m')
         .long("module")
         .takes_value(true)
         .required(false)
         .help("module path prefix in the form Foo.Bar.Baz")
 }
 
-fn make_data_title_arg() -> Arg<'static, 'static> {
-    Arg::with_name("data-title")
+fn make_data_title_arg() -> Arg<'static> {
+    Arg::new("data-title")
         .long("data-title")
         .takes_value(true)
         .possible_values(&["none", "data"])
@@ -158,8 +158,8 @@ fn make_data_title_arg() -> Arg<'static, 'static> {
         .help("include the `title` property describing the data item name (i.e. Foo.Bar:Baz)")
 }
 
-fn make_type_description_arg() -> Arg<'static, 'static> {
-    Arg::with_name("type-description")
+fn make_type_description_arg() -> Arg<'static> {
+    Arg::new("type-description")
         .long("type-description")
         .takes_value(true)
         .possible_values(&["none", "data", "all"])
@@ -168,9 +168,9 @@ fn make_type_description_arg() -> Arg<'static, 'static> {
         .help("include the `description` property describing the Daml type")
 }
 
-fn make_reference_prefix_arg() -> Arg<'static, 'static> {
-    Arg::with_name("reference-prefix")
-        .short("p")
+fn make_reference_prefix_arg() -> Arg<'static> {
+    Arg::new("reference-prefix")
+        .short('p')
         .long("reference-prefix")
         .takes_value(true)
         .default_value("#/components/schemas/")
@@ -178,9 +178,9 @@ fn make_reference_prefix_arg() -> Arg<'static, 'static> {
         .help("the prefix for absolute $ref schema references")
 }
 
-fn make_reference_mode_arg() -> Arg<'static, 'static> {
-    Arg::with_name("reference-mode")
-        .short("r")
+fn make_reference_mode_arg() -> Arg<'static> {
+    Arg::new("reference-mode")
+        .short('r')
         .long("reference-mode")
         .takes_value(true)
         .possible_values(&["ref", "inline"])
@@ -189,30 +189,30 @@ fn make_reference_mode_arg() -> Arg<'static, 'static> {
         .help("encode references as as $ref schema links or inline")
 }
 
-fn make_include_package_id_arg() -> Arg<'static, 'static> {
-    Arg::with_name("include-package-id")
+fn make_include_package_id_arg() -> Arg<'static> {
+    Arg::new("include-package-id")
         .long("include-package-id")
         .required(false)
         .help("include the package id in fully qualified templates")
 }
 
-fn make_include_archive_choice_arg() -> Arg<'static, 'static> {
-    Arg::with_name("include-archive-choice")
+fn make_include_archive_choice_arg() -> Arg<'static> {
+    Arg::new("include-archive-choice")
         .long("include-archive-choice")
         .required(false)
         .help("include the Archive choice which is available on every template")
 }
 
-fn make_include_general_operations_arg() -> Arg<'static, 'static> {
-    Arg::with_name("include-general-operations").long("include-general-operations").required(false).help(
+fn make_include_general_operations_arg() -> Arg<'static> {
+    Arg::new("include-general-operations").long("include-general-operations").required(false).help(
         "include the general (non-template specific) /v1/create, /v1/exercise, /v1/create-and-exercise & /v1/fetch \
          endpoints",
     )
 }
 
-fn make_path_style_arg() -> Arg<'static, 'static> {
-    Arg::with_name("path-style")
-        .short("s")
+fn make_path_style_arg() -> Arg<'static> {
+    Arg::new("path-style")
+        .short('s')
         .long("path-style")
         .takes_value(true)
         .possible_values(&["fragment", "slash"])
@@ -221,7 +221,7 @@ fn make_path_style_arg() -> Arg<'static, 'static> {
         .help("encode paths with fragment (i.e. '#') or slash ('/')")
 }
 
-fn parse_config<'c>(matches: &'c ArgMatches<'_>) -> Config<'c> {
+fn parse_config(matches: &ArgMatches) -> Config<'_> {
     let dar_file = matches.value_of("dar").unwrap().to_string();
     let companion_file = matches.value_of("companion-file").map(ToString::to_string);
     let data_dict_file = matches.value_of("datadict-file").map(ToString::to_string);

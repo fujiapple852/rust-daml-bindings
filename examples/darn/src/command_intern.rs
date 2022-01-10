@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
-use clap::{App, Arg, ArgGroup, ArgMatches, SubCommand};
+use clap::{App, Arg, ArgGroup, ArgMatches};
 use itertools::Itertools;
 use prettytable::color::Color;
 use prettytable::format;
@@ -19,36 +19,30 @@ impl DarnCommand for CommandIntern {
         "intern"
     }
 
-    fn args<'a, 'b>(&self) -> App<'a, 'b> {
-        SubCommand::with_name("intern")
+    fn args<'a>(&self) -> App<'a> {
+        App::new("intern")
             .about("Show interned strings and dotted names in a dar")
-            .arg(Arg::with_name("dar").help("Sets the input dar file to use").required(true).index(1))
-            .arg(Arg::with_name("string").short("s").long("string").help("Show interned strings"))
-            .arg(Arg::with_name("dotted").short("d").long("dotted").help("Show interned dotted names"))
+            .arg(Arg::new("dar").help("Sets the input dar file to use").required(true).index(1))
+            .arg(Arg::new("string").short('s').long("string").help("Show interned strings"))
+            .arg(Arg::new("dotted").short('d').long("dotted").help("Show interned dotted names"))
             .arg(
-                Arg::with_name("index")
-                    .short("i")
+                Arg::new("index")
+                    .short('i')
                     .long("index")
-                    .multiple(true)
+                    .multiple_occurrences(true)
                     .use_delimiter(true)
                     .takes_value(true)
                     .required(false)
                     .help("the intern indices"),
             )
-            .arg(
-                Arg::with_name("show-mangled")
-                    .short("f")
-                    .long("show-mangled")
-                    .required(false)
-                    .help("show mangled names"),
-            )
-            .arg(Arg::with_name("order-by-index").required(false).long("order-by-index").help("order by index"))
-            .arg(Arg::with_name("order-by-name").required(false).long("order-by-name").help("order by name"))
-            .group(ArgGroup::with_name("mode").required(true).arg("string").arg("dotted"))
-            .group(ArgGroup::with_name("order").required(false).arg("order-by-index").arg("order-by-name"))
+            .arg(Arg::new("show-mangled").short('f').long("show-mangled").required(false).help("show mangled names"))
+            .arg(Arg::new("order-by-index").required(false).long("order-by-index").help("order by index"))
+            .arg(Arg::new("order-by-name").required(false).long("order-by-name").help("order by name"))
+            .group(ArgGroup::new("mode").required(true).arg("string").arg("dotted"))
+            .group(ArgGroup::new("order").required(false).arg("order-by-index").arg("order-by-name"))
     }
 
-    fn execute(&self, matches: &ArgMatches<'_>) -> Result<()> {
+    fn execute(&self, matches: &ArgMatches) -> Result<()> {
         let dar_path = matches.value_of("dar").unwrap();
         let filter: Vec<usize> = matches
             .values_of("index")

@@ -21,8 +21,8 @@ pub mod command_token;
 
 pub trait DarnCommand {
     fn name(&self) -> &str;
-    fn args<'a, 'b>(&self) -> App<'a, 'b>;
-    fn execute(&self, matches: &ArgMatches<'_>) -> Result<()>;
+    fn args<'a>(&self) -> App<'a>;
+    fn execute(&self, matches: &ArgMatches) -> Result<()>;
 }
 
 macro_rules! command {
@@ -42,7 +42,7 @@ async fn main() -> Result<()> {
         .setting(AppSettings::ArgRequiredElseHelp)
         .subcommands(command_map.values().map(|cmd| cmd.args()))
         .get_matches();
-    let (sub, args) = matches.subcommand();
-    command_map[sub].execute(args.unwrap())?;
+    let (sub, args) = matches.subcommand().unwrap();
+    command_map[sub].execute(args)?;
     Ok(())
 }
