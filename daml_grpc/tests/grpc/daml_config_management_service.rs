@@ -15,8 +15,8 @@ async fn test_get_time_model() -> TestResult {
     let (configuration_generation, time_model) = ledger_client.config_management_service().get_time_model().await?;
     assert_eq!(1, configuration_generation);
     assert_eq!(Duration::from_secs(0), *time_model.avg_transaction_latency());
-    assert_eq!(Duration::from_secs(30), *time_model.min_skew());
-    assert_eq!(Duration::from_secs(30), *time_model.max_skew());
+    assert_eq!(Duration::from_secs(120), *time_model.min_skew());
+    assert_eq!(Duration::from_secs(120), *time_model.max_skew());
     Ok(())
 }
 
