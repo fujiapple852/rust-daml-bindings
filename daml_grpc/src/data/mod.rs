@@ -55,7 +55,7 @@ pub mod command {
 }
 
 mod commands;
-pub use self::commands::{DamlCommands, DamlMinLedgerTime};
+pub use self::commands::{DamlCommands, DamlCommandsDeduplicationPeriod, DamlMinLedgerTime};
 
 mod error;
 pub use self::error::DamlError;
@@ -63,9 +63,6 @@ pub use self::error::DamlResult;
 
 mod identifier;
 pub use self::identifier::DamlIdentifier;
-
-mod trace;
-pub use self::trace::DamlTraceContext;
 
 mod transaction;
 pub use self::transaction::DamlTransaction;
@@ -81,3 +78,6 @@ pub use active::DamlActiveContracts;
 
 mod time_model;
 pub use time_model::DamlTimeModel;
+
+mod features;
+pub use features::{DamlFeaturesDescriptor, DamlUserManagementFeature};

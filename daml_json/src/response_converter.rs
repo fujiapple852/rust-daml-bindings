@@ -338,7 +338,6 @@ mod tests {
             "2019-01-02T03:45:56Z".parse::<DateTime<Utc>>()?,
             events,
             "offset",
-            None,
         ))
     }
 
@@ -352,7 +351,6 @@ mod tests {
             "offset",
             events,
             roots,
-            None,
         ))
     }
 

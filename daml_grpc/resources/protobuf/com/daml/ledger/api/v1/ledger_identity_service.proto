@@ -1,12 +1,9 @@
-// Copyright (c) 2021 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2022 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
 
 package com.daml.ledger.api.v1;
-
-import "com/daml/ledger/api/v1/trace_context.proto";
-
 
 option java_outer_classname = "LedgerIdentityServiceOuterClass";
 option java_package = "com.daml.ledger.api.v1";
@@ -24,18 +21,12 @@ service LedgerIdentityService {
 
 }
 
-message GetLedgerIdentityRequest {
-
-  // Server side tracing will be registered as a child of the submitted context.
-  // This field is a future extension point and is currently not supported.
-  // Optional
-  TraceContext trace_context = 1000;
-}
+message GetLedgerIdentityRequest {}
 
 message GetLedgerIdentityResponse {
 
   // The ID of the ledger exposed by the server.
   // Must be a valid LedgerString (as described in ``value.proto``).
-  // Required
+  // Optional
   string ledger_id = 1;
 }

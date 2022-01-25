@@ -1,16 +1,17 @@
+use std::convert::TryFrom;
+
+use futures::stream::StreamExt;
+use futures::Stream;
+use tonic::transport::Channel;
+use tracing::{instrument, trace};
+
 use crate::data::DamlError;
 use crate::data::DamlLedgerConfiguration;
 use crate::data::DamlResult;
-use crate::data::DamlTraceContext;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::ledger_configuration_service_client::LedgerConfigurationServiceClient;
-use crate::grpc_protobuf::com::daml::ledger::api::v1::{GetLedgerConfigurationRequest, TraceContext};
+use crate::grpc_protobuf::com::daml::ledger::api::v1::GetLedgerConfigurationRequest;
 use crate::service::common::make_request;
 use crate::util::Required;
-use futures::stream::StreamExt;
-use futures::Stream;
-use std::convert::TryFrom;
-use tonic::transport::Channel;
-use tracing::{instrument, trace};
 
 /// Subscribe to configuration changes of a DAML ledger.
 #[derive(Debug)]
@@ -50,16 +51,8 @@ impl<'a> DamlLedgerConfigurationService<'a> {
     pub async fn get_ledger_configuration(
         &self,
     ) -> DamlResult<impl Stream<Item = DamlResult<DamlLedgerConfiguration>>> {
-        self.get_ledger_configuration_with_trace(None).await
-    }
-
-    pub async fn get_ledger_configuration_with_trace(
-        &self,
-        trace_context: impl Into<Option<DamlTraceContext>>,
-    ) -> DamlResult<impl Stream<Item = DamlResult<DamlLedgerConfiguration>>> {
         let payload = GetLedgerConfigurationRequest {
             ledger_id: self.ledger_id.to_string(),
-            trace_context: trace_context.into().map(TraceContext::from),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
         let config_stream =

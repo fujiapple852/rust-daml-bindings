@@ -1,6 +1,7 @@
-use crate::data::{DamlError, DamlResult};
 use tonic::metadata::MetadataValue;
 use tonic::Request;
+
+use crate::data::{DamlError, DamlResult};
 
 pub fn make_request<T>(payload: T, auth_token: Option<&str>) -> DamlResult<Request<T>> {
     let mut request = Request::new(payload);

@@ -1,3 +1,12 @@
+use std::fmt::Debug;
+
+use chrono::DateTime;
+use chrono::Utc;
+use futures::stream::StreamExt;
+use futures::Stream;
+use tonic::transport::Channel;
+use tracing::{instrument, trace};
+
 use crate::data::DamlError;
 use crate::data::DamlResult;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::testing::time_service_client::TimeServiceClient;
@@ -5,13 +14,6 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::testing::{GetTimeRequest, 
 use crate::service::common::make_request;
 use crate::util;
 use crate::util::Required;
-use chrono::DateTime;
-use chrono::Utc;
-use futures::stream::StreamExt;
-use futures::Stream;
-use std::fmt::Debug;
-use tonic::transport::Channel;
-use tracing::{instrument, trace};
 
 /// Get and set the time of a DAML ledger (requires `testing` feature).
 #[derive(Debug)]

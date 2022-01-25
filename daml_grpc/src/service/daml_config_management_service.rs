@@ -1,14 +1,16 @@
+use std::convert::TryFrom;
+use std::fmt::Debug;
+
+use chrono::{DateTime, Utc};
+use tonic::transport::Channel;
+use tracing::{instrument, trace};
+
 use crate::data::DamlResult;
 use crate::data::DamlTimeModel;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::config_management_service_client::ConfigManagementServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::{GetTimeModelRequest, SetTimeModelRequest, TimeModel};
 use crate::service::common::make_request;
 use crate::util::{to_grpc_timestamp, Required};
-use chrono::{DateTime, Utc};
-use std::convert::TryFrom;
-use std::fmt::Debug;
-use tonic::transport::Channel;
-use tracing::{instrument, trace};
 
 /// Provides methods for the ledger administrator to change the current ledger configuration.
 ///

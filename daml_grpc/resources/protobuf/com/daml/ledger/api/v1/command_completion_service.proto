@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2022 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
@@ -7,10 +7,7 @@ package com.daml.ledger.api.v1;
 
 import "com/daml/ledger/api/v1/completion.proto";
 import "com/daml/ledger/api/v1/ledger_offset.proto";
-import "com/daml/ledger/api/v1/trace_context.proto";
-
 import "google/protobuf/timestamp.proto";
-
 
 option java_outer_classname = "CommandCompletionServiceOuterClass";
 option java_package = "com.daml.ledger.api.v1";
@@ -22,25 +19,24 @@ option csharp_namespace = "Com.Daml.Ledger.Api.V1";
 //
 // Commands may fail in 2 distinct manners:
 //
-// 1. Failure communicated in the gRPC error of the submission.
-// 2. Failure communicated in a Completion.
+// 1. Failure communicated synchronously in the gRPC error of the submission.
+// 2. Failure communicated asynchronously in a Completion, see ``completion.proto``.
 //
-// Only successfully submitted commands may produce a completion event.
+// Note that not only successfully submitted commands MAY produce a completion event. For example, the participant MAY
+// choose to produce a completion event for a rejection of a duplicate command.
 //
 // Clients that do not receive a successful completion about their submission MUST NOT assume that it was successful.
 // Clients SHOULD subscribe to the CompletionStream before starting to submit commands to prevent race conditions.
-//
-// Interprocess tracing of command submissions may be achieved via Zipkin by filling out the ``trace_context`` field.
-// The server will return a child context of the submitted one, (or a new one if the context was missing) on both the Completion and Transaction streams.
 service CommandCompletionService {
 
   // Subscribe to command completion events.
   // Errors:
   // - ``UNAUTHENTICATED``: if the request does not include a valid access token
   // - ``PERMISSION_DENIED``: if the claims in the token are insufficient to perform a given operation
-  // - ``NOT_FOUND``: if the request does not include a valid ledger id or if the ledger has been pruned before ``begin``
+  // - ``NOT_FOUND``: if the request does not include a valid ledger id
+  // - ``FAILED_PRECONDITION``: if the ledger has been pruned after the subscription start offset
   // - ``INVALID_ARGUMENT``: if the payload is malformed or is missing required fields
-  // - ``OUT_OF_RANGE``: if the absolute offset is not before the end of the ledger
+  // - ``OUT_OF_RANGE``: if the absolute offset is after the end of the ledger
   rpc CompletionStream (CompletionStreamRequest) returns (stream CompletionStreamResponse);
 
   // Returns the offset after the latest completion.
@@ -55,12 +51,13 @@ service CommandCompletionService {
 message CompletionStreamRequest {
   // Must correspond to the ledger id reported by the Ledger Identification Service.
   // Must be a valid LedgerString (as described in ``value.proto``).
-  // Required
+  // Optional
   string ledger_id = 1;
 
   // Only completions of commands submitted with the same application_id will be visible in the stream.
-  // Must be a valid LedgerString (as described in ``value.proto``).
-  // Required
+  // Must be a valid ApplicationIdString (as described in ``value.proto``).
+  // Required unless authentication is used with a user token or a custom token specifying an application-id.
+  // In that case, the token's user-id, respectively application-id, will be used for the request's application_id.
   string application_id = 2;
 
   // Non-empty list of parties whose data should be included.
@@ -107,13 +104,8 @@ message Checkpoint {
 message CompletionEndRequest {
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
   // Must be a valid LedgerString (as described in ``value.proto``).
-  // Required
-  string ledger_id = 1;
-
-  // Server side tracing will be registered as a child of the submitted context.
-  // This field is a future extension point and is currently not supported.
   // Optional
-  TraceContext trace_context = 1000;
+  string ledger_id = 1;
 }
 
 message CompletionEndResponse {

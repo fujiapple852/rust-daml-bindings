@@ -1,11 +1,11 @@
-use std::time::Duration;
-
 use async_trait::async_trait;
 
 use crate::data::command::{DamlCommand, DamlCreateCommand, DamlExerciseCommand};
 use crate::data::event::{DamlCreatedEvent, DamlTreeEvent};
 use crate::data::value::DamlValue;
-use crate::data::{DamlError, DamlMinLedgerTime, DamlResult, DamlTransaction, DamlTransactionTree};
+use crate::data::{
+    DamlCommandsDeduplicationPeriod, DamlError, DamlMinLedgerTime, DamlResult, DamlTransaction, DamlTransactionTree,
+};
 use crate::util::Required;
 use crate::{DamlCommandFactory, DamlGrpcClient};
 
@@ -15,7 +15,7 @@ pub struct DamlSimpleExecutorBuilder<'a> {
     read_as: Option<Vec<String>>,
     workflow_id: Option<&'a str>,
     application_id: Option<&'a str>,
-    deduplication_time: Option<Duration>,
+    deduplication_period: Option<DamlCommandsDeduplicationPeriod>,
     min_ledger_time: Option<DamlMinLedgerTime>,
 }
 
@@ -27,7 +27,7 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
             read_as: None,
             workflow_id: None,
             application_id: None,
-            deduplication_time: None,
+            deduplication_period: None,
             min_ledger_time: None,
         }
     }
@@ -74,9 +74,9 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
         }
     }
 
-    pub fn deduplication_time(self, deduplication_time: Duration) -> Self {
+    pub fn deduplication_period(self, deduplication_period: DamlCommandsDeduplicationPeriod) -> Self {
         Self {
-            deduplication_time: Some(deduplication_time),
+            deduplication_period: Some(deduplication_period),
             ..self
         }
     }
@@ -96,7 +96,7 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
                 self.read_as.unwrap_or_default(),
                 self.workflow_id.unwrap_or("default-workflow"),
                 self.application_id.unwrap_or("default-application"),
-                self.deduplication_time,
+                self.deduplication_period,
                 self.min_ledger_time,
             ))
         } else {
@@ -141,11 +141,17 @@ impl<'a> DamlSimpleExecutor<'a> {
         read_as: Vec<String>,
         workflow_id: &str,
         application_id: &str,
-        deduplication_time: Option<Duration>,
+        deduplication_period: Option<DamlCommandsDeduplicationPeriod>,
         min_ledger_time: Option<DamlMinLedgerTime>,
     ) -> Self {
-        let command_factory =
-            DamlCommandFactory::new(workflow_id, application_id, act_as, read_as, deduplication_time, min_ledger_time);
+        let command_factory = DamlCommandFactory::new(
+            workflow_id,
+            application_id,
+            act_as,
+            read_as,
+            deduplication_period,
+            min_ledger_time,
+        );
         Self {
             ledger_client,
             command_factory,
@@ -162,12 +168,12 @@ impl<'a> DamlSimpleExecutor<'a> {
 
     async fn submit_and_wait_for_transaction(&self, command: DamlCommand) -> DamlResult<DamlTransaction> {
         let commands = self.command_factory.make_command(command);
-        self.ledger_client.command_service().submit_and_wait_for_transaction(commands).await
+        Ok(self.ledger_client.command_service().submit_and_wait_for_transaction(commands).await?.0)
     }
 
     async fn submit_and_wait_for_transaction_tree(&self, command: DamlCommand) -> DamlResult<DamlTransactionTree> {
         let commands = self.command_factory.make_command(command);
-        self.ledger_client.command_service().submit_and_wait_for_transaction_tree(commands).await
+        Ok(self.ledger_client.command_service().submit_and_wait_for_transaction_tree(commands).await?.0)
     }
 }
 

@@ -1,3 +1,8 @@
+use std::fmt::Debug;
+
+use tonic::transport::Channel;
+use tracing::{instrument, trace};
+
 use crate::data::party::DamlPartyDetails;
 use crate::data::DamlResult;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::party_management_service_client::PartyManagementServiceClient;
@@ -6,9 +11,6 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::{
 };
 use crate::service::common::make_request;
 use crate::util::Required;
-use std::fmt::Debug;
-use tonic::transport::Channel;
-use tracing::{instrument, trace};
 
 /// Inspect the party management state of a ledger participant and modify the parts that are modifiable.
 ///

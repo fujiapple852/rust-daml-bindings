@@ -1,11 +1,13 @@
-use crate::data::DamlResult;
-use crate::data::{DamlError, DamlTraceContext};
-use crate::grpc_protobuf::com::daml::ledger::api::v1::ledger_identity_service_client::LedgerIdentityServiceClient;
-use crate::grpc_protobuf::com::daml::ledger::api::v1::{GetLedgerIdentityRequest, TraceContext};
-use crate::service::common::make_request;
 use std::fmt::Debug;
+
 use tonic::transport::Channel;
 use tracing::{instrument, trace};
+
+use crate::data::DamlError;
+use crate::data::DamlResult;
+use crate::grpc_protobuf::com::daml::ledger::api::v1::ledger_identity_service_client::LedgerIdentityServiceClient;
+use crate::grpc_protobuf::com::daml::ledger::api::v1::GetLedgerIdentityRequest;
+use crate::service::common::make_request;
 
 /// Obtain the unique identity that the DAML ledger.
 #[derive(Debug)]
@@ -33,17 +35,7 @@ impl<'a> DamlLedgerIdentityService<'a> {
     /// DOCME fully document this.
     #[instrument(skip(self))]
     pub async fn get_ledger_identity(&self) -> DamlResult<String> {
-        self.get_ledger_identity_with_trace(None).await
-    }
-
-    #[instrument(skip(self))]
-    pub async fn get_ledger_identity_with_trace(
-        &self,
-        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
-    ) -> DamlResult<String> {
-        let payload = GetLedgerIdentityRequest {
-            trace_context: trace_context.into().map(TraceContext::from),
-        };
+        let payload = GetLedgerIdentityRequest {};
         trace!(payload = ?payload, token = ?self.auth_token);
         let response = self
             .client()

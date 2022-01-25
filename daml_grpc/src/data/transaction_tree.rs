@@ -1,5 +1,5 @@
 use crate::data::event::DamlTreeEvent;
-use crate::data::trace::DamlTraceContext;
+
 use crate::data::{DamlError, DamlResult};
 use crate::grpc_protobuf::com::daml::ledger::api::v1::TransactionTree;
 use crate::util;
@@ -19,7 +19,6 @@ pub struct DamlTransactionTree {
     offset: String,
     events_by_id: HashMap<String, DamlTreeEvent>,
     root_event_ids: Vec<String>,
-    trace_context: Option<DamlTraceContext>,
 }
 
 impl DamlTransactionTree {
@@ -32,7 +31,6 @@ impl DamlTransactionTree {
         offset: impl Into<String>,
         events_by_id: impl Into<HashMap<String, DamlTreeEvent>>,
         root_event_ids: impl Into<Vec<String>>,
-        trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> Self {
         Self {
             transaction_id: transaction_id.into(),
@@ -42,7 +40,6 @@ impl DamlTransactionTree {
             offset: offset.into(),
             events_by_id: events_by_id.into(),
             root_event_ids: root_event_ids.into(),
-            trace_context: trace_context.into(),
         }
     }
 
@@ -77,10 +74,6 @@ impl DamlTransactionTree {
     pub fn offset(&self) -> &str {
         &self.offset
     }
-
-    pub const fn trace_context(&self) -> &Option<DamlTraceContext> {
-        &self.trace_context
-    }
 }
 
 impl TryFrom<TransactionTree> for DamlTransactionTree {
@@ -103,7 +96,6 @@ impl TryFrom<TransactionTree> for DamlTransactionTree {
             tx.offset,
             events_by_id,
             tx.root_event_ids,
-            tx.trace_context.map(DamlTraceContext::from),
         ))
     }
 }

@@ -1,6 +1,7 @@
 use crate::data::offset::DamlLedgerOffset;
-use crate::data::trace::DamlTraceContext;
+
 use crate::data::{DamlError, DamlResult};
+use crate::grpc_protobuf::com::daml::ledger::api::v1::completion::DeduplicationPeriod;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{Checkpoint, Completion, CompletionStreamResponse};
 use crate::grpc_protobuf::google::rpc::Status;
 use crate::util;
@@ -8,6 +9,7 @@ use crate::util::Required;
 use chrono::DateTime;
 use chrono::Utc;
 use std::convert::TryFrom;
+use std::time::Duration;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlCompletionResponse {
@@ -85,7 +87,10 @@ pub struct DamlCompletion {
     command_id: String,
     status: DamlStatus,
     transaction_id: String,
-    trace_context: Option<DamlTraceContext>,
+    application_id: String,
+    act_as: Vec<String>,
+    submission_id: String,
+    deduplication_period: Option<DamlCompletionDeduplicationPeriod>,
 }
 
 impl DamlCompletion {
@@ -93,13 +98,19 @@ impl DamlCompletion {
         command_id: impl Into<String>,
         status: impl Into<DamlStatus>,
         transaction_id: impl Into<String>,
-        trace_context: Option<DamlTraceContext>,
+        application_id: impl Into<String>,
+        act_as: impl Into<Vec<String>>,
+        submission_id: impl Into<String>,
+        deduplication_period: impl Into<Option<DamlCompletionDeduplicationPeriod>>,
     ) -> Self {
         Self {
             command_id: command_id.into(),
             status: status.into(),
             transaction_id: transaction_id.into(),
-            trace_context,
+            application_id: application_id.into(),
+            act_as: act_as.into(),
+            submission_id: submission_id.into(),
+            deduplication_period: deduplication_period.into(),
         }
     }
 
@@ -114,10 +125,6 @@ impl DamlCompletion {
     pub fn transaction_id(&self) -> &str {
         &self.transaction_id
     }
-
-    pub const fn trace_context(&self) -> &Option<DamlTraceContext> {
-        &self.trace_context
-    }
 }
 
 impl TryFrom<Completion> for DamlCompletion {
@@ -131,7 +138,10 @@ impl TryFrom<Completion> for DamlCompletion {
             // special "unknown" `DamlStatus` value, perhaps by reworking `DamlStatus` as an enum.
             DamlStatus::from(completion.status.req()?),
             completion.transaction_id,
-            completion.trace_context.map(DamlTraceContext::from),
+            completion.application_id,
+            completion.act_as,
+            completion.submission_id,
+            completion.deduplication_period.map(DamlCompletionDeduplicationPeriod::from),
         ))
     }
 }
@@ -163,5 +173,22 @@ impl DamlStatus {
 impl From<Status> for DamlStatus {
     fn from(status: Status) -> Self {
         Self::new(status.code, status.message)
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum DamlCompletionDeduplicationPeriod {
+    DeduplicationOffset(String),
+    DeduplicationDuration(Duration),
+}
+
+impl From<DeduplicationPeriod> for DamlCompletionDeduplicationPeriod {
+    fn from(deduplication_period: DeduplicationPeriod) -> Self {
+        match deduplication_period {
+            DeduplicationPeriod::DeduplicationOffset(offset) =>
+                DamlCompletionDeduplicationPeriod::DeduplicationOffset(offset),
+            DeduplicationPeriod::DeduplicationDuration(duration) =>
+                DamlCompletionDeduplicationPeriod::DeduplicationDuration(util::from_grpc_duration(&duration)),
+        }
     }
 }

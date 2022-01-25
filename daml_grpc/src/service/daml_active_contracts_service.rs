@@ -1,17 +1,19 @@
-use crate::data::filter::DamlTransactionFilter;
-use crate::data::DamlError;
-use crate::data::DamlResult;
-use crate::data::{DamlActiveContracts, DamlTraceContext};
-use crate::grpc_protobuf::com::daml::ledger::api::v1::active_contracts_service_client::ActiveContractsServiceClient;
-use crate::grpc_protobuf::com::daml::ledger::api::v1::{GetActiveContractsRequest, TraceContext, TransactionFilter};
-use crate::service::common::make_request;
-use crate::service::DamlVerbosity;
-use futures::Stream;
-use futures::StreamExt;
 use std::convert::TryFrom;
 use std::fmt::Debug;
+
+use futures::Stream;
+use futures::StreamExt;
 use tonic::transport::Channel;
 use tracing::{instrument, trace};
+
+use crate::data::filter::DamlTransactionFilter;
+use crate::data::DamlActiveContracts;
+use crate::data::DamlError;
+use crate::data::DamlResult;
+use crate::grpc_protobuf::com::daml::ledger::api::v1::active_contracts_service_client::ActiveContractsServiceClient;
+use crate::grpc_protobuf::com::daml::ledger::api::v1::{GetActiveContractsRequest, TransactionFilter};
+use crate::service::common::make_request;
+use crate::service::DamlVerbosity;
 
 /// Returns a stream of the active contracts on a DAML ledger.
 ///
@@ -55,27 +57,16 @@ impl<'a> DamlActiveContractsService<'a> {
         }
     }
 
-    #[instrument(skip(self, filter, verbose))]
+    #[instrument(skip(self))]
     pub async fn get_active_contracts(
         &self,
         filter: impl Into<DamlTransactionFilter> + Debug,
         verbose: impl Into<DamlVerbosity> + Debug,
     ) -> DamlResult<impl Stream<Item = DamlResult<DamlActiveContracts>>> {
-        self.get_active_contracts_with_trace(filter, verbose, None).await
-    }
-
-    #[instrument(skip(self))]
-    pub async fn get_active_contracts_with_trace(
-        &self,
-        filter: impl Into<DamlTransactionFilter> + Debug,
-        verbose: impl Into<DamlVerbosity> + Debug,
-        trace_context: impl Into<Option<DamlTraceContext>> + Debug,
-    ) -> DamlResult<impl Stream<Item = DamlResult<DamlActiveContracts>>> {
         let payload = GetActiveContractsRequest {
             ledger_id: self.ledger_id.to_string(),
             filter: Some(TransactionFilter::from(filter.into())),
             verbose: bool::from(verbose.into()),
-            trace_context: trace_context.into().map(TraceContext::from),
         };
         trace!(payload = ?payload, token = ?self.auth_token);
         let active_contract_stream =

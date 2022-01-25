@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2022 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
@@ -7,8 +7,6 @@ package com.daml.ledger.api.v1;
 
 import "com/daml/ledger/api/v1/event.proto";
 import "com/daml/ledger/api/v1/transaction_filter.proto";
-import "com/daml/ledger/api/v1/trace_context.proto";
-
 
 option java_outer_classname = "ActiveContractsServiceOuterClass";
 option java_package = "com.daml.ledger.api.v1";
@@ -34,7 +32,7 @@ message GetActiveContractsRequest {
 
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
   // Must be a valid LedgerString (as described in ``value.proto``).
-  // Required
+  // Optional
   string ledger_id = 1;
 
   // Templates to include in the served snapshot, per party.
@@ -45,12 +43,6 @@ message GetActiveContractsRequest {
   // In particular, setting the verbose flag to true triggers the ledger to include labels for record fields.
   // Optional
   bool verbose = 3;
-
-  // Server side tracing will be registered as a child of the submitted context.
-  // This field is a future extension point and is currently not supported.
-  // Optional
-  TraceContext trace_context = 1000;
-
 }
 
 message GetActiveContractsResponse {
@@ -70,10 +62,4 @@ message GetActiveContractsResponse {
   // Must be a valid LedgerString (as described in ``value.proto``).
   // Optional
   repeated CreatedEvent active_contracts = 3;
-
-  // Zipkin trace context.
-  // This field is a future extension point and is currently not supported.
-  // Optional
-  TraceContext trace_context = 1000;
-
 }
