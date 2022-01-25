@@ -35,11 +35,11 @@ impl DamlError {
 impl fmt::Display for DamlError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            DamlError::InvalidUriError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
-            DamlError::GrpcTransportError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
-            DamlError::GprcStatusError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
-            DamlError::GprcPermissionError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
-            DamlError::StdError(e) => write!(fmt, "{}", (e as &dyn error::Error).to_string()),
+            DamlError::InvalidUriError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
+            DamlError::GrpcTransportError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
+            DamlError::GprcStatusError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
+            DamlError::GprcPermissionError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
+            DamlError::StdError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
             DamlError::UnexpectedType(expected, actual) =>
                 write!(fmt, "unexpected type, expected {} but found {}", expected, actual),
             DamlError::UnknownField(name) => write!(fmt, "unknown field {}", name),

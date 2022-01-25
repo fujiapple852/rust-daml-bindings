@@ -8,7 +8,7 @@ use crate::renderer::renderer_utils::quote_escaped_ident;
 use crate::renderer::type_renderer::quote_type;
 use crate::renderer::{IsRenderable, RenderContext};
 use daml_lf::element::{DamlChoice, DamlField, DamlType};
-use heck::{ToSnakeCase};
+use heck::ToSnakeCase;
 
 pub fn quote_choice(ctx: &RenderContext<'_>, name: &str, items: &[DamlChoice<'_>]) -> TokenStream {
     let all_choice_methods_tokens = quote_all_choice_methods(ctx, name, items);

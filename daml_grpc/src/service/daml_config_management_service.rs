@@ -43,8 +43,7 @@ impl<'a> DamlConfigManagementService<'a> {
     pub async fn get_time_model(&self) -> DamlResult<(i64, DamlTimeModel)> {
         let payload = GetTimeModelRequest {};
         trace!(payload = ?payload, token = ?self.auth_token);
-        let response =
-            self.client().get_time_model(make_request(payload, self.auth_token.as_deref())?).await?.into_inner();
+        let response = self.client().get_time_model(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
         Ok((response.configuration_generation, DamlTimeModel::try_from(response.time_model.req()?)?))
     }

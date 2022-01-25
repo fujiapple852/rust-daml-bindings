@@ -93,7 +93,7 @@ pub fn extract_enum(name: String, data_enum: &DataEnum, generics: &Generics) -> 
     let all_constructors: Vec<String> = variants
         .into_iter()
         .map(|v| {
-            if let AttrType::Unit = v.field_type {
+            if AttrType::Unit == v.field_type {
                 v.field_label
             } else {
                 panic!("DamlEnum variants may not have type parameters (use DamlVariant instead))")

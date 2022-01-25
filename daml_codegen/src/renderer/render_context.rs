@@ -1,19 +1,10 @@
 use daml_lf::element::DamlArchive;
 
 /// Contextual information required during code generation.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct RenderContext<'a> {
     mode: RenderMode<'a>,
     filter_mode: RenderFilterMode,
-}
-
-impl Default for RenderContext<'_> {
-    fn default() -> Self {
-        Self {
-            mode: RenderMode::default(),
-            filter_mode: RenderFilterMode::default(),
-        }
-    }
 }
 
 impl<'a> RenderContext<'a> {
