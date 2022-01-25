@@ -44,7 +44,7 @@ impl JsonValueEncoder {
     /// processed with `top_level` set to true.  If the field type contains nested data types (such as an optional)
     /// then these will behave as described above.
     ///
-    /// See the (DAML LF JSON Encoding documentation)[https://docs.daml.com/json-api/lf-value-specification.html] for details.
+    /// See the [DAML LF JSON Encoding documentation](https://docs.daml.com/json-api/lf-value-specification.html) for details.
     fn do_encode_value(&self, value: &DamlValue, top_level: bool) -> DamlJsonCodecResult<Value> {
         match value {
             DamlValue::Unit => Ok(json!({})),

@@ -1600,7 +1600,7 @@ mod tests {
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "HigherKindTest"], "HigherKindedData");
         match JsonSchemaEncoder::new(arc).encode_type(&ty) {
             Err(DamlJsonSchemaCodecError::NotSerializableDamlType(s)) if s == "HigherKindedData" => Ok(()),
-            Err(e) => panic!("expected different error: {}", e.to_string()),
+            Err(e) => panic!("expected different error: {}", e),
             _ => panic!("expected error"),
         }
     }
@@ -1611,7 +1611,7 @@ mod tests {
         let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Oa");
         match JsonSchemaEncoder::new(arc).encode_type(&ty) {
             Err(DamlJsonSchemaCodecError::TypeVarNotFoundInParams(s)) if s == "a" => Ok(()),
-            Err(e) => panic!("expected different error: {}", e.to_string()),
+            Err(e) => panic!("expected different error: {}", e),
             _ => panic!("expected error"),
         }
     }

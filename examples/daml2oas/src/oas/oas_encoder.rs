@@ -80,21 +80,21 @@ impl<'arc> OpenAPIEncoder<'arc> {
             .as_ref()
             .and_then(|c| c.name.as_ref())
             .map(ToString::to_string)
-            .or_else(|| Some(format!("")));
+            .or_else(|| Some(String::new()));
         let url = self
             .companion_data
             .contact
             .as_ref()
             .and_then(|c| c.url.as_ref())
             .map(ToString::to_string)
-            .or_else(|| Some(format!("")));
+            .or_else(|| Some(String::new()));
         let email = self
             .companion_data
             .contact
             .as_ref()
             .and_then(|c| c.email.as_ref())
             .map(ToString::to_string)
-            .or_else(|| Some(format!("")));
+            .or_else(|| Some(String::new()));
         let contact = Contact::new(contact_name, url, email);
         let version = self
             .companion_data

@@ -19,7 +19,7 @@ use syn::{AttributeArgs, Data, DataStruct, DeriveInput, Fields, ItemImpl};
 pub fn generate_tokens(args: AttributeArgs) -> proc_macro::TokenStream {
     let params: CodeGeneratorParameters = CodeGeneratorParameters::from_list(&args).unwrap_or_else(|e| panic!("{}", e));
     let archive = DarFile::from_file(&params.dar_file)
-        .unwrap_or_else(|e| panic!("failed to load Dar file from {}, error was: {}", &params.dar_file, e.to_string()));
+        .unwrap_or_else(|e| panic!("failed to load Dar file from {}, error was: {}", &params.dar_file, e));
     let filters: Vec<_> = params.module_filter_regex.iter().map(String::as_str).collect();
     let render_method = match &params.mode {
         Some(name) if name.to_ascii_lowercase() == "intermediate" => RenderMethod::Intermediate,
@@ -32,7 +32,7 @@ pub fn generate_tokens(args: AttributeArgs) -> proc_macro::TokenStream {
     match applied {
         Ok(Ok(tokens)) => proc_macro::TokenStream::from(tokens),
         Ok(Err(e)) => panic!("failed to generate DAML code: {0}", e),
-        Err(e) => panic!("DAML-LF error in DAML code generator: {0}", e.to_string()),
+        Err(e) => panic!("DAML-LF error in DAML code generator: {0}", e),
     }
 }
 

@@ -2,7 +2,7 @@ use crate::renderer::field_renderer::quote_fields;
 use crate::renderer::type_renderer::quote_type;
 use crate::renderer::{quote_escaped_ident, to_module_path, IsRenderable, RenderContext};
 use daml_lf::element::{DamlChoice, DamlEnum, DamlField, DamlRecord, DamlTemplate, DamlType, DamlVariant};
-use heck::{ToSnakeCase};
+use heck::ToSnakeCase;
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -82,7 +82,7 @@ fn quote_variant_field(field: &DamlField<'_>) -> TokenStream {
 
 pub fn quote_daml_enum(_ctx: &RenderContext<'_>, data_enum: &DamlEnum<'_>) -> TokenStream {
     let name_tokens = quote_escaped_ident(data_enum.name());
-    let all_enum_constructors: Vec<_> = data_enum.constructors().map(|field| quote_enum_field(field)).collect();
+    let all_enum_constructors: Vec<_> = data_enum.constructors().map(quote_enum_field).collect();
     quote!(
         #[DamlEnum]
         pub enum #name_tokens {

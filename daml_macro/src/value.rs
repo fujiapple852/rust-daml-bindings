@@ -36,7 +36,7 @@
 /// | `t`    | timestamp   | `DamlValue::Timestamp`  | `"2019-01-01T01:23:45Z"::t` |
 ///
 /// String literal used without a type specifier are assumed to be [`DamlValue::Text`] therefore type specifiers are
-/// only required for [`DamlValue::Party`] (::p) and [`DamlValue::ContractId`] (::c).
+/// only required for [`DamlValue::Party`] (`::p`) and [`DamlValue::ContractId`] (`::c`).
 ///
 /// # Limitations
 ///
