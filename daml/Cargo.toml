@@ -29,16 +29,16 @@ derive = [ "daml_derive" ]
 # Enable code generator feature.
 codegen = [ "daml_codegen" ]
 
-# Enable DAML-LF feature.
+# Enable Daml-LF feature.
 lf = [ "daml_lf" ]
 
-# Enable DAML-LF feature with support for all types
+# Enable Daml-LF feature with support for all types
 lf_full = [ "lf", "daml_lf/full" ]
 
 # Enable additional utilities feature.
 util = [ "daml_util" ]
 
-# Enable the DAML prelude feature (required to use code produced by the code generator).
+# Enable the Daml prelude feature (required to use code produced by the code generator).
 prelude = [ "daml_grpc", "daml_derive" ]
 
 # Enable ledger API features which are only supported on the sandbox.

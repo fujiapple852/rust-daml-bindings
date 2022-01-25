@@ -175,11 +175,11 @@ fn make_grpc_identifier(package_id: &str, module: &[String], entity: &str) -> Da
     DamlIdentifier::new(package_id, module.iter().join("."), entity)
 }
 
-/// A helper representation of a DAML template id.
+/// A helper representation of a Daml template id.
 ///
 /// This type exists to provide a convenient `TryFrom` impl for converting from a String.
 ///
-/// Template ids are represented as JSON strings of the form `[package_id:]module:entity` in the DAML JSON API and as
+/// Template ids are represented as JSON strings of the form `[package_id:]module:entity` in the Daml JSON API and as
 /// such this struct does is not required to be `Serialize` or `Deserialize`.
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct DamlJsonTemplateId {

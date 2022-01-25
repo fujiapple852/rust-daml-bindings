@@ -3,9 +3,9 @@ use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-/// Build JWT tokens suitable for use in the DAML Sandbox.
+/// Build JWT tokens suitable for use in the Daml Sandbox.
 ///
-/// The DAML Sandbox support the use JWT tokens for authentication.  The following JSON structure represents the claims
+/// The Daml Sandbox support the use JWT tokens for authentication.  The following JSON structure represents the claims
 /// that may be supplied (see [here](https://docs.daml.com/tools/sandbox.html#running-with-authentication) for details):
 ///
 /// ```json
@@ -23,7 +23,7 @@ use thiserror::Error;
 /// ```
 ///
 /// All ledger API endpoints support passing a `Bearer` token in the `authentication` http header.  This builder
-/// produces bearer token strings in `HS256`, `RS256` & `EC256` formats which are suitable for use by the DAML ledger
+/// produces bearer token strings in `HS256`, `RS256` & `EC256` formats which are suitable for use by the Daml ledger
 /// API.
 ///
 /// Note that test JWT tokens created with [https://jwt.io/](https://jwt.io/) will, by default, place the `alg` attribute ahead of
@@ -191,10 +191,10 @@ impl DamlSandboxTokenBuilder {
     }
 }
 
-/// DAML Sandbox Auth Result.
+/// Daml Sandbox Auth Result.
 pub type DamlSandboxAuthResult<T> = Result<T, DamlSandboxAuthError>;
 
-/// DAML Sandbox Auth Error.
+/// Daml Sandbox Auth Error.
 #[derive(Error, Debug)]
 pub enum DamlSandboxAuthError {
     #[error("failed to create JSON Web Token: {0}")]

@@ -9,7 +9,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 
-/// Representation of a DAML type.
+/// Representation of a Daml type.
 #[derive(Debug, Serialize, Clone)]
 pub enum DamlType<'a> {
     ContractId(Option<Box<DamlType<'a>>>),

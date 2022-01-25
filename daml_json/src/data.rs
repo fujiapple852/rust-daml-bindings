@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-/// DAML JSON API representation of a ledger event.
+/// Daml JSON API representation of a ledger event.
 #[derive(Debug, Serialize, Deserialize)]
 pub enum DamlJsonEvent {
     #[serde(rename = "created")]
@@ -10,7 +10,7 @@ pub enum DamlJsonEvent {
     Archived(DamlJsonArchivedEvent),
 }
 
-/// DAML JSON API representation of a ledger contract created event.
+/// Daml JSON API representation of a ledger contract created event.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonCreatedEvent {
     pub observers: Vec<String>,
@@ -44,7 +44,7 @@ impl DamlJsonCreatedEvent {
     }
 }
 
-/// DAML JSON API representation of a ledger contract archived event.
+/// Daml JSON API representation of a ledger contract archived event.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonArchivedEvent {
     #[serde(rename = "contractId")]
@@ -62,7 +62,7 @@ impl DamlJsonArchivedEvent {
     }
 }
 
-/// DAML JSON API representation of a ledger exercise result.
+/// Daml JSON API representation of a ledger exercise result.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonExerciseResult {
     #[serde(rename = "exerciseResult")]
@@ -70,7 +70,7 @@ pub struct DamlJsonExerciseResult {
     pub events: Vec<DamlJsonEvent>,
 }
 
-/// DAML JSON API representation of a ledger Party.
+/// Daml JSON API representation of a ledger Party.
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct DamlJsonParty {
     pub identifier: String,
@@ -90,7 +90,7 @@ impl DamlJsonParty {
     }
 }
 
-/// DAML JSON API representation of a query.
+/// Daml JSON API representation of a query.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonQuery {
     #[serde(rename = "templateIds")]

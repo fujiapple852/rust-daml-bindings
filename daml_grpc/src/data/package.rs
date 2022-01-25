@@ -79,7 +79,7 @@ impl From<HashFunction> for DamlHashFunction {
     }
 }
 
-/// Detailed information about a DAML `dar` package.
+/// Detailed information about a Daml `dar` package.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlPackageDetails {
     package_id: String,
@@ -103,7 +103,7 @@ impl DamlPackageDetails {
         }
     }
 
-    /// The identity of the DAML-LF package.
+    /// The identity of the Daml-LF package.
     pub fn package_id(&self) -> &str {
         &self.package_id
     }

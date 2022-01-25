@@ -15,7 +15,7 @@ use crate::service::common::make_request;
 use crate::util;
 use crate::util::Required;
 
-/// Get and set the time of a DAML ledger (requires `testing` feature).
+/// Get and set the time of a Daml ledger (requires `testing` feature).
 #[derive(Debug)]
 pub struct DamlTimeService<'a> {
     channel: Channel,

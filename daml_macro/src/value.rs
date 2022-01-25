@@ -1,17 +1,17 @@
-/// Construct a DAML value.
+/// Construct a Daml value.
 ///
 /// This macro provide a concise DSL for constructing an [`DamlValue`] which can be used in the creation of contracts
 /// and the exercising of choices.
 ///
 /// # Syntax
 ///
-/// A DAML `record` is a map of `label` to `value`.  A `label` is always an identifier.  A `value` can be
+/// A Daml `record` is a map of `label` to `value`.  A `label` is always an identifier.  A `value` can be
 /// a `literal`, an `identifier`, an `expression`, a `list`, an `optional`, a `variant` or a nested `record`.
 ///
 /// The macro always creates a [`DamlValue`] enum which may be of any allowed enum variant.  Typically a [`DamlRecord`]
 /// is being constructed and so a [`DamlValue::Record`] is produced.
 ///
-/// DAML value pseudo-BNF grammar:
+/// Daml value pseudo-BNF grammar:
 ///
 /// ``` bnf
 /// DamlValue ::=     '{' ( label ':' DamlValue ',' )* '}'  // Record

@@ -14,7 +14,7 @@ const MANIFEST_FILE_PATH: &str = "META-INF/MANIFEST.MF";
 const DALF_FILE_EXTENSION: &str = "dalf";
 const DALF_PRIM_FILE_SUFFIX: &str = "-prim";
 
-/// A collection of `DAML LF` archives combined with a manifest file (aka a `dar` file).
+/// A collection of `Daml LF` archives combined with a manifest file (aka a `dar` file).
 ///
 /// A `DarFile` contains a `main` [`DamlLfArchive`] and collection of `dependencies` [`DamlLfArchive`] combined with
 /// a [`DarManifest`].

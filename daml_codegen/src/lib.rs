@@ -1,4 +1,4 @@
-//! Rust DAML type code generator.
+//! Rust Daml type code generator.
 //!
 //! Provides an implementation of custom attributes and procedural macros defined in the [`daml_derive`] crate.
 //!
@@ -23,5 +23,5 @@ mod error;
 /// Element renderers.
 pub mod renderer;
 
-/// Code generators for producing Rust implementations of DAML types.
+/// Code generators for producing Rust implementations of Daml types.
 pub mod generator;

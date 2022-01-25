@@ -5,5 +5,5 @@ const OUTPUT_PATH: &str = "src/autogen";
 
 fn main() {
     daml_codegen(DAR_PATH, OUTPUT_PATH, &[], RenderMethod::Full, ModuleOutputMode::Combined)
-        .expect("failed to generate code for DAML archive");
+        .expect("failed to generate code for Daml archive");
 }

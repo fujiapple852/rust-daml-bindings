@@ -21,7 +21,7 @@ use crate::service::common::make_request;
 use crate::service::DamlVerbosity;
 use crate::util::Required;
 
-/// Read transactions from a DAML ledger.
+/// Read transactions from a Daml ledger.
 #[derive(Debug)]
 pub struct DamlTransactionService<'a> {
     channel: Channel,

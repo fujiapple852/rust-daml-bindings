@@ -11,7 +11,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::package_management_
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::{ListKnownPackagesRequest, UploadDarFileRequest};
 use crate::service::common::make_request;
 
-/// Query the DAML-LF packages supported by the ledger participant and upload DAR files.
+/// Query the Daml-LF packages supported by the ledger participant and upload DAR files.
 ///
 /// We use 'backing participant' to refer to this specific participant in the methods of this API.
 ///
@@ -42,7 +42,7 @@ impl<'a> DamlPackageManagementService<'a> {
         }
     }
 
-    /// Returns the details of all DAML-LF packages known to the backing participant.
+    /// Returns the details of all Daml-LF packages known to the backing participant.
     #[instrument(skip(self))]
     pub async fn list_known_packages(&self) -> DamlResult<Vec<DamlPackageDetails>> {
         let payload = ListKnownPackagesRequest {};
@@ -65,7 +65,7 @@ impl<'a> DamlPackageManagementService<'a> {
     /// If DAR file is too big or is malformed, the backing participant will respond with
     /// `INVALID_ARGUMENT`.
     ///
-    /// The maximum supported size is implementation specific.  Contains a DAML archive `dar`file, which in turn is a
+    /// The maximum supported size is implementation specific.  Contains a Daml archive `dar`file, which in turn is a
     /// jar like zipped container for `daml_lf` archives.
     #[instrument(skip(self))]
     pub async fn upload_dar_file(

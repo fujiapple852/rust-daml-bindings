@@ -3,9 +3,9 @@ use daml_codegen::generator::{daml_codegen_internal, ModuleOutputMode, RenderMet
 use clap::{App, Arg};
 
 fn main() {
-    let matches = App::new("DAML codegen for Rust")
+    let matches = App::new("Daml codegen for Rust")
         .version("0.1.0")
-        .about("Generate Rust code for working with DAML types")
+        .about("Generate Rust code for working with Daml types")
         .arg(Arg::new("dar").help("Sets the input Dar file to use").required(true).index(1))
         .arg(Arg::new("output").short('o').long("output-dir").takes_value(true).help("Sets the output path"))
         .arg(
@@ -44,5 +44,5 @@ fn main() {
         ModuleOutputMode::Separate
     };
     daml_codegen_internal(dar_file, output_path, &filters, render_method, module_output_mode)
-        .expect("failed to generate code for DAML archive");
+        .expect("failed to generate code for Daml archive");
 }

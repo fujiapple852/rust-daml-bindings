@@ -4,7 +4,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 use std::iter::once;
 
-/// DAML JSON API request metadata.
+/// Daml JSON API request metadata.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonRequestMeta {
     #[serde(rename = "commandId")]
@@ -19,7 +19,7 @@ impl DamlJsonRequestMeta {
     }
 }
 
-/// DAML JSON API create contract request.
+/// Daml JSON API create contract request.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonCreateRequest {
     #[serde(rename = "templateId")]
@@ -48,7 +48,7 @@ impl DamlJsonCreateRequest {
     }
 }
 
-/// DAML JSON API create contract response.
+/// Daml JSON API create contract response.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonCreateResponse {
     pub status: u16,
@@ -57,9 +57,9 @@ pub struct DamlJsonCreateResponse {
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
-/// Represents either a DAML JSON API [`DamlJsonExerciseRequest`] or [`DamlJsonExerciseByKeyRequest`].
+/// Represents either a Daml JSON API [`DamlJsonExerciseRequest`] or [`DamlJsonExerciseByKeyRequest`].
 ///
-/// This is required as the DAML JSON API uses the same path (`exercise`) for both request types and the only way
+/// This is required as the Daml JSON API uses the same path (`exercise`) for both request types and the only way
 /// to uniquely identify which case we have been provided is by checking for the `contractId` and `key` fields.
 ///
 /// To avoid having to first convert to a generic JSON `Value` to decide check which structure has been provided we
@@ -74,7 +74,7 @@ pub enum DamlJsonExerciseRequestType {
     ExerciseByKey(DamlJsonExerciseByKeyRequest),
 }
 
-/// DAML JSON API exercise choice request.
+/// Daml JSON API exercise choice request.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonExerciseRequest {
     #[serde(rename = "templateId")]
@@ -102,7 +102,7 @@ impl DamlJsonExerciseRequest {
     }
 }
 
-/// DAML JSON API exercise choice response.
+/// Daml JSON API exercise choice response.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonExerciseResponse {
     pub status: u16,
@@ -111,7 +111,7 @@ pub struct DamlJsonExerciseResponse {
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
-/// DAML JSON API exercise choice by key request.
+/// Daml JSON API exercise choice by key request.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonExerciseByKeyRequest {
     #[serde(rename = "templateId")]
@@ -134,7 +134,7 @@ impl DamlJsonExerciseByKeyRequest {
     }
 }
 
-/// DAML JSON API exercise choice by key response.
+/// Daml JSON API exercise choice by key response.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonExerciseByKeyResponse {
     pub status: u16,
@@ -143,7 +143,7 @@ pub struct DamlJsonExerciseByKeyResponse {
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
-/// An invalid DAML JSON API exercise choice request (`key` and `contractId` are mutually exclusive).
+/// An invalid Daml JSON API exercise choice request (`key` and `contractId` are mutually exclusive).
 ///
 /// See [`DamlJsonExerciseRequestType`] for details.
 #[derive(Debug, Serialize, Deserialize)]
@@ -157,7 +157,7 @@ pub struct DamlJsonInvalidExerciseRequest {
     pub argument: Value,
 }
 
-/// DAML JSON API create contract and exercise choice request.
+/// Daml JSON API create contract and exercise choice request.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonCreateAndExerciseRequest {
     #[serde(rename = "templateId")]
@@ -180,7 +180,7 @@ impl DamlJsonCreateAndExerciseRequest {
     }
 }
 
-/// DAML JSON API create contract and exercise choice response.
+/// Daml JSON API create contract and exercise choice response.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonCreateAndExerciseResponse {
     pub status: u16,
@@ -189,7 +189,7 @@ pub struct DamlJsonCreateAndExerciseResponse {
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
-/// DAML JSON API fetch contract by id request.
+/// Daml JSON API fetch contract by id request.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonFetchRequest {
     #[serde(rename = "contractId")]
@@ -205,7 +205,7 @@ impl DamlJsonFetchRequest {
     }
 }
 
-/// DAML JSON API fetch contract by id response.
+/// Daml JSON API fetch contract by id response.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonFetchResponse {
     pub status: u16,
@@ -214,7 +214,7 @@ pub struct DamlJsonFetchResponse {
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
-/// DAML JSON API fetch contract by key request.
+/// Daml JSON API fetch contract by key request.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonFetchByKeyRequest {
     #[serde(rename = "templateId")]
@@ -232,7 +232,7 @@ impl DamlJsonFetchByKeyRequest {
     }
 }
 
-/// DAML JSON API fetch contract by key response.
+/// Daml JSON API fetch contract by key response.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonFetchByKeyResponse {
     pub status: u16,
@@ -241,7 +241,7 @@ pub struct DamlJsonFetchByKeyResponse {
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
-/// DAML JSON API query response.
+/// Daml JSON API query response.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonQueryResponse {
     pub status: u16,
@@ -250,7 +250,7 @@ pub struct DamlJsonQueryResponse {
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
-/// DAML JSON API fetch parties request.
+/// Daml JSON API fetch parties request.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonFetchPartiesRequest(pub Vec<String>);
 
@@ -261,7 +261,7 @@ impl DamlJsonFetchPartiesRequest {
     }
 }
 
-/// DAML JSON API fetch parties response.
+/// Daml JSON API fetch parties response.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonFetchPartiesResponse {
     pub status: u16,
@@ -270,7 +270,7 @@ pub struct DamlJsonFetchPartiesResponse {
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
-/// DAML JSON API allocate party request.
+/// Daml JSON API allocate party request.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonAllocatePartyRequest {
     #[serde(rename = "identifierHint")]
@@ -289,7 +289,7 @@ impl DamlJsonAllocatePartyRequest {
     }
 }
 
-/// DAML JSON API allocate party response.
+/// Daml JSON API allocate party response.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonAllocatePartyResponse {
     pub status: u16,
@@ -298,7 +298,7 @@ pub struct DamlJsonAllocatePartyResponse {
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
-/// DAML JSON API list packages response.
+/// Daml JSON API list packages response.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonListPackagesResponse {
     pub status: u16,
@@ -307,7 +307,7 @@ pub struct DamlJsonListPackagesResponse {
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
-/// DAML JSON API upload `Dar` response.
+/// Daml JSON API upload `Dar` response.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonUploadDarResponse {
     pub status: u16,
@@ -316,7 +316,7 @@ pub struct DamlJsonUploadDarResponse {
     pub warnings: Option<HashMap<String, Vec<String>>>,
 }
 
-/// DAML JSON API generic error response.
+/// Daml JSON API generic error response.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DamlJsonErrorResponse {
     pub status: u16,

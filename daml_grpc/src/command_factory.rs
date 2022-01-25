@@ -2,7 +2,7 @@ use crate::data::command::DamlCommand;
 use crate::data::{DamlCommands, DamlCommandsDeduplicationPeriod, DamlMinLedgerTime};
 use uuid::Uuid;
 
-/// Factory for creating [`DamlCommands`] to submit to a DAML ledger.
+/// Factory for creating [`DamlCommands`] to submit to a Daml ledger.
 #[derive(Debug)]
 pub struct DamlCommandFactory {
     workflow_id: String,

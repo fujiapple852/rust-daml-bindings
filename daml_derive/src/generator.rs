@@ -15,7 +15,7 @@ use darling::FromMeta;
 use quote::quote;
 use syn::{AttributeArgs, Data, DataStruct, DeriveInput, Fields, ItemImpl};
 
-/// Generate a Rust `TokenStream` representing the supplied DAML Archive.
+/// Generate a Rust `TokenStream` representing the supplied Daml Archive.
 pub fn generate_tokens(args: AttributeArgs) -> proc_macro::TokenStream {
     let params: CodeGeneratorParameters = CodeGeneratorParameters::from_list(&args).unwrap_or_else(|e| panic!("{}", e));
     let archive = DarFile::from_file(&params.dar_file)
@@ -31,8 +31,8 @@ pub fn generate_tokens(args: AttributeArgs) -> proc_macro::TokenStream {
         archive.apply(|archive| ModuleMatcher::new(&filters).map(|mm| quote_archive(archive, &mm, &render_method)));
     match applied {
         Ok(Ok(tokens)) => proc_macro::TokenStream::from(tokens),
-        Ok(Err(e)) => panic!("failed to generate DAML code: {0}", e),
-        Err(e) => panic!("DAML-LF error in DAML code generator: {0}", e),
+        Ok(Err(e)) => panic!("failed to generate Daml code: {0}", e),
+        Err(e) => panic!("Daml-LF error in Daml code generator: {0}", e),
     }
 }
 

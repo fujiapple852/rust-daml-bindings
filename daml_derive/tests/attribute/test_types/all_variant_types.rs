@@ -1,6 +1,6 @@
 use daml::prelude::*;
 
-/// The following is an example of how this DAML variant data type can be represented:
+/// The following is an example of how this Daml variant data type can be represented:
 ///
 /// ```daml
 /// data RecordArgument = RecordArgument with field_aaa: Int; field_bbb: [Text]

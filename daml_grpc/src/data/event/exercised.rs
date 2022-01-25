@@ -4,7 +4,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::ExercisedEvent;
 use crate::util::Required;
 use std::convert::TryFrom;
 
-/// An event which represents exercising of a choice on a contract on a DAML ledger.
+/// An event which represents exercising of a choice on a contract on a Daml ledger.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlExercisedEvent {
     event_id: String,

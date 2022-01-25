@@ -11,7 +11,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::{Commands, SubmitAndWaitRe
 use crate::service::common::make_request;
 use crate::util::Required;
 
-/// Submit commands to a DAML ledger and await the completion.
+/// Submit commands to a Daml ledger and await the completion.
 ///
 /// The Command Service is able to correlate submitted commands with completion data, identify timeouts, and return
 /// contextual information with each tracking result. This supports the implementation of stateless clients.
@@ -60,7 +60,7 @@ impl<'a> DamlCommandService<'a> {
     ///
     /// # Errors
     ///
-    /// Propagates communication failure errors as [`GRPCTransportError`] and DAML server failures as
+    /// Propagates communication failure errors as [`GRPCTransportError`] and Daml server failures as
     /// [`GRPCStatusError`] errors.
     ///
     /// # Examples

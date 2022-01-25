@@ -13,7 +13,7 @@ use std::borrow::Cow;
 use std::fmt;
 use std::fmt::{Error, Formatter};
 
-/// Resolve DAML package interned dotted names and strings.
+/// Resolve Daml package interned dotted names and strings.
 pub trait PackageInternedResolver {
     fn package_id(&self) -> &str;
     fn language_version(&self) -> LanguageVersion;

@@ -1,14 +1,14 @@
-//! API for working with `DAML-LF` packages.
+//! API for working with `Daml-LF` packages.
 //!
-//! Compiled `DAML` packages are represented as `DAML-LF` ("Ledger Fragment") archives.  An archive is a protobuf
+//! Compiled `Daml` packages are represented as `Daml-LF` ("Ledger Fragment") archives.  An archive is a protobuf
 //! serialized bytes array which is typically stored in a `dalf` file.  Multiple `dalf` archives can be combined along
-//! with a manifest file into a `Dar` ("DAML Archive") file.
+//! with a manifest file into a `Dar` ("Daml Archive") file.
 //!
-//! Serialized `DAML-LF` archives may also be retrieved from an existing ledger via the `GetPackage` method of the GRPC
+//! Serialized `Daml-LF` archives may also be retrieved from an existing ledger via the `GetPackage` method of the GRPC
 //! `package_service` (see [here](https://github.com/digital-asset/daml/blob/master/ledger-api/grpc-definitions/com/digitalasset/ledger/api/v1/package_service.proto)).
 //! The `daml_grpc` create provides an implementation of this service in the [`daml_package_service`] module.
 //!
-//! See [here](https://github.com/digital-asset/daml/tree/master/daml-lf) for full details of DAML-LF.
+//! See [here](https://github.com/digital-asset/daml/tree/master/daml-lf) for full details of Daml-LF.
 //!
 //! [`daml_package_service`]: ../daml_grpc/service/struct.DamlPackageService.html
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
@@ -35,7 +35,7 @@ mod package_info;
 mod payload;
 mod version;
 
-/// Representation of DAML types.
+/// Representation of Daml types.
 pub mod element;
 
 // reexport types

@@ -4,7 +4,7 @@ use crate::util::{from_grpc_duration, Required};
 use std::convert::TryFrom;
 use std::time::Duration;
 
-/// DAML ledger configuration information.
+/// Daml ledger configuration information.
 #[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct DamlLedgerConfiguration {
     max_deduplication_time: Duration,

@@ -2,7 +2,7 @@
 name = "daml_macro"
 version = "0.1.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
-description = "Helper macros for working with the DAML Ledger API"
+description = "Helper macros for working with the Daml Ledger API"
 repository = "https://github.com/fujiapple852/rust-daml-bindings"
 license = "Apache-2.0"
 keywords = ["daml", "macro", "api", "ledger"]

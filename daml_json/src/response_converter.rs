@@ -84,7 +84,7 @@ impl GrpcToJsonResponseConverter {
     /// the choice is consuming.  It will not return any other Archived events that may have occurred as part of the
     /// execution of the choice.
     ///
-    /// This behaviour is consistent with the reference DAML SDK bridge behaviour.
+    /// This behaviour is consistent with the reference Daml SDK bridge behaviour.
     fn exercise_result(&self, transaction: &DamlTransactionTree) -> DamlJsonReqConResult<DamlJsonExerciseResult> {
         let exercise_event = first_exercised_event(transaction)?;
         let exercise_result = self.encoder.encode_value(exercise_event.exercise_result())?;

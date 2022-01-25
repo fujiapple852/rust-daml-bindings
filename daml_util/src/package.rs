@@ -19,7 +19,7 @@ impl DamlPackages {
         }
     }
 
-    /// Create a [`DamlPackages`] from all known [`DamlPackage`] on a DAML ledger.
+    /// Create a [`DamlPackages`] from all known [`DamlPackage`] on a Daml ledger.
     pub async fn from_ledger(ledger_client: &DamlGrpcClient) -> DamlResult<Self> {
         let packages = ledger_client.package_service().list_packages().await?;
         let handles = packages

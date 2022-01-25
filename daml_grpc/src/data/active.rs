@@ -3,7 +3,7 @@ use crate::data::{DamlError, DamlResult};
 use crate::grpc_protobuf::com::daml::ledger::api::v1::GetActiveContractsResponse;
 use std::convert::TryFrom;
 
-/// A set of active contracts on a DAML ledger.
+/// A set of active contracts on a Daml ledger.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlActiveContracts {
     offset: String,

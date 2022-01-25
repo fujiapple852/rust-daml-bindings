@@ -196,7 +196,7 @@ impl ToStatic for DamlModule<'_> {
     }
 }
 
-/// Definition of a DAML Type Synonym.
+/// Definition of a Daml Type Synonym.
 #[derive(Debug, Serialize, Clone)]
 pub struct DamlDefTypeSyn<'a> {
     params: Vec<DamlTypeVarWithKind<'a>>,

@@ -2,12 +2,12 @@ use daml_lf::DamlLfError;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-/// DAML code generator errors.
+/// Daml code generator errors.
 #[derive(Debug)]
 pub enum DamlCodeGenError {
     /// AN invalid module matcher regex was provided.
     InvalidModuleMatcherRegex(regex::Error),
-    /// DAML LF error.
+    /// Daml LF error.
     DamlLfError(DamlLfError),
     /// IO error.
     IoError(std::io::Error),
@@ -19,11 +19,11 @@ impl Display for DamlCodeGenError {
         match self {
             DamlCodeGenError::InvalidModuleMatcherRegex(e) =>
                 write!(fmt, "InvalidModuleMatcherRegex {}", (e as &regex::Error)),
-            DamlCodeGenError::DamlLfError(e) => write!(fmt, "DAML LF error {}", (e as &DamlLfError)),
+            DamlCodeGenError::DamlLfError(e) => write!(fmt, "Daml LF error {}", (e as &DamlLfError)),
             DamlCodeGenError::IoError(e) => write!(fmt, "IOError: {}", (e as &std::io::Error)),
         }
     }
 }
 
-/// DAML code generator result.
+/// Daml code generator result.
 pub type DamlCodeGenResult<T> = Result<T, DamlCodeGenError>;

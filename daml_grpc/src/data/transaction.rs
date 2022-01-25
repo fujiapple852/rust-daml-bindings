@@ -8,7 +8,7 @@ use chrono::DateTime;
 use chrono::Utc;
 use std::convert::TryFrom;
 
-/// A DAML ledger transaction.
+/// A Daml ledger transaction.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlTransaction {
     transaction_id: String,

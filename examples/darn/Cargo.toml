@@ -2,7 +2,7 @@
 name = "darn"
 version = "0.5.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
-description = "Tools for working with DAML Archives and ledgers"
+description = "Tools for working with Daml Archives and ledgers"
 edition = "2021"
 rust-version = "1.58.1"
 
