@@ -1,18 +1,15 @@
-// Copyright (c) 2021 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2022 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
 
 package com.daml.ledger.api.v1;
 
-import "com/daml/ledger/api/v1/trace_context.proto";
-
-
 option java_outer_classname = "PackageServiceOuterClass";
 option java_package = "com.daml.ledger.api.v1";
 option csharp_namespace = "Com.Daml.Ledger.Api.V1";
 
-// Allows clients to query the DAML-LF packages that are supported by the server.
+// Allows clients to query the Daml-LF packages that are supported by the server.
 service PackageService {
 
   // Returns the identifiers of all supported packages.
@@ -42,18 +39,13 @@ message ListPackagesRequest {
 
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
   // Must be a valid LedgerString (as described in ``value.proto``).
-  // Required
-  string ledger_id = 1;
-
-  // Server side tracing will be registered as a child of the submitted context.
-  // This field is a future extension point and is currently not supported.
   // Optional
-  TraceContext trace_context = 1000;
+  string ledger_id = 1;
 }
 
 message ListPackagesResponse {
 
-  // The IDs of all DAML-LF packages supported by the server.
+  // The IDs of all Daml-LF packages supported by the server.
   // Each element must be a valid PackageIdString (as described in ``value.proto``).
   // Required
   repeated string package_ids = 1;
@@ -63,18 +55,13 @@ message GetPackageRequest {
 
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
   // Must be a valid LedgerString (as described in ``value.proto``).
-  // Required
+  // Optional
   string ledger_id = 1;
 
   // The ID of the requested package.
   // Must be a valid PackageIdString (as described in ``value.proto``).
   // Required
   string package_id = 2;
-
-  // Server side tracing will be registered as a child of the submitted context.
-  // This field is a future extension point and is currently not supported.
-  // Optional
-  TraceContext trace_context = 1000;
 }
 
 message GetPackageResponse {
@@ -97,18 +84,13 @@ message GetPackageStatusRequest {
 
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
   // Must be a valid LedgerString (as described in ``value.proto``).
-  // Required
+  // Optional
   string ledger_id = 1;
 
   // The ID of the requested package.
   // Must be a valid PackageIdString (as described in ``value.proto``).
   // Required
   string package_id = 2;
-
-  // Server side tracing will be registered as a child of the submitted context.
-  // This field is a future extension point and is currently not supported.
-  // Optional
-  TraceContext trace_context = 1000;
 }
 
 message GetPackageStatusResponse {
@@ -121,7 +103,7 @@ enum PackageStatus {
   // The server is not aware of such a package.
   UNKNOWN = 0;
 
-  // The server is able to execute DAML commands operating on this package.
+  // The server is able to execute Daml commands operating on this package.
   REGISTERED = 1;
 }
 

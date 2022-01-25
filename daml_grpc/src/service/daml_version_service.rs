@@ -1,9 +1,10 @@
-use crate::data::DamlResult;
+use tonic::transport::Channel;
+use tracing::{instrument, trace};
+
+use crate::data::{DamlFeaturesDescriptor, DamlResult};
 use crate::grpc_protobuf::com::daml::ledger::api::v1::version_service_client::VersionServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::GetLedgerApiVersionRequest;
 use crate::service::common::make_request;
-use tonic::transport::Channel;
-use tracing::{instrument, trace};
 
 /// Retrieve information about the ledger API version.
 #[derive(Debug)]
@@ -40,7 +41,7 @@ impl<'a> DamlVersionService<'a> {
 
     /// Read the Ledger API version.
     #[instrument(skip(self))]
-    pub async fn get_ledger_api_version(&self) -> DamlResult<String> {
+    pub async fn get_ledger_api_version(&self) -> DamlResult<(String, Option<DamlFeaturesDescriptor>)> {
         let payload = GetLedgerApiVersionRequest {
             ledger_id: self.ledger_id.to_string(),
         };
@@ -48,7 +49,7 @@ impl<'a> DamlVersionService<'a> {
         let response =
             self.client().get_ledger_api_version(make_request(payload, self.auth_token)?).await?.into_inner();
         trace!(?response);
-        Ok(response.version)
+        Ok((response.version, response.features.map(DamlFeaturesDescriptor::from)))
     }
 
     fn client(&self) -> VersionServiceClient<Channel> {

@@ -1,6 +1,5 @@
 use crate::data::command::DamlCommand;
-use crate::data::{DamlCommands, DamlMinLedgerTime};
-use std::time::Duration;
+use crate::data::{DamlCommands, DamlCommandsDeduplicationPeriod, DamlMinLedgerTime};
 use uuid::Uuid;
 
 /// Factory for creating [`DamlCommands`] to submit to a DAML ledger.
@@ -10,7 +9,7 @@ pub struct DamlCommandFactory {
     application_id: String,
     act_as: Vec<String>,
     read_as: Vec<String>,
-    deduplication_time: Option<Duration>,
+    deduplication_period: Option<DamlCommandsDeduplicationPeriod>,
     min_ledger_time: Option<DamlMinLedgerTime>,
 }
 
@@ -20,7 +19,7 @@ impl DamlCommandFactory {
         application_id: impl Into<String>,
         act_as: impl Into<Vec<String>>,
         read_as: impl Into<Vec<String>>,
-        deduplication_time: impl Into<Option<Duration>>,
+        deduplication_period: impl Into<Option<DamlCommandsDeduplicationPeriod>>,
         min_ledger_time: impl Into<Option<DamlMinLedgerTime>>,
     ) -> Self {
         Self {
@@ -28,7 +27,7 @@ impl DamlCommandFactory {
             application_id: application_id.into(),
             act_as: act_as.into(),
             read_as: read_as.into(),
-            deduplication_time: deduplication_time.into(),
+            deduplication_period: deduplication_period.into(),
             min_ledger_time: min_ledger_time.into(),
         }
     }
@@ -49,8 +48,8 @@ impl DamlCommandFactory {
         &self.read_as
     }
 
-    pub const fn deduplication_time(&self) -> &Option<Duration> {
-        &self.deduplication_time
+    pub const fn deduplication_period(&self) -> &Option<DamlCommandsDeduplicationPeriod> {
+        &self.deduplication_period
     }
 
     pub const fn min_ledger_time(&self) -> &Option<DamlMinLedgerTime> {
@@ -75,10 +74,11 @@ impl DamlCommandFactory {
             self.application_id.clone(),
             command_id.map_or_else(|| format!("{}", Uuid::new_v4()), Into::into),
             "",
+            "",
             self.act_as.clone(),
             self.read_as.clone(),
             commands.into(),
-            self.deduplication_time,
+            self.deduplication_period.clone(),
             self.min_ledger_time.clone(),
         )
     }

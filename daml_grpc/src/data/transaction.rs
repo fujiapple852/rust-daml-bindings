@@ -1,5 +1,5 @@
 use crate::data::event::DamlEvent;
-use crate::data::trace::DamlTraceContext;
+
 use crate::data::{DamlError, DamlResult};
 use crate::grpc_protobuf::com::daml::ledger::api::v1::Transaction;
 use crate::util;
@@ -17,7 +17,6 @@ pub struct DamlTransaction {
     effective_at: DateTime<Utc>,
     events: Vec<DamlEvent>,
     offset: String,
-    trace_context: Option<DamlTraceContext>,
 }
 
 impl DamlTransaction {
@@ -28,7 +27,6 @@ impl DamlTransaction {
         effective_at: impl Into<DateTime<Utc>>,
         events: impl Into<Vec<DamlEvent>>,
         offset: impl Into<String>,
-        trace_context: impl Into<Option<DamlTraceContext>>,
     ) -> Self {
         Self {
             transaction_id: transaction_id.into(),
@@ -37,7 +35,6 @@ impl DamlTransaction {
             effective_at: effective_at.into(),
             events: events.into(),
             offset: offset.into(),
-            trace_context: trace_context.into(),
         }
     }
 
@@ -68,10 +65,6 @@ impl DamlTransaction {
     pub fn offset(&self) -> &str {
         &self.offset
     }
-
-    pub const fn trace_context(&self) -> &Option<DamlTraceContext> {
-        &self.trace_context
-    }
 }
 
 impl TryFrom<Transaction> for DamlTransaction {
@@ -85,7 +78,6 @@ impl TryFrom<Transaction> for DamlTransaction {
             util::from_grpc_timestamp(&tx.effective_at.req()?),
             tx.events.into_iter().map(DamlEvent::try_from).collect::<DamlResult<Vec<_>>>()?,
             tx.offset,
-            tx.trace_context.map(DamlTraceContext::from),
         ))
     }
 }

@@ -1,9 +1,10 @@
+use tonic::transport::Channel;
+use tracing::{instrument, trace};
+
 use crate::data::DamlResult;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::testing::reset_service_client::ResetServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::testing::ResetRequest;
 use crate::service::common::make_request;
-use tonic::transport::Channel;
-use tracing::{instrument, trace};
 
 /// Reset the state of a DAML ledger (requires `testing` feature).
 #[derive(Debug)]

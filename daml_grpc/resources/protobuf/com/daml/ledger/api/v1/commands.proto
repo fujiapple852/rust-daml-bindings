@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2022 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
@@ -17,10 +17,9 @@ option csharp_namespace = "Com.Daml.Ledger.Api.V1";
 
 // A composite command that groups multiple commands together.
 message Commands {
-
   // Must correspond to the ledger ID reported by the Ledger Identification Service.
   // Must be a valid LedgerString (as described in ``value.proto``).
-  // Required
+  // Optional
   string ledger_id = 1;
 
   // Identifier of the on-ledger workflow that this command is a part of.
@@ -28,15 +27,16 @@ message Commands {
   // Optional
   string workflow_id = 2;
 
-  // Uniquely identifies the application (or its part) that issued the command. This is used in tracing
-  // across different components and to let applications subscribe to their own submissions only.
-  // Must be a valid LedgerString (as described in ``value.proto``).
-  // Required
+  // Uniquely identifies the application or participant user that issued the command.
+  // Must be a valid ApplicationIdString (as described in ``value.proto``).
+  // Required unless authentication is used with a user token or a custom token specifying an application-id.
+  // In that case, the token's user-id, respectively application-id, will be used for the request's application_id.
   string application_id = 3;
 
-  // Uniquely identified the command. This identifier should be unique for each new command within an
-  // application domain, i.e., the triple (application_id, party, command_id) must be unique.
-  // It can be used for matching the requests with their respective completions.
+  // Uniquely identifies the command.
+  // The triple (application_id, party + act_as, command_id) constitutes the change ID for the intended ledger change,
+  // where party + act_as is interpreted as a set of party names.
+  // The change ID can be used for matching the intended ledger changes with all their completions.
   // Must be a valid LedgerString (as described in ``value.proto``).
   // Required
   string command_id = 4;
@@ -57,11 +57,26 @@ message Commands {
   // Required
   repeated Command commands = 8;
 
-  // The length of the time window during which all commands with the same ``act_as`` parties and
-  // the same command ID will be deduplicated.
-  // Duplicate commands submitted before the end of this window return an ALREADY_EXISTS error.
-  // Optional
-  google.protobuf.Duration deduplication_time = 9;
+  // Specifies the deduplication period for the change ID.
+  // If omitted, the participant will assume the configured maximum deduplication time (see
+  // ``ledger_configuration_service.proto``).
+  oneof deduplication_period {
+    // Specifies the length of the deduplication period.
+    // Same semantics apply as for `deduplication_duration`.
+    // Must be non-negative. Must not exceed the maximum deduplication time (see
+    // ``ledger_configuration_service.proto``).
+    google.protobuf.Duration deduplication_time = 9 [deprecated = true];
+
+    // Specifies the length of the deduplication period.
+    // It is interpreted relative to the local clock at some point during the submission's processing.
+    // Must be non-negative. Must not exceed the maximum deduplication time (see
+    // ``ledger_configuration_service.proto``).
+    google.protobuf.Duration deduplication_duration = 15;
+
+    // Specifies the start of the deduplication period by a completion stream offset (exclusive).
+    // Must be a valid LedgerString (as described in ``ledger_offset.proto``).
+    string deduplication_offset = 16;
+  }
 
   // Lower bound for the ledger time assigned to the resulting transaction.
   // Note: The ledger time of a transaction is assigned as part of command interpretation.
@@ -86,15 +101,24 @@ message Commands {
   repeated string act_as = 12;
 
   // Set of parties on whose behalf (in addition to all parties listed in ``act_as``) contracts can be retrieved.
-  // This affects DAML operations such as ``fetch``, ``fetchByKey``, ``lookupByKey``, ``exercise``, and ``exerciseByKey``.
-  // Note: A participant node of a DAML network can host multiple parties. Each contract present on the participant
+  // This affects Daml operations such as ``fetch``, ``fetchByKey``, ``lookupByKey``, ``exercise``, and ``exerciseByKey``.
+  // Note: A participant node of a Daml network can host multiple parties. Each contract present on the participant
   // node is only visible to a subset of these parties. A command can only use contracts that are visible to at least
-  // one of the parties in ``act_as`` or ``read_as``. This visibility check is independent from the DAML authorization
+  // one of the parties in ``act_as`` or ``read_as``. This visibility check is independent from the Daml authorization
   // rules for fetch operations.
   // If ledger API authorization is enabled, then the authorization metadata must authorize the sender of the request
   // to read contract data on behalf of each of the given parties.
   // Optional
   repeated string read_as = 13;
+
+  // A unique identifier to distinguish completions for different submissions with the same change ID.
+  // Typically a random UUID. Applications are expected to use a different UUID for each retry of a submission
+  // with the same change ID.
+  // Must be a valid LedgerString (as described in ``value.proto``).
+  //
+  // If omitted, the participant or the committer may set a value of their choice.
+  // Optional
+  string submission_id = 14;
 }
 
 // A command can either create a new contract or exercise a choice on an existing contract.
@@ -109,7 +133,6 @@ message Command {
 
 // Create a new contract instance based on a template.
 message CreateCommand {
-
   // The template of contract the client wants to create.
   // Required
   Identifier template_id = 1;
@@ -121,7 +144,6 @@ message CreateCommand {
 
 // Exercise a choice on an existing contract.
 message ExerciseCommand {
-
   // The template of contract the client wants to exercise.
   // Required
   Identifier template_id = 1;
@@ -143,7 +165,6 @@ message ExerciseCommand {
 
 // Exercise a choice on an existing contract specified by its key.
 message ExerciseByKeyCommand {
-
   // The template of contract the client wants to exercise.
   // Required
   Identifier template_id = 1;

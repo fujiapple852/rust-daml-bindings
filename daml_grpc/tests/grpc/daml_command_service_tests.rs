@@ -32,7 +32,7 @@ async fn test_submit_and_wait_for_transaction_id() -> TestResult {
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
-    let transaction_id = ledger_client.command_service().submit_and_wait_for_transaction_id(commands).await?;
+    let transaction_id = ledger_client.command_service().submit_and_wait_for_transaction_id(commands).await?.0;
     assert!(!transaction_id.is_empty());
     Ok(())
 }
@@ -43,7 +43,7 @@ async fn test_submit_and_wait_for_transaction() -> TestResult {
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
-    let transaction = ledger_client.command_service().submit_and_wait_for_transaction(commands).await?;
+    let transaction = ledger_client.command_service().submit_and_wait_for_transaction(commands).await?.0;
     match transaction.events() {
         [DamlEvent::Created(e)] => {
             assert_eq!("Ping", e.template_id().entity_name());
@@ -59,7 +59,7 @@ async fn test_submit_and_wait_for_transaction_tree() -> TestResult {
     let ledger_client = new_static_sandbox().await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     let commands = make_commands(&package_id);
-    let transaction = ledger_client.command_service().submit_and_wait_for_transaction_tree(commands).await?;
+    let transaction = ledger_client.command_service().submit_and_wait_for_transaction_tree(commands).await?.0;
     match transaction.events_by_id().values().collect::<Vec<_>>().as_slice() {
         [DamlTreeEvent::Created(e)] => {
             assert_eq!("Ping", e.template_id().entity_name());

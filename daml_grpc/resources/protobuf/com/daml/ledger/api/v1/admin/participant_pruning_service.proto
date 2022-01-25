@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2022 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
@@ -28,23 +28,37 @@ service ParticipantPruningService {
   // - ``INTERNAL``: if the participant has encountered a failure and has potentially applied pruning partially. Such cases
   //   warrant verifying the participant health before retrying the prune with the same (or a larger, valid) offset.
   //   Successful retries after such errors ensure that different components reach a consistent pruning state.
+  // - ``FAILED_PRECONDITION``: if the participant is not yet able to prune at the specified offset.
   //
-  // Other GRPC errors can be returned depending on the type of condition preventing a prune:
-  // - ``OUT_OF_RANGE``: if the participant is not yet able to prune at the specified offset, but without user intervention
-  //   the offset will eventually be usable for pruning.
-  // - ``FAILED_PRECONDITION`` if some sort of user intervention is required before pruning can proceed at the specified
-  //   offset.
   rpc Prune (PruneRequest) returns (PruneResponse);
 
 }
 
 message PruneRequest {
-  // Inclusive offset up to and at which the ledger is to be pruned.
+  // Inclusive offset up to which the ledger is to be pruned.
+  // By default the following data is pruned:
+  //   1. All normal and divulged contracts that have been archived before
+  //   `prune_up_to`.
+  //   2. All transaction events and completions before `prune_up_to`
   string prune_up_to = 1;
 
   // Unique submission identifier.
   // Optional, defaults to a random identifier, used for logging.
   string submission_id = 2;
+
+  // Prune all immediately and retroactively divulged contracts created before `prune_up_to`
+  // independent of whether they were archived before `prune_up_to`. Useful to avoid leaking
+  // storage on participant nodes that can see a divulged contract but not its archival.
+  //
+  // Application developers SHOULD write their Daml applications
+  // such that they do not rely on divulged contracts; i.e., no warnings from
+  // using divulged contracts as inputs to transactions are emitted.
+  //
+  // Participant node operators SHOULD set the `prune_all_divulged_contracts` flag to avoid leaking
+  // storage due to accumulating unarchived divulged contracts PROVIDED that:
+  //   1. no application using this participant node relies on divulgence OR
+  //   2. divulged contracts on which applications rely have been re-divulged after the `prune_up_to` offset.
+  bool prune_all_divulged_contracts = 3;
 }
 
 message PruneResponse {

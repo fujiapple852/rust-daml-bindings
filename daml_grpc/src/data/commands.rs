@@ -1,5 +1,6 @@
 use crate::data::command::DamlCommand;
 use crate::data::{DamlError, DamlResult};
+use crate::grpc_protobuf::com::daml::ledger::api::v1::commands::DeduplicationPeriod;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{Command, Commands};
 use crate::util;
 use chrono::DateTime;
@@ -13,11 +14,12 @@ pub struct DamlCommands {
     workflow_id: String,
     application_id: String,
     command_id: String,
+    submission_id: String,
     party: String,
     act_as: Vec<String>,
     read_as: Vec<String>,
     commands: Vec<DamlCommand>,
-    deduplication_time: Option<Duration>,
+    deduplication_period: Option<DamlCommandsDeduplicationPeriod>,
     min_ledger_time: Option<DamlMinLedgerTime>,
 }
 
@@ -27,22 +29,24 @@ impl DamlCommands {
         workflow_id: impl Into<String>,
         application_id: impl Into<String>,
         command_id: impl Into<String>,
+        submission_id: impl Into<String>,
         party: impl Into<String>,
         act_as: impl Into<Vec<String>>,
         read_as: impl Into<Vec<String>>,
         commands: impl Into<Vec<DamlCommand>>,
-        deduplication_time: impl Into<Option<Duration>>,
+        deduplication_period: impl Into<Option<DamlCommandsDeduplicationPeriod>>,
         min_ledger_time: impl Into<Option<DamlMinLedgerTime>>,
     ) -> Self {
         Self {
             workflow_id: workflow_id.into(),
             application_id: application_id.into(),
             command_id: command_id.into(),
+            submission_id: submission_id.into(),
             party: party.into(),
             act_as: act_as.into(),
             read_as: read_as.into(),
             commands: commands.into(),
-            deduplication_time: deduplication_time.into(),
+            deduplication_period: deduplication_period.into(),
             min_ledger_time: min_ledger_time.into(),
         }
     }
@@ -57,6 +61,10 @@ impl DamlCommands {
 
     pub fn command_id(&self) -> &str {
         &self.command_id
+    }
+
+    pub fn submission_id(&self) -> &str {
+        &self.submission_id
     }
 
     pub fn party(&self) -> &str {
@@ -75,8 +83,8 @@ impl DamlCommands {
         &self.commands
     }
 
-    pub const fn deduplication_time(&self) -> &Option<Duration> {
-        &self.deduplication_time
+    pub const fn deduplication_period(&self) -> &Option<DamlCommandsDeduplicationPeriod> {
+        &self.deduplication_period
     }
 
     pub const fn min_ledger_time(&self) -> &Option<DamlMinLedgerTime> {
@@ -98,8 +106,8 @@ impl TryFrom<DamlCommands> for Commands {
             party: daml_commands.party,
             act_as: daml_commands.act_as,
             read_as: daml_commands.read_as,
+            submission_id: daml_commands.submission_id,
             commands: daml_commands.commands.into_iter().map(Command::from).collect(),
-            deduplication_time: daml_commands.deduplication_time.as_ref().map(util::to_grpc_duration).transpose()?,
             min_ledger_time_abs: match daml_commands.min_ledger_time {
                 Some(DamlMinLedgerTime::Absolute(timestamp)) => Some(util::to_grpc_timestamp(timestamp)?),
                 _ => None,
@@ -108,6 +116,7 @@ impl TryFrom<DamlCommands> for Commands {
                 Some(DamlMinLedgerTime::Relative(duration)) => Some(util::to_grpc_duration(&duration)?),
                 _ => None,
             },
+            deduplication_period: daml_commands.deduplication_period.map(DeduplicationPeriod::try_from).transpose()?,
         })
     }
 }
@@ -116,4 +125,23 @@ impl TryFrom<DamlCommands> for Commands {
 pub enum DamlMinLedgerTime {
     Absolute(DateTime<Utc>),
     Relative(Duration),
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum DamlCommandsDeduplicationPeriod {
+    DeduplicationOffset(String),
+    DeduplicationDuration(Duration),
+}
+
+impl TryFrom<DamlCommandsDeduplicationPeriod> for DeduplicationPeriod {
+    type Error = DamlError;
+
+    fn try_from(deduplication_period: DamlCommandsDeduplicationPeriod) -> DamlResult<Self> {
+        Ok(match deduplication_period {
+            DamlCommandsDeduplicationPeriod::DeduplicationOffset(offset) =>
+                DeduplicationPeriod::DeduplicationOffset(offset),
+            DamlCommandsDeduplicationPeriod::DeduplicationDuration(duration) =>
+                DeduplicationPeriod::DeduplicationDuration(util::to_grpc_duration(&duration)?),
+        })
+    }
 }

@@ -1,5 +1,5 @@
 use crate::data::event::DamlCreatedEvent;
-use crate::data::{DamlError, DamlResult, DamlTraceContext};
+use crate::data::{DamlError, DamlResult};
 use crate::grpc_protobuf::com::daml::ledger::api::v1::GetActiveContractsResponse;
 use std::convert::TryFrom;
 
@@ -9,7 +9,6 @@ pub struct DamlActiveContracts {
     offset: String,
     workflow_id: String,
     active_contracts: Vec<DamlCreatedEvent>,
-    trace_context: Option<DamlTraceContext>,
 }
 
 impl DamlActiveContracts {
@@ -17,13 +16,11 @@ impl DamlActiveContracts {
         offset: impl Into<String>,
         workflow_id: impl Into<String>,
         active_contracts: Vec<DamlCreatedEvent>,
-        trace_context: Option<DamlTraceContext>,
     ) -> Self {
         Self {
             offset: offset.into(),
             workflow_id: workflow_id.into(),
             active_contracts,
-            trace_context,
         }
     }
 
@@ -38,10 +35,6 @@ impl DamlActiveContracts {
     pub fn active_contracts(&self) -> &[DamlCreatedEvent] {
         &self.active_contracts
     }
-
-    pub const fn trace_context(&self) -> &Option<DamlTraceContext> {
-        &self.trace_context
-    }
 }
 
 impl TryFrom<GetActiveContractsResponse> for DamlActiveContracts {
@@ -52,7 +45,6 @@ impl TryFrom<GetActiveContractsResponse> for DamlActiveContracts {
             active.offset,
             active.workflow_id,
             active.active_contracts.into_iter().map(DamlCreatedEvent::try_from).collect::<DamlResult<Vec<_>>>()?,
-            active.trace_context.map(DamlTraceContext::from),
         ))
     }
 }

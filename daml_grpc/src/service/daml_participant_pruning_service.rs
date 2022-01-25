@@ -1,10 +1,12 @@
+use std::fmt::Debug;
+
+use tonic::transport::Channel;
+use tracing::{instrument, trace};
+
 use crate::data::DamlResult;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::participant_pruning_service_client::ParticipantPruningServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::PruneRequest;
 use crate::service::common::make_request;
-use std::fmt::Debug;
-use tonic::transport::Channel;
-use tracing::{instrument, trace};
 
 /// Prunes/truncates the "oldest" transactions from the participant (the participant Ledger Api Server plus any
 /// other participant-local state) by removing a portion of the ledger in such a way that the set of future,
@@ -37,10 +39,12 @@ impl<'a> DamlParticipantPruningService<'a> {
         &self,
         prune_up_to: impl Into<String> + Debug,
         submission_id: impl Into<Option<String>> + Debug,
+        prune_all_divulged_contracts: bool,
     ) -> DamlResult<()> {
         let payload = PruneRequest {
             prune_up_to: prune_up_to.into(),
             submission_id: submission_id.into().unwrap_or_default(),
+            prune_all_divulged_contracts,
         };
         trace!(payload = ?payload, token = ?self.auth_token);
         self.client().prune(make_request(payload, self.auth_token)?).await?;

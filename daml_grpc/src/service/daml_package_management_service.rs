@@ -1,13 +1,15 @@
+use std::convert::TryFrom;
+use std::fmt::Debug;
+
+use bytes::Bytes;
+use tonic::transport::Channel;
+use tracing::{instrument, trace};
+
 use crate::data::package::DamlPackageDetails;
 use crate::data::DamlResult;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::package_management_service_client::PackageManagementServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::{ListKnownPackagesRequest, UploadDarFileRequest};
 use crate::service::common::make_request;
-use bytes::Bytes;
-use std::convert::TryFrom;
-use std::fmt::Debug;
-use tonic::transport::Channel;
-use tracing::{instrument, trace};
 
 /// Query the DAML-LF packages supported by the ledger participant and upload DAR files.
 ///
