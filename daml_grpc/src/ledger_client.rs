@@ -338,6 +338,7 @@ impl DamlGrpcClient {
             channel = channel.tcp_keepalive(Some(duration));
         }
         channel = channel.tcp_nodelay(config.tcp_nodelay);
+        channel = channel.timeout(config.timeout);
         match &config.tls_config {
             Some(DamlGrpcTlsConfig {
                 ca_cert: Some(cert),
