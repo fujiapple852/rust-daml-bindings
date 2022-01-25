@@ -1,6 +1,6 @@
 use crate::grpc_protobuf::com::daml::ledger::api::v1::admin::PartyDetails;
 
-/// The details of a DAML party.
+/// The details of a Daml party.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlPartyDetails {
     party: String,
@@ -17,7 +17,7 @@ impl DamlPartyDetails {
         }
     }
 
-    /// The stable unique identifier of a DAML party.
+    /// The stable unique identifier of a Daml party.
     pub fn party(&self) -> &str {
         &self.party
     }

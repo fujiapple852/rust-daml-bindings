@@ -2,7 +2,7 @@
 name = "daml_lf"
 version = "0.1.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
-description = "API for working with DAML-LF data"
+description = "API for working with Daml-LF data"
 repository = "https://github.com/fujiapple852/rust-daml-bindings"
 license = "Apache-2.0"
 keywords = ["daml", "api", "ledger"]

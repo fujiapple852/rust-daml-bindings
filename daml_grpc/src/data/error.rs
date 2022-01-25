@@ -3,7 +3,7 @@ use std::error;
 use std::fmt;
 use tonic::codegen::http;
 
-/// A DAML ledger error.
+/// A Daml ledger error.
 #[derive(Debug)]
 pub enum DamlError {
     TimeoutError(Box<DamlError>),
@@ -96,5 +96,5 @@ impl From<Error> for DamlError {
     }
 }
 
-/// A DAML ledger result.
+/// A Daml ledger result.
 pub type DamlResult<T> = ::std::result::Result<T, DamlError>;

@@ -3,7 +3,7 @@ use serde::Serialize;
 use std::convert::TryFrom;
 use std::fmt::{Display, Error, Formatter};
 
-/// DAML Ledger Fragment language version.
+/// Daml Ledger Fragment language version.
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize)]
 pub enum LanguageVersion {
     Lv0,
@@ -45,7 +45,7 @@ impl Display for LanguageVersion {
     }
 }
 
-/// Minimum DAML LF language version support for a feature.
+/// Minimum Daml LF language version support for a feature.
 pub struct LanguageFeatureVersion {
     pub name: &'static str,
     pub min_version: LanguageVersion,
@@ -142,7 +142,7 @@ impl LanguageFeatureVersion {
     };
 }
 
-/// DAML Ledger Fragment language V1 minor version.
+/// Daml Ledger Fragment language V1 minor version.
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize)]
 pub enum LanguageV1MinorVersion {
     V0,

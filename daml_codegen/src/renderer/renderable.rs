@@ -11,12 +11,12 @@ use daml_lf::element::{DamlArchive, DamlData, DamlKind, DamlTyCon, DamlType};
 /// structures however this is not currently possible in stable Rust to the best of my knowledge.
 ///
 /// When the `filter_mode` is `RenderFilterMode::NonSerializable` then the renderer will exclude all fields
-/// which contain (recursively) any `TyCon` where the target `DamlData` has been determined by the DAML compiler to be
+/// which contain (recursively) any `TyCon` where the target `DamlData` has been determined by the Daml compiler to be
 /// non-serializable.
 ///
 /// Fields which contain (recursively) types `Arrow`, `Update`, `Scenario`, `Any`, `TypeRep`, `Forall`, `Struct`, `Syn`
 /// are always excluded regardless of the mode.  Note that these types are not required for rendering data types that
-/// will be used by the DAML Ledger API.
+/// will be used by the Daml Ledger API.
 pub struct IsRenderable<'a> {
     archive: &'a DamlArchive<'a>,
     filter_mode: RenderFilterMode,

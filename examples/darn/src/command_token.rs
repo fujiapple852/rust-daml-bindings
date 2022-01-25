@@ -3,7 +3,7 @@ use anyhow::Result;
 use clap::{App, AppSettings, Arg, ArgGroup, ArgMatches};
 use daml::util::DamlSandboxTokenBuilder;
 
-/// Darn command for generating DAML Sandbox auth tokens.
+/// Darn command for generating Daml Sandbox auth tokens.
 pub struct CommandToken {}
 
 impl DarnCommand for CommandToken {
@@ -38,7 +38,7 @@ enum OutputFormat {
 
 fn args<'a>() -> App<'a> {
     App::new("token")
-        .about("Generate a DAML sandbox token")
+        .about("Generate a Daml sandbox token")
         .setting(AppSettings::DeriveDisplayOrder)
         .arg(
             Arg::new("expiry")

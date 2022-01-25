@@ -2,7 +2,7 @@
 name = "daml_grpc"
 version = "0.1.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
-description = "DAML Ledger GRPC API"
+description = "Daml Ledger GRPC API"
 repository = "https://github.com/fujiapple852/rust-daml-bindings"
 license = "Apache-2.0"
 keywords = ["daml", "api", "ledger"]

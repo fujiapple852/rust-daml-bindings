@@ -14,7 +14,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::{
 use crate::service::common::make_request;
 use crate::util::Required;
 
-/// Query and extract the DAML LF packages that are supported by the DAML ledger.
+/// Query and extract the Daml LF packages that are supported by the Daml ledger.
 #[derive(Debug)]
 pub struct DamlPackageService<'a> {
     channel: Channel,

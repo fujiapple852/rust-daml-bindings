@@ -11,7 +11,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::command_submission_service
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{Commands, SubmitRequest};
 use crate::service::common::make_request;
 
-/// Advance the state of a DAML ledger by submitting commands.
+/// Advance the state of a Daml ledger by submitting commands.
 #[derive(Debug)]
 pub struct DamlCommandSubmissionService<'a> {
     channel: Channel,

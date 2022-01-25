@@ -1,4 +1,4 @@
-//! DAML ledger GRPC [API](https://docs.daml.com/app-dev/index.html).
+//! Daml ledger GRPC [API](https://docs.daml.com/app-dev/index.html).
 //!
 //! The API is separated into a small number of services that cover various aspects of the ledger, e.g. reading
 //! transactions or submitting commands.
@@ -17,19 +17,19 @@
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 
-/// DAML API domain objects (i.e. values, commands, events).
+/// Daml API domain objects (i.e. values, commands, events).
 pub mod data;
 
-/// DAML GRPC API services (i.e. command & transaction services).
+/// Daml GRPC API services (i.e. command & transaction services).
 pub mod service;
 
-/// DAML primitive data types.
+/// Daml primitive data types.
 pub mod primitive_types;
 
-/// Serialize & Deserialize DAML types.
+/// Serialize & Deserialize Daml types.
 pub mod serialize;
 
-/// Nat types for specifying DAML Numeric types.
+/// Nat types for specifying Daml Numeric types.
 pub mod nat;
 
 mod ledger_client;

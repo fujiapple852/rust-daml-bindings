@@ -30,7 +30,7 @@ static PACKAGES_REST: &str = "/v1/packages";
 
 const DEFAULT_TIMEOUT_SECS: u64 = 5;
 
-/// DAML JSON client configuration options.
+/// Daml JSON client configuration options.
 #[derive(Debug, Default)]
 pub struct DamlJsonClientConfig {
     url: String,
@@ -43,13 +43,13 @@ pub struct DamlJsonClientConfig {
     auth_token: Option<String>,
 }
 
-/// DAML JSON client TLS configuration.
+/// Daml JSON client TLS configuration.
 #[derive(Debug)]
 pub struct DamlJsonTlsConfig {
     ca_cert: Vec<u8>,
 }
 
-/// DAML JSON client builder.
+/// Daml JSON client builder.
 pub struct DamlJsonClientBuilder {
     config: DamlJsonClientConfig,
 }
@@ -145,9 +145,9 @@ impl DamlJsonClientBuilder {
     }
 }
 
-/// DAML JSON API client.
+/// Daml JSON API client.
 ///
-/// See [here](https://docs.daml.com/json-api) for full details of the DAML JSON API.
+/// See [here](https://docs.daml.com/json-api) for full details of the Daml JSON API.
 pub struct DamlJsonClient {
     client: Client,
     config: DamlJsonClientConfig,
@@ -189,13 +189,13 @@ impl DamlJsonClient {
         &self.config
     }
 
-    /// Create a new `DAML` contract.
+    /// Create a new `Daml` contract.
     #[instrument(skip(self))]
     pub async fn create(&self, template_id: &str, payload: Value) -> DamlJsonResult<DamlJsonCreatedEvent> {
         Ok(self.create_request(&DamlJsonCreateRequest::new(template_id, payload)).await?.result)
     }
 
-    /// Create a new `DAML` Contract with optional meta field.
+    /// Create a new `Daml` Contract with optional meta field.
     #[instrument(skip(self))]
     pub async fn create_with_meta(
         &self,
@@ -206,7 +206,7 @@ impl DamlJsonClient {
         Ok(self.create_request(&DamlJsonCreateRequest::new_with_meta(template_id, payload, meta)).await?.result)
     }
 
-    /// Exercise a `DAML` choice by contract id.
+    /// Exercise a `Daml` choice by contract id.
     #[instrument(skip(self))]
     pub async fn exercise(
         &self,
@@ -221,7 +221,7 @@ impl DamlJsonClient {
             .result)
     }
 
-    /// Exercise a `DAML` choice by contract key.
+    /// Exercise a `Daml` choice by contract key.
     #[instrument(skip(self))]
     pub async fn exercise_by_key(
         &self,
@@ -236,7 +236,7 @@ impl DamlJsonClient {
             .result)
     }
 
-    /// Create and exercise a `DAML` choice.
+    /// Create and exercise a `Daml` choice.
     #[instrument(skip(self))]
     pub async fn create_and_exercise(
         &self,
@@ -251,13 +251,13 @@ impl DamlJsonClient {
             .result)
     }
 
-    /// Fetch a `DAML` contract by id.
+    /// Fetch a `Daml` contract by id.
     #[instrument(skip(self))]
     pub async fn fetch(&self, contract_id: &str) -> DamlJsonResult<DamlJsonCreatedEvent> {
         Ok(self.fetch_request(&DamlJsonFetchRequest::new(contract_id)).await?.result)
     }
 
-    /// Fetch a `DAML` contract by key.
+    /// Fetch a `Daml` contract by key.
     #[instrument(skip(self))]
     pub async fn fetch_by_key(&self, template_id: &str, key: Value) -> DamlJsonResult<DamlJsonCreatedEvent> {
         Ok(self.fetch_by_key_request(&DamlJsonFetchByKeyRequest::new(template_id, key)).await?.result)
@@ -280,7 +280,7 @@ impl DamlJsonClient {
         Ok(self.query_request(&DamlJsonQuery::new(templates, query)).await?.result)
     }
 
-    /// Fetch `DAML` Parties by identifiers.
+    /// Fetch `Daml` Parties by identifiers.
     ///
     /// Retrieve the [`DamlJsonParty`] entries for the given `parties` identifiers.  Unknown parties are silently
     /// discarded.
@@ -292,7 +292,7 @@ impl DamlJsonClient {
             .result)
     }
 
-    /// Fetch `DAML` Parties and unknown `DAML` Parties by identifiers.
+    /// Fetch `Daml` Parties and unknown `Daml` Parties by identifiers.
     ///
     /// Retrieve the [`DamlJsonParty`] entries for the given `parties` identifiers and unknown party identifiers.
     #[instrument(skip(self))]

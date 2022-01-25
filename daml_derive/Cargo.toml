@@ -2,7 +2,7 @@
 name = "daml_derive"
 version = "0.1.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
-description = "DAML Ledger Procedural Macro"
+description = "Daml Ledger Procedural Macro"
 repository = "https://github.com/fujiapple852/rust-daml-bindings"
 license = "Apache-2.0"
 keywords = ["daml", "api", "ledger"]

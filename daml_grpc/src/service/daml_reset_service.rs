@@ -6,7 +6,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::testing::reset_service_cli
 use crate::grpc_protobuf::com::daml::ledger::api::v1::testing::ResetRequest;
 use crate::service::common::make_request;
 
-/// Reset the state of a DAML ledger (requires `testing` feature).
+/// Reset the state of a Daml ledger (requires `testing` feature).
 #[derive(Debug)]
 pub struct DamlResetService<'a> {
     channel: Channel,

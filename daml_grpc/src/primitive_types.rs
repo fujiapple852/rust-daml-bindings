@@ -12,43 +12,43 @@ use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
-/// Type alias for a DAML `Int`.
+/// Type alias for a Daml `Int`.
 pub type DamlInt64 = i64;
 
-/// Type alias for a DAML `Numeric`.
+/// Type alias for a Daml `Numeric`.
 pub type DamlNumeric = BigDecimal;
 
 /// Type alias for a Daml `Numeric 10`
 pub type DamlNumeric10 = DamlFixedNumeric<Nat10>;
 
-/// Type alias for a DAML `Text`.
+/// Type alias for a Daml `Text`.
 pub type DamlText = String;
 
-/// Type alias for a DAML `Timestamp`.
+/// Type alias for a Daml `Timestamp`.
 pub type DamlTimestamp = DateTime<Utc>;
 
-/// Type alias for a DAML `Bool`.
+/// Type alias for a Daml `Bool`.
 pub type DamlBool = bool;
 
-/// Type alias for a DAML `Unit`.
+/// Type alias for a Daml `Unit`.
 pub type DamlUnit = ();
 
-/// Type alias for a DAML `Date`.
+/// Type alias for a Daml `Date`.
 pub type DamlDate = Date<Utc>;
 
-/// Type alias for a DAML `List a`.
+/// Type alias for a Daml `List a`.
 pub type DamlList<T> = Vec<T>;
 
-/// Type alias for a DAML legacy `TextMap a b`.
+/// Type alias for a Daml legacy `TextMap a b`.
 pub type DamlTextMap<V> = DamlTextMapImpl<V>;
 
-/// Type alias for a DAML `GenMap a b`.
+/// Type alias for a Daml `GenMap a b`.
 pub type DamlGenMap<K, V> = BTreeMap<K, V>;
 
-/// Type alias for a DAML `Optional a`.
+/// Type alias for a Daml `Optional a`.
 pub type DamlOptional<T> = Option<T>;
 
-/// A DAML `Party`.
+/// A Daml `Party`.
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Clone)]
 pub struct DamlParty {
     pub party: String,
@@ -108,7 +108,7 @@ impl std::fmt::Display for DamlParty {
     }
 }
 
-/// A DAML `ContractId`.
+/// A Daml `ContractId`.
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Clone)]
 pub struct DamlContractId {
     pub contract_id: String,
@@ -168,7 +168,7 @@ impl std::fmt::Display for DamlContractId {
     }
 }
 
-/// A DAML legacy `TextMap a`.
+/// A Daml legacy `TextMap a`.
 #[derive(Debug, Eq, Default, Clone)]
 pub struct DamlTextMapImpl<T>(pub HashMap<DamlText, T>);
 

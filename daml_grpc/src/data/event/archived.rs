@@ -3,7 +3,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::ArchivedEvent;
 use crate::util::Required;
 use std::convert::TryFrom;
 
-/// An event which represents archiving a contract on a DAML ledger.
+/// An event which represents archiving a contract on a Daml ledger.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlArchivedEvent {
     event_id: String,

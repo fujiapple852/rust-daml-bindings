@@ -1,4 +1,4 @@
-//! Helper macros for working with the [DAML Ledger API]
+//! Helper macros for working with the [Daml Ledger API]
 //!
 //! Provides a [`daml_value!`] macro to simplify the construction of [`DamlValue`] literals and a
 //! [`daml_path!`] macro to simplify the extraction of data from existing [`DamlRecord`]  &
@@ -6,7 +6,7 @@
 //!
 //! [`DamlValue`]: ../../doc/daml_grpc/data/value/enum.DamlValue.html
 //! [`DamlRecord`]: ../../doc/daml_grpc/data/value/struct.DamlRecord.html
-//! [DAML Ledger API]: ../../doc/daml_grpc/index.html
+//! [Daml Ledger API]: ../../doc/daml_grpc/index.html
 //! [`daml_value!`]: macro.daml_value.html
 //! [`daml_path!`]: macro.daml_path.html
 

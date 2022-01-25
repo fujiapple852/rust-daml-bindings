@@ -1,48 +1,48 @@
 [![CircleCI](https://circleci.com/gh/fujiapple852/rust-daml-bindings/tree/master.svg?style=svg&circle-token=b7fe7e775207e0a62dad6386f260bfc0acd0d2ce)](https://circleci.com/gh/fujiapple852/rust-daml-bindings/tree/master)
 
-# DAML API Rust Bindings 
-A Rust implementation for the Digital Asset DAML GRPC ledger [API](https://docs.daml.com/app-dev/ledger-api-introduction/index.html).
+# Daml API Rust Bindings 
+A Rust implementation for the Digital Asset Daml GRPC ledger [API](https://docs.daml.com/app-dev/ledger-api-introduction/index.html).
 
 ## Status
 The project is in an early development stage and the API is unstable.  It has not yet been published to [crates.io](https://crates.io/).  
 The status of the feature set:
 
-- [x] Support for DAML Ledger GRPC API
-- [ ] Support for DAML Ledger JSON API
+- [x] Support for Daml Ledger GRPC API
+- [ ] Support for Daml Ledger JSON API
 - [X] Support for http & https (TLS)
-- [X] Support for passing JWT bearer tokens (HS256/RS256/EC256 DAML Sandbox token builder provided)
+- [X] Support for passing JWT bearer tokens (HS256/RS256/EC256 Daml Sandbox token builder provided)
 - [X] Fully async API (via `async`/`await`, `std::futures` & `futures` [0.3.x](https://docs.rs/futures/0.3.1/futures/))
 - [X] Full suite of Sandbox integration tests
-- [X] Macros to create and extract DAML values
-- [X] Support for parsing DAML LF (versions `1.6`, `1.7`, `1.8`, `1.11`, `1.12`, `1.13` & `1.14`)
-- [X] Code Generator (generate Rust types from DAML LF) 
-- [X] Custom attributes for automatic Rust<>DAML conversions
+- [X] Macros to create and extract Daml values
+- [X] Support for parsing Daml LF (versions `1.6`, `1.7`, `1.8`, `1.11`, `1.12`, `1.13` & `1.14`)
+- [X] Code Generator (generate Rust types from Daml LF) 
+- [X] Custom attributes for automatic Rust<>Daml conversions
 - [X] Sample applications
 - [ ] Executor API
 
 ## Dependencies
 These ledger bindings use the [tonic](https://github.com/hyperium/tonic) GRPC library which in turn uses the 
-[PROST!](https://github.com/danburkert/prost) library for generating Rust representations of the DAML ledger API 
+[PROST!](https://github.com/danburkert/prost) library for generating Rust representations of the Daml ledger API 
 protocols buffers.
 
 # Minimum Supported Rust Version
 This crate is guaranteed to compile on stable Rust 1.58.1 (2021 edition) and up.
 
-# Supported DAML Version
-These bindings support `DAML-LF` versions `1.6`, `1.7`, `1.8`, `1.11`, `1.12`, `1.13` & `1.14` and have been tested against DAML SDKs up to `1.18.1`.
+# Supported Daml Version
+These bindings support `Daml-LF` versions `1.6`, `1.7`, `1.8`, `1.11`, `1.12`, `1.13` & `1.14` and have been tested against Daml SDKs up to `1.18.1`.
 
 ## Crates
 The project provides the following crates:
 
 | crate        | description                                 | status      |
 |--------------|---------------------------------------------|-------------|
-| daml         | DAML prelude & common entry point           | alpha       |
-| daml_grpc    | DAML Ledger GRPC API bindings               | beta        |
+| daml         | Daml prelude & common entry point           | alpha       |
+| daml_grpc    | Daml Ledger GRPC API bindings               | beta        |
 | daml_json    | Daml Ledger JSON API bindings               | alpha       |
-| daml_codegen | Rust codegen for DAML archives              | beta        |
-| daml_derive  | Custom attributes for Rust<>DAML conversion | beta        |
-| daml_macro   | Macros to create and extract DAML value     | beta        |
-| daml_util    | Utilities to aid working with DAML ledgers  | alpha       |
+| daml_codegen | Rust codegen for Daml archives              | beta        |
+| daml_derive  | Custom attributes for Rust<>Daml conversion | beta        |
+| daml_macro   | Macros to create and extract Daml value     | beta        |
+| daml_util    | Utilities to aid working with Daml ledgers  | alpha       |
 | daml_lf      | Read Dar and Dalf files & bytes             | beta        | 
 
 ## Build

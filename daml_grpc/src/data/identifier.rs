@@ -1,7 +1,7 @@
 use crate::grpc_protobuf::com::daml::ledger::api::v1::Identifier;
 use std::fmt::{Display, Formatter, Result};
 
-/// Unique identifier of an entity on a DAML ledger.
+/// Unique identifier of an entity on a Daml ledger.
 #[derive(Debug, PartialEq, Eq, Default, Clone, Hash, Ord, PartialOrd)]
 pub struct DamlIdentifier {
     package_id: String,

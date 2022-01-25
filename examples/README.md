@@ -1,6 +1,6 @@
 # Examples
 
-Examples that show off the features provided by `DAML`.
+Examples that show off the features provided by `Daml`.
 
 ## Ping Pong (GRPC API)
 An example usage of the GRPC API for a simple ping-pong contract between two parties.
@@ -10,7 +10,7 @@ $ cd ping_pong_demo && cargo run
 ```
 
 ## Rental (GRPC API, codegen)
-An example of using the code generator to create 'Rust' code from a DAML model.
+An example of using the code generator to create 'Rust' code from a Daml model.
 
 ```bash
 $ cd rental_demo && cargo run
@@ -20,7 +20,7 @@ $ cd rental_demo && cargo run
 An example sing the JSON API.
 
 ## Darn
-A simple tool which demonstrates some features pf the various 'DAML' libraries.
+A simple tool which demonstrates some features of the various 'Daml' libraries.
 
 ```bash
 $ cd darn && cargo run

@@ -31,7 +31,7 @@ impl<'a, P> PayloadElementWrapper<'a, P> {
 
 /// A common context for wrapper types.
 ///
-/// A common context for DAML items which exists within a given archive, package, module & data.
+/// A common context for Daml items which exists within a given archive, package, module & data.
 #[derive(Debug, Clone, Copy)]
 pub struct DamlPayloadParentContext<'a> {
     pub archive: &'a DamlArchivePayload<'a>,

@@ -8,7 +8,7 @@ use chrono::Utc;
 use std::convert::TryFrom;
 use std::time::Duration;
 
-/// A list of DAML commands.
+/// A list of Daml commands.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlCommands {
     workflow_id: String,
@@ -97,7 +97,7 @@ impl TryFrom<DamlCommands> for Commands {
 
     fn try_from(daml_commands: DamlCommands) -> DamlResult<Commands> {
         Ok(Commands {
-            // To allow each `DamlCommands` to be reusable between ledgers The DAML ledger id is updated immediately
+            // To allow each `DamlCommands` to be reusable between ledgers The Daml ledger id is updated immediately
             // prior to sending to the server.
             ledger_id: String::new(),
             workflow_id: daml_commands.workflow_id,

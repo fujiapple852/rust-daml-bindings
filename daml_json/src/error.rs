@@ -1,10 +1,10 @@
 use crate::util::{NotSingleError, RequiredError};
 use thiserror::Error;
 
-/// DAML JSON Result.
+/// Daml JSON Result.
 pub type DamlJsonResult<T> = Result<T, DamlJsonError>;
 
-/// DAML JSON Error.
+/// Daml JSON Error.
 #[derive(Error, Debug)]
 pub enum DamlJsonError {
     #[error("DamlJsonError: codec error: {0}")]
@@ -21,10 +21,10 @@ pub enum DamlJsonError {
     UnhandledHttpResponse(String),
 }
 
-/// DAML JSON Request/Response Converter Result.
+/// Daml JSON Request/Response Converter Result.
 pub type DamlJsonReqConResult<T> = Result<T, DamlJsonReqConError>;
 
-/// DAML JSON Request/Response Converter Error.
+/// Daml JSON Request/Response Converter Error.
 #[derive(Error, Debug)]
 pub enum DamlJsonReqConError {
     #[error("DamlJsonError: codec error: {0}")]
@@ -47,13 +47,13 @@ pub enum DamlJsonReqConError {
     MissingExercisedEvent,
 }
 
-/// DAML JSON Codec Result.
+/// Daml JSON Codec Result.
 pub type DamlJsonCodecResult<T> = Result<T, DamlJsonCodecError>;
 
-/// DAML JSON Codec Error.
+/// Daml JSON Codec Error.
 #[derive(Error, Debug)]
 pub enum DamlJsonCodecError {
-    #[error("failed to process DAML LF: {0}")]
+    #[error("failed to process Daml LF: {0}")]
     DamlLfError(#[from] daml_lf::DamlLfError),
     #[error("failed to parse numeric from string: {0}")]
     NumericParseError(#[from] bigdecimal::ParseBigDecimalError),
@@ -83,19 +83,19 @@ pub enum DamlJsonCodecError {
     DuplicateGenMapKeys,
     #[error("expected exactly two types for genmap")]
     UnexpectedGenMapTypes,
-    #[error("unsupported DAML type {0}")]
+    #[error("unsupported Daml type {0}")]
     UnsupportedDamlType(String),
     #[error("Data item {0} not found in archive")]
     DataNotFound(String),
 }
 
-/// DAML JSON Schema Codec Result.
+/// Daml JSON Schema Codec Result.
 pub type DamlJsonSchemaCodecResult<T> = Result<T, DamlJsonSchemaCodecError>;
 
-/// DAML JSON Schema Codec Error.
+/// Daml JSON Schema Codec Error.
 #[derive(Error, Debug)]
 pub enum DamlJsonSchemaCodecError {
-    #[error("failed to process DAML LF: {0}")]
+    #[error("failed to process Daml LF: {0}")]
     DamlLfError(#[from] daml_lf::DamlLfError),
     #[error(transparent)]
     MissingRequiredField(#[from] RequiredError),

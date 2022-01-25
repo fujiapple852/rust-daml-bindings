@@ -12,7 +12,7 @@ use std::path::Path;
 /// The default name for an unnamed archive.
 pub const DEFAULT_ARCHIVE_NAME: &str = "Unnamed";
 
-/// A `DAML LF` archive (aka a `dalf` file).
+/// A `Daml LF` archive (aka a `dalf` file).
 ///
 /// A `DamlLfArchive` contains a `name`, a `payload` (aka "package"), a `hash` (aka "package id") of that `payload` for
 /// a given `hash_function`.
@@ -55,7 +55,7 @@ impl DamlLfArchive {
     ///
     /// If the embedded `payload` is not of a known version then [`UnknownVersion`] will be returned.
     ///
-    /// Archives of `DAML LF` `v0` are not supported and will result in a [`UnsupportedVersion`] being returned.
+    /// Archives of `Daml LF` `v0` are not supported and will result in a [`UnsupportedVersion`] being returned.
     ///
     /// # Examples
     ///
@@ -89,7 +89,7 @@ impl DamlLfArchive {
     ///
     /// If the embedded `payload` is not of a known version then [`UnknownVersion`] will be returned.
     ///
-    /// Archives of `DAML LF` `v0` are not supported and will result in a [`UnsupportedVersion`] being returned.
+    /// Archives of `Daml LF` `v0` are not supported and will result in a [`UnsupportedVersion`] being returned.
     ///
     /// # Examples
     ///
@@ -127,7 +127,7 @@ impl DamlLfArchive {
     ///
     /// If the embedded `payload` is not of a known version then [`UnknownVersion`] will be returned.
     ///
-    /// Archives of `DAML LF` `v0` are not supported and will result in a [`UnsupportedVersion`] being returned.
+    /// Archives of `Daml LF` `v0` are not supported and will result in a [`UnsupportedVersion`] being returned.
     ///
     /// # Examples
     ///

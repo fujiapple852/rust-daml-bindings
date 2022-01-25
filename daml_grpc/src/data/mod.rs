@@ -10,10 +10,10 @@ pub mod offset;
 /// Ledger package information.
 pub mod package;
 
-/// The details of a DAML party.
+/// The details of a Daml party.
 pub mod party;
 
-/// DAML values, records, enums & variants.
+/// Daml values, records, enums & variants.
 pub mod value {
     mod record;
     mod record_build;

@@ -15,7 +15,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::{GetActiveContractsRequest
 use crate::service::common::make_request;
 use crate::service::DamlVerbosity;
 
-/// Returns a stream of the active contracts on a DAML ledger.
+/// Returns a stream of the active contracts on a Daml ledger.
 ///
 /// Allows clients to initialize themselves according to a fairly recent state of the ledger without reading through
 /// all transactions that were committed since the ledger’s creation.

@@ -15,7 +15,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::{CompletionEndRequest, Com
 use crate::service::common::make_request;
 use crate::util::Required;
 
-/// Observe the status of command submissions on a DAML ledger.
+/// Observe the status of command submissions on a Daml ledger.
 #[derive(Debug)]
 pub struct DamlCommandCompletionService<'a> {
     channel: Channel,

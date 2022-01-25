@@ -13,7 +13,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::GetLedgerConfigurationRequ
 use crate::service::common::make_request;
 use crate::util::Required;
 
-/// Subscribe to configuration changes of a DAML ledger.
+/// Subscribe to configuration changes of a Daml ledger.
 #[derive(Debug)]
 pub struct DamlLedgerConfigurationService<'a> {
     channel: Channel,

@@ -5,7 +5,7 @@ use crate::data::{DamlError, DamlIdentifier};
 use crate::grpc_protobuf::com::daml::ledger::api::v1::CreatedEvent;
 use crate::util::Required;
 
-/// An event which represents creating a contract on a DAML ledger.
+/// An event which represents creating a contract on a Daml ledger.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlCreatedEvent {
     event_id: String,

@@ -1,4 +1,4 @@
-/// The verbosity of responses from the DAML ledger.
+/// The verbosity of responses from the Daml ledger.
 ///
 /// If verbose mode is enabled then values served over the API will contain more information than strictly necessary to
 /// interpret the data.  In particular, setting the verbose flag to true triggers the ledger to include labels for

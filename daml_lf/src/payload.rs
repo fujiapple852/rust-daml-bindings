@@ -10,9 +10,9 @@ use itertools::Itertools;
 use prost::Message;
 use std::convert::TryFrom;
 
-/// A `DAML LF` archive payload (aka "package").
+/// A `Daml LF` archive payload (aka "package").
 ///
-/// A `DAML LF` archive payload contains a `package` and a `language_version`.
+/// A `Daml LF` archive payload contains a `package` and a `language_version`.
 #[derive(Debug, Clone)]
 pub struct DamlLfArchivePayload {
     pub language_version: LanguageVersion,
@@ -43,7 +43,7 @@ impl DamlLfArchivePayload {
     /// If the deserialized `DamlLfArchivePayload` is not of a known version then [`UnknownVersion`]
     /// will be returned.
     ///
-    /// Archives of `DAML LF` `v0` are not supported and will result in a [`UnsupportedVersion`]
+    /// Archives of `Daml LF` `v0` are not supported and will result in a [`UnsupportedVersion`]
     /// being returned.
     ///
     /// ```no_run
@@ -162,7 +162,7 @@ impl DamlLfArchivePayload {
     }
 }
 
-/// The supported `DAML LF` package formats.
+/// The supported `Daml LF` package formats.
 #[derive(Debug, Clone)]
 pub enum DamlLfPackage {
     V1(daml_lf_1::Package),

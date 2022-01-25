@@ -3,7 +3,7 @@ use crate::data::{DamlError, DamlIdentifier, DamlResult};
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{Identifier, Record, RecordField};
 use std::convert::{TryFrom, TryInto};
 
-/// A representation of the fields on a DAML `template` or `data` construct.
+/// A representation of the fields on a Daml `template` or `data` construct.
 #[derive(Debug, PartialEq, Eq, Default, Clone, Ord, PartialOrd)]
 pub struct DamlRecord {
     record_id: Option<DamlIdentifier>,
@@ -44,7 +44,7 @@ impl DamlRecord {
             .ok_or_else(|| DamlError::UnknownField(label.to_owned()))
     }
 
-    /// Apply a DAML data extractor function.
+    /// Apply a Daml data extractor function.
     ///
     /// See [`DamlValue::extract`] for details an examples.
     pub fn extract<'a, R, F>(&'a self, f: F) -> DamlResult<R>

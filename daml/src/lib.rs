@@ -1,18 +1,18 @@
-//! [DAML](https://daml.com/) - The smart contract language for building distributed applications on a safe, privacy-aware runtime.
+//! [Daml](https://daml.com/) - The smart contract language for building distributed applications on a safe, privacy-aware runtime.
 //!
 //! # Crates
 //!
-//! The following crates are provided for working with DAML in Rust:
+//! The following crates are provided for working with Daml in Rust:
 //!
 //! | crate          | description                                 | status      |
 //! |----------------|---------------------------------------------|-------------|
-//! | [daml]         | DAML prelude & common entry point           | alpha       |
-//! | [daml_grpc]    | DAML Ledger GRPC API bindings               | beta        |
+//! | [daml]         | Daml prelude & common entry point           | alpha       |
+//! | [daml_grpc]    | Daml Ledger GRPC API bindings               | beta        |
 //! | [daml_json]    | Daml Ledger JSON API bindings               | alpha       |
-//! | [daml_codegen] | Rust codegen for DAML archives              | beta        |
-//! | [daml_derive]  | Custom attributes for Rust<>DAML conversion | beta        |
-//! | [daml_macro]   | Macros to create and extract DAML value     | beta        |
-//! | [daml_util]    | Utilities to aid working with DAML ledgers  | alpha       |
+//! | [daml_codegen] | Rust codegen for Daml archives              | beta        |
+//! | [daml_derive]  | Custom attributes for Rust<>Daml conversion | beta        |
+//! | [daml_macro]   | Macros to create and extract Daml value     | beta        |
+//! | [daml_util]    | Utilities to aid working with Daml ledgers  | alpha       |
 //! | [daml_lf]      | Read Dar and Dalf files & bytes             | beta        |
 //!
 //! [daml]: index.html
@@ -29,9 +29,9 @@
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 
-/// The DAML prelude.
+/// The Daml prelude.
 ///
-/// Include the DAML prelude to bring into scope all types required by the [custom attributes].  Include the prelude
+/// Include the Daml prelude to bring into scope all types required by the [custom attributes].  Include the prelude
 /// as follows:
 ///
 /// ```no_rust

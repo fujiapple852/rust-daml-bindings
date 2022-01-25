@@ -9,7 +9,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::ledger_identity_service_cl
 use crate::grpc_protobuf::com::daml::ledger::api::v1::GetLedgerIdentityRequest;
 use crate::service::common::make_request;
 
-/// Obtain the unique identity that the DAML ledger.
+/// Obtain the unique identity that the Daml ledger.
 #[derive(Debug)]
 pub struct DamlLedgerIdentityService<'a> {
     channel: Channel,

@@ -186,7 +186,7 @@ impl DamlGrpcClientBuilder {
     }
 }
 
-/// DAML ledger client connection.
+/// Daml ledger client connection.
 #[derive(Debug)]
 pub struct DamlGrpcClient {
     config: DamlGrpcClientConfig,

@@ -9,7 +9,7 @@ use chrono::Utc;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 
-/// A DAML ledger transaction tree.
+/// A Daml ledger transaction tree.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct DamlTransactionTree {
     transaction_id: String,

@@ -1,6 +1,6 @@
-/// Construct a DAML data extractor function from a path expression.
+/// Construct a Daml data extractor function from a path expression.
 ///
-/// This macro provides a concise DSL for constructing a DAML data extractor closure as required by
+/// This macro provides a concise DSL for constructing a Daml data extractor closure as required by
 /// [`DamlRecord::extract`] and [`DamlValue::extract`].  The closure produced will have the following signature:
 ///
 /// `Fn(&DamlRecord) -> DamlResult<R>`

@@ -4,7 +4,7 @@ use crate::grpc_protobuf::com::daml::ledger::api::v1::{Enum, Identifier, Value, 
 use crate::util::Required;
 use std::convert::TryFrom;
 
-/// A representation of a DAML variant field.
+/// A representation of a Daml variant field.
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd)]
 pub struct DamlVariant {
     variant_id: Option<DamlIdentifier>,
@@ -60,7 +60,7 @@ impl From<DamlVariant> for Variant {
     }
 }
 
-/// A representation of a DAML enum, a value with finite set of alternative representations.
+/// A representation of a Daml enum, a value with finite set of alternative representations.
 #[derive(Debug, Eq, PartialEq, Clone, Hash, Ord, PartialOrd)]
 pub struct DamlEnum {
     enum_id: Option<DamlIdentifier>,

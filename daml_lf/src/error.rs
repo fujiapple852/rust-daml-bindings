@@ -1,20 +1,20 @@
 #![allow(clippy::used_underscore_binding)]
 use thiserror::Error;
 
-/// Represents `DAML-LF` specific errors.
+/// Represents `Daml-LF` specific errors.
 #[derive(Error, Debug)]
 pub enum DamlLfError {
-    #[error("failed to parse DAML LF: {0}")]
+    #[error("failed to parse Daml LF: {0}")]
     DamlLfParseError(#[from] prost::DecodeError),
     #[error("failed to parse dar file: {0}")]
     DarParseError(String),
-    #[error("failed to convert DAML LF: {0}")]
+    #[error("failed to convert Daml LF: {0}")]
     DamlLfConvertError(#[from] DamlLfConvertError),
     #[error("io error: {0}")]
     IoError(#[from] std::io::Error),
-    #[error("unknown DAML LF version: {0}")]
+    #[error("unknown Daml LF version: {0}")]
     UnknownVersion(String),
-    #[error("unsupported DAML LF version: {0}")]
+    #[error("unsupported Daml LF version: {0}")]
     UnsupportedVersion(String),
 }
 
@@ -46,7 +46,7 @@ impl From<zip::result::ZipError> for DamlLfError {
 
 pub type DamlLfResult<T> = Result<T, DamlLfError>;
 
-/// DAML code generator errors.
+/// Daml code generator errors.
 #[derive(Debug, Error)]
 pub enum DamlLfConvertError {
     /// A `DamlTypePayload::ContractId` contained more than one type argument.
@@ -55,17 +55,17 @@ pub enum DamlLfConvertError {
     /// A required optional field was None.
     #[error("required field was not supplied")]
     MissingRequiredField,
-    /// A DAML type not supported by the code generator was found.
+    /// A Daml type not supported by the code generator was found.
     #[error("the type {0} is not currently supported")]
     UnsupportedType(String),
-    /// A DAML choice was not a `DamlDataWrapper::Record`.
+    /// A Daml choice was not a `DamlDataWrapper::Record`.
     #[error("choice argument was not a record")]
     UnexpectedChoiceData,
     /// A feature supported by this archive version was not used.
-    #[error("DAML LF version {0} supports feature {1} but was not used (supported as of version {2})")]
+    #[error("Daml LF version {0} supports feature {1} but was not used (supported as of version {2})")]
     SupportedFeatureUnused(String, String, String),
     /// A feature not supported by this archive version was used.
-    #[error("DAML LF version {0} does not support feature {1} (requires version {2})")]
+    #[error("Daml LF version {0} does not support feature {1} (requires version {2})")]
     UnsupportedFeatureUsed(String, String, String),
     /// An unexpected `DamlDataPayload` variant was found.
     #[error("unexpected DamlDataPayload variant")]
@@ -99,5 +99,5 @@ pub enum DamlLfConvertError {
     InternalError(String),
 }
 
-/// DAML LF convert result.
+/// Daml LF convert result.
 pub type DamlLfConvertResult<T> = Result<T, DamlLfConvertError>;

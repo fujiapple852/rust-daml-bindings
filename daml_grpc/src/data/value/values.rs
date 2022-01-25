@@ -21,7 +21,7 @@ use itertools::Itertools;
 use std::cmp::Ordering;
 use std::str::FromStr;
 
-/// A generic representation of data on a DAML ledger.
+/// A generic representation of data on a Daml ledger.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum DamlValue {
     Record(DamlRecord),
@@ -333,9 +333,9 @@ impl DamlValue {
         }
     }
 
-    /// Apply a DAML data extractor function.
+    /// Apply a Daml data extractor function.
     ///
-    /// A DAML data extractor function has the following signature:
+    /// A Daml data extractor function has the following signature:
     ///
     /// `Fn(&DamlRecord) -> DamlResult<R>`
     ///
@@ -347,7 +347,7 @@ impl DamlValue {
     /// [`DamlRecord`] and any nested [`DamlValue`].
     ///
     /// This method is designed to be used with the `daml_path!` macro from the `daml_macro` crate which
-    /// provides a concise DSL for constructing a DAML data extractor closure.
+    /// provides a concise DSL for constructing a Daml data extractor closure.
     ///
     /// # Examples
     ///
