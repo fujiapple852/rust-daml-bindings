@@ -19,7 +19,7 @@ daml_lf = { path = "../daml_lf" }
 futures = "0.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-jsonwebtoken = "7"
+jsonwebtoken = "8"
 chrono = "0.4"
 thiserror = "1.0"
 itertools = "0.10"
