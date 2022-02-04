@@ -234,11 +234,10 @@ impl DamlSandboxAuthToken {
 
     /// Parse a [`DamlSandboxAuthToken`] from a JWT token string (without validating).
     pub fn parse_jwt_no_validation(token: &str) -> DamlSandboxAuthResult<Self> {
-        Ok(jsonwebtoken::dangerous_insecure_decode_with_validation::<Self>(
-            token,
-            &Validation::new(jsonwebtoken::decode_header(token)?.alg),
-        )?
-        .claims)
+        let algorithm = jsonwebtoken::decode_header(token)?.alg;
+        let mut validation = Validation::new(algorithm);
+        validation.insecure_disable_signature_validation();
+        Ok(jsonwebtoken::decode::<Self>(token, &DecodingKey::from_secret(&[]), &validation)?.claims)
     }
 
     /// The token expiry time (unix timestamp).
