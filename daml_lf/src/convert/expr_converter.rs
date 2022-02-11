@@ -326,7 +326,7 @@ impl<'a> TryFrom<&DamlEnumConWrapper<'a>> for DamlEnumCon<'a> {
     fn try_from(enum_con: &DamlEnumConWrapper<'a>) -> DamlLfConvertResult<Self> {
         let tycon = DamlTyConName::try_from(&enum_con.wrap(&enum_con.payload.tycon))?;
         let enum_con = enum_con.payload.enum_con.resolve(enum_con.context.package)?;
-        Ok(DamlEnumCon::new(tycon, enum_con))
+        Ok(DamlEnumCon::new(Box::new(tycon), enum_con))
     }
 }
 
@@ -633,7 +633,7 @@ impl<'a> TryFrom<&DamlCreateWrapper<'a>> for DamlCreate<'a> {
     fn try_from(create: &DamlCreateWrapper<'a>) -> DamlLfConvertResult<Self> {
         let template = DamlTyConName::try_from(&create.wrap(&create.payload.template))?;
         let expr = DamlExpr::try_from(&create.wrap(create.payload.expr.as_ref()))?;
-        Ok(DamlCreate::new(template, Box::new(expr)))
+        Ok(DamlCreate::new(Box::new(template), Box::new(expr)))
     }
 }
 
@@ -645,7 +645,7 @@ impl<'a> TryFrom<&DamlExerciseWrapper<'a>> for DamlExercise<'a> {
         let cid = DamlExpr::try_from(&exercise.wrap(exercise.payload.cid.as_ref()))?;
         let arg = DamlExpr::try_from(&exercise.wrap(exercise.payload.arg.as_ref()))?;
         let choice = exercise.payload.choice.resolve(exercise.context.package)?;
-        Ok(DamlExercise::new(template, Box::new(cid), Box::new(arg), choice))
+        Ok(DamlExercise::new(Box::new(template), Box::new(cid), Box::new(arg), choice))
     }
 }
 
@@ -657,7 +657,7 @@ impl<'a> TryFrom<&DamlExerciseByKeyWrapper<'a>> for DamlExerciseByKey<'a> {
         let choice = exercise_by_key.payload.choice.resolve(exercise_by_key.context.package)?;
         let key = DamlExpr::try_from(&exercise_by_key.wrap(exercise_by_key.payload.key.as_ref()))?;
         let arg = DamlExpr::try_from(&exercise_by_key.wrap(exercise_by_key.payload.arg.as_ref()))?;
-        Ok(DamlExerciseByKey::new(template, choice, Box::new(key), Box::new(arg)))
+        Ok(DamlExerciseByKey::new(Box::new(template), choice, Box::new(key), Box::new(arg)))
     }
 }
 
@@ -667,7 +667,7 @@ impl<'a> TryFrom<&DamlFetchWrapper<'a>> for DamlFetch<'a> {
     fn try_from(fetch: &DamlFetchWrapper<'a>) -> DamlLfConvertResult<Self> {
         let template = DamlTyConName::try_from(&fetch.wrap(&fetch.payload.template))?;
         let cid = DamlExpr::try_from(&fetch.wrap(fetch.payload.cid.as_ref()))?;
-        Ok(DamlFetch::new(template, Box::new(cid)))
+        Ok(DamlFetch::new(Box::new(template), Box::new(cid)))
     }
 }
 
@@ -677,7 +677,7 @@ impl<'a> TryFrom<&DamlRetrieveByKeyWrapper<'a>> for DamlRetrieveByKey<'a> {
     fn try_from(retrieve_by_key: &DamlRetrieveByKeyWrapper<'a>) -> DamlLfConvertResult<Self> {
         let template = DamlTyConName::try_from(&retrieve_by_key.wrap(&retrieve_by_key.payload.template))?;
         let key = DamlExpr::try_from(&retrieve_by_key.wrap(retrieve_by_key.payload.key.as_ref()))?;
-        Ok(DamlRetrieveByKey::new(template, Box::new(key)))
+        Ok(DamlRetrieveByKey::new(Box::new(template), Box::new(key)))
     }
 }
 

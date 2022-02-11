@@ -70,7 +70,7 @@ impl ToStatic for DamlPackage<'_> {
         DamlPackage::new(
             self.name.to_static(),
             self.package_id.to_static(),
-            self.version.as_ref().map(ToStatic::to_static),
+            self.version.to_static(),
             self.language_version,
             self.root_module.to_static(),
         )

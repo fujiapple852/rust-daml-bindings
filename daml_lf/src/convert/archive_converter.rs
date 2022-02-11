@@ -422,7 +422,7 @@ impl<'a> TryFrom<&DamlSynWrapper<'a>> for DamlSyn<'a> {
             .iter()
             .map(|arg| DamlType::try_from(&syn.wrap(arg)))
             .collect::<DamlLfConvertResult<_>>()?;
-        Ok(DamlSyn::new(tysyn, args))
+        Ok(DamlSyn::new(Box::new(tysyn), args))
     }
 }
 
@@ -538,7 +538,7 @@ impl<'a> TryFrom<&DamlTyConWrapper<'a>> for DamlTyCon<'a> {
             tycon.payload.data_name,
         )?;
         let type_arguments = convert_type_arguments(*tycon, &tycon.payload.type_arguments)?;
-        Ok(DamlTyCon::new(tycon_name, type_arguments))
+        Ok(DamlTyCon::new(Box::new(tycon_name), type_arguments))
     }
 }
 

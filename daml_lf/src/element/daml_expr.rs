@@ -86,7 +86,7 @@ impl ToStatic for DamlExpr<'_> {
     fn to_static(&self) -> Self::Static {
         match self {
             DamlExpr::Var(var) => DamlExpr::Var(var.to_static()),
-            DamlExpr::Val(val) => DamlExpr::Val(Box::new(val.to_static())),
+            DamlExpr::Val(val) => DamlExpr::Val(val.to_static()),
             DamlExpr::Builtin(builtin) => DamlExpr::Builtin(builtin.clone()),
             DamlExpr::PrimCon(prim_con) => DamlExpr::PrimCon(*prim_con),
             DamlExpr::PrimLit(prim_lit) => DamlExpr::PrimLit(prim_lit.to_static()),
@@ -262,7 +262,7 @@ impl ToStatic for DamlLocalValueName<'_> {
             self.name.to_static(),
             self.package_id.to_static(),
             self.package_name.to_static(),
-            self.module_path.iter().map(ToStatic::to_static).collect(),
+            self.module_path.to_static(),
         )
     }
 }
@@ -344,10 +344,10 @@ impl ToStatic for DamlNonLocalValueName<'_> {
             self.name.to_static(),
             self.source_package_id.to_static(),
             self.source_package_name.to_static(),
-            self.source_module_path.iter().map(ToStatic::to_static).collect(),
+            self.source_module_path.to_static(),
             self.target_package_id.to_static(),
             self.target_package_name.to_static(),
-            self.target_module_path.iter().map(ToStatic::to_static).collect(),
+            self.target_module_path.to_static(),
         )
     }
 }
@@ -597,7 +597,7 @@ impl ToStatic for DamlRecCon<'_> {
     type Static = DamlRecCon<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlRecCon::new(self.tycon.to_static(), self.fields.iter().map(DamlFieldWithExpr::to_static).collect())
+        DamlRecCon::new(self.tycon.to_static(), self.fields.to_static())
     }
 }
 
@@ -682,7 +682,7 @@ impl ToStatic for DamlRecProj<'_> {
     type Static = DamlRecProj<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlRecProj::new(self.tycon.to_static(), Box::new(self.record.to_static()), self.field.to_static())
+        DamlRecProj::new(self.tycon.to_static(), self.record.to_static(), self.field.to_static())
     }
 }
 
@@ -742,8 +742,8 @@ impl ToStatic for DamlRecUpd<'_> {
     fn to_static(&self) -> Self::Static {
         DamlRecUpd::new(
             self.tycon.to_static(),
-            Box::new(self.record.to_static()),
-            Box::new(self.update.to_static()),
+            self.record.to_static(),
+            self.update.to_static(),
             self.field.to_static(),
         )
     }
@@ -791,11 +791,7 @@ impl ToStatic for DamlVariantCon<'_> {
     type Static = DamlVariantCon<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlVariantCon::new(
-            self.tycon.to_static(),
-            Box::new(self.variant_arg.to_static()),
-            self.variant_con.to_static(),
-        )
+        DamlVariantCon::new(self.tycon.to_static(), self.variant_arg.to_static(), self.variant_con.to_static())
     }
 }
 
@@ -806,9 +802,9 @@ pub struct DamlEnumCon<'a> {
 }
 
 impl<'a> DamlEnumCon<'a> {
-    pub fn new(tycon: DamlTyConName<'a>, enum_con: Cow<'a, str>) -> Self {
+    pub fn new(tycon: Box<DamlTyConName<'a>>, enum_con: Cow<'a, str>) -> Self {
         Self {
-            tycon: Box::new(tycon),
+            tycon,
             enum_con,
         }
     }
@@ -867,7 +863,7 @@ impl ToStatic for DamlStructCon<'_> {
     type Static = DamlStructCon<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlStructCon::new(self.fields.iter().map(DamlFieldWithExpr::to_static).collect())
+        DamlStructCon::new(self.fields.to_static())
     }
 }
 
@@ -906,7 +902,7 @@ impl ToStatic for DamlStructProj<'_> {
     type Static = DamlStructProj<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlStructProj::new(Box::new(self.struct_expr.to_static()), self.field.to_static())
+        DamlStructProj::new(self.struct_expr.to_static(), self.field.to_static())
     }
 }
 
@@ -952,11 +948,7 @@ impl ToStatic for DamlStructUpd<'_> {
     type Static = DamlStructUpd<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlStructUpd::new(
-            Box::new(self.struct_expr.to_static()),
-            Box::new(self.update.to_static()),
-            self.field.to_static(),
-        )
+        DamlStructUpd::new(self.struct_expr.to_static(), self.update.to_static(), self.field.to_static())
     }
 }
 
@@ -996,7 +988,7 @@ impl ToStatic for DamlApp<'_> {
     type Static = DamlApp<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlApp::new(Box::new(self.fun.to_static()), self.args.iter().map(DamlExpr::to_static).collect())
+        DamlApp::new(self.fun.to_static(), self.args.to_static())
     }
 }
 
@@ -1036,7 +1028,7 @@ impl ToStatic for DamlTyApp<'_> {
     type Static = DamlTyApp<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlTyApp::new(Box::new(self.expr.to_static()), self.types.iter().map(DamlType::to_static).collect())
+        DamlTyApp::new(self.expr.to_static(), self.types.to_static())
     }
 }
 
@@ -1076,7 +1068,7 @@ impl ToStatic for DamlAbs<'_> {
     type Static = DamlAbs<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlAbs::new(self.params.iter().map(DamlVarWithType::to_static).collect(), Box::new(self.body.to_static()))
+        DamlAbs::new(self.params.to_static(), self.body.to_static())
     }
 }
 
@@ -1155,10 +1147,7 @@ impl ToStatic for DamlTyAbs<'_> {
     type Static = DamlTyAbs<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlTyAbs::new(
-            self.params.iter().map(DamlTypeVarWithKind::to_static).collect(),
-            Box::new(self.body.to_static()),
-        )
+        DamlTyAbs::new(self.params.to_static(), self.body.to_static())
     }
 }
 
@@ -1198,7 +1187,7 @@ impl ToStatic for DamlBlock<'_> {
     type Static = DamlBlock<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlBlock::new(self.bindings.iter().map(DamlBinding::to_static).collect(), Box::new(self.body.to_static()))
+        DamlBlock::new(self.bindings.to_static(), self.body.to_static())
     }
 }
 
@@ -1285,11 +1274,7 @@ impl ToStatic for DamlCons<'_> {
     type Static = DamlCons<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlCons::new(
-            self.ty.to_static(),
-            self.front.iter().map(DamlExpr::to_static).collect(),
-            Box::new(self.tail.to_static()),
-        )
+        DamlCons::new(self.ty.to_static(), self.front.to_static(), self.tail.to_static())
     }
 }
 
@@ -1329,7 +1314,7 @@ impl ToStatic for DamlCase<'_> {
     type Static = DamlCase<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlCase::new(Box::new(self.scrut.to_static()), self.alts.iter().map(DamlCaseAlt::to_static).collect())
+        DamlCase::new(self.scrut.to_static(), self.alts.to_static())
     }
 }
 
@@ -1608,7 +1593,7 @@ impl ToStatic for DamlOptionalSome<'_> {
     type Static = DamlOptionalSome<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlOptionalSome::new(self.ty.to_static(), Box::new(self.body.to_static()))
+        DamlOptionalSome::new(self.ty.to_static(), self.body.to_static())
     }
 }
 
@@ -1648,7 +1633,7 @@ impl ToStatic for DamlToAny<'_> {
     type Static = DamlToAny<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlToAny::new(self.ty.to_static(), Box::new(self.expr.to_static()))
+        DamlToAny::new(self.ty.to_static(), self.expr.to_static())
     }
 }
 
@@ -1688,7 +1673,7 @@ impl ToStatic for DamlFromAny<'_> {
     type Static = DamlFromAny<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlFromAny::new(self.ty.to_static(), Box::new(self.expr.to_static()))
+        DamlFromAny::new(self.ty.to_static(), self.expr.to_static())
     }
 }
 
@@ -1783,7 +1768,7 @@ impl ToStatic for DamlPure<'_> {
     type Static = DamlPure<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlPure::new(self.ty.to_static(), Box::new(self.expr.to_static()))
+        DamlPure::new(self.ty.to_static(), self.expr.to_static())
     }
 }
 
@@ -1794,9 +1779,9 @@ pub struct DamlCreate<'a> {
 }
 
 impl<'a> DamlCreate<'a> {
-    pub fn new(template: DamlTyConName<'a>, expr: Box<DamlExpr<'a>>) -> Self {
+    pub fn new(template: Box<DamlTyConName<'a>>, expr: Box<DamlExpr<'a>>) -> Self {
         Self {
-            template: Box::new(template),
+            template,
             expr,
         }
     }
@@ -1823,7 +1808,7 @@ impl ToStatic for DamlCreate<'_> {
     type Static = DamlCreate<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlCreate::new(self.template.to_static(), Box::new(self.expr.to_static()))
+        DamlCreate::new(self.template.to_static(), self.expr.to_static())
     }
 }
 
@@ -1837,13 +1822,13 @@ pub struct DamlExercise<'a> {
 
 impl<'a> DamlExercise<'a> {
     pub fn new(
-        template: DamlTyConName<'a>,
+        template: Box<DamlTyConName<'a>>,
         cid: Box<DamlExpr<'a>>,
         arg: Box<DamlExpr<'a>>,
         choice: Cow<'a, str>,
     ) -> Self {
         Self {
-            template: Box::new(template),
+            template,
             cid,
             arg,
             choice,
@@ -1883,8 +1868,8 @@ impl ToStatic for DamlExercise<'_> {
     fn to_static(&self) -> Self::Static {
         DamlExercise::new(
             self.template.to_static(),
-            Box::new(self.cid.to_static()),
-            Box::new(self.arg.to_static()),
+            self.cid.to_static(),
+            self.arg.to_static(),
             self.choice.to_static(),
         )
     }
@@ -1900,13 +1885,13 @@ pub struct DamlExerciseByKey<'a> {
 
 impl<'a> DamlExerciseByKey<'a> {
     pub fn new(
-        template: DamlTyConName<'a>,
+        template: Box<DamlTyConName<'a>>,
         choice: Cow<'a, str>,
         key: Box<DamlExpr<'a>>,
         arg: Box<DamlExpr<'a>>,
     ) -> Self {
         Self {
-            template: Box::new(template),
+            template,
             choice,
             key,
             arg,
@@ -1947,8 +1932,8 @@ impl ToStatic for DamlExerciseByKey<'_> {
         DamlExerciseByKey::new(
             self.template.to_static(),
             self.choice.to_static(),
-            Box::new(self.key.to_static()),
-            Box::new(self.arg.to_static()),
+            self.key.to_static(),
+            self.arg.to_static(),
         )
     }
 }
@@ -1960,9 +1945,9 @@ pub struct DamlFetch<'a> {
 }
 
 impl<'a> DamlFetch<'a> {
-    pub fn new(template: DamlTyConName<'a>, cid: Box<DamlExpr<'a>>) -> Self {
+    pub fn new(template: Box<DamlTyConName<'a>>, cid: Box<DamlExpr<'a>>) -> Self {
         Self {
-            template: Box::new(template),
+            template,
             cid,
         }
     }
@@ -1989,7 +1974,7 @@ impl ToStatic for DamlFetch<'_> {
     type Static = DamlFetch<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlFetch::new(self.template.to_static(), Box::new(self.cid.to_static()))
+        DamlFetch::new(self.template.to_static(), self.cid.to_static())
     }
 }
 
@@ -2000,9 +1985,9 @@ pub struct DamlRetrieveByKey<'a> {
 }
 
 impl<'a> DamlRetrieveByKey<'a> {
-    pub fn new(template: DamlTyConName<'a>, key: Box<DamlExpr<'a>>) -> Self {
+    pub fn new(template: Box<DamlTyConName<'a>>, key: Box<DamlExpr<'a>>) -> Self {
         Self {
-            template: Box::new(template),
+            template,
             key,
         }
     }
@@ -2029,7 +2014,7 @@ impl ToStatic for DamlRetrieveByKey<'_> {
     type Static = DamlRetrieveByKey<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlRetrieveByKey::new(self.template.to_static(), Box::new(self.key.to_static()))
+        DamlRetrieveByKey::new(self.template.to_static(), self.key.to_static())
     }
 }
 
@@ -2069,7 +2054,7 @@ impl ToStatic for DamlUpdateEmbedExpr<'_> {
     type Static = DamlUpdateEmbedExpr<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlUpdateEmbedExpr::new(self.ty.to_static(), Box::new(self.body.to_static()))
+        DamlUpdateEmbedExpr::new(self.ty.to_static(), self.body.to_static())
     }
 }
 
@@ -2109,9 +2094,9 @@ impl ToStatic for DamlScenario<'_> {
             DamlScenario::Block(block) => DamlScenario::Block(block.to_static()),
             DamlScenario::Commit(commit) => DamlScenario::Commit(commit.to_static()),
             DamlScenario::MustFailAt(commit) => DamlScenario::MustFailAt(commit.to_static()),
-            DamlScenario::Pass(expr) => DamlScenario::Pass(Box::new(expr.to_static())),
+            DamlScenario::Pass(expr) => DamlScenario::Pass(expr.to_static()),
             DamlScenario::GetTime => DamlScenario::GetTime,
-            DamlScenario::GetParty(expr) => DamlScenario::GetParty(Box::new(expr.to_static())),
+            DamlScenario::GetParty(expr) => DamlScenario::GetParty(expr.to_static()),
             DamlScenario::EmbedExpr(embed_expr) => DamlScenario::EmbedExpr(embed_expr.to_static()),
         }
     }
@@ -2160,7 +2145,7 @@ impl ToStatic for DamlCommit<'_> {
     type Static = DamlCommit<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlCommit::new(Box::new(self.party.to_static()), Box::new(self.expr.to_static()), self.ret_type.to_static())
+        DamlCommit::new(self.party.to_static(), self.expr.to_static(), self.ret_type.to_static())
     }
 }
 
@@ -2200,7 +2185,7 @@ impl ToStatic for DamlScenarioEmbedExpr<'_> {
     type Static = DamlScenarioEmbedExpr<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlScenarioEmbedExpr::new(self.ty.to_static(), Box::new(self.body.to_static()))
+        DamlScenarioEmbedExpr::new(self.ty.to_static(), self.body.to_static())
     }
 }
 
@@ -2240,7 +2225,7 @@ impl ToStatic for DamlToAnyException<'_> {
     type Static = DamlToAnyException<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlToAnyException::new(self.ty.to_static(), Box::new(self.expr.to_static()))
+        DamlToAnyException::new(self.ty.to_static(), self.expr.to_static())
     }
 }
 
@@ -2280,7 +2265,7 @@ impl ToStatic for DamlFromAnyException<'_> {
     type Static = DamlFromAnyException<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlFromAnyException::new(self.ty.to_static(), Box::new(self.expr.to_static()))
+        DamlFromAnyException::new(self.ty.to_static(), self.expr.to_static())
     }
 }
 
@@ -2327,11 +2312,7 @@ impl ToStatic for DamlThrow<'_> {
     type Static = DamlThrow<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlThrow::new(
-            self.return_type.to_static(),
-            self.exception_type.to_static(),
-            Box::new(self.exception_expr.to_static()),
-        )
+        DamlThrow::new(self.return_type.to_static(), self.exception_type.to_static(), self.exception_expr.to_static())
     }
 }
 
@@ -2391,9 +2372,9 @@ impl ToStatic for DamlTryCatch<'_> {
     fn to_static(&self) -> Self::Static {
         DamlTryCatch::new(
             self.return_type.to_static(),
-            Box::new(self.try_expr.to_static()),
+            self.try_expr.to_static(),
             self.var.to_static(),
-            Box::new(self.catch_expr.to_static()),
+            self.catch_expr.to_static(),
         )
     }
 }

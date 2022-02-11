@@ -185,13 +185,13 @@ impl ToStatic for DamlModule<'_> {
 
     fn to_static(&self) -> Self::Static {
         DamlModule {
-            path: self.path.iter().map(ToStatic::to_static).collect(),
+            path: self.path.to_static(),
             flags: self.flags,
-            synonyms: self.synonyms.iter().map(DamlDefTypeSyn::to_static).collect(),
-            child_modules: self.child_modules.iter().map(|(k, v)| (k.to_static(), DamlModule::to_static(v))).collect(),
-            data_types: self.data_types.iter().map(|(k, v)| (k.to_static(), DamlData::to_static(v))).collect(),
+            synonyms: self.synonyms.to_static(),
+            child_modules: self.child_modules.to_static(),
+            data_types: self.data_types.to_static(),
             #[cfg(feature = "full")]
-            values: self.values.iter().map(|(k, v)| (k.to_static(), DamlDefValue::to_static(v))).collect(),
+            values: self.values.to_static(),
         }
     }
 }
@@ -243,11 +243,7 @@ impl ToStatic for DamlDefTypeSyn<'_> {
     type Static = DamlDefTypeSyn<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlDefTypeSyn::new(
-            self.params.iter().map(DamlTypeVarWithKind::to_static).collect(),
-            self.ty.to_static(),
-            self.name.iter().map(ToStatic::to_static).collect(),
-        )
+        DamlDefTypeSyn::new(self.params.to_static(), self.ty.to_static(), self.name.to_static())
     }
 }
 
