@@ -83,20 +83,20 @@ impl DamlElementVisitor for ChoiceEventVisitor<'_> {
     }
 
     fn pre_visit_create<'a>(&mut self, create: &DamlCreate<'a>) {
-        let template_name = DamlTyCon::new(create.template().to_static(), vec![]);
+        let template_name = DamlTyCon::new(Box::new(create.template().to_static()), vec![]);
         self.created.insert(template_name);
     }
 
     fn pre_visit_exercise<'a>(&mut self, exercise: &DamlExercise<'a>) {
         if exercise.choice() == ARCHIVE_CHOICE_NAME {
-            let template_name = DamlTyCon::new(exercise.template().to_static(), vec![]);
+            let template_name = DamlTyCon::new(Box::new(exercise.template().to_static()), vec![]);
             self.archived.insert(template_name);
         } else {
             let data = self.archive.data_by_tycon_name(exercise.template()).unwrap();
             if let DamlData::Template(template) = data {
                 let choice = template.choices().iter().find(|c| c.name() == exercise.choice()).unwrap();
                 if choice.consuming() {
-                    let template_name = DamlTyCon::new(exercise.template().to_static(), vec![]);
+                    let template_name = DamlTyCon::new(Box::new(exercise.template().to_static()), vec![]);
                     self.archived.insert(template_name);
                 }
             }
