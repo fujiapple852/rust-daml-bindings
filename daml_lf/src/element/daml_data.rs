@@ -109,7 +109,7 @@ impl ToStatic for DamlData<'_> {
     fn to_static(&self) -> Self::Static {
         match self {
             DamlData::Record(record) => DamlData::Record(record.to_static()),
-            DamlData::Template(template) => DamlData::Template(Box::new(template.as_ref().to_static())),
+            DamlData::Template(template) => DamlData::Template(template.to_static()),
             DamlData::Variant(variant) => DamlData::Variant(variant.to_static()),
             DamlData::Enum(data_enum) => DamlData::Enum(data_enum.to_static()),
         }
@@ -333,12 +333,12 @@ impl ToStatic for DamlTemplate<'_> {
         DamlTemplate::new(
             self.name.to_static(),
             self.package_id.to_static(),
-            self.module_path.iter().map(ToStatic::to_static).collect(),
-            self.fields.iter().map(DamlField::to_static).collect(),
-            self.choices.iter().map(DamlChoice::to_static).collect(),
+            self.module_path.to_static(),
+            self.fields.to_static(),
+            self.choices.to_static(),
             self.param.to_static(),
             #[cfg(feature = "full")]
-            self.precond.as_ref().map(DamlExpr::to_static),
+            self.precond.to_static(),
             #[cfg(feature = "full")]
             self.signatories.to_static(),
             #[cfg(feature = "full")]
@@ -506,8 +506,8 @@ impl ToStatic for DamlChoice<'_> {
         DamlChoice::new(
             self.name.to_static(),
             self.package_id.to_static(),
-            self.module_path.iter().map(ToStatic::to_static).collect(),
-            self.fields.iter().map(DamlField::to_static).collect(),
+            self.module_path.to_static(),
+            self.fields.to_static(),
             self.return_type.to_static(),
             self.consuming,
             self.self_binder.to_static(),
@@ -657,9 +657,9 @@ impl ToStatic for DamlRecord<'_> {
         DamlRecord::new(
             self.name.to_static(),
             self.package_id.to_static(),
-            self.module_path.iter().map(ToStatic::to_static).collect(),
-            self.fields.iter().map(DamlField::to_static).collect(),
-            self.type_params.iter().map(DamlTypeVarWithKind::to_static).collect(),
+            self.module_path.to_static(),
+            self.fields.to_static(),
+            self.type_params.to_static(),
             self.serializable,
         )
     }
@@ -752,9 +752,9 @@ impl ToStatic for DamlVariant<'_> {
         DamlVariant::new(
             self.name.to_static(),
             self.package_id.to_static(),
-            self.module_path.iter().map(ToStatic::to_static).collect(),
-            self.fields.iter().map(DamlField::to_static).collect(),
-            self.type_params.iter().map(DamlTypeVarWithKind::to_static).collect(),
+            self.module_path.to_static(),
+            self.fields.to_static(),
+            self.type_params.to_static(),
             self.serializable,
         )
     }
@@ -846,9 +846,9 @@ impl ToStatic for DamlEnum<'_> {
         DamlEnum::new(
             self.name.to_static(),
             self.package_id.to_static(),
-            self.module_path.iter().map(ToStatic::to_static).collect(),
-            self.constructors.iter().map(ToStatic::to_static).collect(),
-            self.type_params.iter().map(DamlTypeVarWithKind::to_static).collect(),
+            self.module_path.to_static(),
+            self.constructors.to_static(),
+            self.type_params.to_static(),
             self.serializable,
         )
     }

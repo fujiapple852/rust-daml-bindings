@@ -170,20 +170,19 @@ impl ToStatic for DamlType<'_> {
 
     fn to_static(&self) -> Self::Static {
         match self {
-            DamlType::ContractId(inner) =>
-                DamlType::ContractId(inner.as_ref().map(|ty| Box::new(DamlType::to_static(ty)))),
+            DamlType::ContractId(inner) => DamlType::ContractId(inner.to_static()),
             DamlType::Int64 => DamlType::Int64,
-            DamlType::Numeric(args) => DamlType::Numeric(args.iter().map(DamlType::to_static).collect()),
+            DamlType::Numeric(args) => DamlType::Numeric(args.to_static()),
             DamlType::Text => DamlType::Text,
             DamlType::Timestamp => DamlType::Timestamp,
             DamlType::Party => DamlType::Party,
             DamlType::Bool => DamlType::Bool,
             DamlType::Unit => DamlType::Unit,
             DamlType::Date => DamlType::Date,
-            DamlType::List(args) => DamlType::List(args.iter().map(DamlType::to_static).collect()),
-            DamlType::TextMap(args) => DamlType::TextMap(args.iter().map(DamlType::to_static).collect()),
-            DamlType::GenMap(args) => DamlType::GenMap(args.iter().map(DamlType::to_static).collect()),
-            DamlType::Optional(args) => DamlType::Optional(args.iter().map(DamlType::to_static).collect()),
+            DamlType::List(args) => DamlType::List(args.to_static()),
+            DamlType::TextMap(args) => DamlType::TextMap(args.to_static()),
+            DamlType::GenMap(args) => DamlType::GenMap(args.to_static()),
+            DamlType::Optional(args) => DamlType::Optional(args.to_static()),
             DamlType::TyCon(tycon) => DamlType::TyCon(tycon.to_static()),
             DamlType::BoxedTyCon(tycon) => DamlType::BoxedTyCon(tycon.to_static()),
             DamlType::Var(var) => DamlType::Var(var.to_static()),
@@ -213,9 +212,9 @@ pub struct DamlSyn<'a> {
 }
 
 impl<'a> DamlSyn<'a> {
-    pub fn new(tysyn: DamlTypeSynName<'a>, args: Vec<DamlType<'a>>) -> Self {
+    pub fn new(tysyn: Box<DamlTypeSynName<'a>>, args: Vec<DamlType<'a>>) -> Self {
         Self {
-            tysyn: Box::new(tysyn),
+            tysyn,
             args,
         }
     }
@@ -242,7 +241,7 @@ impl ToStatic for DamlSyn<'_> {
     type Static = DamlSyn<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlSyn::new(self.tysyn.to_static(), self.args.iter().map(DamlType::to_static).collect())
+        DamlSyn::new(self.tysyn.to_static(), self.args.to_static())
     }
 }
 
@@ -275,7 +274,7 @@ impl ToStatic for DamlStruct<'_> {
     type Static = DamlStruct<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlStruct::new(self.fields.iter().map(DamlField::to_static).collect())
+        DamlStruct::new(self.fields.to_static())
     }
 }
 
@@ -315,7 +314,7 @@ impl ToStatic for DamlForall<'_> {
     type Static = DamlForall<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlForall::new(self.vars.iter().map(DamlTypeVarWithKind::to_static).collect(), Box::new(self.body.to_static()))
+        DamlForall::new(self.vars.to_static(), self.body.to_static())
     }
 }
 
@@ -327,9 +326,9 @@ pub struct DamlTyCon<'a> {
 }
 
 impl<'a> DamlTyCon<'a> {
-    pub fn new(tycon: DamlTyConName<'a>, type_arguments: Vec<DamlType<'a>>) -> Self {
+    pub fn new(tycon: Box<DamlTyConName<'a>>, type_arguments: Vec<DamlType<'a>>) -> Self {
         Self {
-            tycon: Box::new(tycon),
+            tycon,
             type_arguments,
         }
     }
@@ -348,7 +347,7 @@ impl<'a> DamlTyCon<'a> {
         entity: &'b str,
         type_arguments: Vec<DamlType<'b>>,
     ) -> DamlTyCon<'b> {
-        DamlTyCon::new(DamlTyConName::new_absolute(package_id, module, entity), type_arguments)
+        DamlTyCon::new(Box::new(DamlTyConName::new_absolute(package_id, module, entity)), type_arguments)
     }
 
     pub fn type_arguments(&self) -> &[DamlType<'_>] {
@@ -388,7 +387,7 @@ impl ToStatic for DamlTyCon<'_> {
     type Static = DamlTyCon<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlTyCon::new(self.tycon.to_static(), self.type_arguments.iter().map(DamlType::to_static).collect())
+        DamlTyCon::new(self.tycon.to_static(), self.type_arguments.to_static())
     }
 }
 
@@ -563,7 +562,7 @@ impl ToStatic for DamlLocalTyCon<'_> {
             self.data_name.to_static(),
             self.package_id.to_static(),
             self.package_name.to_static(),
-            self.module_path.iter().map(ToStatic::to_static).collect(),
+            self.module_path.to_static(),
         )
     }
 }
@@ -645,10 +644,10 @@ impl ToStatic for DamlNonLocalTyCon<'_> {
             self.data_name.to_static(),
             self.source_package_id.to_static(),
             self.source_package_name.to_static(),
-            self.source_module_path.iter().map(ToStatic::to_static).collect(),
+            self.source_module_path.to_static(),
             self.target_package_id.to_static(),
             self.target_package_name.to_static(),
-            self.target_module_path.iter().map(ToStatic::to_static).collect(),
+            self.target_module_path.to_static(),
         )
     }
 }
@@ -709,7 +708,7 @@ impl ToStatic for DamlAbsoluteTyCon<'_> {
             self.data_name.to_static(),
             self.package_id.to_static(),
             self.package_name.to_static(),
-            self.module_path.iter().map(ToStatic::to_static).collect(),
+            self.module_path.to_static(),
         )
     }
 }
@@ -750,6 +749,6 @@ impl ToStatic for DamlVar<'_> {
     type Static = DamlVar<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlVar::new(self.var.to_static(), self.type_arguments.iter().map(DamlType::to_static).collect())
+        DamlVar::new(self.var.to_static(), self.type_arguments.to_static())
     }
 }

@@ -130,10 +130,6 @@ impl ToStatic for DamlArchive<'_> {
     type Static = DamlArchive<'static>;
 
     fn to_static(&self) -> Self::Static {
-        DamlArchive::new(
-            self.name.to_static(),
-            self.main_package_id.to_static(),
-            self.packages.iter().map(|(k, v)| (k.to_static(), DamlPackage::to_static(v))).collect(),
-        )
+        DamlArchive::new(self.name.to_static(), self.main_package_id.to_static(), self.packages.to_static())
     }
 }
