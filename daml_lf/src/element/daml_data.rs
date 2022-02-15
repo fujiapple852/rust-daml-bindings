@@ -3,7 +3,7 @@ use crate::element::visitor::DamlElementVisitor;
 #[cfg(feature = "full")]
 use crate::element::{DamlExpr, DamlPrimLit};
 use crate::element::{DamlTyConName, DamlType, DamlTypeVarWithKind, DamlVisitableElement};
-use crate::owned::ToStatic;
+use bounded_static::ToBoundedStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 
@@ -103,7 +103,7 @@ impl<'a> DamlVisitableElement<'a> for DamlData<'a> {
     }
 }
 
-impl ToStatic for DamlData<'_> {
+impl ToBoundedStatic for DamlData<'_> {
     type Static = DamlData<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -326,7 +326,7 @@ impl<'a> DamlVisitableElement<'a> for DamlTemplate<'a> {
     }
 }
 
-impl ToStatic for DamlTemplate<'_> {
+impl ToBoundedStatic for DamlTemplate<'_> {
     type Static = DamlTemplate<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -499,7 +499,7 @@ impl<'a> DamlVisitableElement<'a> for DamlChoice<'a> {
     }
 }
 
-impl ToStatic for DamlChoice<'_> {
+impl ToBoundedStatic for DamlChoice<'_> {
     type Static = DamlChoice<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -573,7 +573,7 @@ impl<'a> DamlVisitableElement<'a> for DamlDefKey<'a> {
     }
 }
 
-impl ToStatic for DamlDefKey<'_> {
+impl ToBoundedStatic for DamlDefKey<'_> {
     type Static = DamlDefKey<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -650,7 +650,7 @@ impl<'a> DamlVisitableElement<'a> for DamlRecord<'a> {
     }
 }
 
-impl ToStatic for DamlRecord<'_> {
+impl ToBoundedStatic for DamlRecord<'_> {
     type Static = DamlRecord<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -745,7 +745,7 @@ impl<'a> DamlVisitableElement<'a> for DamlVariant<'a> {
     }
 }
 
-impl ToStatic for DamlVariant<'_> {
+impl ToBoundedStatic for DamlVariant<'_> {
     type Static = DamlVariant<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -839,7 +839,7 @@ impl<'a> DamlVisitableElement<'a> for DamlEnum<'a> {
     }
 }
 
-impl ToStatic for DamlEnum<'_> {
+impl ToBoundedStatic for DamlEnum<'_> {
     type Static = DamlEnum<'static>;
 
     fn to_static(&self) -> Self::Static {

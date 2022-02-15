@@ -1,8 +1,8 @@
 use crate::element::daml_module::DamlModule;
 use crate::element::visitor::DamlElementVisitor;
 use crate::element::DamlVisitableElement;
-use crate::owned::ToStatic;
 use crate::LanguageVersion;
+use bounded_static::ToBoundedStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 
@@ -63,7 +63,7 @@ impl<'a> DamlVisitableElement<'a> for DamlPackage<'a> {
     }
 }
 
-impl ToStatic for DamlPackage<'_> {
+impl ToBoundedStatic for DamlPackage<'_> {
     type Static = DamlPackage<'static>;
 
     fn to_static(&self) -> Self::Static {

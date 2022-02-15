@@ -1,7 +1,7 @@
 use crate::element::daml_type::DamlType;
 use crate::element::visitor::DamlElementVisitor;
 use crate::element::DamlVisitableElement;
-use crate::owned::ToStatic;
+use bounded_static::ToBoundedStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 
@@ -36,7 +36,7 @@ impl<'a> DamlVisitableElement<'a> for DamlField<'a> {
     }
 }
 
-impl ToStatic for DamlField<'_> {
+impl ToBoundedStatic for DamlField<'_> {
     type Static = DamlField<'static>;
 
     fn to_static(&self) -> Self::Static {

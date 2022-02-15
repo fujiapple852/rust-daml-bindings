@@ -4,7 +4,7 @@ use serde::Serialize;
 
 use crate::element::visitor::DamlElementVisitor;
 use crate::element::{DamlData, DamlField, DamlTypeVarWithKind, DamlVisitableElement};
-use crate::owned::ToStatic;
+use bounded_static::ToBoundedStatic;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
@@ -165,7 +165,7 @@ impl<'a> DamlVisitableElement<'a> for DamlType<'a> {
     }
 }
 
-impl ToStatic for DamlType<'_> {
+impl ToBoundedStatic for DamlType<'_> {
     type Static = DamlType<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -237,7 +237,7 @@ impl<'a> DamlVisitableElement<'a> for DamlSyn<'a> {
     }
 }
 
-impl ToStatic for DamlSyn<'_> {
+impl ToBoundedStatic for DamlSyn<'_> {
     type Static = DamlSyn<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -270,7 +270,7 @@ impl<'a> DamlVisitableElement<'a> for DamlStruct<'a> {
     }
 }
 
-impl ToStatic for DamlStruct<'_> {
+impl ToBoundedStatic for DamlStruct<'_> {
     type Static = DamlStruct<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -310,7 +310,7 @@ impl<'a> DamlVisitableElement<'a> for DamlForall<'a> {
     }
 }
 
-impl ToStatic for DamlForall<'_> {
+impl ToBoundedStatic for DamlForall<'_> {
     type Static = DamlForall<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -383,7 +383,7 @@ impl<'a> DamlVisitableElement<'a> for DamlTyCon<'a> {
     }
 }
 
-impl ToStatic for DamlTyCon<'_> {
+impl ToBoundedStatic for DamlTyCon<'_> {
     type Static = DamlTyCon<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -487,7 +487,7 @@ impl<'a> DamlVisitableElement<'a> for DamlTyConName<'a> {
     }
 }
 
-impl ToStatic for DamlTyConName<'_> {
+impl ToBoundedStatic for DamlTyConName<'_> {
     type Static = DamlTyConName<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -554,7 +554,7 @@ impl<'a> DamlVisitableElement<'a> for DamlLocalTyCon<'a> {
     }
 }
 
-impl ToStatic for DamlLocalTyCon<'_> {
+impl ToBoundedStatic for DamlLocalTyCon<'_> {
     type Static = DamlLocalTyCon<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -636,7 +636,7 @@ impl<'a> DamlVisitableElement<'a> for DamlNonLocalTyCon<'a> {
     }
 }
 
-impl ToStatic for DamlNonLocalTyCon<'_> {
+impl ToBoundedStatic for DamlNonLocalTyCon<'_> {
     type Static = DamlNonLocalTyCon<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -700,7 +700,7 @@ impl<'a> DamlVisitableElement<'a> for DamlAbsoluteTyCon<'a> {
     }
 }
 
-impl ToStatic for DamlAbsoluteTyCon<'_> {
+impl ToBoundedStatic for DamlAbsoluteTyCon<'_> {
     type Static = DamlAbsoluteTyCon<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -745,7 +745,7 @@ impl<'a> DamlVisitableElement<'a> for DamlVar<'a> {
     }
 }
 
-impl ToStatic for DamlVar<'_> {
+impl ToBoundedStatic for DamlVar<'_> {
     type Static = DamlVar<'static>;
 
     fn to_static(&self) -> Self::Static {

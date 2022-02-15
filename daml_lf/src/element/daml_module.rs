@@ -4,7 +4,7 @@ use crate::element::visitor::DamlElementVisitor;
 use crate::element::DamlDefValue;
 use crate::element::DamlVisitableElement;
 use crate::element::{serialize, DamlType, DamlTypeVarWithKind};
-use crate::owned::ToStatic;
+use bounded_static::ToBoundedStatic;
 use itertools::Itertools;
 use serde::Serialize;
 use std::borrow::Cow;
@@ -180,7 +180,7 @@ impl<'a> DamlVisitableElement<'a> for DamlModule<'a> {
     }
 }
 
-impl ToStatic for DamlModule<'_> {
+impl ToBoundedStatic for DamlModule<'_> {
     type Static = DamlModule<'static>;
 
     fn to_static(&self) -> Self::Static {
@@ -239,7 +239,7 @@ impl<'a> DamlVisitableElement<'a> for DamlDefTypeSyn<'a> {
     }
 }
 
-impl ToStatic for DamlDefTypeSyn<'_> {
+impl ToBoundedStatic for DamlDefTypeSyn<'_> {
     type Static = DamlDefTypeSyn<'static>;
 
     fn to_static(&self) -> Self::Static {
