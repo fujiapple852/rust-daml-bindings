@@ -3,7 +3,7 @@ use crate::element::visitor::{DamlElementVisitor, DamlVisitableElement};
 use crate::element::{serialize, DamlData, DamlTyCon, DamlTyConName};
 #[cfg(feature = "full")]
 use crate::element::{DamlDefValue, DamlValueName};
-use crate::owned::ToStatic;
+use bounded_static::ToBoundedStatic;
 use itertools::Itertools;
 use serde::Serialize;
 use std::borrow::Cow;
@@ -126,7 +126,7 @@ impl<'a> DamlVisitableElement<'a> for DamlArchive<'a> {
     }
 }
 
-impl ToStatic for DamlArchive<'_> {
+impl ToBoundedStatic for DamlArchive<'_> {
     type Static = DamlArchive<'static>;
 
     fn to_static(&self) -> Self::Static {

@@ -24,6 +24,7 @@ yaml-rust = "0.4"
 itertools = "0.10"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
+bounded-static = { path = "../../bounded_static" } # TODO local unpublished dependancy
 
 [dev-dependencies]
 trim-margin = "0.1"

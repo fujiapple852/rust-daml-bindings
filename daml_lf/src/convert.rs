@@ -23,9 +23,9 @@ use crate::convert::archive_payload::{DamlArchivePayload, DamlArchiveWrapper};
 use crate::convert::package_payload::DamlPackagePayload;
 use crate::convert::util::Required;
 use crate::element::{DamlArchive, DamlPackage};
-use crate::owned::ToStatic;
 use crate::{DamlLfArchive, DamlLfArchivePayload, DamlLfHashFunction, DamlLfResult, DarFile};
 use std::convert::TryFrom;
+use bounded_static::ToBoundedStatic;
 
 /// Create an owned [`DamlArchive`] from a [`DarFile`].
 pub fn to_owned_archive(dar: &DarFile) -> DamlLfResult<DamlArchive<'static>> {
