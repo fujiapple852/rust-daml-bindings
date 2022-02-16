@@ -2,11 +2,11 @@ use crate::element::daml_module::DamlModule;
 use crate::element::visitor::DamlElementVisitor;
 use crate::element::DamlVisitableElement;
 use crate::LanguageVersion;
-use bounded_static::ToBoundedStatic;
+use bounded_static::ToStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlPackage<'a> {
     name: Cow<'a, str>,
     package_id: Cow<'a, str>,
@@ -60,19 +60,5 @@ impl<'a> DamlVisitableElement<'a> for DamlPackage<'a> {
         visitor.pre_visit_package(self);
         self.root_module.accept(visitor);
         visitor.post_visit_package(self);
-    }
-}
-
-impl ToBoundedStatic for DamlPackage<'_> {
-    type Static = DamlPackage<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlPackage::new(
-            self.name.to_static(),
-            self.package_id.to_static(),
-            self.version.to_static(),
-            self.language_version,
-            self.root_module.to_static(),
-        )
     }
 }

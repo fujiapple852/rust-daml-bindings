@@ -4,7 +4,7 @@ use crate::element::visitor::DamlElementVisitor;
 use crate::element::DamlDefValue;
 use crate::element::DamlVisitableElement;
 use crate::element::{serialize, DamlType, DamlTypeVarWithKind};
-use bounded_static::ToBoundedStatic;
+use bounded_static::ToStatic;
 use itertools::Itertools;
 use serde::Serialize;
 use std::borrow::Cow;
@@ -13,7 +13,7 @@ use std::iter::once;
 
 const ROOT_MODULE_NAME: &str = "root";
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlModule<'a> {
     path: Vec<Cow<'a, str>>,
     flags: DamlFeatureFlags,
@@ -180,24 +180,8 @@ impl<'a> DamlVisitableElement<'a> for DamlModule<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlModule<'_> {
-    type Static = DamlModule<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlModule {
-            path: self.path.to_static(),
-            flags: self.flags,
-            synonyms: self.synonyms.to_static(),
-            child_modules: self.child_modules.to_static(),
-            data_types: self.data_types.to_static(),
-            #[cfg(feature = "full")]
-            values: self.values.to_static(),
-        }
-    }
-}
-
 /// Definition of a Daml Type Synonym.
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlDefTypeSyn<'a> {
     params: Vec<DamlTypeVarWithKind<'a>>,
     ty: DamlType<'a>,
@@ -239,16 +223,8 @@ impl<'a> DamlVisitableElement<'a> for DamlDefTypeSyn<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlDefTypeSyn<'_> {
-    type Static = DamlDefTypeSyn<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlDefTypeSyn::new(self.params.to_static(), self.ty.to_static(), self.name.to_static())
-    }
-}
-
 /// DOCME
-#[derive(Debug, Serialize, Copy, Clone, Default)]
+#[derive(Debug, Serialize, Copy, Clone, Default, ToStatic)]
 pub struct DamlFeatureFlags {
     forbid_party_literals: bool,
     dont_divulge_contract_ids_in_create_arguments: bool,

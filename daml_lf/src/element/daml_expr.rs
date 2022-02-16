@@ -1,13 +1,13 @@
 use crate::element::{
     DamlElementVisitor, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind, DamlVisitableElement,
 };
-use bounded_static::ToBoundedStatic;
+use bounded_static::ToStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlExpr<'a> {
     Var(Cow<'a, str>),
     Val(Box<DamlValueName<'a>>),
@@ -80,49 +80,8 @@ impl<'a> DamlVisitableElement<'a> for DamlExpr<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlExpr<'_> {
-    type Static = DamlExpr<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        match self {
-            DamlExpr::Var(var) => DamlExpr::Var(var.to_static()),
-            DamlExpr::Val(val) => DamlExpr::Val(val.to_static()),
-            DamlExpr::Builtin(builtin) => DamlExpr::Builtin(builtin.clone()),
-            DamlExpr::PrimCon(prim_con) => DamlExpr::PrimCon(*prim_con),
-            DamlExpr::PrimLit(prim_lit) => DamlExpr::PrimLit(prim_lit.to_static()),
-            DamlExpr::RecCon(rec_con) => DamlExpr::RecCon(rec_con.to_static()),
-            DamlExpr::RecProj(rec_proj) => DamlExpr::RecProj(rec_proj.to_static()),
-            DamlExpr::RecUpd(rec_upd) => DamlExpr::RecUpd(rec_upd.to_static()),
-            DamlExpr::VariantCon(variant_con) => DamlExpr::VariantCon(variant_con.to_static()),
-            DamlExpr::EnumCon(enum_con) => DamlExpr::EnumCon(enum_con.to_static()),
-            DamlExpr::StructCon(struct_con) => DamlExpr::StructCon(struct_con.to_static()),
-            DamlExpr::StructProj(struct_proj) => DamlExpr::StructProj(struct_proj.to_static()),
-            DamlExpr::StructUpd(struct_upd) => DamlExpr::StructUpd(struct_upd.to_static()),
-            DamlExpr::App(app) => DamlExpr::App(app.to_static()),
-            DamlExpr::TyApp(ty_app) => DamlExpr::TyApp(ty_app.to_static()),
-            DamlExpr::Abs(abs) => DamlExpr::Abs(abs.to_static()),
-            DamlExpr::TyAbs(ty_abs) => DamlExpr::TyAbs(ty_abs.to_static()),
-            DamlExpr::Case(case) => DamlExpr::Case(case.to_static()),
-            DamlExpr::Let(block) => DamlExpr::Let(block.to_static()),
-            DamlExpr::Nil(ty) => DamlExpr::Nil(ty.to_static()),
-            DamlExpr::Cons(cons) => DamlExpr::Cons(cons.to_static()),
-            DamlExpr::Update(update) => DamlExpr::Update(update.to_static()),
-            DamlExpr::Scenario(scenario) => DamlExpr::Scenario(scenario.to_static()),
-            DamlExpr::OptionalNone(ty) => DamlExpr::OptionalNone(ty.to_static()),
-            DamlExpr::OptionalSome(opt_some) => DamlExpr::OptionalSome(opt_some.to_static()),
-            DamlExpr::ToAny(to_any) => DamlExpr::ToAny(to_any.to_static()),
-            DamlExpr::FromAny(from_any) => DamlExpr::FromAny(from_any.to_static()),
-            DamlExpr::TypeRep(ty) => DamlExpr::TypeRep(ty.to_static()),
-            DamlExpr::ToAnyException(to_any_exception) => DamlExpr::ToAnyException(to_any_exception.to_static()),
-            DamlExpr::FromAnyException(from_any_exception) =>
-                DamlExpr::FromAnyException(from_any_exception.to_static()),
-            DamlExpr::Throw(throw) => DamlExpr::Throw(throw.to_static()),
-        }
-    }
-}
-
 /// DOCME
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlValueName<'a> {
     Local(DamlLocalValueName<'a>),
     NonLocal(DamlNonLocalValueName<'a>),
@@ -195,19 +154,8 @@ impl<'a> DamlVisitableElement<'a> for DamlValueName<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlValueName<'_> {
-    type Static = DamlValueName<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        match self {
-            DamlValueName::Local(local) => DamlValueName::Local(local.to_static()),
-            DamlValueName::NonLocal(non_local) => DamlValueName::NonLocal(non_local.to_static()),
-        }
-    }
-}
-
 /// DOCME
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlLocalValueName<'a> {
     pub name: Cow<'a, str>,
     pub package_id: Cow<'a, str>,
@@ -254,21 +202,8 @@ impl<'a> DamlVisitableElement<'a> for DamlLocalValueName<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlLocalValueName<'_> {
-    type Static = DamlLocalValueName<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlLocalValueName::new(
-            self.name.to_static(),
-            self.package_id.to_static(),
-            self.package_name.to_static(),
-            self.module_path.to_static(),
-        )
-    }
-}
-
 /// DOCME
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlNonLocalValueName<'a> {
     name: Cow<'a, str>,
     source_package_id: Cow<'a, str>,
@@ -336,23 +271,7 @@ impl<'a> DamlVisitableElement<'a> for DamlNonLocalValueName<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlNonLocalValueName<'_> {
-    type Static = DamlNonLocalValueName<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlNonLocalValueName::new(
-            self.name.to_static(),
-            self.source_package_id.to_static(),
-            self.source_package_name.to_static(),
-            self.source_module_path.to_static(),
-            self.target_package_id.to_static(),
-            self.target_package_name.to_static(),
-            self.target_module_path.to_static(),
-        )
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlBuiltinFunction {
     AddDecimal,
     SubDecimal,
@@ -482,7 +401,7 @@ impl<'a> DamlVisitableElement<'a> for DamlBuiltinFunction {
     }
 }
 
-#[derive(Debug, Serialize, Copy, Clone)]
+#[derive(Debug, Serialize, Copy, Clone, ToStatic)]
 pub enum DamlPrimCon {
     Unit,
     False,
@@ -496,7 +415,7 @@ impl<'a> DamlVisitableElement<'a> for DamlPrimCon {
     }
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlPrimLit<'a> {
     /// Represents a standard signed 64-bit integer (integer between −2⁶³ to 2⁶³−1).
     Int64(i64),
@@ -526,23 +445,7 @@ impl<'a> DamlVisitableElement<'a> for DamlPrimLit<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlPrimLit<'_> {
-    type Static = DamlPrimLit<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        match self {
-            DamlPrimLit::Int64(i) => DamlPrimLit::Int64(*i),
-            DamlPrimLit::Text(text) => DamlPrimLit::Text(text.to_static()),
-            DamlPrimLit::Party(party) => DamlPrimLit::Party(party.to_static()),
-            DamlPrimLit::Date(date) => DamlPrimLit::Date(*date),
-            DamlPrimLit::Timestamp(timestamp) => DamlPrimLit::Timestamp(*timestamp),
-            DamlPrimLit::Numeric(numeric) => DamlPrimLit::Numeric(numeric.to_static()),
-            DamlPrimLit::RoundingMode(mode) => DamlPrimLit::RoundingMode(mode.clone()),
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum RoundingMode {
     Up,
     Down,
@@ -561,7 +464,7 @@ impl<'a> DamlVisitableElement<'a> for RoundingMode {
     }
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlRecCon<'a> {
     tycon: DamlTyCon<'a>,
     fields: Vec<DamlFieldWithExpr<'a>>,
@@ -593,15 +496,7 @@ impl<'a> DamlVisitableElement<'a> for DamlRecCon<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlRecCon<'_> {
-    type Static = DamlRecCon<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlRecCon::new(self.tycon.to_static(), self.fields.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlFieldWithExpr<'a> {
     field: Cow<'a, str>,
     expr: DamlExpr<'a>,
@@ -632,15 +527,7 @@ impl<'a> DamlVisitableElement<'a> for DamlFieldWithExpr<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlFieldWithExpr<'_> {
-    type Static = DamlFieldWithExpr<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlFieldWithExpr::new(self.field.to_static(), self.expr.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlRecProj<'a> {
     tycon: DamlTyCon<'a>,
     record: Box<DamlExpr<'a>>,
@@ -678,15 +565,7 @@ impl<'a> DamlVisitableElement<'a> for DamlRecProj<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlRecProj<'_> {
-    type Static = DamlRecProj<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlRecProj::new(self.tycon.to_static(), self.record.to_static(), self.field.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlRecUpd<'a> {
     tycon: DamlTyCon<'a>,
     record: Box<DamlExpr<'a>>,
@@ -736,20 +615,7 @@ impl<'a> DamlVisitableElement<'a> for DamlRecUpd<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlRecUpd<'_> {
-    type Static = DamlRecUpd<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlRecUpd::new(
-            self.tycon.to_static(),
-            self.record.to_static(),
-            self.update.to_static(),
-            self.field.to_static(),
-        )
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlVariantCon<'a> {
     tycon: DamlTyCon<'a>,
     variant_arg: Box<DamlExpr<'a>>,
@@ -787,15 +653,7 @@ impl<'a> DamlVisitableElement<'a> for DamlVariantCon<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlVariantCon<'_> {
-    type Static = DamlVariantCon<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlVariantCon::new(self.tycon.to_static(), self.variant_arg.to_static(), self.variant_con.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlEnumCon<'a> {
     tycon: Box<DamlTyConName<'a>>,
     enum_con: Cow<'a, str>,
@@ -826,15 +684,7 @@ impl<'a> DamlVisitableElement<'a> for DamlEnumCon<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlEnumCon<'_> {
-    type Static = DamlEnumCon<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlEnumCon::new(self.tycon.to_static(), self.enum_con.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlStructCon<'a> {
     fields: Vec<DamlFieldWithExpr<'a>>,
 }
@@ -859,15 +709,7 @@ impl<'a> DamlVisitableElement<'a> for DamlStructCon<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlStructCon<'_> {
-    type Static = DamlStructCon<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlStructCon::new(self.fields.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlStructProj<'a> {
     struct_expr: Box<DamlExpr<'a>>,
     field: Cow<'a, str>,
@@ -898,15 +740,7 @@ impl<'a> DamlVisitableElement<'a> for DamlStructProj<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlStructProj<'_> {
-    type Static = DamlStructProj<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlStructProj::new(self.struct_expr.to_static(), self.field.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlStructUpd<'a> {
     struct_expr: Box<DamlExpr<'a>>,
     update: Box<DamlExpr<'a>>,
@@ -944,15 +778,7 @@ impl<'a> DamlVisitableElement<'a> for DamlStructUpd<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlStructUpd<'_> {
-    type Static = DamlStructUpd<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlStructUpd::new(self.struct_expr.to_static(), self.update.to_static(), self.field.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlApp<'a> {
     fun: Box<DamlExpr<'a>>,
     args: Vec<DamlExpr<'a>>,
@@ -984,15 +810,7 @@ impl<'a> DamlVisitableElement<'a> for DamlApp<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlApp<'_> {
-    type Static = DamlApp<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlApp::new(self.fun.to_static(), self.args.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlTyApp<'a> {
     expr: Box<DamlExpr<'a>>,
     types: Vec<DamlType<'a>>,
@@ -1024,15 +842,7 @@ impl<'a> DamlVisitableElement<'a> for DamlTyApp<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlTyApp<'_> {
-    type Static = DamlTyApp<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlTyApp::new(self.expr.to_static(), self.types.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlAbs<'a> {
     params: Vec<DamlVarWithType<'a>>,
     body: Box<DamlExpr<'a>>,
@@ -1064,15 +874,7 @@ impl<'a> DamlVisitableElement<'a> for DamlAbs<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlAbs<'_> {
-    type Static = DamlAbs<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlAbs::new(self.params.to_static(), self.body.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlVarWithType<'a> {
     ty: DamlType<'a>,
     var: Cow<'a, str>,
@@ -1103,15 +905,7 @@ impl<'a> DamlVisitableElement<'a> for DamlVarWithType<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlVarWithType<'_> {
-    type Static = DamlVarWithType<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlVarWithType::new(self.ty.to_static(), self.var.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlTyAbs<'a> {
     params: Vec<DamlTypeVarWithKind<'a>>,
     body: Box<DamlExpr<'a>>,
@@ -1143,15 +937,7 @@ impl<'a> DamlVisitableElement<'a> for DamlTyAbs<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlTyAbs<'_> {
-    type Static = DamlTyAbs<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlTyAbs::new(self.params.to_static(), self.body.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlBlock<'a> {
     bindings: Vec<DamlBinding<'a>>,
     body: Box<DamlExpr<'a>>,
@@ -1183,15 +969,7 @@ impl<'a> DamlVisitableElement<'a> for DamlBlock<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlBlock<'_> {
-    type Static = DamlBlock<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlBlock::new(self.bindings.to_static(), self.body.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlBinding<'a> {
     binder: DamlVarWithType<'a>,
     bound: DamlExpr<'a>,
@@ -1223,15 +1001,7 @@ impl<'a> DamlVisitableElement<'a> for DamlBinding<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlBinding<'_> {
-    type Static = DamlBinding<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlBinding::new(self.binder.to_static(), self.bound.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCons<'a> {
     ty: DamlType<'a>,
     front: Vec<DamlExpr<'a>>,
@@ -1270,15 +1040,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCons<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlCons<'_> {
-    type Static = DamlCons<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlCons::new(self.ty.to_static(), self.front.to_static(), self.tail.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCase<'a> {
     scrut: Box<DamlExpr<'a>>,
     alts: Vec<DamlCaseAlt<'a>>,
@@ -1310,15 +1072,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCase<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlCase<'_> {
-    type Static = DamlCase<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlCase::new(self.scrut.to_static(), self.alts.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCaseAlt<'a> {
     body: DamlExpr<'a>,
     sum: DamlCaseAltSum<'a>,
@@ -1350,15 +1104,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCaseAlt<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlCaseAlt<'_> {
-    type Static = DamlCaseAlt<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlCaseAlt::new(self.body.to_static(), self.sum.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 #[allow(clippy::large_enum_variant)] // TODO look at why DamlCaseAltVariant is so large (280 bytes!)
 pub enum DamlCaseAltSum<'a> {
     Default,
@@ -1386,24 +1132,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCaseAltSum<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlCaseAltSum<'_> {
-    type Static = DamlCaseAltSum<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        match self {
-            DamlCaseAltSum::Default => DamlCaseAltSum::Default,
-            DamlCaseAltSum::Variant(variant) => DamlCaseAltSum::Variant(variant.to_static()),
-            DamlCaseAltSum::PrimCon(prim_con) => DamlCaseAltSum::PrimCon(*prim_con),
-            DamlCaseAltSum::Nil => DamlCaseAltSum::Nil,
-            DamlCaseAltSum::Cons(cons) => DamlCaseAltSum::Cons(cons.to_static()),
-            DamlCaseAltSum::OptionalNone => DamlCaseAltSum::OptionalNone,
-            DamlCaseAltSum::OptionalSome(opt_some) => DamlCaseAltSum::OptionalSome(opt_some.to_static()),
-            DamlCaseAltSum::Enum(enum_alt) => DamlCaseAltSum::Enum(enum_alt.to_static()),
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCaseAltVariant<'a> {
     con: DamlTyConName<'a>,
     variant: Cow<'a, str>,
@@ -1440,15 +1169,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCaseAltVariant<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlCaseAltVariant<'_> {
-    type Static = DamlCaseAltVariant<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlCaseAltVariant::new(self.con.to_static(), self.variant.to_static(), self.binder.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCaseAltCons<'a> {
     var_head: Cow<'a, str>,
     var_tail: Cow<'a, str>,
@@ -1478,15 +1199,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCaseAltCons<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlCaseAltCons<'_> {
-    type Static = DamlCaseAltCons<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlCaseAltCons::new(self.var_head.to_static(), self.var_tail.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCaseAltOptionalSome<'a> {
     var_body: Cow<'a, str>,
 }
@@ -1510,15 +1223,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCaseAltOptionalSome<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlCaseAltOptionalSome<'_> {
-    type Static = DamlCaseAltOptionalSome<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlCaseAltOptionalSome::new(self.var_body.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCaseAltEnum<'a> {
     con: DamlTyConName<'a>,
     constructor: Cow<'a, str>,
@@ -1549,15 +1254,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCaseAltEnum<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlCaseAltEnum<'_> {
-    type Static = DamlCaseAltEnum<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlCaseAltEnum::new(self.con.to_static(), self.constructor.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlOptionalSome<'a> {
     ty: DamlType<'a>,
     body: Box<DamlExpr<'a>>,
@@ -1589,15 +1286,7 @@ impl<'a> DamlVisitableElement<'a> for DamlOptionalSome<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlOptionalSome<'_> {
-    type Static = DamlOptionalSome<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlOptionalSome::new(self.ty.to_static(), self.body.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlToAny<'a> {
     ty: DamlType<'a>,
     expr: Box<DamlExpr<'a>>,
@@ -1629,15 +1318,7 @@ impl<'a> DamlVisitableElement<'a> for DamlToAny<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlToAny<'_> {
-    type Static = DamlToAny<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlToAny::new(self.ty.to_static(), self.expr.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlFromAny<'a> {
     ty: DamlType<'a>,
     expr: Box<DamlExpr<'a>>,
@@ -1669,15 +1350,7 @@ impl<'a> DamlVisitableElement<'a> for DamlFromAny<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlFromAny<'_> {
-    type Static = DamlFromAny<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlFromAny::new(self.ty.to_static(), self.expr.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlUpdate<'a> {
     Pure(DamlPure<'a>),
     Block(DamlBlock<'a>),
@@ -1712,27 +1385,7 @@ impl<'a> DamlVisitableElement<'a> for DamlUpdate<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlUpdate<'_> {
-    type Static = DamlUpdate<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        match self {
-            DamlUpdate::Pure(pure) => DamlUpdate::Pure(pure.to_static()),
-            DamlUpdate::Block(block) => DamlUpdate::Block(block.to_static()),
-            DamlUpdate::Create(create) => DamlUpdate::Create(create.to_static()),
-            DamlUpdate::Exercise(exercise) => DamlUpdate::Exercise(exercise.to_static()),
-            DamlUpdate::ExerciseByKey(exercise_by_key) => DamlUpdate::ExerciseByKey(exercise_by_key.to_static()),
-            DamlUpdate::Fetch(fetch) => DamlUpdate::Fetch(fetch.to_static()),
-            DamlUpdate::GetTime => DamlUpdate::GetTime,
-            DamlUpdate::LookupByKey(retrieve_by_key) => DamlUpdate::LookupByKey(retrieve_by_key.to_static()),
-            DamlUpdate::FetchByKey(retrieve_by_key) => DamlUpdate::FetchByKey(retrieve_by_key.to_static()),
-            DamlUpdate::EmbedExpr(embed_expr) => DamlUpdate::EmbedExpr(embed_expr.to_static()),
-            DamlUpdate::TryCatch(try_catch) => DamlUpdate::TryCatch(try_catch.to_static()),
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlPure<'a> {
     ty: DamlType<'a>,
     expr: Box<DamlExpr<'a>>,
@@ -1764,15 +1417,7 @@ impl<'a> DamlVisitableElement<'a> for DamlPure<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlPure<'_> {
-    type Static = DamlPure<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlPure::new(self.ty.to_static(), self.expr.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCreate<'a> {
     template: Box<DamlTyConName<'a>>,
     expr: Box<DamlExpr<'a>>,
@@ -1804,15 +1449,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCreate<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlCreate<'_> {
-    type Static = DamlCreate<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlCreate::new(self.template.to_static(), self.expr.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlExercise<'a> {
     template: Box<DamlTyConName<'a>>,
     cid: Box<DamlExpr<'a>>,
@@ -1862,20 +1499,7 @@ impl<'a> DamlVisitableElement<'a> for DamlExercise<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlExercise<'_> {
-    type Static = DamlExercise<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlExercise::new(
-            self.template.to_static(),
-            self.cid.to_static(),
-            self.arg.to_static(),
-            self.choice.to_static(),
-        )
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlExerciseByKey<'a> {
     template: Box<DamlTyConName<'a>>,
     choice: Cow<'a, str>,
@@ -1925,20 +1549,7 @@ impl<'a> DamlVisitableElement<'a> for DamlExerciseByKey<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlExerciseByKey<'_> {
-    type Static = DamlExerciseByKey<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlExerciseByKey::new(
-            self.template.to_static(),
-            self.choice.to_static(),
-            self.key.to_static(),
-            self.arg.to_static(),
-        )
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlFetch<'a> {
     template: Box<DamlTyConName<'a>>,
     cid: Box<DamlExpr<'a>>,
@@ -1970,15 +1581,7 @@ impl<'a> DamlVisitableElement<'a> for DamlFetch<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlFetch<'_> {
-    type Static = DamlFetch<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlFetch::new(self.template.to_static(), self.cid.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlRetrieveByKey<'a> {
     template: Box<DamlTyConName<'a>>,
     key: Box<DamlExpr<'a>>,
@@ -2010,15 +1613,7 @@ impl<'a> DamlVisitableElement<'a> for DamlRetrieveByKey<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlRetrieveByKey<'_> {
-    type Static = DamlRetrieveByKey<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlRetrieveByKey::new(self.template.to_static(), self.key.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlUpdateEmbedExpr<'a> {
     ty: DamlType<'a>,
     body: Box<DamlExpr<'a>>,
@@ -2050,15 +1645,7 @@ impl<'a> DamlVisitableElement<'a> for DamlUpdateEmbedExpr<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlUpdateEmbedExpr<'_> {
-    type Static = DamlUpdateEmbedExpr<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlUpdateEmbedExpr::new(self.ty.to_static(), self.body.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlScenario<'a> {
     Pure(DamlPure<'a>),
     Block(DamlBlock<'a>),
@@ -2085,24 +1672,7 @@ impl<'a> DamlVisitableElement<'a> for DamlScenario<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlScenario<'_> {
-    type Static = DamlScenario<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        match self {
-            DamlScenario::Pure(pure) => DamlScenario::Pure(pure.to_static()),
-            DamlScenario::Block(block) => DamlScenario::Block(block.to_static()),
-            DamlScenario::Commit(commit) => DamlScenario::Commit(commit.to_static()),
-            DamlScenario::MustFailAt(commit) => DamlScenario::MustFailAt(commit.to_static()),
-            DamlScenario::Pass(expr) => DamlScenario::Pass(expr.to_static()),
-            DamlScenario::GetTime => DamlScenario::GetTime,
-            DamlScenario::GetParty(expr) => DamlScenario::GetParty(expr.to_static()),
-            DamlScenario::EmbedExpr(embed_expr) => DamlScenario::EmbedExpr(embed_expr.to_static()),
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCommit<'a> {
     party: Box<DamlExpr<'a>>,
     expr: Box<DamlExpr<'a>>,
@@ -2141,15 +1711,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCommit<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlCommit<'_> {
-    type Static = DamlCommit<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlCommit::new(self.party.to_static(), self.expr.to_static(), self.ret_type.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlScenarioEmbedExpr<'a> {
     ty: DamlType<'a>,
     body: Box<DamlExpr<'a>>,
@@ -2181,15 +1743,7 @@ impl<'a> DamlVisitableElement<'a> for DamlScenarioEmbedExpr<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlScenarioEmbedExpr<'_> {
-    type Static = DamlScenarioEmbedExpr<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlScenarioEmbedExpr::new(self.ty.to_static(), self.body.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlToAnyException<'a> {
     ty: DamlType<'a>,
     expr: Box<DamlExpr<'a>>,
@@ -2221,15 +1775,7 @@ impl<'a> DamlVisitableElement<'a> for DamlToAnyException<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlToAnyException<'_> {
-    type Static = DamlToAnyException<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlToAnyException::new(self.ty.to_static(), self.expr.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlFromAnyException<'a> {
     ty: DamlType<'a>,
     expr: Box<DamlExpr<'a>>,
@@ -2261,15 +1807,7 @@ impl<'a> DamlVisitableElement<'a> for DamlFromAnyException<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlFromAnyException<'_> {
-    type Static = DamlFromAnyException<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlFromAnyException::new(self.ty.to_static(), self.expr.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlThrow<'a> {
     return_type: DamlType<'a>,
     exception_type: DamlType<'a>,
@@ -2308,15 +1846,7 @@ impl<'a> DamlVisitableElement<'a> for DamlThrow<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlThrow<'_> {
-    type Static = DamlThrow<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlThrow::new(self.return_type.to_static(), self.exception_type.to_static(), self.exception_expr.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlTryCatch<'a> {
     return_type: DamlType<'a>,
     try_expr: Box<DamlExpr<'a>>,
@@ -2363,18 +1893,5 @@ impl<'a> DamlVisitableElement<'a> for DamlTryCatch<'a> {
         self.try_expr.accept(visitor);
         self.catch_expr.accept(visitor);
         visitor.post_visit_try_catch(self);
-    }
-}
-
-impl ToBoundedStatic for DamlTryCatch<'_> {
-    type Static = DamlTryCatch<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlTryCatch::new(
-            self.return_type.to_static(),
-            self.try_expr.to_static(),
-            self.var.to_static(),
-            self.catch_expr.to_static(),
-        )
     }
 }

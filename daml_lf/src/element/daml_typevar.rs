@@ -1,11 +1,11 @@
 use crate::element::visitor::DamlElementVisitor;
 use crate::element::DamlVisitableElement;
-use bounded_static::ToBoundedStatic;
+use bounded_static::ToStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 
 /// DOCME
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlTypeVarWithKind<'a> {
     var: Cow<'a, str>,
     kind: DamlKind,
@@ -36,22 +36,13 @@ impl<'a> DamlVisitableElement<'a> for DamlTypeVarWithKind<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlTypeVarWithKind<'_> {
-    type Static = DamlTypeVarWithKind<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlTypeVarWithKind::new(self.var.to_static(), self.kind.clone())
-    }
-}
-
 /// DOCME
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlKind {
     Star,
     Arrow(Box<DamlArrow>),
     Nat,
 }
-
 impl DamlVisitableElement<'_> for DamlKind {
     fn accept<'a>(&'a self, visitor: &'a mut impl DamlElementVisitor) {
         visitor.pre_visit_kind(self);
@@ -63,7 +54,7 @@ impl DamlVisitableElement<'_> for DamlKind {
 }
 
 /// DOCME
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlArrow {
     params: Vec<DamlKind>,
     result: DamlKind,

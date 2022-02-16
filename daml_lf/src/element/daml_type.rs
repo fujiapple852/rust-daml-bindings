@@ -4,13 +4,13 @@ use serde::Serialize;
 
 use crate::element::visitor::DamlElementVisitor;
 use crate::element::{DamlData, DamlField, DamlTypeVarWithKind, DamlVisitableElement};
-use bounded_static::ToBoundedStatic;
+use bounded_static::ToStatic;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 
 /// Representation of a Daml type.
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlType<'a> {
     ContractId(Option<Box<DamlType<'a>>>),
     Int64,
@@ -165,47 +165,10 @@ impl<'a> DamlVisitableElement<'a> for DamlType<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlType<'_> {
-    type Static = DamlType<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        match self {
-            DamlType::ContractId(inner) => DamlType::ContractId(inner.to_static()),
-            DamlType::Int64 => DamlType::Int64,
-            DamlType::Numeric(args) => DamlType::Numeric(args.to_static()),
-            DamlType::Text => DamlType::Text,
-            DamlType::Timestamp => DamlType::Timestamp,
-            DamlType::Party => DamlType::Party,
-            DamlType::Bool => DamlType::Bool,
-            DamlType::Unit => DamlType::Unit,
-            DamlType::Date => DamlType::Date,
-            DamlType::List(args) => DamlType::List(args.to_static()),
-            DamlType::TextMap(args) => DamlType::TextMap(args.to_static()),
-            DamlType::GenMap(args) => DamlType::GenMap(args.to_static()),
-            DamlType::Optional(args) => DamlType::Optional(args.to_static()),
-            DamlType::TyCon(tycon) => DamlType::TyCon(tycon.to_static()),
-            DamlType::BoxedTyCon(tycon) => DamlType::BoxedTyCon(tycon.to_static()),
-            DamlType::Var(var) => DamlType::Var(var.to_static()),
-            DamlType::Nat(nat) => DamlType::Nat(*nat),
-            DamlType::Arrow => DamlType::Arrow,
-            DamlType::Any => DamlType::Any,
-            DamlType::TypeRep => DamlType::TypeRep,
-            DamlType::Bignumeric => DamlType::Bignumeric,
-            DamlType::RoundingMode => DamlType::RoundingMode,
-            DamlType::AnyException => DamlType::AnyException,
-            DamlType::Update => DamlType::Update,
-            DamlType::Scenario => DamlType::Scenario,
-            DamlType::Forall(forall) => DamlType::Forall(forall.to_static()),
-            DamlType::Struct(tuple) => DamlType::Struct(tuple.to_static()),
-            DamlType::Syn(syn) => DamlType::Syn(syn.to_static()),
-        }
-    }
-}
-
 /// `DamlTypeSynName` is aliases from `DamlTypeConName` as they are currently identical.
 pub type DamlTypeSynName<'a> = DamlTyConName<'a>;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlSyn<'a> {
     pub tysyn: Box<DamlTypeSynName<'a>>,
     pub args: Vec<DamlType<'a>>,
@@ -237,15 +200,7 @@ impl<'a> DamlVisitableElement<'a> for DamlSyn<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlSyn<'_> {
-    type Static = DamlSyn<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlSyn::new(self.tysyn.to_static(), self.args.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlStruct<'a> {
     pub fields: Vec<DamlField<'a>>,
 }
@@ -270,15 +225,7 @@ impl<'a> DamlVisitableElement<'a> for DamlStruct<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlStruct<'_> {
-    type Static = DamlStruct<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlStruct::new(self.fields.to_static())
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlForall<'a> {
     pub vars: Vec<DamlTypeVarWithKind<'a>>,
     pub body: Box<DamlType<'a>>,
@@ -310,16 +257,8 @@ impl<'a> DamlVisitableElement<'a> for DamlForall<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlForall<'_> {
-    type Static = DamlForall<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlForall::new(self.vars.to_static(), self.body.to_static())
-    }
-}
-
 /// DOCME
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlTyCon<'a> {
     tycon: Box<DamlTyConName<'a>>,
     type_arguments: Vec<DamlType<'a>>,
@@ -383,16 +322,8 @@ impl<'a> DamlVisitableElement<'a> for DamlTyCon<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlTyCon<'_> {
-    type Static = DamlTyCon<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlTyCon::new(self.tycon.to_static(), self.type_arguments.to_static())
-    }
-}
-
 /// DOCME
-#[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq)]
+#[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq, ToStatic)]
 pub enum DamlTyConName<'a> {
     Local(DamlLocalTyCon<'a>),
     NonLocal(DamlNonLocalTyCon<'a>),
@@ -487,18 +418,6 @@ impl<'a> DamlVisitableElement<'a> for DamlTyConName<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlTyConName<'_> {
-    type Static = DamlTyConName<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        match self {
-            DamlTyConName::Local(local) => DamlTyConName::Local(local.to_static()),
-            DamlTyConName::NonLocal(non_local) => DamlTyConName::NonLocal(non_local.to_static()),
-            DamlTyConName::Absolute(absolute) => DamlTyConName::Absolute(absolute.to_static()),
-        }
-    }
-}
-
 /// Convenience impl to compare a `DamlData` with a `DamlTyConName`.
 impl PartialEq<DamlData<'_>> for DamlTyConName<'_> {
     fn eq(&self, data: &DamlData<'_>) -> bool {
@@ -507,7 +426,7 @@ impl PartialEq<DamlData<'_>> for DamlTyConName<'_> {
 }
 
 /// DOCME
-#[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq)]
+#[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq, ToStatic)]
 pub struct DamlLocalTyCon<'a> {
     data_name: Cow<'a, str>,
     package_id: Cow<'a, str>,
@@ -554,21 +473,8 @@ impl<'a> DamlVisitableElement<'a> for DamlLocalTyCon<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlLocalTyCon<'_> {
-    type Static = DamlLocalTyCon<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlLocalTyCon::new(
-            self.data_name.to_static(),
-            self.package_id.to_static(),
-            self.package_name.to_static(),
-            self.module_path.to_static(),
-        )
-    }
-}
-
 /// DOCME
-#[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq)]
+#[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq, ToStatic)]
 pub struct DamlNonLocalTyCon<'a> {
     data_name: Cow<'a, str>,
     source_package_id: Cow<'a, str>,
@@ -636,24 +542,8 @@ impl<'a> DamlVisitableElement<'a> for DamlNonLocalTyCon<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlNonLocalTyCon<'_> {
-    type Static = DamlNonLocalTyCon<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlNonLocalTyCon::new(
-            self.data_name.to_static(),
-            self.source_package_id.to_static(),
-            self.source_package_name.to_static(),
-            self.source_module_path.to_static(),
-            self.target_package_id.to_static(),
-            self.target_package_name.to_static(),
-            self.target_module_path.to_static(),
-        )
-    }
-}
-
 /// DOCME
-#[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq)]
+#[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq, ToStatic)]
 pub struct DamlAbsoluteTyCon<'a> {
     data_name: Cow<'a, str>,
     package_id: Cow<'a, str>,
@@ -700,21 +590,8 @@ impl<'a> DamlVisitableElement<'a> for DamlAbsoluteTyCon<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlAbsoluteTyCon<'_> {
-    type Static = DamlAbsoluteTyCon<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlAbsoluteTyCon::new(
-            self.data_name.to_static(),
-            self.package_id.to_static(),
-            self.package_name.to_static(),
-            self.module_path.to_static(),
-        )
-    }
-}
-
 /// DOCME
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlVar<'a> {
     var: Cow<'a, str>,
     type_arguments: Vec<DamlType<'a>>,
@@ -742,13 +619,5 @@ impl<'a> DamlVisitableElement<'a> for DamlVar<'a> {
         visitor.pre_visit_var(self);
         self.type_arguments.iter().for_each(|arg| arg.accept(visitor));
         visitor.post_visit_var(self);
-    }
-}
-
-impl ToBoundedStatic for DamlVar<'_> {
-    type Static = DamlVar<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlVar::new(self.var.to_static(), self.type_arguments.to_static())
     }
 }
