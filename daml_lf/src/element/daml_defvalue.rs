@@ -1,10 +1,10 @@
 use crate::element::daml_expr::DamlExpr;
 use crate::element::{DamlElementVisitor, DamlType, DamlVisitableElement};
-use bounded_static::ToBoundedStatic;
+use bounded_static::ToStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlDefValue<'a> {
     pub name: Cow<'a, str>,
     pub ty: DamlType<'a>,
@@ -66,19 +66,5 @@ impl<'a> DamlVisitableElement<'a> for DamlDefValue<'a> {
         self.ty.accept(visitor);
         self.expr.accept(visitor);
         visitor.post_visit_def_value(self);
-    }
-}
-
-impl ToBoundedStatic for DamlDefValue<'_> {
-    type Static = DamlDefValue<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlDefValue::new(
-            self.name.to_static(),
-            self.ty.to_static(),
-            self.expr.to_static(),
-            self.no_party_literals,
-            self.is_test,
-        )
     }
 }

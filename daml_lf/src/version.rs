@@ -1,10 +1,11 @@
 use crate::DamlLfError;
+use bounded_static::ToStatic;
 use serde::Serialize;
 use std::convert::TryFrom;
 use std::fmt::{Display, Error, Formatter};
 
 /// Daml Ledger Fragment language version.
-#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize)]
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize, ToStatic)]
 pub enum LanguageVersion {
     Lv0,
     Lv1(LanguageV1MinorVersion),
@@ -143,7 +144,7 @@ impl LanguageFeatureVersion {
 }
 
 /// Daml Ledger Fragment language V1 minor version.
-#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize)]
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize, ToStatic)]
 pub enum LanguageV1MinorVersion {
     V0,
     V1,

@@ -3,11 +3,11 @@ use crate::element::visitor::DamlElementVisitor;
 #[cfg(feature = "full")]
 use crate::element::{DamlExpr, DamlPrimLit};
 use crate::element::{DamlTyConName, DamlType, DamlTypeVarWithKind, DamlVisitableElement};
-use bounded_static::ToBoundedStatic;
+use bounded_static::ToStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlData<'a> {
     Template(Box<DamlTemplate<'a>>),
     Record(DamlRecord<'a>),
@@ -103,19 +103,6 @@ impl<'a> DamlVisitableElement<'a> for DamlData<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlData<'_> {
-    type Static = DamlData<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        match self {
-            DamlData::Record(record) => DamlData::Record(record.to_static()),
-            DamlData::Template(template) => DamlData::Template(template.to_static()),
-            DamlData::Variant(variant) => DamlData::Variant(variant.to_static()),
-            DamlData::Enum(data_enum) => DamlData::Enum(data_enum.to_static()),
-        }
-    }
-}
-
 impl PartialEq<DamlData<'_>> for DamlData<'_> {
     fn eq(&self, other: &DamlData<'_>) -> bool {
         match (self, other) {
@@ -173,7 +160,7 @@ impl PartialEq<DamlEnum<'_>> for DamlData<'_> {
     }
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlTemplate<'a> {
     name: Cow<'a, str>,
     package_id: Cow<'a, str>,
@@ -326,31 +313,6 @@ impl<'a> DamlVisitableElement<'a> for DamlTemplate<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlTemplate<'_> {
-    type Static = DamlTemplate<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlTemplate::new(
-            self.name.to_static(),
-            self.package_id.to_static(),
-            self.module_path.to_static(),
-            self.fields.to_static(),
-            self.choices.to_static(),
-            self.param.to_static(),
-            #[cfg(feature = "full")]
-            self.precond.to_static(),
-            #[cfg(feature = "full")]
-            self.signatories.to_static(),
-            #[cfg(feature = "full")]
-            self.agreement.to_static(),
-            #[cfg(feature = "full")]
-            self.observers.to_static(),
-            self.key.as_ref().map(DamlDefKey::to_static),
-            self.serializable,
-        )
-    }
-}
-
 impl PartialEq<DamlTemplate<'_>> for DamlTemplate<'_> {
     fn eq(&self, other: &DamlTemplate<'_>) -> bool {
         other.package_id() == self.package_id()
@@ -368,7 +330,7 @@ impl PartialEq<DamlData<'_>> for DamlTemplate<'_> {
     }
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlChoice<'a> {
     name: Cow<'a, str>,
     package_id: Cow<'a, str>,
@@ -499,30 +461,8 @@ impl<'a> DamlVisitableElement<'a> for DamlChoice<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlChoice<'_> {
-    type Static = DamlChoice<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlChoice::new(
-            self.name.to_static(),
-            self.package_id.to_static(),
-            self.module_path.to_static(),
-            self.fields.to_static(),
-            self.return_type.to_static(),
-            self.consuming,
-            self.self_binder.to_static(),
-            #[cfg(feature = "full")]
-            self.update.to_static(),
-            #[cfg(feature = "full")]
-            self.controllers.to_static(),
-            #[cfg(feature = "full")]
-            self.observers.to_static(),
-        )
-    }
-}
-
 // TODO should not be public
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlDefKey<'a> {
     pub ty: DamlType<'a>,
     #[cfg(feature = "full")]
@@ -573,21 +513,7 @@ impl<'a> DamlVisitableElement<'a> for DamlDefKey<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlDefKey<'_> {
-    type Static = DamlDefKey<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlDefKey::new(
-            self.ty.to_static(),
-            #[cfg(feature = "full")]
-            self.maintainers.to_static(),
-            #[cfg(feature = "full")]
-            self.key_expr.to_static(),
-        )
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlRecord<'a> {
     name: Cow<'a, str>,
     package_id: Cow<'a, str>,
@@ -650,21 +576,6 @@ impl<'a> DamlVisitableElement<'a> for DamlRecord<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlRecord<'_> {
-    type Static = DamlRecord<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlRecord::new(
-            self.name.to_static(),
-            self.package_id.to_static(),
-            self.module_path.to_static(),
-            self.fields.to_static(),
-            self.type_params.to_static(),
-            self.serializable,
-        )
-    }
-}
-
 impl PartialEq<DamlRecord<'_>> for DamlRecord<'_> {
     fn eq(&self, other: &DamlRecord<'_>) -> bool {
         other.package_id() == self.package_id()
@@ -682,7 +593,7 @@ impl PartialEq<DamlData<'_>> for DamlRecord<'_> {
     }
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlVariant<'a> {
     name: Cow<'a, str>,
     package_id: Cow<'a, str>,
@@ -745,21 +656,6 @@ impl<'a> DamlVisitableElement<'a> for DamlVariant<'a> {
     }
 }
 
-impl ToBoundedStatic for DamlVariant<'_> {
-    type Static = DamlVariant<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlVariant::new(
-            self.name.to_static(),
-            self.package_id.to_static(),
-            self.module_path.to_static(),
-            self.fields.to_static(),
-            self.type_params.to_static(),
-            self.serializable,
-        )
-    }
-}
-
 impl PartialEq<DamlVariant<'_>> for DamlVariant<'_> {
     fn eq(&self, other: &DamlVariant<'_>) -> bool {
         other.package_id() == self.package_id()
@@ -777,7 +673,7 @@ impl PartialEq<DamlData<'_>> for DamlVariant<'_> {
     }
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlEnum<'a> {
     name: Cow<'a, str>,
     package_id: Cow<'a, str>,
@@ -836,21 +732,6 @@ impl<'a> DamlVisitableElement<'a> for DamlEnum<'a> {
         visitor.pre_visit_enum(self);
         self.type_params.iter().for_each(|arg| arg.accept(visitor));
         visitor.post_visit_enum(self);
-    }
-}
-
-impl ToBoundedStatic for DamlEnum<'_> {
-    type Static = DamlEnum<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlEnum::new(
-            self.name.to_static(),
-            self.package_id.to_static(),
-            self.module_path.to_static(),
-            self.constructors.to_static(),
-            self.type_params.to_static(),
-            self.serializable,
-        )
     }
 }
 

@@ -1,11 +1,11 @@
 use crate::element::daml_type::DamlType;
 use crate::element::visitor::DamlElementVisitor;
 use crate::element::DamlVisitableElement;
-use bounded_static::ToBoundedStatic;
+use bounded_static::ToStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlField<'a> {
     name: Cow<'a, str>,
     ty: DamlType<'a>,
@@ -33,13 +33,5 @@ impl<'a> DamlVisitableElement<'a> for DamlField<'a> {
         visitor.pre_visit_field(self);
         self.ty.accept(visitor);
         visitor.post_visit_field(self);
-    }
-}
-
-impl ToBoundedStatic for DamlField<'_> {
-    type Static = DamlField<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlField::new(self.name.to_static(), self.ty.to_static())
     }
 }

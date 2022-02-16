@@ -3,13 +3,13 @@ use crate::element::visitor::{DamlElementVisitor, DamlVisitableElement};
 use crate::element::{serialize, DamlData, DamlTyCon, DamlTyConName};
 #[cfg(feature = "full")]
 use crate::element::{DamlDefValue, DamlValueName};
-use bounded_static::ToBoundedStatic;
+use bounded_static::ToStatic;
 use itertools::Itertools;
 use serde::Serialize;
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-#[derive(Debug, Serialize, Clone, Default)]
+#[derive(Debug, Serialize, Clone, Default, ToStatic)]
 pub struct DamlArchive<'a> {
     name: Cow<'a, str>,
     main_package_id: Cow<'a, str>,
@@ -123,13 +123,5 @@ impl<'a> DamlVisitableElement<'a> for DamlArchive<'a> {
             self.packages.values().for_each(|package| package.accept(visitor));
         }
         visitor.post_visit_archive(self);
-    }
-}
-
-impl ToBoundedStatic for DamlArchive<'_> {
-    type Static = DamlArchive<'static>;
-
-    fn to_static(&self) -> Self::Static {
-        DamlArchive::new(self.name.to_static(), self.main_package_id.to_static(), self.packages.to_static())
     }
 }
