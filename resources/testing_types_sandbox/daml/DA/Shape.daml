@@ -1,5 +1,7 @@
 module DA.Shape where
 
+import Daml.Script
+
 data RGBA = RGBA
     with
         r: Int
@@ -36,7 +38,9 @@ template CircleTemplate
                     create CircleTemplate with owner; circle = new_circle
                     return ()
                     
-name = scenario do
-  alice <- getParty "Alice"
+test : Script ()
+test = do
+  alice <- allocateParty "Alice"
   submit alice do 
-    create CircleTemplate with owner = alice; circle = Circle 12.0000000001 (Other (RGBA 255 100 64 99))
+    createCmd CircleTemplate with owner = alice; circle = Circle 12.0000000001 (Other (RGBA 255 100 64 99))
+  pure ()

@@ -1,5 +1,7 @@
 module DA.VariantExamples where
 
+import Daml.Script
+
 import DA.TextMap
 
 data RecordArgument = RecordArgument 
@@ -29,7 +31,9 @@ template VariantTemplate
     where
         signatory owner
                     
-name = scenario do
-  alice <- getParty "Alice"
+test : Script ()
+test = do
+  alice <- allocateParty "Alice"
   submit alice do 
-    create VariantTemplate with owner = alice; variants = [TupleStructRecord (RecordArgument 2 [""])]
+    createCmd VariantTemplate with owner = alice; variants = [TupleStructRecord (RecordArgument 2 [""])]
+  pure ()

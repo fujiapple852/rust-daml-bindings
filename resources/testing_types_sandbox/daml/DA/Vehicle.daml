@@ -1,5 +1,7 @@
 module DA.Vehicle where
 
+import Daml.Script
+
 import DA.Date
 
 data SimpleColor = Red | Green | Blue
@@ -34,12 +36,13 @@ runBar _ = bar $ datetime 2020 Feb 02 01 23 45
 bar : Time -> Time
 bar t = t
 
-test = scenario do
-  owner <- getParty "Alice"
-  driver <- getParty "Bob"
+test : Script ()
+test = do
+  owner <- allocateParty "Alice"
+  driver <- allocateParty "Bob"
   cid <- submit owner do
-    create Car with owner; driver; make = "Ford"; color = Red; reg_year = date 2020 Jan 1; purchase_time = datetime 2020 Feb 02 01 23 45
+    createCmd Car with owner; driver; make = "Ford"; color = Red; reg_year = date 2020 Jan 1; purchase_time = datetime 2020 Feb 02 01 23 45
   submit owner do
-    exercise cid Repaint with new_color = Blue
-    
+    exerciseCmd cid Repaint with new_color = Blue
+  pure ()
   

@@ -9,6 +9,7 @@ template RentalProposal
     terms : Text
   where
     signatory landlord
+    observer tenant
 
     choice Accept : ContractId RentalAgreement with
       foo : Text
