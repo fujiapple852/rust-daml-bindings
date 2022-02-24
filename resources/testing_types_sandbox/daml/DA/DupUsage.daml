@@ -7,7 +7,8 @@ template DupUsage
     party : Party
   where
     signatory party
-    controller party can
-      Call : ContractId DupTemplate
+
+    choice Call : ContractId DupTemplate
+     controller party
         do create DupTemplate with party; dup = DupData with foo = 1
         

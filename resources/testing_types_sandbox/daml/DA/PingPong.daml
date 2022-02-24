@@ -23,23 +23,25 @@ template Ping
     key PingPongKey with .. : PingPongKey
     maintainer key.sender
 
-    controller receiver can
-      RespondPong : ()
+    choice RespondPong : ()
+      controller receiver
         do
           if count > 10 then return ()
           else do
             create Pong with sender = receiver; receiver = sender; count = count + 1
             return ()
 
-    controller sender can
-      ResetPingCount : ()
+    choice ResetPingCount : () with
+       party : Party
+     controller sender
         do
           create Ping with sender; receiver; count
           return ()
-      FromUserData : ()
-        with
-            new_count: Int
-            new_data: UserData
+
+    choice FromUserData : () with
+      new_count: Int
+      new_data: UserData
+     controller sender
         do
           create Ping with sender; receiver; count = new_count + new_data.new_value
           return ()
@@ -55,18 +57,17 @@ template Pong
     key PingPongKey with .. : PingPongKey
     maintainer key.sender
 
-    controller receiver can
-      RespondPing : ()
+    choice RespondPing : ()
+     controller receiver
         do
           if count > 10 then return ()
           else do
             create Ping with sender = receiver; receiver = sender; count = count + 1
             return ()
 
-    controller sender can
-      ResetPongCount : ()
-        with
-            new_count: Int
+    choice ResetPongCount : () with
+       new_count: Int
+     controller sender
         do
           create Pong with sender; receiver; count = new_count
           return ()

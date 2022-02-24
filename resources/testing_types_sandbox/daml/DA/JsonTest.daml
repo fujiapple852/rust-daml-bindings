@@ -24,8 +24,9 @@ template Outer
     inner : ContractId Inner
   where
     signatory owner
-    controller owner can
-      nonconsuming OuterCall : ()
+
+    nonconsuming choice OuterCall : ()
+     controller owner
         do
           exercise inner InnerCall
           exercise self Archive
@@ -36,8 +37,9 @@ template Inner
     owner : Party
   where
     signatory owner
-    controller owner can
-      InnerCall : ()
+
+    choice InnerCall : ()
+     controller owner
         do
           create Leaf with ..
           return ()

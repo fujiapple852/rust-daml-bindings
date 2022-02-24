@@ -38,9 +38,7 @@ template RefDataOnboarding
   where
     signatory oper
 
-    controller oper can
-      nonconsuming Call : ContractId Master
-        with
+    nonconsuming choice Call : ContractId Master with
             pid : Text
             foo2 : Text
             foo3: Text
@@ -62,6 +60,7 @@ template RefDataOnboarding
             foo19: Text
             foo20: Text
             foo21: Text
+      controller oper
         do
             master <- fetchByKey @Master (oper, pid)
             create master._2
