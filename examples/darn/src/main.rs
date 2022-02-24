@@ -12,7 +12,7 @@ use crate::command_intern::CommandIntern;
 use crate::command_package::CommandPackage;
 use crate::command_token::CommandToken;
 use anyhow::Result;
-use clap::{crate_description, crate_name, crate_version, App, AppSettings, ArgMatches};
+use clap::{crate_description, crate_name, crate_version, ArgMatches, Command};
 use std::collections::HashMap;
 
 pub mod command_intern;
@@ -21,7 +21,7 @@ pub mod command_token;
 
 pub trait DarnCommand {
     fn name(&self) -> &str;
-    fn args<'a>(&self) -> App<'a>;
+    fn args<'a>(&self) -> Command<'a>;
     fn execute(&self, matches: &ArgMatches) -> Result<()>;
 }
 
@@ -36,10 +36,10 @@ async fn main() -> Result<()> {
     let commands: Vec<Box<dyn DarnCommand>> =
         vec![command!(CommandPackage), command!(CommandToken), command!(CommandIntern)];
     let command_map: HashMap<_, _> = commands.into_iter().map(|cmd| (cmd.name().to_owned(), cmd)).collect();
-    let matches = App::new(crate_name!())
+    let matches = Command::new(crate_name!())
         .version(crate_version!())
         .about(crate_description!())
-        .setting(AppSettings::ArgRequiredElseHelp)
+        .arg_required_else_help(true)
         .subcommands(command_map.values().map(|cmd| cmd.args()))
         .get_matches();
     let (sub, args) = matches.subcommand().unwrap();

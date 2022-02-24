@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
-use clap::{App, Arg, ArgGroup, ArgMatches};
+use clap::{Arg, ArgGroup, ArgMatches, Command};
 use itertools::Itertools;
 use prettytable::color::Color;
 use prettytable::format;
@@ -19,8 +19,8 @@ impl DarnCommand for CommandIntern {
         "intern"
     }
 
-    fn args<'a>(&self) -> App<'a> {
-        App::new("intern")
+    fn args<'a>(&self) -> Command<'a> {
+        Command::new("intern")
             .about("Show interned strings and dotted names in a dar")
             .arg(Arg::new("dar").help("Sets the input dar file to use").required(true).index(1))
             .arg(Arg::new("string").short('s').long("string").help("Show interned strings"))
@@ -30,7 +30,7 @@ impl DarnCommand for CommandIntern {
                     .short('i')
                     .long("index")
                     .multiple_occurrences(true)
-                    .use_delimiter(true)
+                    .use_value_delimiter(true)
                     .takes_value(true)
                     .required(false)
                     .help("the intern indices"),
