@@ -31,8 +31,7 @@ template Ping
             create Pong with sender = receiver; receiver = sender; count = count + 1
             return ()
 
-    choice ResetPingCount : () with
-       party : Party
+    choice ResetPingCount : ()
      controller sender
         do
           create Ping with sender; receiver; count

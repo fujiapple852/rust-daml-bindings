@@ -1,5 +1,7 @@
 module DA.GenericTypes where
 
+import Daml.Script
+
 -- Fully generic data record
 data GenericDataRecord aaa bbb = GenericDataRecord with first: aaa; middle: bbb, last: Int
     deriving (Eq, Show)
@@ -49,12 +51,14 @@ template TemplateWithGeneric
   where
     signatory party
 
-name = scenario do
-    p <- getParty "party"
-    submit p do create TemplateWithGeneric with 
+test : Script ()
+test = do
+    p <- allocateParty "party"
+    submit p do createCmd TemplateWithGeneric with 
                     party = p
                     data_x = (GenericDataRecord with first = (Some [0]); middle = ["test"]; last = 101)
                     data_y = (GenericDataRecord with first = 0; middle = "boo"; last = 200)
                     data_z = (ConcreteDataRecord with beta = (GenericDataRecord with first = Some [3]; middle = ["hello"]; last = 99))
                     data_q = (PStart (GenericWrapperRecord PEnd))
     assert True
+    pure ()

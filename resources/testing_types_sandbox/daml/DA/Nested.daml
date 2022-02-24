@@ -1,5 +1,7 @@
 module DA.Nested where
 
+import Daml.Script
+
 import DA.TextMap as M
 import DA.Map as GenMap
 
@@ -31,11 +33,13 @@ template NestedTemplate
 
                 return ()
                     
-name = scenario do
-  alice <- getParty "Alice"
+test : Script ()
+test = do
+  alice <- allocateParty "Alice"
   submit alice do 
-    create NestedTemplate with 
+    createCmd NestedTemplate with 
         owner = alice
         opt_of_list = Some (["hello"]) 
         list_of_opt_of_map_of_data = [Some (M.fromList [("key", MyNestedData True)])]
         map_of_data_to_text = GenMap.fromList [(MyNestedData True, "TrueCase"), (MyNestedData False, "FalseCase")]
+  pure ()

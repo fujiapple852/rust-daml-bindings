@@ -1,5 +1,7 @@
 module DA.JsonTest where
 
+import Daml.Script
+
 import DA.Map
 
 data Depth1 = Depth1 with foo: Optional Int
@@ -58,9 +60,13 @@ template Account with
     key (owner, number) : (Party, Text)
     maintainer key._1
 
-name2 = scenario do
-  alice <- getParty "Alice"
+test : Script ()
+test = do
+  alice <- allocateParty "Alice"
+  innerCid <- submit alice do
+    createCmd Inner with owner = alice
+  outerCid <- submit alice do
+    createCmd Outer with owner = alice; inner = innerCid
   submit alice do
-    innerCid <- create Inner with owner = alice
-    outerCid <- create Outer with owner = alice; inner = innerCid
-    exercise outerCid OuterCall
+    exerciseCmd outerCid OuterCall
+  pure ()
