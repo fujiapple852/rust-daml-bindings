@@ -1,6 +1,6 @@
 use crate::DarnCommand;
 use anyhow::Result;
-use clap::{App, Arg, ArgMatches};
+use clap::{Arg, ArgMatches, Command};
 use daml::lf::DarFile;
 use itertools::Itertools;
 use prettytable::format;
@@ -14,8 +14,8 @@ impl DarnCommand for CommandPackage {
         "package"
     }
 
-    fn args<'a>(&self) -> App<'a> {
-        App::new("package")
+    fn args<'a>(&self) -> Command<'a> {
+        Command::new("package")
             .about("Show dar package details")
             .arg(Arg::new("dar").help("Sets the input dar file to use").required(true).index(1))
     }

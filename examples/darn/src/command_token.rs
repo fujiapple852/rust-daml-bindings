@@ -1,6 +1,6 @@
 use crate::DarnCommand;
 use anyhow::Result;
-use clap::{App, AppSettings, Arg, ArgGroup, ArgMatches};
+use clap::{AppSettings, Arg, ArgGroup, ArgMatches, Command};
 use daml::util::DamlSandboxTokenBuilder;
 
 /// Darn command for generating Daml Sandbox auth tokens.
@@ -11,7 +11,7 @@ impl DarnCommand for CommandToken {
         "token"
     }
 
-    fn args<'a, 'b>(&self) -> App<'a> {
+    fn args<'a, 'b>(&self) -> Command<'a> {
         args()
     }
 
@@ -36,8 +36,8 @@ enum OutputFormat {
     Both,
 }
 
-fn args<'a>() -> App<'a> {
-    App::new("token")
+fn args<'a>() -> Command<'a> {
+    Command::new("token")
         .about("Generate a Daml sandbox token")
         .setting(AppSettings::DeriveDisplayOrder)
         .arg(
@@ -101,7 +101,7 @@ fn args<'a>() -> App<'a> {
                 .long("act-as")
                 .short('a')
                 .multiple_values(true)
-                .use_delimiter(true)
+                .use_value_delimiter(true)
                 .takes_value(true)
                 .value_name("party")
                 .help("Sets the token actAs list"),
@@ -111,7 +111,7 @@ fn args<'a>() -> App<'a> {
                 .long("read-as")
                 .short('r')
                 .multiple_values(true)
-                .use_delimiter(true)
+                .use_value_delimiter(true)
                 .takes_value(true)
                 .value_name("party")
                 .help("Sets the token readAs list"),

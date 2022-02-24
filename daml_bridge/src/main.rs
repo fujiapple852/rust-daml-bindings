@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use std::sync::Arc;
 
-use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg};
+use clap::{crate_description, crate_name, crate_version, Arg, Command};
 use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
 
@@ -9,10 +9,10 @@ use daml_bridge::{Bridge, BridgeConfigData};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let matches = App::new(crate_name!())
+    let matches = Command::new(crate_name!())
         .version(crate_version!())
         .about(crate_description!())
-        .setting(AppSettings::ArgRequiredElseHelp)
+        .arg_required_else_help(true)
         .arg(
             Arg::new("ledger-uri")
                 .long("ledger-uri")

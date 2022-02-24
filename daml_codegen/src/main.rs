@@ -1,9 +1,9 @@
 use daml_codegen::generator::{daml_codegen_internal, ModuleOutputMode, RenderMethod};
 
-use clap::{App, Arg};
+use clap::{Arg, Command};
 
 fn main() {
-    let matches = App::new("Daml codegen for Rust")
+    let matches = Command::new("Daml codegen for Rust")
         .version("0.1.0")
         .about("Generate Rust code for working with Daml types")
         .arg(Arg::new("dar").help("Sets the input Dar file to use").required(true).index(1))

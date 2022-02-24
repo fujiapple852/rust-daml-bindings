@@ -9,7 +9,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use anyhow::{anyhow, Context, Result};
-use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches};
+use clap::{crate_description, crate_name, crate_version, Arg, ArgMatches, Command};
 use serde::Serialize;
 
 use companion::CompanionData;
@@ -48,7 +48,7 @@ const DEFAULT_TEMPLATE_FILTER_FILE: &str = ".template_filter.yaml";
 const DEFAULT_COMPANION_FILE: &str = ".companion.yaml";
 
 fn main() -> Result<()> {
-    let oas = App::new("oas")
+    let oas = Command::new("oas")
         .about("Generate an OpenAPI document from the given Dar file")
         .arg(make_dar_arg())
         .arg(make_log_level_arg())
@@ -66,7 +66,7 @@ fn main() -> Result<()> {
         .arg(make_include_archive_choice_arg())
         .arg(make_include_general_operations_arg())
         .arg(make_path_style_arg());
-    let a2s = App::new("a2s")
+    let a2s = Command::new("a2s")
         .about("Generate an AsyncAPI document from the given Dar file")
         .arg(make_dar_arg())
         .arg(make_log_level_arg())
@@ -81,10 +81,10 @@ fn main() -> Result<()> {
         .arg(make_reference_prefix_arg())
         .arg(make_reference_mode_arg())
         .arg(make_include_package_id_arg());
-    let matches = App::new(crate_name!())
+    let matches = Command::new(crate_name!())
         .version(crate_version!())
         .about(crate_description!())
-        .setting(AppSettings::ArgRequiredElseHelp)
+        .arg_required_else_help(true)
         .term_width(0)
         .subcommand(oas)
         .subcommand(a2s)
