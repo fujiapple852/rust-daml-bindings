@@ -29,10 +29,9 @@ template CircleTemplate
     where
         signatory owner
 
-        controller owner can
-            ReplaceCircle : ()
-                with 
-                    new_circle : Circle
+        choice ReplaceCircle : ()with
+            new_circle : Circle
+                controller owner
                 do
                     create CircleTemplate with owner; circle = new_circle
                     return ()

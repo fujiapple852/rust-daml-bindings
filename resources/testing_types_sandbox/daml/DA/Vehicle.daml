@@ -16,9 +16,9 @@ template Car
   where
     signatory owner
   
-    controller owner can
-      Repaint : ContractId Car
-        with new_color : SimpleColor
+    choice Repaint : ContractId Car with
+       new_color : SimpleColor
+     controller owner
         do
           create this with color = new_color; reg_year = foo $ date 2991 Jan 1; purchase_time = bar $ datetime 1979 Jan 23 01 23 45
 

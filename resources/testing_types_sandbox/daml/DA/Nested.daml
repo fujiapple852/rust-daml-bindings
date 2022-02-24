@@ -17,20 +17,19 @@ template NestedTemplate
     where
         signatory owner
 
-        controller owner can
-            DoSomethingComplex : ()
-                with 
+        choice DoSomethingComplex : () with
                     new_opt_of_list : Optional [Text]
                     new_list_of_opt_of_map_of_data : [Optional (TextMap MyNestedData)]
                     new_map_of_data_to_text : GenMap.Map MyNestedData Text
-                do
-                    create NestedTemplate with 
-                        owner
-                        opt_of_list = new_opt_of_list
-                        list_of_opt_of_map_of_data = new_list_of_opt_of_map_of_data
-                        map_of_data_to_text = new_map_of_data_to_text
+         controller owner
+            do
+                create NestedTemplate with 
+                    owner
+                    opt_of_list = new_opt_of_list
+                    list_of_opt_of_map_of_data = new_list_of_opt_of_map_of_data
+                    map_of_data_to_text = new_map_of_data_to_text
 
-                    return ()
+                return ()
                     
 name = scenario do
   alice <- getParty "Alice"
