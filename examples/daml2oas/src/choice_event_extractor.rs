@@ -1,11 +1,11 @@
 use std::collections::HashSet;
 
 use crate::common::ARCHIVE_CHOICE_NAME;
+use bounded_static::ToBoundedStatic;
 use daml::lf::element::{
     DamlArchive, DamlChoice, DamlCreate, DamlData, DamlElementVisitor, DamlExercise, DamlExerciseByKey, DamlTyCon,
     DamlValueName, DamlVisitableElement,
 };
-use daml::lf::ToStatic;
 
 /// Extract the `ChoiceEvents` that can be produced by a given `DamlChoice`.
 pub trait ChoiceEventExtractor {

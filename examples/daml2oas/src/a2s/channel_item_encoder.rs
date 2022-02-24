@@ -3,10 +3,10 @@ use std::collections::BTreeMap;
 use maplit::btreemap;
 use serde_json::Value;
 
+use bounded_static::ToBoundedStatic;
 use daml::json_api::error::DamlJsonSchemaCodecResult;
 use daml::json_api::schema_encoder::JsonSchemaEncoder;
 use daml::lf::element::{DamlArchive, DamlElementVisitor, DamlTemplate, DamlType, DamlVisitableElement};
-use daml::lf::ToStatic;
 
 use crate::a2s::asyncapi_data::{
     ChannelBindings, ChannelItem, ExternalDocumentation, Message, OneOfMessages, Operation, Tag,
