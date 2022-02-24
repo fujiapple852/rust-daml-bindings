@@ -1,4 +1,4 @@
-sdk-version: 1.18.1
+sdk-version: 2.0.0-snapshot.20220222.9362.0.1af680cd
 name: TestingTypes
 source: daml/LibraryModules.daml
 parties:
