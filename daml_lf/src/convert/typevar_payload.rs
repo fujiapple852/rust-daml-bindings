@@ -2,8 +2,8 @@ use crate::convert::interned::InternableString;
 use crate::convert::util::Required;
 use crate::convert::wrapper::PayloadElementWrapper;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::kind::{Arrow, Sum};
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::{Kind, TypeVarWithKind};
+use crate::lf_protobuf::com::daml::daml_lf_1::kind::{Arrow, Sum};
+use crate::lf_protobuf::com::daml::daml_lf_1::{Kind, TypeVarWithKind};
 use std::convert::TryFrom;
 
 ///

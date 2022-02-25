@@ -7,9 +7,9 @@ use crate::convert::typevar_payload::DamlTypeVarWithKindPayload;
 use crate::convert::util::Required;
 use crate::convert::wrapper::{DamlPayloadParentContext, DamlPayloadParentContextType, PayloadElementWrapper};
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::def_data_type::DataCons;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::def_template::DefKey;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::{DefDataType, DefTemplate, TemplateChoice};
+use crate::lf_protobuf::com::daml::daml_lf_1::def_data_type::DataCons;
+use crate::lf_protobuf::com::daml::daml_lf_1::def_template::DefKey;
+use crate::lf_protobuf::com::daml::daml_lf_1::{DefDataType, DefTemplate, TemplateChoice};
 use std::convert::TryFrom;
 
 ///

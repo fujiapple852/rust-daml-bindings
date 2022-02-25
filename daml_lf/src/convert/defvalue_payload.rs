@@ -4,7 +4,7 @@ use crate::convert::type_payload::DamlTypePayload;
 use crate::convert::util::Required;
 use crate::convert::wrapper::PayloadElementWrapper;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::DefValue;
+use crate::lf_protobuf::com::daml::daml_lf_1::DefValue;
 use std::convert::TryFrom;
 
 ///

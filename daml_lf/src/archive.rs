@@ -1,5 +1,5 @@
 use crate::element::DamlPackage;
-use crate::lf_protobuf::com::digitalasset::daml_lf::Archive;
+use crate::lf_protobuf::com::daml::daml_lf::Archive;
 use crate::DamlLfResult;
 use crate::{convert, DamlLfArchivePayload};
 use bytes::Bytes;
