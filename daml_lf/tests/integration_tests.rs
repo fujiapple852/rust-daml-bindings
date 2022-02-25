@@ -12,11 +12,10 @@ use std::collections::HashSet;
 
 #[test]
 fn test_dalf() -> DamlLfResult<()> {
-    let archive =
-        DamlLfArchive::from_file("../resources/testing_types_sandbox/archive/PingPongExample/PingPongExample.dalf")?;
+    let archive = DamlLfArchive::from_file("../resources/testing_types_sandbox/archive/legacy/Legacy.dalf")?;
     assert_eq!(&DamlLfHashFunction::Sha256, archive.hash_function());
     assert_eq!("2efa7ef832162fcb17abe86cd8675e31b8e641f25aba36a05098f7e9f4023d7e", archive.hash());
-    assert_eq!("PingPongExample", archive.name());
+    assert_eq!("Legacy", archive.name());
     assert_eq!(LanguageVersion::V1_0, *archive.payload().language_version());
     assert!(archive.payload().contains_module("PingPong"));
     Ok(())
@@ -24,7 +23,7 @@ fn test_dalf() -> DamlLfResult<()> {
 
 #[test]
 pub fn test_legacy_dar() -> DamlLfResult<()> {
-    let dar = DarFile::from_file("../resources/testing_types_sandbox/archive/PingPongExample.dar")?;
+    let dar = DarFile::from_file("../resources/testing_types_sandbox/archive/legacy/Legacy.dar")?;
     assert_eq!(DarManifestVersion::Unknown, dar.manifest().version());
     assert_eq!("implied", dar.manifest().created_by());
     assert_eq!("PingPongExample/PingPongExample.dalf", dar.manifest().dalf_main());
@@ -39,16 +38,16 @@ pub fn test_legacy_dar() -> DamlLfResult<()> {
 
 #[test]
 pub fn test_fat_dar() -> DamlLfResult<()> {
-    let dar = DarFile::from_file("test_resources/PingPongExampleFat.dar")?;
+    let dar = DarFile::from_file("test_resources/TestingTypes-1_0_0-sdk_1_1_1-lf_1_8.dar")?;
     assert_eq!(DarManifestVersion::V1, dar.manifest().version());
-    assert_eq!("Digital Asset packager (DAML-GHC)", dar.manifest().created_by());
-    assert_eq!("PingPongExample.dalf", dar.manifest().dalf_main());
-    assert_eq!(&vec!["daml-prim.dalf", "daml-stdlib.dalf"], dar.manifest().dalf_dependencies());
+    assert_eq!("damlc", dar.manifest().created_by());
+    assert_eq!("TestingTypes", dar.manifest().dalf_main().split('-').next().unwrap());
+    assert_eq!(18, dar.manifest().dalf_dependencies().len());
     assert_eq!(DarManifestFormat::DamlLf, dar.manifest().format());
     assert_eq!(DarEncryptionType::NotEncrypted, dar.manifest().encryption());
-    assert_eq!(2, dar.dependencies().len());
-    assert_eq!(LanguageVersion::V1_3, *dar.main().payload().language_version());
-    assert!(dar.main().payload().contains_module("PingPong"));
+    assert_eq!(18, dar.dependencies().len());
+    assert_eq!(LanguageVersion::V1_8, *dar.main().payload().language_version());
+    assert!(dar.main().payload().contains_module("DA.PingPong"));
     Ok(())
 }
 
