@@ -19,7 +19,7 @@ pub struct AllDataTypes {
     pub my_date: DamlDate,
 }
 
-#[DamlTemplate(package_id = "test", module_name = "DA.Dummy")]
+#[DamlTemplate(package_id = "test", module_name = "Fuji.Dummy")]
 pub struct AllListDataTypes {
     pub my_contract_ids: DamlList<DamlContractId>,
     pub my_ints: DamlList<DamlInt64>,
@@ -49,7 +49,7 @@ impl AllListDataTypes {
     }
 }
 
-#[DamlTemplate(package_id = "test", module_name = "DA.Dummy")]
+#[DamlTemplate(package_id = "test", module_name = "Fuji.Dummy")]
 pub struct ScalarsAndLists {
     pub prim: DamlParty,
     pub nested: MyData,
@@ -71,7 +71,7 @@ impl ScalarsAndLists {
     }
 }
 
-#[DamlTemplate(module_name = "DA.Dummy", package_id = "test")]
+#[DamlTemplate(module_name = "Fuji.Dummy", package_id = "test")]
 pub struct ReverseOrderTemplateAttributes {
     pub prim: DamlParty,
 }

@@ -1,4 +1,4 @@
-module DA.Shape where
+module Fuji.Shape where
 
 import Daml.Script
 

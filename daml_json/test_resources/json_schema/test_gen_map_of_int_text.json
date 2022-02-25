@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DA.MapTest:Foo",
+  "title": "Fuji.MapTest:Foo",
   "description": "Record (Foo)",
   "oneOf": [
     {

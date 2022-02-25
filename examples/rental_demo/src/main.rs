@@ -1,8 +1,8 @@
-include!("autogen/rental_0_0_1.rs");
+include!("autogen/rental_0_1_0.rs");
 
 use anyhow::Result;
 use daml::grpc_api::{CommandExecutor, DamlGrpcClientBuilder, DamlSimpleExecutorBuilder};
-use rental::da::rental::*;
+use rental::fuji::rental::*;
 use std::convert::TryFrom;
 use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;

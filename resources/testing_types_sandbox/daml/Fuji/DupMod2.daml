@@ -1,4 +1,4 @@
-module DA.DupMod2 where
+module Fuji.DupMod2 where
 
 data DupData = DupData with foo : Int
     deriving (Eq, Show)

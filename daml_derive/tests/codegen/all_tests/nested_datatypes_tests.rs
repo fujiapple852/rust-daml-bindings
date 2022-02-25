@@ -9,11 +9,14 @@ use daml::grpc_api::{CommandExecutor, DamlSimpleExecutorBuilder};
 use daml_derive::daml_codegen;
 use std::convert::TryInto;
 
-daml_codegen!(dar_file = r"resources/testing_types_sandbox/TestingTypes-latest.dar", module_filter_regex = "DA.Nested");
+daml_codegen!(
+    dar_file = r"resources/testing_types_sandbox/TestingTypes-latest.dar",
+    module_filter_regex = "Fuji.Nested"
+);
 
 #[tokio::test]
 pub async fn test() -> TestResult {
-    use testing_types::da::nested::{MyNestedData, NestedTemplate, NestedTemplateContract};
+    use testing_types::fuji::nested::{MyNestedData, NestedTemplate, NestedTemplateContract};
     let _lock = SANDBOX_LOCK.lock().await;
     let client = new_static_sandbox().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;

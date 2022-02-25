@@ -45,7 +45,7 @@ pub struct AnonRecord {
     field_bbb: DamlList<DamlText>,
 }
 
-#[DamlTemplate(package_id = "test", module_name = "DA.VariantExamples")]
+#[DamlTemplate(package_id = "test", module_name = "Fuji.VariantExamples")]
 pub struct VariantTemplate {
     pub owner: DamlParty,
     pub variants: DamlList<AllVariantTypes>,

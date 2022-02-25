@@ -38,16 +38,16 @@ pub fn test_legacy_dar() -> DamlLfResult<()> {
 
 #[test]
 pub fn test_fat_dar() -> DamlLfResult<()> {
-    let dar = DarFile::from_file("test_resources/TestingTypes-1_0_0-sdk_1_1_1-lf_1_8.dar")?;
+    let dar = DarFile::from_file("test_resources/TestingTypes-1_9_0-sdk_1_18_1-lf_1_14.dar")?;
     assert_eq!(DarManifestVersion::V1, dar.manifest().version());
     assert_eq!("damlc", dar.manifest().created_by());
     assert_eq!("TestingTypes", dar.manifest().dalf_main().split('-').next().unwrap());
-    assert_eq!(18, dar.manifest().dalf_dependencies().len());
+    assert_eq!(25, dar.manifest().dalf_dependencies().len());
     assert_eq!(DarManifestFormat::DamlLf, dar.manifest().format());
     assert_eq!(DarEncryptionType::NotEncrypted, dar.manifest().encryption());
-    assert_eq!(18, dar.dependencies().len());
-    assert_eq!(LanguageVersion::V1_8, *dar.main().payload().language_version());
-    assert!(dar.main().payload().contains_module("DA.PingPong"));
+    assert_eq!(25, dar.dependencies().len());
+    assert_eq!(LanguageVersion::V1_14, *dar.main().payload().language_version());
+    assert!(dar.main().payload().contains_module("Fuji.PingPong"));
     Ok(())
 }
 

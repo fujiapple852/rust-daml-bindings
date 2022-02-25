@@ -23,7 +23,7 @@ use std::convert::TryInto;
 use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
 
-const PINGPONG_MODULE_NAME: &str = "DA.PingPong";
+const PINGPONG_MODULE_NAME: &str = "Fuji.PingPong";
 const PING_ENTITY_NAME: &str = "Ping";
 const PONG_ENTITY_NAME: &str = "Pong";
 const PINGPONG_WORKFLOW_ID: &str = "PingPongWorkflow";
@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
         .with_env_filter("daml_grpc::service::daml_command_service=trace")
         .json()
         .init();
-    let ledger_client = create_connection("https://localhost:8080").await?;
+    let ledger_client = create_connection("https://127.0.0.1:8080").await?;
     let package_id = find_module_package_id(&ledger_client, PINGPONG_MODULE_NAME).await?;
     send_initial_ping(&ledger_client, &package_id, PARTY_ALICE).await?;
     let bob_fut = process_ping_pong(&ledger_client, package_id.clone(), PARTY_BOB.to_owned());

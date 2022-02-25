@@ -1,7 +1,7 @@
-sdk-version: 1.10.0
+sdk-version: 1.18.1
 name: rental
-source: daml/DA/Rental.daml
-version: 0.0.1
+source: daml/Fuji/Rental.daml
+version: 0.1.0
 dependencies:
   - daml-prim
   - daml-stdlib

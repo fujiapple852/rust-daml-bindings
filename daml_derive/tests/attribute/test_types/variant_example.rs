@@ -23,7 +23,7 @@ pub struct Circle {
     pub color: Color,
 }
 
-#[DamlTemplate(package_id = r"test", module_name = "DA.Shape")]
+#[DamlTemplate(package_id = r"test", module_name = "Fuji.Shape")]
 pub struct CircleTemplate {
     pub owner: DamlParty,
     pub circle: Circle,

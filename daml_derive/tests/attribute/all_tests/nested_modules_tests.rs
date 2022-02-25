@@ -1,7 +1,7 @@
 #[test]
 pub fn test_nested_modules() {
-    use crate::attribute::test_types::nested_modules::da::my_module::my_sub_module::MyOuterData;
-    use crate::attribute::test_types::nested_modules::da::my_module::MyData;
+    use crate::attribute::test_types::nested_modules::fuji::my_module::my_sub_module::MyOuterData;
+    use crate::attribute::test_types::nested_modules::fuji::my_module::MyData;
     let data = MyData::new("Alice");
     let outer = MyOuterData::new("Bob", data, vec![MyData::new("Bob1"), MyData::new("Bob2")]);
     assert_eq!("Bob", outer.name);

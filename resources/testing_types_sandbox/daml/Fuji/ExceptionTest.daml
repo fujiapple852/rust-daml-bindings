@@ -1,4 +1,4 @@
-module DA.ExceptionTest where
+module Fuji.ExceptionTest where
 
 import DA.Exception
 

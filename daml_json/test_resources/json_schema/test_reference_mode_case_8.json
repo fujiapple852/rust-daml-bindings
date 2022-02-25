@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DA.JsonTest:TopRec",
+  "title": "Fuji.JsonTest:TopRec",
   "description": "Record (TopRec)",
   "oneOf": [
     {
@@ -9,7 +9,7 @@
       "properties": {
         "foo": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "DA.JsonTest:BottomRec",
+          "title": "Fuji.JsonTest:BottomRec",
           "description": "Record (BottomRec)",
           "oneOf": [
             {
@@ -17,7 +17,7 @@
               "description": "Record (BottomRec)",
               "properties": {
                 "top": {
-                  "description": "Any (TestingTypes:DA.JsonTest:BottomRec)",
+                  "description": "Any (TestingTypes:Fuji.JsonTest:BottomRec)",
                   "comment": "recursive data types with type parameters cannot be represented"
                 },
                 "val": {
@@ -46,7 +46,7 @@
                   ]
                 },
                 {
-                  "description": "Any (TestingTypes:DA.JsonTest:BottomRec)",
+                  "description": "Any (TestingTypes:Fuji.JsonTest:BottomRec)",
                   "comment": "recursive data types with type parameters cannot be represented"
                 }
               ],
@@ -67,7 +67,7 @@
       "items": [
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "DA.JsonTest:BottomRec",
+          "title": "Fuji.JsonTest:BottomRec",
           "description": "Record (BottomRec)",
           "oneOf": [
             {
@@ -75,7 +75,7 @@
               "description": "Record (BottomRec)",
               "properties": {
                 "top": {
-                  "description": "Any (TestingTypes:DA.JsonTest:BottomRec)",
+                  "description": "Any (TestingTypes:Fuji.JsonTest:BottomRec)",
                   "comment": "recursive data types with type parameters cannot be represented"
                 },
                 "val": {
@@ -104,7 +104,7 @@
                   ]
                 },
                 {
-                  "description": "Any (TestingTypes:DA.JsonTest:BottomRec)",
+                  "description": "Any (TestingTypes:Fuji.JsonTest:BottomRec)",
                   "comment": "recursive data types with type parameters cannot be represented"
                 }
               ],

@@ -1,6 +1,6 @@
-module DA.DupUsage where
+module Fuji.DupUsage where
 
-import DA.DupMod1
+import Fuji.DupMod1
 
 template DupUsage
   with

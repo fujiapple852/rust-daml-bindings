@@ -1,4 +1,4 @@
-module DA.PingPong where
+module Fuji.PingPong where
 
 data PingPongKey = PingPongKey
   with

@@ -15,7 +15,7 @@ use std::convert::TryInto;
 #[test]
 fn test_local_round_trip() -> TestResult {
     let ping = Ping::new("Alice", "Bob", 0);
-    let expected_id = DamlIdentifier::new("omitted", "DA.PingPong", "Ping");
+    let expected_id = DamlIdentifier::new("omitted", "Fuji.PingPong", "Ping");
     assert_eq!(&expected_id.module_name(), &Ping::package_id().module_name());
     assert_eq!(&expected_id.entity_name(), &Ping::package_id().entity_name());
     let ping_value: DamlValue = ping.serialize_into();

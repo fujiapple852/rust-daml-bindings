@@ -7,7 +7,7 @@ pub enum SimpleColor {
     Blue,
 }
 
-#[DamlTemplate(package_id = r"test", module_name = "DA.Vehicle")]
+#[DamlTemplate(package_id = r"test", module_name = "Fuji.Vehicle")]
 pub struct Car {
     pub owner: DamlParty,
     pub driver: DamlParty,

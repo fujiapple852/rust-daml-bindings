@@ -1284,7 +1284,7 @@ mod tests {
     #[test]
     fn test_contract_id_for_template() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ping_ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "PingPong"], "Ping");
+        let ping_ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "PingPong"], "Ping");
         let ty = DamlType::ContractId(Some(Box::new(ping_ty)));
         let expected = get_expected!("test_contract_id_for_template.json")?;
         let actual = JsonSchemaEncoder::new(&DamlArchive::default()).encode_type(&ty)?;
@@ -1343,7 +1343,7 @@ mod tests {
     #[test]
     fn test_list_of_text() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "RecordArgument");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "VariantExamples"], "RecordArgument");
         let expected = get_expected!("test_list_of_text.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
@@ -1353,7 +1353,7 @@ mod tests {
     #[test]
     fn test_text_map_of_int64() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "MapTest"], "Bar");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "MapTest"], "Bar");
         let expected = get_expected!("test_text_map_of_int64.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
@@ -1363,7 +1363,7 @@ mod tests {
     #[test]
     fn test_gen_map_of_int_text() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "MapTest"], "Foo");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "MapTest"], "Foo");
         let expected = get_expected!("test_gen_map_of_int_text.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
@@ -1373,7 +1373,7 @@ mod tests {
     #[test]
     fn test_record() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Person");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "JsonTest"], "Person");
         let expected = get_expected!("test_record.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
@@ -1383,7 +1383,7 @@ mod tests {
     #[test]
     fn test_large_field_count() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "LargeExpr"], "Call");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "LargeExpr"], "Call");
         let expected = get_expected!("test_large_field_count.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
@@ -1393,7 +1393,7 @@ mod tests {
     #[test]
     fn test_empty_record() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "PingPong"], "ResetPingCount");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "PingPong"], "ResetPingCount");
         let expected = get_expected!("test_empty_record.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
@@ -1403,7 +1403,7 @@ mod tests {
     #[test]
     fn test_template() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "PingPong"], "Ping");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "PingPong"], "Ping");
         let expected = get_expected!("test_template.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
@@ -1413,7 +1413,7 @@ mod tests {
     #[test]
     fn test_enum() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Vehicle"], "SimpleColor");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "Vehicle"], "SimpleColor");
         let expected = get_expected!("test_enum.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
@@ -1423,7 +1423,7 @@ mod tests {
     #[test]
     fn test_variant() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Shape"], "Color");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "Shape"], "Color");
         let expected = get_expected!("test_variant.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
@@ -1433,7 +1433,7 @@ mod tests {
     #[test]
     fn test_optional_depth1() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Depth1");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "JsonTest"], "Depth1");
         let expected = get_expected!("test_optional_depth1.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
@@ -1443,7 +1443,7 @@ mod tests {
     #[test]
     fn test_optional_depth2() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Depth2");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "JsonTest"], "Depth2");
         let expected = get_expected!("test_optional_depth2.json")?;
         let actual = JsonSchemaEncoder::new(arc).encode_type(&ty)?;
         assert_json_eq!(actual, expected);
@@ -1454,7 +1454,7 @@ mod tests {
     #[test]
     fn test_reference_mode_case_1() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "PersonMap");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "JsonTest"], "PersonMap");
         let expected = get_expected!("test_reference_mode_case_1.json")?;
         let config = get_schema_config_inline();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
@@ -1466,7 +1466,7 @@ mod tests {
     #[test]
     fn test_reference_mode_case_2() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "OPerson");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "JsonTest"], "OPerson");
         let expected = get_expected!("test_reference_mode_case_2.json")?;
         let config = get_schema_config_inline();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
@@ -1478,7 +1478,7 @@ mod tests {
     #[test]
     fn test_reference_mode_case_3() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Rec");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "JsonTest"], "Rec");
         let expected = get_expected!("test_reference_mode_case_3.json")?;
         let config = get_schema_config_inline();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
@@ -1490,7 +1490,7 @@ mod tests {
     #[test]
     fn test_reference_mode_case_4() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "GenericTypes"], "PatternRecord");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "GenericTypes"], "PatternRecord");
         let expected = get_expected!("test_reference_mode_case_4.json")?;
         let config = get_schema_config_inline();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_type(&ty)?;
@@ -1502,7 +1502,7 @@ mod tests {
     #[test]
     fn test_reference_mode_case_5() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "PersonMap").req()?;
+        let data = arc.data(arc.main_package_id(), &["Fuji", "JsonTest"], "PersonMap").req()?;
         let expected = get_expected!("test_reference_mode_case_5.json")?;
         let config = get_schema_config_reference();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
@@ -1514,7 +1514,7 @@ mod tests {
     #[test]
     fn test_reference_mode_case_6() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "Middle").req()?;
+        let data = arc.data(arc.main_package_id(), &["Fuji", "JsonTest"], "Middle").req()?;
         let expected = get_expected!("test_reference_mode_case_6.json")?;
         let config = get_schema_config_reference();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
@@ -1526,7 +1526,7 @@ mod tests {
     #[test]
     fn test_reference_mode_case_7() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "Rec").req()?;
+        let data = arc.data(arc.main_package_id(), &["Fuji", "JsonTest"], "Rec").req()?;
         let expected = get_expected!("test_reference_mode_case_7.json")?;
         let config = get_schema_config_reference();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
@@ -1538,7 +1538,7 @@ mod tests {
     #[test]
     fn test_reference_mode_case_8() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let data = arc.data(arc.main_package_id(), &["DA", "JsonTest"], "TopRec").req()?;
+        let data = arc.data(arc.main_package_id(), &["Fuji", "JsonTest"], "TopRec").req()?;
         let expected = get_expected!("test_reference_mode_case_8.json")?;
         let config = get_schema_config_reference();
         let actual = JsonSchemaEncoder::new_with_config(arc, config).encode_data(data)?;
@@ -1549,7 +1549,7 @@ mod tests {
     #[test]
     fn test_record_datadict() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Person");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "JsonTest"], "Person");
         let expected = get_expected!("test_record_datadict.json")?;
         let datadict = get_datadict!("datadict.yaml").unwrap();
         let config = get_schema_config(ReferenceMode::Inline, datadict);
@@ -1561,7 +1561,7 @@ mod tests {
     #[test]
     fn test_template_datadict() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "PingPong"], "Ping");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "PingPong"], "Ping");
         let expected = get_expected!("test_template_datadict.json")?;
         let datadict = get_datadict!("datadict.yaml").unwrap();
         let config = get_schema_config(ReferenceMode::Inline, datadict);
@@ -1573,7 +1573,7 @@ mod tests {
     #[test]
     fn test_enum_datadict() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Vehicle"], "SimpleColor");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "Vehicle"], "SimpleColor");
         let expected = get_expected!("test_enum_datadict.json")?;
         let datadict = get_datadict!("datadict.yaml").unwrap();
         let config = get_schema_config(ReferenceMode::Inline, datadict);
@@ -1585,7 +1585,7 @@ mod tests {
     #[test]
     fn test_variant_datadict() -> DamlJsonSchemaCodecResult<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Shape"], "Color");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "Shape"], "Color");
         let expected = get_expected!("test_variant_datadict.json")?;
         let datadict = get_datadict!("datadict.yaml").unwrap();
         let config = get_schema_config(ReferenceMode::Inline, datadict);
@@ -1597,7 +1597,7 @@ mod tests {
     #[test]
     fn test_fail_for_non_serializable_record() -> Result<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "HigherKindTest"], "HigherKindedData");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "HigherKindTest"], "HigherKindedData");
         match JsonSchemaEncoder::new(arc).encode_type(&ty) {
             Err(DamlJsonSchemaCodecError::NotSerializableDamlType(s)) if s == "HigherKindedData" => Ok(()),
             Err(e) => panic!("expected different error: {}", e),
@@ -1608,7 +1608,7 @@ mod tests {
     #[test]
     fn test_fail_for_generic_missing_type_arg() -> Result<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Oa");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "JsonTest"], "Oa");
         match JsonSchemaEncoder::new(arc).encode_type(&ty) {
             Err(DamlJsonSchemaCodecError::TypeVarNotFoundInParams(s)) if s == "a" => Ok(()),
             Err(e) => panic!("expected different error: {}", e),
@@ -1792,7 +1792,7 @@ mod tests {
     #[test]
     fn test_validate_genmap_of_person_to_text() -> Result<()> {
         let arc = daml_archive();
-        let person_ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "JsonTest"], "Person");
+        let person_ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "JsonTest"], "Person");
         let ty = DamlType::GenMap(vec![person_ty, DamlType::Text]);
         let instance = json!(
             [[{"name": "Alice", "age": 10}, "Alice is 10"], [{"name": "Bob", "age": 6}, "Bob is 6"]]
@@ -1810,7 +1810,7 @@ mod tests {
     fn test_validate_generic_opt_int_some() -> Result<()> {
         let arc = daml_archive();
         let ty =
-            DamlType::make_tycon_with_args(arc.main_package_id(), &["DA", "JsonTest"], "Oa", vec![DamlType::Int64]);
+            DamlType::make_tycon_with_args(arc.main_package_id(), &["Fuji", "JsonTest"], "Oa", vec![DamlType::Int64]);
         let instance = json!({ "foo": 42 });
         validate_schema_for_arc_match(arc, &ty, &instance)
     }
@@ -1820,7 +1820,7 @@ mod tests {
     fn test_validate_generic_opt_int_none() -> Result<()> {
         let arc = daml_archive();
         let ty =
-            DamlType::make_tycon_with_args(arc.main_package_id(), &["DA", "JsonTest"], "Oa", vec![DamlType::Int64]);
+            DamlType::make_tycon_with_args(arc.main_package_id(), &["Fuji", "JsonTest"], "Oa", vec![DamlType::Int64]);
         let instance = json!({});
         validate_schema_for_arc_match(arc, &ty, &instance)
     }
@@ -1829,10 +1829,9 @@ mod tests {
     #[test]
     fn test_validate_generic_opt_opt_int_some() -> Result<()> {
         let arc = daml_archive();
-        let ty =
-            DamlType::make_tycon_with_args(arc.main_package_id(), &["DA", "JsonTest"], "Oa", vec![DamlType::Optional(
-                vec![DamlType::Int64],
-            )]);
+        let ty = DamlType::make_tycon_with_args(arc.main_package_id(), &["Fuji", "JsonTest"], "Oa", vec![
+            DamlType::Optional(vec![DamlType::Int64]),
+        ]);
         let instance = json!({ "foo": [42] });
         validate_schema_for_arc_match(arc, &ty, &instance)
     }
@@ -1841,10 +1840,9 @@ mod tests {
     #[test]
     fn test_validate_generic_opt_opt_int_none() -> Result<()> {
         let arc = daml_archive();
-        let ty =
-            DamlType::make_tycon_with_args(arc.main_package_id(), &["DA", "JsonTest"], "Oa", vec![DamlType::Optional(
-                vec![DamlType::Int64],
-            )]);
+        let ty = DamlType::make_tycon_with_args(arc.main_package_id(), &["Fuji", "JsonTest"], "Oa", vec![
+            DamlType::Optional(vec![DamlType::Int64]),
+        ]);
         let instance = json!({ "foo": [] });
         validate_schema_for_arc_match(arc, &ty, &instance)
     }
@@ -1867,7 +1865,7 @@ mod tests {
     #[test]
     fn test_validate_variant() -> Result<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "AllVariantTypes");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "VariantExamples"], "AllVariantTypes");
         let instance = json!(
             {
               "tag": "TupleStructListOfPrimitive", "value": [1, 2, 3]
@@ -1879,7 +1877,7 @@ mod tests {
     #[test]
     fn test_validate_variant_unit_value() -> Result<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "AllVariantTypes");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "VariantExamples"], "AllVariantTypes");
         let instance = json!(
             {
               "tag": "NoArgument", "value": {}
@@ -1891,7 +1889,7 @@ mod tests {
     #[test]
     fn test_validate_variant_unknown_tag() -> Result<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "AllVariantTypes");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "VariantExamples"], "AllVariantTypes");
         let instance = json!(
             {
               "tag": "UnknownTag", "value": {}
@@ -1903,7 +1901,7 @@ mod tests {
     #[test]
     fn test_validate_variant_no_tag_or_value() -> Result<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "AllVariantTypes");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "VariantExamples"], "AllVariantTypes");
         let instance = json!({});
         validate_schema_for_arc_no_match(arc, &ty, &instance)
     }
@@ -1911,7 +1909,7 @@ mod tests {
     #[test]
     fn test_validate_variant_no_value() -> Result<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "VariantExamples"], "AllVariantTypes");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "VariantExamples"], "AllVariantTypes");
         let instance = json!(
             {
               "tag": "NoArgument"
@@ -1923,7 +1921,7 @@ mod tests {
     #[test]
     fn test_validate_enum() -> Result<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Vehicle"], "SimpleColor");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "Vehicle"], "SimpleColor");
         let instance = json!("Red");
         validate_schema_for_arc_match(arc, &ty, &instance)
     }
@@ -1931,7 +1929,7 @@ mod tests {
     #[test]
     fn test_validate_enum_unknown_ctor() -> Result<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Vehicle"], "SimpleColor");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "Vehicle"], "SimpleColor");
         let instance = json!("Yellow");
         validate_schema_for_arc_no_match(arc, &ty, &instance)
     }
@@ -1939,7 +1937,7 @@ mod tests {
     #[test]
     fn test_validate_complex_as_object_omit_opt_field() -> Result<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Nested"], "NestedTemplate");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "Nested"], "NestedTemplate");
         let instance = json!(
             {
               "list_of_opt_of_map_of_data": [null, {"key": { "my_bool": true }}],
@@ -1953,7 +1951,7 @@ mod tests {
     #[test]
     fn test_validate_complex_as_array() -> Result<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Nested"], "NestedTemplate");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "Nested"], "NestedTemplate");
         let instance = json!(
             [
               "me",
@@ -1968,7 +1966,7 @@ mod tests {
     #[test]
     fn test_validate_complex_invalid_missing_mand_property() -> Result<()> {
         let arc = daml_archive();
-        let ty = DamlType::make_tycon(arc.main_package_id(), &["DA", "Nested"], "NestedTemplate");
+        let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "Nested"], "NestedTemplate");
         let instance = json!(
             {
               "list_of_opt_of_map_of_data": [null, {"key": { "my_bool": true }}],

@@ -1,4 +1,4 @@
-module DA.HigherKindTest where
+module Fuji.HigherKindTest where
 
 -- The Rust codegen will omit the `hktField` field as `HigherKindedData` has a type param `xxx` of kind * -> *
 data DataWithHigherKindField = DataWithHigherKindField with 

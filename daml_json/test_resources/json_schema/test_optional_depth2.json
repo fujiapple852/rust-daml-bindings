@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DA.JsonTest:Depth2",
+  "title": "Fuji.JsonTest:Depth2",
   "description": "Record (Depth2)",
   "oneOf": [
     {

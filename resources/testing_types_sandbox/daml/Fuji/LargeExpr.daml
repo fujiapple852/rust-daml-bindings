@@ -1,4 +1,4 @@
-module DA.LargeExpr where
+module Fuji.LargeExpr where
 
 type MasterKey = (Party, Text)
 

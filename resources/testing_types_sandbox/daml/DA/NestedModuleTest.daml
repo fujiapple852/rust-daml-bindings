@@ -1,4 +1,0 @@
-module DA.NestedModuleTest where
-
-import DA.NestedModuleTest.Parent()
-import DA.NestedModuleTest.Sibling()

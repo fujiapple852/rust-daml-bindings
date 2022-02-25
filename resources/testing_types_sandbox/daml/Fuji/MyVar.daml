@@ -1,4 +1,4 @@
-module DA.MyVar where
+module Fuji.MyVar where
 
 -- data MyDataX = MyDataA
 --     with data_1: Int; data_2: Int

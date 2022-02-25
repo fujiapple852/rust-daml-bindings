@@ -1,4 +1,4 @@
-module DA.RentDemo where
+module Fuji.RentDemo where
 
 data CloneReturn = CloneReturn with value : Text; code : Int
 

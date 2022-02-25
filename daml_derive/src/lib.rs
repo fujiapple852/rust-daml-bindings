@@ -110,11 +110,11 @@
 //! name resolution and visiblity rules apply and therefore it is recommedned to mirror the Daml heirarchy where
 //! possible to avoid namespace collisions.
 //!
-//! For example, the `MyData` data type defined in the `DA.MyModule.MySubModule` Daml module would likely be declared
+//! For example, the `MyData` data type defined in the `Fuji.MyModule.MySubModule` Daml module would likely be declared
 //! as follows:
 //!
 //! ```no_run
-//! mod da {
+//! mod fuji {
 //!     mod my_module {
 //!         mod my_sub_module {
 //!             use daml::prelude::*;
@@ -127,7 +127,7 @@
 //!
 //! ### Example
 //!
-//! Given the following Daml template declared in the `DA.PingPong` module of a given package:
+//! Given the following Daml template declared in the `Fuji.PingPong` module of a given package:
 //!
 //! ```daml
 //! template Ping
@@ -153,7 +153,7 @@
 //! ```no_run
 //! use daml::prelude::*;
 //!
-//! #[DamlTemplate(package_id = r"...package id hash omitted...", module_name = "DA.PingPong")]
+//! #[DamlTemplate(package_id = r"...package id hash omitted...", module_name = "Fuji.PingPong")]
 //! pub struct Ping {
 //!     pub sender: DamlParty,
 //!     pub receiver: DamlParty,
@@ -171,7 +171,7 @@
 //!
 //! ```no_run
 //! # use daml::prelude::*;
-//! # #[DamlTemplate(package_id = r"", module_name = "DA.PingPong")]
+//! # #[DamlTemplate(package_id = r"", module_name = "Fuji.PingPong")]
 //! # pub struct Ping {
 //! #    pub sender: DamlParty,
 //! #    pub receiver: DamlParty,
@@ -185,7 +185,7 @@
 //!
 //! ```no_run
 //! # use daml::prelude::*;
-//! # #[DamlTemplate(package_id = r"", module_name = "DA.PingPong")]
+//! # #[DamlTemplate(package_id = r"", module_name = "Fuji.PingPong")]
 //! # pub struct Ping {
 //! #    pub sender: DamlParty,
 //! #    pub receiver: DamlParty,
@@ -204,7 +204,7 @@
 //! ```no_run
 //! # use daml::prelude::*;
 //! # use std::convert::TryInto;
-//! # #[DamlTemplate(package_id = r"", module_name = "DA.PingPong")]
+//! # #[DamlTemplate(package_id = r"", module_name = "Fuji.PingPong")]
 //! # pub struct Ping {
 //! #    pub sender: DamlParty,
 //! #    pub receiver: DamlParty,
@@ -224,7 +224,7 @@
 //! ```no_run
 //! # use daml::prelude::*;
 //! # use std::convert::TryInto;
-//! # #[DamlTemplate(package_id = r"", module_name = "DA.PingPong")]
+//! # #[DamlTemplate(package_id = r"", module_name = "Fuji.PingPong")]
 //! # pub struct Ping {
 //! #    pub sender: DamlParty,
 //! #    pub receiver: DamlParty,
@@ -249,7 +249,7 @@
 //! ```no_run
 //! # use daml::prelude::*;
 //! # use std::convert::TryInto;
-//! # #[DamlTemplate(package_id = r"", module_name = "DA.PingPong")]
+//! # #[DamlTemplate(package_id = r"", module_name = "Fuji.PingPong")]
 //! # pub struct Ping {
 //! #    pub sender: DamlParty,
 //! #    pub receiver: DamlParty,
@@ -440,7 +440,7 @@ use syn::{parse_macro_input, AttributeArgs, DeriveInput, ItemImpl};
 ///
 /// # Examples
 ///
-/// Given the following Daml template declared in the `DA.PingPong` module of a given package:
+/// Given the following Daml template declared in the `Fuji.PingPong` module of a given package:
 ///
 /// ```daml
 /// template Ping
@@ -458,7 +458,7 @@ use syn::{parse_macro_input, AttributeArgs, DeriveInput, ItemImpl};
 /// ```no_run
 /// use daml::prelude::*;
 ///
-/// #[DamlTemplate(package_id = r"...package id hash omitted...", module_name = "DA.PingPong")]
+/// #[DamlTemplate(package_id = r"...package id hash omitted...", module_name = "Fuji.PingPong")]
 /// pub struct Ping {
 ///     pub sender: DamlParty,
 ///     pub receiver: DamlParty,
@@ -505,7 +505,7 @@ pub fn DamlTemplate(attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 ///
 /// # Examples
 ///
-/// Given the following Daml template declared in the `DA.PingPong` module of a given package:
+/// Given the following Daml template declared in the `Fuji.PingPong` module of a given package:
 ///
 /// ```daml
 /// template Ping
@@ -531,7 +531,7 @@ pub fn DamlTemplate(attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 /// ```no_run
 /// use daml::prelude::*;
 ///
-/// #[DamlTemplate(package_id = r"...package id hash omitted...", module_name = "DA.PingPong")]
+/// #[DamlTemplate(package_id = r"...package id hash omitted...", module_name = "Fuji.PingPong")]
 /// pub struct Ping {
 ///     pub sender: DamlParty,
 ///     pub receiver: DamlParty,

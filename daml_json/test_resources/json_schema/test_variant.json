@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DA.Shape:Color",
+  "title": "Fuji.Shape:Color",
   "description": "Variant (Color)",
   "oneOf": [
     {
@@ -114,7 +114,7 @@
         },
         "value": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "DA.Shape:RGBA",
+          "title": "Fuji.Shape:RGBA",
           "description": "Record (RGBA)",
           "oneOf": [
             {

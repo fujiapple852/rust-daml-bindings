@@ -9,7 +9,7 @@
 //! #[tokio::main]
 //! async fn main() -> DamlJsonResult<()> {
 //!     let client = DamlJsonClientBuilder::url("https://api.myledger.org").build()?;
-//!     let create_response = client.create("DA.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
+//!     let create_response = client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
 //!     assert_eq!(create_response.payload, json!({ "sender": "Alice", "receiver": "Bob", "count": "0" }));
 //!     Ok(())
 //! }

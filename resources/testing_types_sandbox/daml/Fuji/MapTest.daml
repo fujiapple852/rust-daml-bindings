@@ -1,4 +1,4 @@
-module DA.MapTest where
+module Fuji.MapTest where
 
 import DA.TextMap as TextMap
 import DA.Map as GenMap

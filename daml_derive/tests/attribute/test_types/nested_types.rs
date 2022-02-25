@@ -11,7 +11,7 @@ pub struct NestedTypes {
     pub list_of_opt_of_map: DamlList<DamlOptional<DamlTextMap<DamlText>>>,
 }
 
-#[DamlTemplate(package_id = r"test", module_name = "DA.Nested")]
+#[DamlTemplate(package_id = r"test", module_name = "Fuji.Nested")]
 pub struct NestedTemplate {
     pub owner: DamlParty,
     pub opt_of_list: DamlOptional<DamlList<DamlText>>,

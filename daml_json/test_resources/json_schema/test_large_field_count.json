@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DA.LargeExpr:Call",
+  "title": "Fuji.LargeExpr:Call",
   "description": "Record (Call)",
   "oneOf": [
     {

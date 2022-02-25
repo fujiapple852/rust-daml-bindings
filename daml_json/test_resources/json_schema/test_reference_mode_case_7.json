@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DA.JsonTest:Rec",
+  "title": "Fuji.JsonTest:Rec",
   "description": "Record (Rec)",
   "oneOf": [
     {
@@ -8,7 +8,7 @@
       "description": "Record (Rec)",
       "properties": {
         "bar": {
-          "$ref": "#/components/schemas/DA.JsonTest.Rec"
+          "$ref": "#/components/schemas/Fuji.JsonTest.Rec"
         },
         "foo": {
           "description": "Text",
@@ -30,7 +30,7 @@
           "type": "string"
         },
         {
-          "$ref": "#/components/schemas/DA.JsonTest.Rec"
+          "$ref": "#/components/schemas/Fuji.JsonTest.Rec"
         }
       ],
       "minItems": 2,

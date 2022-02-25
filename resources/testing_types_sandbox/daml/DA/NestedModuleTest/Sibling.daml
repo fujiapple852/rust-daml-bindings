@@ -1,5 +1,0 @@
-module DA.NestedModuleTest.Sibling where
-
-import DA.NestedModuleTest.Parent
-
-data SiblingData = SiblingData with value : ParentData

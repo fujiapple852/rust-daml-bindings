@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DA.GenericTypes:PatternRecord",
+  "title": "Fuji.GenericTypes:PatternRecord",
   "description": "Record (PatternRecord)",
   "oneOf": [
     {
@@ -15,7 +15,7 @@
             },
             {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "title": "DA.GenericTypes:GenericWrapperRecord",
+              "title": "Fuji.GenericTypes:GenericWrapperRecord",
               "description": "Record (GenericWrapperRecord)",
               "oneOf": [
                 {
@@ -23,7 +23,7 @@
                   "description": "Record (GenericWrapperRecord)",
                   "properties": {
                     "value": {
-                      "description": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
+                      "description": "Any (TestingTypes:Fuji.GenericTypes:PatternRecord)",
                       "comment": "inline recursive data types cannot be represented"
                     }
                   },
@@ -37,7 +37,7 @@
                   "description": "Record (GenericWrapperRecord, fields = [value])",
                   "items": [
                     {
-                      "description": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
+                      "description": "Any (TestingTypes:Fuji.GenericTypes:PatternRecord)",
                       "comment": "inline recursive data types cannot be represented"
                     }
                   ],
@@ -64,7 +64,7 @@
             },
             {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "title": "DA.GenericTypes:GenericWrapperRecord",
+              "title": "Fuji.GenericTypes:GenericWrapperRecord",
               "description": "Record (GenericWrapperRecord)",
               "oneOf": [
                 {
@@ -72,7 +72,7 @@
                   "description": "Record (GenericWrapperRecord)",
                   "properties": {
                     "value": {
-                      "description": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
+                      "description": "Any (TestingTypes:Fuji.GenericTypes:PatternRecord)",
                       "comment": "inline recursive data types cannot be represented"
                     }
                   },
@@ -86,7 +86,7 @@
                   "description": "Record (GenericWrapperRecord, fields = [value])",
                   "items": [
                     {
-                      "description": "Any (TestingTypes:DA.GenericTypes:PatternRecord)",
+                      "description": "Any (TestingTypes:Fuji.GenericTypes:PatternRecord)",
                       "comment": "inline recursive data types cannot be represented"
                     }
                   ],
