@@ -5,10 +5,10 @@
 //! with a manifest file into a `Dar` ("Daml Archive") file.
 //!
 //! Serialized `Daml-LF` archives may also be retrieved from an existing ledger via the `GetPackage` method of the GRPC
-//! `package_service` (see [here](https://github.com/digital-asset/daml/blob/master/ledger-api/grpc-definitions/com/digitalasset/ledger/api/v1/package_service.proto)).
+//! `package_service` (see [here](https://github.com/digital-asset/daml/blob/main/ledger-api/grpc-definitions/com/daml/ledger/api/v1/package_service.proto)).
 //! The `daml_grpc` create provides an implementation of this service in the [`daml_package_service`] module.
 //!
-//! See [here](https://github.com/digital-asset/daml/tree/master/daml-lf) for full details of Daml-LF.
+//! See [here](https://github.com/digital-asset/daml/tree/main/daml-lf) for full details of Daml-LF.
 //!
 //! [`daml_package_service`]: ../daml_grpc/service/struct.DamlPackageService.html
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
