@@ -32,7 +32,7 @@ pub fn quote_module_tree(
         let module_name_tokens = quote_escaped_ident(name.to_snake_case());
         quote!(
             pub mod #module_name_tokens {
-                use daml::prelude::*;
+                use ::daml::prelude::*;
                 #module_tokens
                 #( #all_children )*
             }

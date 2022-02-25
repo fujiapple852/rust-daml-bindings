@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use std::{fs, io};
 
 const DISABLE_WARNINGS: &str = "#![allow(clippy::all, warnings)]";
-const USE_DAML_PRELUDE: &str = "use daml::prelude::*;";
+const USE_DAML_PRELUDE: &str = "use ::daml::prelude::*;";
 
 pub fn generate_archive_separate(
     archive: &DamlArchive<'_>,
