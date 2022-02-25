@@ -1,4 +1,4 @@
-pub mod da {
+pub mod fuji {
     use daml::prelude::*;
     #[DamlData]
     pub struct SimpleRecord {
@@ -13,9 +13,9 @@ pub mod da {
         }
         #[DamlData]
         pub struct ConcreteRecord {
-            pub val: crate::attribute::test_types::generic_types::da::my_module::GenericRecord<
+            pub val: crate::attribute::test_types::generic_types::fuji::my_module::GenericRecord<
                 DamlText,
-                DamlList<crate::attribute::test_types::generic_types::da::SimpleRecord>,
+                DamlList<crate::attribute::test_types::generic_types::fuji::SimpleRecord>,
             >,
         }
     }

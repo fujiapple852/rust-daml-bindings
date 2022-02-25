@@ -1,0 +1,6 @@
+module Fuji.NestedModuleTest.Parent where
+
+import Fuji.NestedModuleTest.Parent.Child
+
+data ParentData = ParentData with value : ChildData
+

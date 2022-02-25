@@ -1,6 +1,6 @@
 use daml::codegen::generator::{daml_codegen, ModuleOutputMode, RenderMethod};
 
-const DAR_PATH: &str = "resources/rental/archive/rental-0_0_1-sdk_1_10_0-lf_1_11.dar";
+const DAR_PATH: &str = "resources/rental/archive/rental-0_1_0-sdk_1_18_1-lf_1_14.dar";
 const OUTPUT_PATH: &str = "src/autogen";
 
 fn main() {

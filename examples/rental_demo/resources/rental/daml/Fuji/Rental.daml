@@ -1,4 +1,4 @@
-module DA.Rental where
+module Fuji.Rental where
 
 template RentalProposal
   with
@@ -7,11 +7,12 @@ template RentalProposal
     terms : Text
   where
     signatory landlord
-    controller tenant can
-      Accept : ContractId RentalAgreement
-        with
-          foo : Text
-          bar : Int
+    observer tenant
+    
+    choice Accept : ContractId RentalAgreement with
+        foo : Text
+        bar : Int
+     controller tenant
         do create RentalAgreement with landlord; tenant; terms
           
 template RentalAgreement

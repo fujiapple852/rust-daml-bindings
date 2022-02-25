@@ -1,4 +1,4 @@
-module DA.Vehicle where
+module Fuji.Vehicle where
 
 import Daml.Script
 

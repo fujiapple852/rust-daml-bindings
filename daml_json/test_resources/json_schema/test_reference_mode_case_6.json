@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DA.JsonTest:Middle",
+  "title": "Fuji.JsonTest:Middle",
   "description": "Record (Middle)",
   "oneOf": [
     {
@@ -9,7 +9,7 @@
       "properties": {
         "middle": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "DA.JsonTest:Bottom",
+          "title": "Fuji.JsonTest:Bottom",
           "description": "Record (Bottom)",
           "oneOf": [
             {
@@ -58,7 +58,7 @@
       "items": [
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "DA.JsonTest:Bottom",
+          "title": "Fuji.JsonTest:Bottom",
           "description": "Record (Bottom)",
           "oneOf": [
             {

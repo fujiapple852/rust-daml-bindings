@@ -1,0 +1,4 @@
+module Fuji.NestedModuleTest where
+
+import Fuji.NestedModuleTest.Parent()
+import Fuji.NestedModuleTest.Sibling()

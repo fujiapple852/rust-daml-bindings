@@ -822,7 +822,7 @@ mod tests {
              "tenant": "Bob",
              "terms": "test terms",
         });
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "RentDemo"], "RentalAgreement");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "RentDemo"], "RentalAgreement");
         let expected = daml_value!({landlord: "Alice"::p, tenant: "Bob"::p, terms: "test terms"});
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -834,7 +834,7 @@ mod tests {
     fn test_record_array() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!(["Alice", "Bob", 0]);
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "PingPong"], "Ping");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "PingPong"], "Ping");
         let expected = daml_value!({sender: "Alice"::p, receiver: "Bob"::p, count: 0});
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -846,7 +846,7 @@ mod tests {
     fn test_record_depth1_omitted() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!({});
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Depth1");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Depth1");
         let expected = daml_value!({foo: {?!}});
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -858,7 +858,7 @@ mod tests {
     fn test_record_depth1_none() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!({ "foo": null });
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Depth1");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Depth1");
         let expected = daml_value!({foo: {?!}});
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -870,7 +870,7 @@ mod tests {
     fn test_record_depth1_some() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!({ "foo": 42 });
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Depth1");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Depth1");
         let expected = daml_value!({foo: {?=42}});
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -882,7 +882,7 @@ mod tests {
     fn test_record_depth2_omitted() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!({});
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Depth2");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Depth2");
         let expected = daml_value!({foo: {?!}});
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -894,7 +894,7 @@ mod tests {
     fn test_record_depth2_none() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!({ "foo": null });
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Depth2");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Depth2");
         let expected = daml_value!({foo: {?!}});
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -906,7 +906,7 @@ mod tests {
     fn test_record_depth2_some_none() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!({ "foo": [] });
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Depth2");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Depth2");
         let expected = daml_value!({foo: {?={?!}}});
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -918,7 +918,7 @@ mod tests {
     fn test_record_depth2_some_some() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!({ "foo": [42] });
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Depth2");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Depth2");
         let expected = daml_value!({foo: {?={?=42}}});
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -981,7 +981,7 @@ mod tests {
             "tenant": "Paul",
             "terms": "more test terms",
         }]);
-        let ty = DamlType::List(vec![DamlType::make_tycon(&dar.main.hash, &["DA", "RentDemo"], "RentalAgreement")]);
+        let ty = DamlType::List(vec![DamlType::make_tycon(&dar.main.hash, &["Fuji", "RentDemo"], "RentalAgreement")]);
         let expected = daml_value!([{
             landlord: "Alice"::p,
             tenant: "Bob"::p,
@@ -1064,7 +1064,8 @@ mod tests {
             "tenant": "Paul",
             "terms": "more test terms",
         }});
-        let ty = DamlType::TextMap(vec![DamlType::make_tycon(&dar.main.hash, &["DA", "RentDemo"], "RentalAgreement")]);
+        let ty =
+            DamlType::TextMap(vec![DamlType::make_tycon(&dar.main.hash, &["Fuji", "RentDemo"], "RentalAgreement")]);
         let expected = DamlValue::Map(DamlTextMap::from(hashmap! {
             "first".to_owned() => daml_value!({landlord: "Alice"::p, tenant: "Bob"::p, terms: "test terms"}),
             "last".to_owned() => daml_value!({landlord: "John"::p, tenant: "Paul"::p, terms: "more test terms"})
@@ -1117,7 +1118,7 @@ mod tests {
     fn test_genmap_person_to_string() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!([[{"name": "Alice", "age": 30}, "foo"], [{"name": "Bob", "age": 18}, "bar"]]);
-        let key_type = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Person");
+        let key_type = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Person");
         let value_type = DamlType::Text;
         let ty = DamlType::GenMap(vec![key_type, value_type]);
         let expected = DamlValue::GenMap(
@@ -1146,7 +1147,7 @@ mod tests {
     fn test_variant_bar() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!({"tag": "Bar", "value": 42});
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Foo");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Foo");
         let expected = daml_value![{=>Bar 42}];
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -1158,7 +1159,7 @@ mod tests {
     fn test_variant_baz() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!({"tag": "Baz", "value": {}});
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Foo");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Foo");
         let expected = daml_value![{=>Baz}];
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -1170,7 +1171,7 @@ mod tests {
     fn test_variant_quux_none() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!({"tag": "Quux", "value": null});
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Foo");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Foo");
         let expected = daml_value![{=>Quux {?!}}];
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -1182,7 +1183,7 @@ mod tests {
     fn test_variant_quux_some() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!({"tag": "Quux", "value": 42});
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Foo");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Foo");
         let expected = daml_value![{=>Quux {?=42}}];
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -1194,7 +1195,7 @@ mod tests {
     fn test_enum_enabled() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!("Enabled");
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Status");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Status");
         let expected = DamlValue::Enum(DamlEnum::new("Enabled", None));
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -1206,7 +1207,7 @@ mod tests {
     fn test_enum_disabled() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!("Disabled");
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Status");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Status");
         let expected = DamlValue::Enum(DamlEnum::new("Disabled", None));
         let actual = decode_apply(&dar, &json_value, &ty)?;
         assert_eq!(actual, expected);
@@ -1218,7 +1219,7 @@ mod tests {
     fn test_enum_unknown_error() -> DamlJsonCodecResult<()> {
         let dar = DarFile::from_file(TESTING_TYPES_DAR_PATH)?;
         let json_value = json!("Unknown");
-        let ty = DamlType::make_tycon(&dar.main.hash, &["DA", "JsonTest"], "Status");
+        let ty = DamlType::make_tycon(&dar.main.hash, &["Fuji", "JsonTest"], "Status");
         let actual = decode_apply(&dar, &json_value, &ty);
         assert!(actual.is_err());
         Ok(())

@@ -1,4 +1,4 @@
-module DA.Nested where
+module Fuji.Nested where
 
 import Daml.Script
 

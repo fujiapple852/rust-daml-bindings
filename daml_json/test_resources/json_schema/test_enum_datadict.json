@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DA.Vehicle:SimpleColor",
+  "title": "Fuji.Vehicle:SimpleColor",
   "description": "The color of the vehicle",
   "oneOf": [
     {

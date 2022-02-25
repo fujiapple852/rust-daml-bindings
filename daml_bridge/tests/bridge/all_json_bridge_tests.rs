@@ -28,7 +28,7 @@ async fn test_create() -> anyhow::Result<()> {
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let create_response =
-        alice_client.create("DA.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
+        alice_client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
     assert_eq!(create_response.payload, json!({ "sender": "Alice", "receiver": "Bob", "count": "0" }));
     Ok(())
 }
@@ -40,7 +40,7 @@ async fn test_create_with_meta() -> anyhow::Result<()> {
     let alice_client = new_client()?;
     let create_response = alice_client
         .create_with_meta(
-            "DA.PingPong:Ping",
+            "Fuji.PingPong:Ping",
             json!({ "sender": "Alice", "receiver": "Bob", "count": 0 }),
             DamlJsonRequestMeta::new("cmd-1234"),
         )
@@ -55,10 +55,10 @@ async fn test_exercise() -> anyhow::Result<()> {
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let create_response =
-        alice_client.create("DA.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
+        alice_client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
     let exercise_response = alice_client
         .exercise(
-            "DA.PingPong:Ping",
+            "Fuji.PingPong:Ping",
             &create_response.contract_id,
             "FromUserData",
             json!({"new_count": "3", "new_data": {"name": "Alice", "new_value": 8 }}),
@@ -91,7 +91,7 @@ async fn test_create_and_exercise() -> anyhow::Result<()> {
     let alice_client = new_client()?;
     let create_and_exercise_response = alice_client
         .create_and_exercise(
-            "DA.PingPong:Ping",
+            "Fuji.PingPong:Ping",
             json!({ "sender": "Alice", "receiver": "Bob", "count": 0 }),
             "ResetPingCount",
             json!({}),
@@ -122,10 +122,10 @@ async fn test_exercise_by_key() -> anyhow::Result<()> {
     let _lock = SANDBOX_LOCK.lock();
     spawn_bridge().await?;
     let alice_client = new_client()?;
-    alice_client.create("DA.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 5 })).await?;
+    alice_client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 5 })).await?;
     let exercise_by_key_result = alice_client
         .exercise_by_key(
-            "DA.PingPong:Ping",
+            "Fuji.PingPong:Ping",
             json!({"sender": "Alice", "count": 5}),
             "FromUserData",
             json!({"new_count": "3", "new_data": {"name": "Alice", "new_value": 8 }}),
@@ -158,7 +158,7 @@ async fn test_fetch() -> anyhow::Result<()> {
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let create_response =
-        alice_client.create("DA.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
+        alice_client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
     let fetch_response = alice_client.fetch(&create_response.contract_id).await?;
     assert_eq!(fetch_response.payload, json!({ "sender": "Alice", "receiver": "Bob", "count": "0" }));
     Ok(())
@@ -170,9 +170,9 @@ async fn test_fetch_by_key() -> anyhow::Result<()> {
     let _lock = SANDBOX_LOCK.lock();
     spawn_bridge().await?;
     let alice_client = new_client()?;
-    alice_client.create("DA.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 99 })).await?;
+    alice_client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 99 })).await?;
     let fetch_by_key_result =
-        alice_client.fetch_by_key("DA.PingPong:Ping", json!({"sender": "Alice", "count": 99})).await?;
+        alice_client.fetch_by_key("Fuji.PingPong:Ping", json!({"sender": "Alice", "count": 99})).await?;
     assert_eq!(fetch_by_key_result.payload, json!({ "sender": "Alice", "receiver": "Bob", "count": "99" }));
     Ok(())
 }
@@ -183,7 +183,7 @@ async fn test_query_all() -> anyhow::Result<()> {
     let _lock = SANDBOX_LOCK.lock();
     spawn_bridge().await?;
     let alice_client = new_client()?;
-    alice_client.create("DA.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
+    alice_client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
     let active_contracts = alice_client.query_all().await?;
     assert_eq!(
         active_contracts.first().unwrap().payload,
@@ -198,8 +198,8 @@ async fn test_query() -> anyhow::Result<()> {
     let _lock = SANDBOX_LOCK.lock();
     spawn_bridge().await?;
     let alice_client = new_client()?;
-    alice_client.create("DA.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
-    let active_contracts = alice_client.query(vec!["DA.PingPong:Ping"], json!({})).await?;
+    alice_client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
+    let active_contracts = alice_client.query(vec!["Fuji.PingPong:Ping"], json!({})).await?;
     assert_eq!(
         active_contracts.first().unwrap().payload,
         json!({ "sender": "Alice", "receiver": "Bob", "count": "0" })

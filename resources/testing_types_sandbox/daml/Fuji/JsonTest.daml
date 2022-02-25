@@ -1,4 +1,4 @@
-module DA.JsonTest where
+module Fuji.JsonTest where
 
 import Daml.Script
 

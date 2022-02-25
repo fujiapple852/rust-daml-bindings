@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DA.JsonTest:PersonMap",
+  "title": "Fuji.JsonTest:PersonMap",
   "description": "Record (PersonMap)",
   "oneOf": [
     {
@@ -15,7 +15,7 @@
             "items": [
               {
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "title": "DA.JsonTest:Person",
+                "title": "Fuji.JsonTest:Person",
                 "description": "Record (Person)",
                 "oneOf": [
                   {
@@ -88,7 +88,7 @@
             "items": [
               {
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "title": "DA.JsonTest:Person",
+                "title": "Fuji.JsonTest:Person",
                 "description": "Record (Person)",
                 "oneOf": [
                   {

@@ -6,7 +6,7 @@ pub struct UserData {
     pub new_value: DamlInt64,
 }
 
-#[DamlTemplate(package_id = r"test", module_name = "DA.PingPong")]
+#[DamlTemplate(package_id = r"test", module_name = "Fuji.PingPong")]
 pub struct Ping {
     pub sender: DamlParty,
     pub receiver: DamlParty,
@@ -25,7 +25,7 @@ impl Ping {
     fn from_user_data(&self, new_count: DamlInt64, new_data: UserData) {}
 }
 
-#[DamlTemplate(package_id = r"test", module_name = "DA.PingPong")]
+#[DamlTemplate(package_id = r"test", module_name = "Fuji.PingPong")]
 pub struct Pong {
     pub sender: DamlParty,
     pub receiver: DamlParty,

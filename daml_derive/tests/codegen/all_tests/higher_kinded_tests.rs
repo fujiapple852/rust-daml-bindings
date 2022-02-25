@@ -5,12 +5,12 @@ use daml_derive::daml_codegen;
 
 daml_codegen!(
     dar_file = r"resources/testing_types_sandbox/TestingTypes-latest.dar",
-    module_filter_regex = "DA.HigherKindTest"
+    module_filter_regex = "Fuji.HigherKindTest"
 );
 
 #[test]
 fn test_higher_kinded() -> TestResult {
-    use testing_types::da::higher_kind_test::{DataWithHigherKindField, MyData};
+    use testing_types::fuji::higher_kind_test::{DataWithHigherKindField, MyData};
 
     // This tests that the field `hktField` is omitted from `DataWithHigherKindField`.
     let data_with_hkt: DataWithHigherKindField = DataWithHigherKindField::new(MyData::new("test"));

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DA.JsonTest:Rec",
+  "title": "Fuji.JsonTest:Rec",
   "description": "Record (Rec)",
   "oneOf": [
     {
@@ -8,7 +8,7 @@
       "description": "Record (Rec)",
       "properties": {
         "bar": {
-          "description": "Any (TestingTypes:DA.JsonTest:Rec)",
+          "description": "Any (TestingTypes:Fuji.JsonTest:Rec)",
           "comment": "inline recursive data types cannot be represented"
         },
         "foo": {
@@ -31,7 +31,7 @@
           "type": "string"
         },
         {
-          "description": "Any (TestingTypes:DA.JsonTest:Rec)",
+          "description": "Any (TestingTypes:Fuji.JsonTest:Rec)",
           "comment": "inline recursive data types cannot be represented"
         }
       ],

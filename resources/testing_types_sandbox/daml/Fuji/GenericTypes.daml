@@ -1,4 +1,4 @@
-module DA.GenericTypes where
+module Fuji.GenericTypes where
 
 import Daml.Script
 

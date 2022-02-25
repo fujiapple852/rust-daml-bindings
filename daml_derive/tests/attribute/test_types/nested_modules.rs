@@ -1,4 +1,4 @@
-pub mod da {
+pub mod fuji {
     pub mod my_module {
         use daml::prelude::*;
 
@@ -13,8 +13,8 @@ pub mod da {
             #[DamlData]
             pub struct MyOuterData {
                 pub name: DamlParty,
-                pub data: crate::attribute::test_types::nested_modules::da::my_module::MyData,
-                pub data_list: DamlList<crate::attribute::test_types::nested_modules::da::my_module::MyData>,
+                pub data: crate::attribute::test_types::nested_modules::fuji::my_module::MyData,
+                pub data_list: DamlList<crate::attribute::test_types::nested_modules::fuji::my_module::MyData>,
             }
         }
     }

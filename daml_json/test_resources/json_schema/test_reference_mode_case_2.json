@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "DA.JsonTest:OPerson",
+  "title": "Fuji.JsonTest:OPerson",
   "description": "Record (OPerson)",
   "oneOf": [
     {
@@ -9,7 +9,7 @@
       "properties": {
         "bar": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "DA.JsonTest:Oa",
+          "title": "Fuji.JsonTest:Oa",
           "description": "Record (Oa)",
           "oneOf": [
             {
@@ -24,7 +24,7 @@
                     },
                     {
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
-                      "title": "DA.JsonTest:Person",
+                      "title": "Fuji.JsonTest:Person",
                       "description": "Record (Person)",
                       "oneOf": [
                         {
@@ -88,7 +88,7 @@
                     },
                     {
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
-                      "title": "DA.JsonTest:Person",
+                      "title": "Fuji.JsonTest:Person",
                       "description": "Record (Person)",
                       "oneOf": [
                         {
@@ -154,7 +154,7 @@
       "items": [
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "title": "DA.JsonTest:Oa",
+          "title": "Fuji.JsonTest:Oa",
           "description": "Record (Oa)",
           "oneOf": [
             {
@@ -169,7 +169,7 @@
                     },
                     {
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
-                      "title": "DA.JsonTest:Person",
+                      "title": "Fuji.JsonTest:Person",
                       "description": "Record (Person)",
                       "oneOf": [
                         {
@@ -233,7 +233,7 @@
                     },
                     {
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
-                      "title": "DA.JsonTest:Person",
+                      "title": "Fuji.JsonTest:Person",
                       "description": "Record (Person)",
                       "oneOf": [
                         {

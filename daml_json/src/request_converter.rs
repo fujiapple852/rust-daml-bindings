@@ -241,7 +241,7 @@ mod tests {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateRequest::new(
-            "DA.RentDemo:RentalAgreement",
+            "Fuji.RentDemo:RentalAgreement",
             json!(
                 {
                      "landlord": "Alice",
@@ -252,7 +252,7 @@ mod tests {
         );
         let command = request_converter.convert_create_request(&request)?;
         assert_eq!("RentalAgreement", command.template_id().entity_name());
-        assert_eq!("DA.RentDemo", command.template_id().module_name());
+        assert_eq!("Fuji.RentDemo", command.template_id().module_name());
         assert_eq!(&DamlParty::from("Alice"), command.create_arguments().extract(daml_path![landlord::p])?);
         assert_eq!(&DamlParty::from("Bob"), command.create_arguments().extract(daml_path![tenant::p])?);
         assert_eq!(&DamlText::from("test terms"), command.create_arguments().extract(daml_path![terms::t])?);
@@ -264,7 +264,7 @@ mod tests {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonExerciseRequest::new(
-            "DA.RentDemo:RentalAgreement",
+            "Fuji.RentDemo:RentalAgreement",
             "#0:0",
             "Accept",
             json!(
@@ -276,7 +276,7 @@ mod tests {
         );
         let command = request_converter.convert_exercise_request(&request)?;
         assert_eq!("RentalAgreement", command.template_id().entity_name());
-        assert_eq!("DA.RentDemo", command.template_id().module_name());
+        assert_eq!("Fuji.RentDemo", command.template_id().module_name());
         assert_eq!("#0:0", command.contract_id());
         assert_eq!("Accept", command.choice());
         assert_eq!(&DamlText::from("this is foo"), command.choice_argument().extract(daml_path![foo::t])?);
@@ -289,7 +289,7 @@ mod tests {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonExerciseByKeyRequest::new(
-            "DA.PingPong:Ping",
+            "Fuji.PingPong:Ping",
             json!({ "sender" : "Alice", "count": 99 }),
             "FromUserData",
             json!(
@@ -301,7 +301,7 @@ mod tests {
         );
         let command = request_converter.convert_exercise_by_key_request(&request)?;
         assert_eq!("Ping", command.template_id().entity_name());
-        assert_eq!("DA.PingPong", command.template_id().module_name());
+        assert_eq!("Fuji.PingPong", command.template_id().module_name());
         assert_eq!(&DamlParty::from("Alice"), command.contract_key().extract(daml_path![sender::p])?);
         assert_eq!(&99, command.contract_key().extract(daml_path![count::i])?);
         assert_eq!("FromUserData", command.choice());
@@ -316,7 +316,7 @@ mod tests {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateAndExerciseRequest::new(
-            "DA.RentDemo:RentalAgreement",
+            "Fuji.RentDemo:RentalAgreement",
             json!(
             {
                  "landlord": "Alice",
@@ -333,7 +333,7 @@ mod tests {
         );
         let command = request_converter.convert_create_and_exercise_request(&request)?;
         assert_eq!("RentalAgreement", command.template_id().entity_name());
-        assert_eq!("DA.RentDemo", command.template_id().module_name());
+        assert_eq!("Fuji.RentDemo", command.template_id().module_name());
         assert_eq!(&DamlParty::from("Alice"), command.create_arguments().extract(daml_path![landlord::p])?);
         assert_eq!(&DamlParty::from("Bob"), command.create_arguments().extract(daml_path![tenant::p])?);
         assert_eq!(&DamlText::from("test terms"), command.create_arguments().extract(daml_path![terms::t])?);
@@ -348,7 +348,7 @@ mod tests {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateRequest::new(
-            format!("{}:DA.RentDemo:RentalAgreement", arc.main_package_id()),
+            format!("{}:Fuji.RentDemo:RentalAgreement", arc.main_package_id()),
             json!(
                 {
                      "landlord": "Alice",
@@ -359,7 +359,7 @@ mod tests {
         );
         let command = request_converter.convert_create_request(&request)?;
         assert_eq!("RentalAgreement", command.template_id().entity_name());
-        assert_eq!("DA.RentDemo", command.template_id().module_name());
+        assert_eq!("Fuji.RentDemo", command.template_id().module_name());
         assert_eq!(&DamlParty::from("Alice"), command.create_arguments().extract(daml_path![landlord::p])?);
         assert_eq!(&DamlParty::from("Bob"), command.create_arguments().extract(daml_path![tenant::p])?);
         assert_eq!(&DamlText::from("test terms"), command.create_arguments().extract(daml_path![terms::t])?);
@@ -370,7 +370,7 @@ mod tests {
     fn test_convert_create_request_unknown_template_err() -> Result<()> {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
-        let request = DamlJsonCreateRequest::new("DA.RentDemo:FooTemplate", json!({}));
+        let request = DamlJsonCreateRequest::new("Fuji.RentDemo:FooTemplate", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::UnknownTemplateId(_)) => Ok(()),
             Err(e) => panic!("{}", e.to_string()),
@@ -394,7 +394,7 @@ mod tests {
     fn test_convert_create_request_unknown_package_id_err() -> Result<()> {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
-        let request = DamlJsonCreateRequest::new("1234:DA.RentDemo:RentalAgreement", json!({}));
+        let request = DamlJsonCreateRequest::new("1234:Fuji.RentDemo:RentalAgreement", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::UnknownTemplateId(_)) => Ok(()),
             Err(e) => panic!("{}", e.to_string()),
@@ -406,7 +406,7 @@ mod tests {
     fn test_convert_create_request_expected_template_err() -> Result<()> {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
-        let request = DamlJsonCreateRequest::new("DA.PingPong:UserData", json!({}));
+        let request = DamlJsonCreateRequest::new("Fuji.PingPong:UserData", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::ExpectedTemplateError(_)) => Ok(()),
             Err(e) => panic!("{}", e.to_string()),
@@ -420,7 +420,7 @@ mod tests {
     fn test_convert_create_request_multiple_match_templates_err() -> Result<()> {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
-        let request = DamlJsonCreateRequest::new("DA.PingPong:UserData", json!({}));
+        let request = DamlJsonCreateRequest::new("Fuji.PingPong:UserData", json!({}));
         match request_converter.convert_create_request(&request) {
             Err(DamlJsonReqConError::MultipleMatchingTemplates(..)) => Ok(()),
             Err(e) => panic!("{}", e.to_string()),
@@ -432,7 +432,7 @@ mod tests {
     fn test_convert_exercise_request_unknown_choice_err() -> Result<()> {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
-        let request = DamlJsonExerciseRequest::new("DA.RentDemo:RentalAgreement", "#0:0", "UnknownChoice", json!({}));
+        let request = DamlJsonExerciseRequest::new("Fuji.RentDemo:RentalAgreement", "#0:0", "UnknownChoice", json!({}));
         match request_converter.convert_exercise_request(&request) {
             Err(DamlJsonReqConError::CodecError(DamlJsonCodecError::DataNotFound(_))) => Ok(()),
             Err(e) => panic!("{}", e.to_string()),
@@ -444,7 +444,7 @@ mod tests {
     fn test_convert_exercise_by_key_request_template_no_key_err() -> Result<()> {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
-        let request = DamlJsonExerciseByKeyRequest::new("DA.RentDemo:RentalAgreement", json!({}), "Dummy", json!({}));
+        let request = DamlJsonExerciseByKeyRequest::new("Fuji.RentDemo:RentalAgreement", json!({}), "Dummy", json!({}));
         match request_converter.convert_exercise_by_key_request(&request) {
             Err(DamlJsonReqConError::TemplateNoKeyError(_)) => Ok(()),
             Err(e) => panic!("{}", e.to_string()),
@@ -457,7 +457,7 @@ mod tests {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateRequest::new(
-            "DA.RentDemo:RentalAgreement",
+            "Fuji.RentDemo:RentalAgreement",
             json!(
                 {
                      "landlord": "Alice",
@@ -477,7 +477,7 @@ mod tests {
         let arc = daml_archive();
         let request_converter = JsonToGrpcRequestConverter::new(arc);
         let request = DamlJsonCreateAndExerciseRequest::new(
-            "DA.RentDemo:RentalAgreement",
+            "Fuji.RentDemo:RentalAgreement",
             json!(
             {
                  "landlord": "Alice",

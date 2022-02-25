@@ -12,7 +12,7 @@ use tracing_subscriber::fmt::format::FmtSpan;
 use uuid::Uuid;
 pub type TestResult = ::std::result::Result<(), Box<dyn Error>>;
 
-pub const PINGPONG_MODULE_NAME: &str = "DA.PingPong";
+pub const PINGPONG_MODULE_NAME: &str = "Fuji.PingPong";
 pub const PING_ENTITY_NAME: &str = "Ping";
 pub const ALICE_PARTY: &str = "Alice";
 pub const BOB_PARTY: &str = "Bob";

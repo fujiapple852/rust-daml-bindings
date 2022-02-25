@@ -1,4 +1,4 @@
-module DA.VariantExamples where
+module Fuji.VariantExamples where
 
 import Daml.Script
 
