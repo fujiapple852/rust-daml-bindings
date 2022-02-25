@@ -64,7 +64,7 @@ impl Display for DarEncryptionType {
 /// A `dar` `manifest` file contains the following fields:
 ///
 /// - `Manifest-Version`: the version of the manifest file (optional, defaults to [`Unknown`])
-/// - `Created-By`: describes what created the `dar` file containing this manifest file (optional, , default to empty
+/// - `Created-By`: describes what created the `dar` file containing this manifest file (optional, default to empty
 ///   string)
 /// - `Main-Dalf`: the name of the `main` `dalf` file within the `dar` file (mandatory)
 /// - `Dalfs`: a comma separated list of `dalf` files within this `dar` file (mandatory)
@@ -296,9 +296,9 @@ mod test {
     pub fn test_split_dalfs() -> DamlLfResult<()> {
         let manifest_str = "
             |Manifest-Version: 1.0
-            |Created-By: Digital Asset packager (DAML-GHC)
-            |Main-Dalf: com.digitalasset.daml.lf.archive:DarReaderTest:0.1.dalf
-            |Dalfs: com.digitalasset.daml.lf.archive:DarReaderTest:0.1.dalf, daml-pri
+            |Created-By: damlc
+            |Main-Dalf: com.daml.lf.archive:DarReaderTest:0.1.dalf
+            |Dalfs: com.daml.lf.archive:DarReaderTest:0.1.dalf, daml-pri
             | m.dalf
             |Format: daml-lf
             |Encryption: non-encrypted"
@@ -306,8 +306,8 @@ mod test {
             .expect("invalid test string");
         let manifest = DarManifest::parse(&manifest_str[..])?;
         assert_eq!(DarManifestVersion::V1, manifest.version());
-        assert_eq!("Digital Asset packager (DAML-GHC)", manifest.created_by());
-        assert_eq!("com.digitalasset.daml.lf.archive:DarReaderTest:0.1.dalf", manifest.dalf_main());
+        assert_eq!("damlc", manifest.created_by());
+        assert_eq!("com.daml.lf.archive:DarReaderTest:0.1.dalf", manifest.dalf_main());
         assert_eq!(&vec!["daml-prim.dalf"], manifest.dalf_dependencies());
         assert_eq!(DarManifestFormat::DamlLf, manifest.format());
         assert_eq!(DarEncryptionType::NotEncrypted, manifest.encryption());
@@ -318,7 +318,7 @@ mod test {
     pub fn test_split_all_dalf() -> DamlLfResult<()> {
         let manifest_str = "
             |Manifest-Version: 1.0
-            |Created-By: Digital Asset packager (DAML-GHC)
+            |Created-By: damlc
             |Sdk-Version: 0.13.16
             |Main-Dalf: test-0.0.1-7390c3f7a0f5c4aed2cf8da2dc757885ac20ab8f2eb616a1ed
             | b7cf57f8161d3a/test.dalf
@@ -332,7 +332,7 @@ mod test {
             .expect("invalid test string");
         let manifest = DarManifest::parse(&manifest_str[..])?;
         assert_eq!(DarManifestVersion::V1, manifest.version());
-        assert_eq!("Digital Asset packager (DAML-GHC)", manifest.created_by());
+        assert_eq!("damlc", manifest.created_by());
         assert_eq!(
             "test-0.0.1-7390c3f7a0f5c4aed2cf8da2dc757885ac20ab8f2eb616a1edb7cf57f8161d3a/test.dalf",
             manifest.dalf_main()
