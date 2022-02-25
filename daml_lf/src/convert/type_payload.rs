@@ -7,9 +7,9 @@ use crate::convert::typevar_payload::DamlTypeVarWithKindPayload;
 use crate::convert::util::Required;
 use crate::convert::wrapper::PayloadElementWrapper;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::r#type::{Con, Forall, Struct, Sum, Syn, Var};
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::{package_ref, PrimType, TypeSynName};
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::{ModuleRef, PackageRef, Type, TypeConName};
+use crate::lf_protobuf::com::daml::daml_lf_1::r#type::{Con, Forall, Struct, Sum, Syn, Var};
+use crate::lf_protobuf::com::daml::daml_lf_1::{package_ref, PrimType, TypeSynName};
+use crate::lf_protobuf::com::daml::daml_lf_1::{ModuleRef, PackageRef, Type, TypeConName};
 
 ///
 pub type DamlTypeWrapper<'a> = PayloadElementWrapper<'a, &'a DamlTypePayload<'a>>;

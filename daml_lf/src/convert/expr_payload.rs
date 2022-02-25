@@ -6,20 +6,20 @@ use crate::convert::typevar_payload::DamlTypeVarWithKindPayload;
 use crate::convert::util::Required;
 use crate::convert::wrapper::PayloadElementWrapper;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::case_alt::Sum;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::def_template::def_key;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::expr::{
+use crate::lf_protobuf::com::daml::daml_lf_1::case_alt::Sum;
+use crate::lf_protobuf::com::daml::daml_lf_1::def_template::def_key;
+use crate::lf_protobuf::com::daml::daml_lf_1::expr::{
     Abs, App, Cons, EnumCon, FromAny, FromAnyException, OptionalSome, RecCon, RecProj, RecUpd, StructCon, StructProj,
     StructUpd, Throw, ToAny, ToAnyException, TyAbs, TyApp, VariantCon,
 };
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::prim_lit::RoundingMode;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::scenario::Commit;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::update;
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::update::{
+use crate::lf_protobuf::com::daml::daml_lf_1::prim_lit::RoundingMode;
+use crate::lf_protobuf::com::daml::daml_lf_1::scenario::Commit;
+use crate::lf_protobuf::com::daml::daml_lf_1::update;
+use crate::lf_protobuf::com::daml::daml_lf_1::update::{
     Create, Exercise, ExerciseByKey, Fetch, RetrieveByKey, TryCatch,
 };
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::{case_alt, scenario, CaseAlt};
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::{
+use crate::lf_protobuf::com::daml::daml_lf_1::{case_alt, scenario, CaseAlt};
+use crate::lf_protobuf::com::daml::daml_lf_1::{
     expr, prim_lit, Binding, Block, BuiltinFunction, Case, Expr, FieldWithExpr, ModuleRef, PrimCon, PrimLit, Pure,
     Scenario, Update, ValName, VarWithType,
 };

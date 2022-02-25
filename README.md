@@ -1,7 +1,7 @@
 [![CircleCI](https://circleci.com/gh/fujiapple852/rust-daml-bindings/tree/master.svg?style=svg&circle-token=b7fe7e775207e0a62dad6386f260bfc0acd0d2ce)](https://circleci.com/gh/fujiapple852/rust-daml-bindings/tree/master)
 
 # Daml API Rust Bindings 
-A Rust implementation for the Digital Asset Daml GRPC ledger [API](https://docs.daml.com/app-dev/ledger-api-introduction/index.html).
+A Rust implementation for the Daml GRPC ledger [API](https://docs.daml.com/app-dev/ledger-api-introduction/index.html).
 
 ## Status
 The project is in an early development stage and the API is unstable.  It has not yet been published to [crates.io](https://crates.io/).  

@@ -1,10 +1,10 @@
 use crate::convert::type_payload::DamlTypePayload;
 use crate::convert::util::Required;
 use crate::error::{DamlLfConvertError, DamlLfConvertResult};
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::expr::{
+use crate::lf_protobuf::com::daml::daml_lf_1::expr::{
     enum_con, rec_proj, rec_upd, struct_proj, struct_upd, variant_con,
 };
-use crate::lf_protobuf::com::digitalasset::daml_lf_1::{
+use crate::lf_protobuf::com::daml::daml_lf_1::{
     case_alt, def_data_type, def_template, def_type_syn, field_with_expr, field_with_type, module, module_ref, r#type,
     template_choice, type_con_name, type_syn_name, type_var_with_kind, update, var_with_type,
 };
