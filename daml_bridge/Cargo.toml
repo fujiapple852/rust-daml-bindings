@@ -25,7 +25,7 @@ anyhow = "1.0.55"
 tracing = "0.1.31"
 tracing-subscriber = { version = "0.3.9", features = ["env-filter", "json"] }
 clap = { version = "3.1.2", features = ["cargo"] }
-humantime = "2.0.1"
+humantime = "2.1.0"
 
 [dev-dependencies]
 daml = { path = "../daml", features = ["json", "macros", "util", "sandbox", "grpc"] }
