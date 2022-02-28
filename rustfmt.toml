@@ -1,5 +1,4 @@
-edition = "2018"
-version = "Two"
+edition = "2021"
 max_width = 120
 use_small_heuristics = "Off"
 wrap_comments = true

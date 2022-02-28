@@ -21,12 +21,10 @@ fn get_single_attr_method(impl_item: &ImplItem) -> Option<AttrChoice> {
     }) = impl_item
     {
         match attrs.as_slice() {
-            [
-                Attribute {
-                    path,
-                    ..
-                },
-            ] => Some(AttrChoice {
+            [Attribute {
+                path,
+                ..
+            }] => Some(AttrChoice {
                 choice_name: data_type_string_from_path(path),
                 choice_arguments: sig.inputs.iter().filter_map(self::simple_method_name_and_type).collect(),
                 choice_return_type: output_type(&sig.output),
