@@ -63,20 +63,14 @@ async fn test_exercise() -> anyhow::Result<()> {
         )
         .await?;
     match exercise_response.events.as_slice() {
-        [
-            ..,
-            DamlJsonEvent::Created(DamlJsonCreatedEvent {
-                payload,
-                ..
-            }),
-        ]
-        | [
-            DamlJsonEvent::Created(DamlJsonCreatedEvent {
-                payload,
-                ..
-            }),
-            ..,
-        ] => assert_eq!(*payload, json!({ "sender": "Alice", "receiver": "Bob", "count": "11" })),
+        [.., DamlJsonEvent::Created(DamlJsonCreatedEvent {
+            payload,
+            ..
+        })]
+        | [DamlJsonEvent::Created(DamlJsonCreatedEvent {
+            payload,
+            ..
+        }), ..] => assert_eq!(*payload, json!({ "sender": "Alice", "receiver": "Bob", "count": "11" })),
         _ => panic!(),
     }
     Ok(())
@@ -95,20 +89,14 @@ async fn test_create_and_exercise() -> anyhow::Result<()> {
         )
         .await?;
     match create_and_exercise_response.events.as_slice() {
-        [
-            ..,
-            DamlJsonEvent::Created(DamlJsonCreatedEvent {
-                payload,
-                ..
-            }),
-        ]
-        | [
-            DamlJsonEvent::Created(DamlJsonCreatedEvent {
-                payload,
-                ..
-            }),
-            ..,
-        ] => assert_eq!(*payload, json!({ "sender": "Alice", "receiver": "Bob", "count": "0" })),
+        [.., DamlJsonEvent::Created(DamlJsonCreatedEvent {
+            payload,
+            ..
+        })]
+        | [DamlJsonEvent::Created(DamlJsonCreatedEvent {
+            payload,
+            ..
+        }), ..] => assert_eq!(*payload, json!({ "sender": "Alice", "receiver": "Bob", "count": "0" })),
         _ => panic!(),
     }
     Ok(())
@@ -129,20 +117,14 @@ async fn test_exercise_by_key() -> anyhow::Result<()> {
         )
         .await?;
     match exercise_by_key_result.events.as_slice() {
-        [
-            ..,
-            DamlJsonEvent::Created(DamlJsonCreatedEvent {
-                payload,
-                ..
-            }),
-        ]
-        | [
-            DamlJsonEvent::Created(DamlJsonCreatedEvent {
-                payload,
-                ..
-            }),
-            ..,
-        ] => assert_eq!(*payload, json!({ "sender": "Alice", "receiver": "Bob", "count": "11" })),
+        [.., DamlJsonEvent::Created(DamlJsonCreatedEvent {
+            payload,
+            ..
+        })]
+        | [DamlJsonEvent::Created(DamlJsonCreatedEvent {
+            payload,
+            ..
+        }), ..] => assert_eq!(*payload, json!({ "sender": "Alice", "receiver": "Bob", "count": "11" })),
         _ => panic!(),
     }
     Ok(())
