@@ -1,0 +1,205 @@
+on:
+  pull_request:
+    branches: [ master ]
+
+name: Continuous integration
+
+jobs:
+
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, 1.59.0]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+
+      - name: check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace
+
+      - name: check --no-default-features
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --no-default-features
+
+      - name: check --no-default-features --features grpc
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --no-default-features --features grpc
+
+      - name: check --no-default-features --features json
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --no-default-features --features json
+
+      - name: check --no-default-features --features macros
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --no-default-features --features macros
+
+      - name: check --no-default-features --features derive
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --no-default-features --features derive
+
+      - name: check --no-default-features --features codegen
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --no-default-features --features codegen
+
+      - name: check --no-default-features --features lf
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --no-default-features --features lf
+
+      - name: check --no-default-features --features lf_full
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --no-default-features --features lf_full
+
+      - name: check --no-default-features --features util
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --no-default-features --features util
+
+      - name: check --no-default-features --features prelude
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --no-default-features --features prelude
+
+      - name: check --no-default-features --features sandbox
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --no-default-features --features sandbox
+
+      - name: check --no-default-features --features full
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --no-default-features --features full
+
+      - name: check --all-features
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --all-features
+
+  check-examples:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, 1.59.0]
+        example: [darn, daml2oas, ping_pong_demo, rental_demo]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+
+      - name: check ${{ matrix.example }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --manifest-path examples/${{ matrix.example }}/Cargo.toml
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, 1.59.0]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: build --workspace --all-features
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --workspace --all-features
+          
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, 1.59.0]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+
+      - name: test --workspace --all-features --lib
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --workspace --all-features --lib
+
+      - name: test --workspace --all-features --doc
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --workspace --all-features --doc
+
+  fmt:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [nightly]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+          components: rustfmt
+      - name: fmt --all -- --check
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, 1.59.0]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+          components: clippy
+      - name: clippy --workspace --all-features --tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --workspace --all-features --tests -- -Dwarnings
