@@ -9,7 +9,7 @@ keywords = ["daml", "api", "ledger"]
 categories = ["development-tools"]
 edition = "2021"
 build = "build.rs"
-rust-version = "1.58.1"
+rust-version = "1.59.0"
 
 [dependencies]
 daml = { path = "../../daml", features = [ "prelude", "grpc", "sandbox" ] }
