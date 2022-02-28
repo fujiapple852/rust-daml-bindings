@@ -8,16 +8,16 @@ rust-version = "1.58.1"
 
 [dependencies]
 daml = { path = "../../daml", features = [ "lf_full", "json" ] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-serde_yaml = "0.8"
-clap = { version = "3.0", features = [ "cargo" ] }
-anyhow = "1.0"
-thiserror = "1.0"
-itertools = "0.10"
-maplit = "1.0"
-log = "0.4"
-simple_logger = "2.1"
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.79"
+serde_yaml = "0.8.23"
+clap = { version = "3.0.14", features = [ "cargo" ] }
+anyhow = "1.0.55"
+thiserror = "1.0.30"
+itertools = "0.10.3"
+maplit = "1.0.2"
+log = "0.4.14"
+simple_logger = "2.1.0"
 bounded-static = "0.2.1"
 
 [profile.release]
