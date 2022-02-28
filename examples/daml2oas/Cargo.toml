@@ -4,7 +4,7 @@ version = "0.5.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
 description = "Generate OpenAPI and AsyncAPI specification documents for the Daml JSON API from a Dar file"
 edition = "2021"
-rust-version = "1.58.1"
+rust-version = "1.59.0"
 
 [dependencies]
 daml = { path = "../../daml", features = [ "lf_full", "json" ] }

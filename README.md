@@ -27,7 +27,7 @@ These ledger bindings use the [tonic](https://github.com/hyperium/tonic) GRPC li
 protocols buffers.
 
 # Minimum Supported Rust Version
-This crate is guaranteed to compile on stable Rust 1.58.1 (2021 edition) and up.
+This crate is guaranteed to compile on stable Rust 1.59.0 (2021 edition) and up.
 
 # Supported Daml Version
 These bindings support `Daml-LF` versions `1.6`, `1.7`, `1.8`, `1.11`, `1.12`, `1.13` & `1.14` and have been tested against Daml SDKs up to `1.18.1`.
