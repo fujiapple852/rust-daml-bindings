@@ -12,11 +12,11 @@ rust-version = "1.58.1"
 
 [dependencies]
 daml = { path = "../../daml", features = [ "grpc", "sandbox", "util", "macros" ] }
-tokio = { version = "1", features = [ "macros", "rt-multi-thread" ] }
-futures = "0.3"
-chrono = "0.4"
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-anyhow = "1.0"
+tokio = { version = "1.17.0", features = [ "macros", "rt-multi-thread" ] }
+futures = "0.3.21"
+chrono = "0.4.19"
+tracing = "0.1.31"
+tracing-subscriber = { version = "0.3.9", features = ["env-filter", "json"] }
+anyhow = "1.0.55"
 
 [workspace]

@@ -16,14 +16,14 @@ sandbox = []
 [dependencies]
 daml_grpc = { path = "../daml_grpc" }
 daml_lf = { path = "../daml_lf" }
-futures = "0.3"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-jsonwebtoken = "8"
-chrono = "0.4"
-thiserror = "1.0"
-itertools = "0.10"
-uuid = "0.8"
+futures = "0.3.21"
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.79"
+jsonwebtoken = "8.0.1"
+chrono = "0.4.19"
+thiserror = "1.0.30"
+itertools = "0.10.3"
+uuid = "0.8.2"
 
 [dev-dependencies]
 tokio = { version = "1", features = [ "macros", "rt-multi-thread" ] }
