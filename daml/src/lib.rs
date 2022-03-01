@@ -4,17 +4,17 @@
 //!
 //! The following crates are provided for working with Daml in Rust:
 //!
-//! | crate          | description                                 | status      |
-//! |----------------|---------------------------------------------|-------------|
-//! | [daml]         | Daml prelude & common entry point           | alpha       |
-//! | [daml-grpc]    | Daml Ledger GRPC API bindings               | beta        |
-//! | [daml-json]    | Daml Ledger JSON API bindings               | alpha       |
-//! | [daml-bridge]  | Daml JSON<>GRPC Ledger bridge               | alpha       |
-//! | [daml-codegen] | Rust codegen for Daml archives              | beta        |
-//! | [daml-derive]  | Custom attributes for Rust<>Daml conversion | beta        |
-//! | [daml-macro]   | Macros to create and extract Daml value     | beta        |
-//! | [daml-util]    | Utilities to aid working with Daml ledgers  | alpha       |
-//! | [daml-lf]      | Read Dar and Dalf files & bytes             | beta        |
+//! | crate          | description                                                               |
+//! |----------------|---------------------------------------------------------------------------|
+//! | [daml]         | Daml prelude & common entry point                                         |
+//! | [daml-grpc]    | Daml Ledger GRPC API bindings                                             |
+//! | [daml-json]    | Daml Ledger JSON API bindings                                             |
+//! | [daml-codegen] | Generate Rust GRPC API bindings from Daml archives                        |
+//! | [daml-derive]  | Attribute macros for generating Rust GRPC API bindings from Daml archives |
+//! | [daml-macro]   | Helper macros for working with Daml GRPC values                           |
+//! | [daml-util]    | Utilities for working with Daml ledgers                                   |
+//! | [daml-lf]      | Library for working with Daml-LF archives                                 |
+//! | [daml-bridge]  | Daml JSON <> GRPC Ledger bridge                                           |
 //!
 //! [daml]: index.html
 //! [daml-grpc]: ../daml-grpc/index.html
