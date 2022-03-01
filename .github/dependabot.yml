@@ -6,12 +6,12 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 10
   - package-ecosystem: "cargo"
-    directory: "/examples/ping_pong_demo"
+    directory: "/examples/grpc-demo"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
   - package-ecosystem: "cargo"
-    directory: "/examples/rental_demo"
+    directory: "/examples/codegen-demo"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
