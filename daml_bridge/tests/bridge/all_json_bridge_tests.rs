@@ -7,10 +7,10 @@ use daml_json::data::{DamlJsonCreatedEvent, DamlJsonEvent, DamlJsonParty};
 use daml_json::request::DamlJsonRequestMeta;
 use daml_json::service::{DamlJsonClient, DamlJsonClientBuilder};
 use daml_lf::DarFile;
-use parking_lot::Mutex;
 use serde_json::json;
 use std::io::Read;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use tokio::time::Duration;
 
 pub const ALICE_PARTY: &str = "Alice";
@@ -24,7 +24,7 @@ pub const TOKEN_KEY_PATH: &str = "../resources/testing_types_sandbox/.auth_certs
 
 #[tokio::test]
 async fn test_create() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let create_response =
@@ -35,7 +35,7 @@ async fn test_create() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_create_with_meta() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let create_response = alice_client
@@ -51,7 +51,7 @@ async fn test_create_with_meta() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_exercise() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let create_response =
@@ -80,7 +80,7 @@ async fn test_exercise() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_create_and_exercise() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let create_and_exercise_response = alice_client
@@ -107,7 +107,7 @@ async fn test_create_and_exercise() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_exercise_by_key() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     alice_client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 5 })).await?;
@@ -136,7 +136,7 @@ async fn test_exercise_by_key() -> anyhow::Result<()> {
 #[ignore]
 #[tokio::test]
 async fn test_fetch() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let create_response =
@@ -149,7 +149,7 @@ async fn test_fetch() -> anyhow::Result<()> {
 #[ignore]
 #[tokio::test]
 async fn test_fetch_by_key() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     alice_client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 99 })).await?;
@@ -162,7 +162,7 @@ async fn test_fetch_by_key() -> anyhow::Result<()> {
 #[ignore]
 #[tokio::test]
 async fn test_query_all() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     alice_client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
@@ -177,7 +177,7 @@ async fn test_query_all() -> anyhow::Result<()> {
 #[ignore]
 #[tokio::test]
 async fn test_query() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     alice_client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
@@ -191,7 +191,7 @@ async fn test_query() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_fetch_parties() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let alice_party = alice_client.allocate_party(Some("Alice"), Some("Alice")).await?;
@@ -202,7 +202,7 @@ async fn test_fetch_parties() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_fetch_unknown_party() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let fetch_parties_response = alice_client.fetch_parties(vec!["Paul"]).await?;
@@ -212,7 +212,7 @@ async fn test_fetch_unknown_party() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_fetch_known_and_unknown_party() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let alice_party = alice_client.allocate_party(Some("Alice"), Some("Alice")).await?;
@@ -224,7 +224,7 @@ async fn test_fetch_known_and_unknown_party() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_fetch_all_parties() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let alice_party = alice_client.allocate_party(Some("Alice"), Some("Alice")).await?;
@@ -237,7 +237,7 @@ async fn test_fetch_all_parties() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_allocate_party() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let allocate_parties_response = alice_client.allocate_party(Some("Joe"), Some("Joe Smith")).await?;
@@ -247,7 +247,7 @@ async fn test_allocate_party() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_allocate_party_no_hint() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let allocate_parties_response = alice_client.allocate_party(None, Some("Joe Smith")).await?;
@@ -258,7 +258,7 @@ async fn test_allocate_party_no_hint() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_allocate_party_no_hint_no_display() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let allocate_parties_response = alice_client.allocate_party(None, None).await?;
@@ -269,7 +269,7 @@ async fn test_allocate_party_no_hint_no_display() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_list_packages() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let list_packages_response = alice_client.list_packages().await?;
@@ -279,7 +279,7 @@ async fn test_list_packages() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_download_package() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let package_id = alice_client.list_packages().await?.first().unwrap().clone();
@@ -290,7 +290,7 @@ async fn test_download_package() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_download_package_not_found() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let download_package_response = alice_client.download_package("unknown").await;
@@ -300,7 +300,7 @@ async fn test_download_package_not_found() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_upload_dar() -> anyhow::Result<()> {
-    let _lock = SANDBOX_LOCK.lock();
+    let _lock = SANDBOX_LOCK.lock().await;
     spawn_bridge().await?;
     let alice_client = new_client()?;
     let dar_file_path = "../resources/testing_types_sandbox/archive/dummy-daml-app-0.0.1-sdk_1_3_0-lf_1_8.dar";
