@@ -108,7 +108,7 @@ jobs:
     strategy:
       matrix:
         rust: [stable, beta, nightly, 1.59.0]
-        example: [darn, daml2oas, ping_pong_demo, rental_demo]
+        example: [darn, daml2oas, grpc-demo, codegen-demo]
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
