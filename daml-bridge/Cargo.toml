@@ -12,10 +12,10 @@ edition = "2021"
 rust-version = "1.59.0"
 
 [dependencies]
-daml-json = { path = "../daml-json" }
-daml-grpc = { path = "../daml-grpc" }
-daml-util = { path = "../daml-util", features = ["sandbox"] }
-daml-lf = { path = "../daml-lf" }
+daml-json = { version = "0.1.0", path = "../daml-json" }
+daml-grpc = { version = "0.1.0", path = "../daml-grpc" }
+daml-util = { version = "0.1.0", path = "../daml-util", features = ["sandbox"] }
+daml-lf = { version = "0.1.0", path = "../daml-lf" }
 tokio = { version = "1.17.0", features = ["macros", "rt-multi-thread"] }
 futures = "0.3.21"
 warp = { version = "0.3.2", default-features = false }

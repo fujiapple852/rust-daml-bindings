@@ -14,8 +14,8 @@ rust-version = "1.59.0"
 proc-macro = true
 
 [dependencies]
-daml-codegen = { path = "../daml-codegen" }
-daml-lf = { path = "../daml-lf" }
+daml-codegen = { version = "0.1.0", path = "../daml-codegen" }
+daml-lf = { version = "0.1.0", path = "../daml-lf" }
 syn = { version = "1.0.86", features = ["full"] }
 quote = "1.0.15"
 proc-macro2 = "1.0.36"

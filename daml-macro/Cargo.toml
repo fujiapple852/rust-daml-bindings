@@ -12,7 +12,7 @@ edition = "2021"
 rust-version = "1.59.0"
 
 [dependencies]
-daml-grpc = { path = "../daml-grpc" }
+daml-grpc = { version = "0.1.0", path = "../daml-grpc" }
 chrono = "0.4.19"
 bigdecimal = "0.3.0"
 
