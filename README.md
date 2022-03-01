@@ -10,17 +10,17 @@ Unofficial Rust bindings and tools for [Daml](https://daml.com).
 
 The project provides the following crates:
 
-| crate        | description                                                               |
-|--------------|---------------------------------------------------------------------------|
-| daml         | Daml prelude & common entry point                                         |
-| daml-grpc    | Daml Ledger GRPC API bindings                                             |
-| daml-json    | Daml Ledger JSON API bindings                                             |
-| daml-codegen | Generate Rust GRPC API bindings from Daml archives                        |
-| daml-derive  | Attribute macros for generating Rust GRPC API bindings from Daml archives |
-| daml-macro   | Helper macros for working with Daml GRPC values                           |
-| daml-util    | Utilities for working with Daml ledgers                                   |
-| daml-lf      | Library for working with Daml-LF archives                                 |
-| daml-bridge  | Daml JSON <> GRPC Ledger bridge                                           |
+| crate                                                 | description                                        |
+|-------------------------------------------------------|----------------------------------------------------|
+| [daml](https://crates.io/crates/daml)                 | Daml prelude & common entry point                  |
+| [daml-grpc](https://crates.io/crates/daml-grpc)       | Daml Ledger GRPC API bindings                      |
+| [daml-json](https://crates.io/crates/daml-json)       | Daml Ledger JSON API bindings                      |
+| [daml-codegen](https://crates.io/crates/daml-codegen) | Generate Rust GRPC API bindings from Daml          |
+| [daml-derive](https://crates.io/crates/daml-derive)   | Macros for generating Rust GRPC bindings from Daml |
+| [daml-macro](https://crates.io/crates/daml-macro)     | Helper macros for working with Daml GRPC values    |
+| [daml-util](https://crates.io/crates/daml-util)       | Utilities for working with Daml ledgers            |
+| [daml-lf](https://crates.io/crates/daml-lf)           | Library for working with Daml-LF archives          |
+| [daml-bridge](https://crates.io/crates/daml-bridge)   | Daml JSON <> GRPC Ledger bridge                    |
 
 ## Usage
 
