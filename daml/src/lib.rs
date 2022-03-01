@@ -17,14 +17,15 @@
 //! | [daml-bridge]  | Daml JSON <> GRPC Ledger bridge                                           |
 //!
 //! [daml]: index.html
-//! [daml-grpc]: ../daml-grpc/index.html
-//! [daml-json]: ../daml-json/index.html
-//! [daml-bridge]: ../daml-bridge/index.html
-//! [daml-codegen]: ../daml-codegen/index.html
-//! [daml-derive]: ../daml-derive/index.html
-//! [daml-macro]: ../daml-macro/index.html
-//! [daml-util]: ../daml-util/index.html
-//! [daml-lf]: ../daml-lf/index.html
+//! [daml-grpc]: https://docs.rs/daml-grpc
+//! [daml-json]: https://docs.rs/daml-json
+//! [daml-bridge]: https://docs.rs/daml-bridge
+//! [daml-codegen]: https://docs.rs/daml-codegen
+//! [daml-derive]: https://docs.rs/daml-derive
+//! [daml-macro]: https://docs.rs/daml-macro
+//! [daml-util]: https://docs.rs/daml-util
+//! [daml-lf]: https://docs.rs/daml-lf
+//! [daml-bridge]: https://docs.rs/daml-bridge
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(clippy::module_name_repetitions)]
 #![forbid(unsafe_code)]
