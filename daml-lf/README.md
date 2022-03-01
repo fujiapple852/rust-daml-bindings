@@ -1,7 +1,7 @@
 [![Documentation](https://docs.rs/daml-lf/badge.svg)](https://docs.rs/daml-lf)
 [![Crate](https://img.shields.io/crates/v/daml-lf.svg)](https://crates.io/crates/daml-lf)
 
-# Daml Codegen
+# Daml LF
 
 This crate provides a library for working with `Daml-LF` packages.
 
