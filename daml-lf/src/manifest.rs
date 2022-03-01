@@ -123,7 +123,7 @@ impl DarManifest {
     ///
     /// # Errors
     ///
-    /// If the provided `manifest` string cannot be parsed into newline `key: value` pairs then [`IOError`] will be
+    /// If the provided `manifest` string cannot be parsed into newline `key: value` pairs then [`IoError`] will be
     /// returned.
     ///
     /// If the parsed `manifest` has an invalid format (such as missing a mandatory key) then [`DarParseError`] will
@@ -150,7 +150,7 @@ impl DarManifest {
     /// # Ok(())
     /// # }
     /// ```
-    /// [`IOError`]: DamlLfError::IOError
+    /// [`IoError`]: DamlLfError::IoError
     /// [`DarParseError`]: DamlLfError::DarParseError
     pub fn parse(manifest: &str) -> DamlLfResult<Self> {
         let docs = YamlLoader::load_from_str(manifest)?;

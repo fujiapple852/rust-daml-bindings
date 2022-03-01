@@ -66,7 +66,7 @@ impl DarFile {
     ///
     /// # Errors
     ///
-    /// If the file cannot be read then an [`IOError`] will be returned.
+    /// If the file cannot be read then an [`IoError`] will be returned.
     ///
     /// If the file cannot be interpreted as a `zip` archive then a [`DarParseError`] will be returned.
     ///
@@ -84,7 +84,7 @@ impl DarFile {
     /// # Ok(())
     /// # }
     /// ```
-    /// [`IOError`]: DamlLfError::IOError
+    /// [`IoError`]: DamlLfError::IoError
     /// [`DarParseError`]: DamlLfError::DarParseError
     pub fn from_file(path: impl AsRef<Path>) -> DamlLfResult<Self> {
         let dar_file = std::fs::File::open(path)?;

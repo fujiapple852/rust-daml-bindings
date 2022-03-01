@@ -25,10 +25,10 @@ impl<'a> JsonValueDecoder<'a> {
 
     /// Recursively decode a GRPC `DamlValue` from a JSON `Value` for a given `DamlType`.
     ///
-    /// See [`JsonEncoder`] and the
+    /// See [`JsonValueEncoder`] and the
     /// [Daml LF JSON Encoding specification](https://docs.daml.com/json-api/lf-value-specification.html) for details.
     ///
-    /// [`JsonEncoder`]: crate::encode::JsonEncoder
+    /// [`JsonValueEncoder`]: crate::value_encode::JsonValueEncoder
     pub fn decode(&self, json: &Value, ty: &DamlType<'_>) -> DamlJsonCodecResult<DamlValue> {
         self.do_decode(json, ty, true)
     }

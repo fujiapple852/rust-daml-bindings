@@ -17,13 +17,13 @@
 //! Daml structures are modelled using various Rust language constructs in conjunction with custom attributes
 //! procedural macros as shown in the following table:
 //!
-//! | Daml Concept            | Rust Construct | Custom Attribute |
-//! |-------------------------|--------------------|--------------|
-//! | [Daml Template]         | `struct`       | [`DamlTemplate`] |
-//! | [Daml Template Choices] | `impl` block   | [`DamlChoices`]  |
-//! | [Daml Data (Record)]    | `struct`       | [`DamlData`]     |
-//! | [Daml Data (Variant)]   | `enum`         | [`DamlVariant`]  |
-//! | [Daml Enum]             | `enum`         | [`DamlEnum`]     |
+//! | Daml Concept            | Rust Construct | Custom Attribute       |
+//! |-------------------------|----------------|------------------------|
+//! | [Daml Template]         | `struct`       | [`macro@DamlTemplate`] |
+//! | [Daml Template Choices] | `impl` block   | [`macro@DamlChoices`]  |
+//! | [Daml Data (Record)]    | `struct`       | [`macro@DamlData`]     |
+//! | [Daml Data (Variant)]   | `enum`         | [`macro@DamlVariant`]  |
+//! | [Daml Enum]             | `enum`         | [`macro@DamlEnum`]     |
 //!
 //! ### Mapping Daml Data Types to Rust
 //!
@@ -80,8 +80,8 @@
 //!     foo : Foo
 //! ```
 //!
-//! Both [`DamlData`] and [`DamlVariant`] types may therefore be defined recursively.  However modelling such
-//! structures in Rust requires that any recurisvely defined items be held via an indirection, typically
+//! Both [`macro@DamlData`] and [`macro@DamlVariant`] types may therefore be defined recursively.  However modelling
+//! such structures in Rust requires that any recurisvely defined items be held via an indirection, typically
 //! via a heap allocation smart pointer such as `Box<T>`, to ensure a non-infinite size for the `struct` or `enum`
 //! (see [here](https://doc.rust-lang.org/error-index.html#E0072) for details).
 //!
@@ -274,7 +274,8 @@
 //! Note that the name of the choice method _must_ match the name of the Daml choice (in snake_case) with a `_command`
 //! suffix and the choice parameters _must_ match between the Daml and Rust representations.
 //!
-//! See the documentation for [`DamlTemplate`], [`DamlChoices`] & [`DamlData`] for full details and examples.
+//! See the documentation for [`macro@DamlTemplate`], [`macro@DamlChoices`] & [`macro@DamlData`] for full details and
+//! examples.
 //!
 //! ### Errors
 //!
@@ -427,9 +428,9 @@ use syn::{parse_macro_input, AttributeArgs, DeriveInput, ItemImpl};
 /// - `package_id` - the id of the Daml package which contains the module which declares this template
 /// - `module_name` - the fully qualified Daml module name within the package
 ///
-/// Each field witin the `struct` takes the form `field_name: FieldType` and fields are separated with an (optionally
-/// trailing) comma as usual.  Any [Daml primitive type alias] or a custom [`DamlData`] type may be used.  Note that all
-/// fields must be owned by the `struct`, references and lifetimes are not supported.
+/// Each field within the `struct` takes the form `field_name: FieldType` and fields are separated with an (optionally
+/// trailing) comma as usual.  Any [Daml primitive type alias] or a custom [`macro@DamlData`] type may be used.  Note
+/// that all fields must be owned by the `struct`, references and lifetimes are not supported.
 ///
 /// Note that the supplied `struct` is fully replaced by this custom attribute and only the `struct` name, field names
 /// and types are read, all other information such as visibility modifiers or other attributes are discarded.
@@ -506,7 +507,7 @@ pub fn DamlTemplate(attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 /// - The name of the Daml method (i.e. `my_choice`) must match the Daml template choice name in `snake_case`
 /// - Any method body provided is ignored
 /// - No distinction is made between consuming & non-consuming choices
-/// - All paramters must be either a [Daml primitive type alias] or a user defined [`DamlData`]
+/// - All paramters must be either a [Daml primitive type alias] or a user defined [`macro@DamlData`]
 ///
 /// # Examples
 ///
@@ -531,7 +532,7 @@ pub fn DamlTemplate(attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 ///           return ()
 /// ```
 ///
-/// This can be represented in Rust by using the [`DamlTemplate`] and [`DamlChoices`] custom attributes:
+/// This can be represented in Rust by using the [`macro@DamlTemplate`] and [`macro@DamlChoices`] custom attributes:
 ///
 /// ```no_run
 /// use daml::prelude::*;
@@ -588,8 +589,8 @@ pub fn DamlChoices(_attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 /// }
 /// ```
 /// Each field within the `struct` takes the form `field_name: FieldType` and fields are separated with an (optionally
-/// trailing) comma as usual.  Any [Daml primitive type alias] or a custom [`DamlData`] type may be used.  Note that all
-/// fields must be owned by the `struct`, references and lifetimes are not supported.
+/// trailing) comma as usual.  Any [Daml primitive type alias] or a custom [`macro@DamlData`] type may be used.  Note
+/// that all fields must be owned by the `struct`, references and lifetimes are not supported.
 ///
 /// Note that the supplied `struct` is fully replaced by this custom attribute and only the `struct` name, field names
 /// and types are read, all other information such as visibility modifiers or other attributes are discarded.
@@ -644,13 +645,13 @@ pub fn DamlData(_attr: proc_macro::TokenStream, input: proc_macro::TokenStream) 
 /// ```
 ///
 /// Each Daml `Sum` variant constructor is represented as a Rust `enum` variant.  Each variant may have either zero
-/// or a single type parameter of any [Daml primitive type alias] or a custom [`DamlData`] type.
+/// or a single type parameter of any [Daml primitive type alias] or a custom [`macro@DamlData`] type.
 ///
 /// For clarify, in the above example there are three separate cases:
 ///
 /// - No parameter: simple cases such as `Red`, `Green` and `Blue` in the example above
 /// - Single [Daml primitive type alias] type parameter: for cases such as `Custom` in the example above
-/// - Single [`DamlData`] type parameter: for cases of nested record types such as `Other` in the example above
+/// - Single [`macro@DamlData`] type parameter: for cases of nested record types such as `Other` in the example above
 ///
 /// [Daml primitive type alias]: ../daml-derive/index.html#mapping-daml-data-types-to-rust
 #[proc_macro_attribute]
