@@ -27,3 +27,6 @@ uuid = "0.8.2"
 
 [dev-dependencies]
 tokio = { version = "1.17.0", features = [ "macros", "rt-multi-thread" ] }
+
+[package.metadata.docs.rs]
+all-features = true
