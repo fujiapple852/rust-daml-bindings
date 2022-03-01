@@ -46,13 +46,13 @@ prelude = [ "daml-grpc", "daml-derive" ]
 sandbox = [ "daml-util/sandbox", "daml-grpc/sandbox" ]
 
 [dependencies]
-daml-grpc = { path = "../daml-grpc", optional = true }
-daml-json = { path = "../daml-json", optional = true }
-daml-macro = { path = "../daml-macro", optional = true }
-daml-lf = { path = "../daml-lf", optional = true }
-daml-util = { path = "../daml-util", optional = true }
-daml-derive = { path = "../daml-derive", optional = true }
-daml-codegen = { path = "../daml-codegen", optional = true }
+daml-grpc = { version = "0.1.0", path = "../daml-grpc", optional = true }
+daml-json = { version = "0.1.0", path = "../daml-json", optional = true }
+daml-macro = { version = "0.1.0", path = "../daml-macro", optional = true }
+daml-lf = { version = "0.1.0", path = "../daml-lf", optional = true }
+daml-util = { version = "0.1.0", path = "../daml-util", optional = true }
+daml-derive = { version = "0.1.0", path = "../daml-derive", optional = true }
+daml-codegen = { version = "0.1.0", path = "../daml-codegen", optional = true }
 
 [package.metadata.docs.rs]
 all-features = true
