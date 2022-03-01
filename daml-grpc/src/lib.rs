@@ -1,4 +1,4 @@
-//! Daml ledger GRPC [API](https://docs.daml.com/app-dev/index.html).
+//! Daml ledger GRPC [API](https://docs.daml.com/app-dev/grpc/index.html).
 //!
 //! The API is separated into a small number of services that cover various aspects of the ledger, e.g. reading
 //! transactions or submitting commands.
