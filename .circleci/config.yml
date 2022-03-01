@@ -19,23 +19,11 @@ jobs:
           keys:
             - v4-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
       - run:
-          name: Build
-          command: cargo build --workspace --all-targets
-      - run:
           name: Build all features
           command: cargo build --workspace --all-targets --all-features
       - run:
           name: Run deny check
           command: cargo deny --all-features check
-      - run:
-          name: Check formatting
-          command: cargo +nightly fmt --all -- --check
-      - run:
-          name: Check clippy lints
-          command: cargo clippy --workspace --all-features
-      - run:
-          name: Check clippy lints (tests)
-          command: cargo clippy --workspace --all-features --tests
       - run:
           name: Start sandbox
           command: cd resources/testing_types_sandbox && make run-ci && sleep 10
