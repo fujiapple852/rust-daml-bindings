@@ -12,43 +12,43 @@ rust-version = "1.59.0"
 
 [features]
 default = []
-full = [ "grpc", "json", "macros", "derive", "codegen", "lf_full", "util", "prelude" ]
+full = [ "grpc", "json", "macros", "derive", "codegen", "lf-full", "util", "prelude" ]
 
 # Enable ledger GRPC API feature.
-grpc = [ "daml_grpc" ]
+grpc = [ "daml-grpc" ]
 
 # Enable ledger JSON API feature.
-json = [ "daml_json" ]
+json = [ "daml-json" ]
 
 # Enable helper macros feature.
-macros = [ "daml_macro" ]
+macros = [ "daml-macro" ]
 
 # Enable procedural macros feature.
-derive = [ "daml_derive" ]
+derive = [ "daml-derive" ]
 
 # Enable code generator feature.
-codegen = [ "daml_codegen" ]
+codegen = [ "daml-codegen" ]
 
 # Enable Daml-LF feature.
-lf = [ "daml_lf" ]
+lf = [ "daml-lf" ]
 
 # Enable Daml-LF feature with support for all types
-lf_full = [ "lf", "daml_lf/full" ]
+lf-full = [ "lf", "daml-lf/full" ]
 
 # Enable additional utilities feature.
-util = [ "daml_util" ]
+util = [ "daml-util" ]
 
 # Enable the Daml prelude feature (required to use code produced by the code generator).
-prelude = [ "daml_grpc", "daml_derive" ]
+prelude = [ "daml-grpc", "daml-derive" ]
 
 # Enable ledger API features which are only supported on the sandbox.
-sandbox = [ "daml_util/sandbox", "daml_grpc/sandbox" ]
+sandbox = [ "daml-util/sandbox", "daml-grpc/sandbox" ]
 
 [dependencies]
-daml_grpc = { path = "../daml_grpc", optional = true }
-daml_json = { path = "../daml_json", optional = true }
-daml_macro = { path = "../daml_macro", optional = true }
-daml_lf = { path = "../daml_lf", optional = true }
-daml_util = { path = "../daml_util", optional = true }
-daml_derive = { path = "../daml_derive", optional = true }
-daml_codegen = { path = "../daml_codegen", optional = true }
+daml-grpc = { path = "../daml-grpc", optional = true }
+daml-json = { path = "../daml-json", optional = true }
+daml-macro = { path = "../daml-macro", optional = true }
+daml-lf = { path = "../daml-lf", optional = true }
+daml-util = { path = "../daml-util", optional = true }
+daml-derive = { path = "../daml-derive", optional = true }
+daml-codegen = { path = "../daml-codegen", optional = true }

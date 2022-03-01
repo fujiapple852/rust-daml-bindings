@@ -67,11 +67,11 @@ jobs:
           command: check
           args: --workspace --no-default-features --features lf
 
-      - name: check --no-default-features --features lf_full
+      - name: check --no-default-features --features lf-full
         uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --workspace --no-default-features --features lf_full
+          args: --workspace --no-default-features --features lf-full
 
       - name: check --no-default-features --features util
         uses: actions-rs/cargo@v1

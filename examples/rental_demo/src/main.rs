@@ -11,7 +11,7 @@ use tracing_subscriber::fmt::format::FmtSpan;
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_span_events(FmtSpan::NONE)
-        .with_env_filter("daml_grpc::service::daml_command_service=trace")
+        .with_env_filter("daml-grpc::service::daml_command_service=trace")
         .init();
     let client = DamlGrpcClientBuilder::uri("http://localhost:8082").connect().await?.reset_and_wait().await?;
     let alice_executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
