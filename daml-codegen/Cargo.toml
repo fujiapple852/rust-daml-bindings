@@ -1,0 +1,20 @@
+[package]
+name = "daml-codegen"
+version = "0.1.0"
+authors = ["FujiApple <fujiapple852@gmail.com>"]
+description = "Daml Ledger Code Generator"
+repository = "https://github.com/fujiapple852/rust-daml-bindings"
+license = "Apache-2.0"
+keywords = ["daml", "api", "ledger"]
+categories = ["development-tools"]
+edition = "2021"
+rust-version = "1.59.0"
+
+[dependencies]
+daml-lf = { path = "../daml-lf" }
+quote = "1.0.15"
+proc-macro2 = "1.0.36"
+itertools = "0.10.3"
+heck = "0.4.0"
+regex = "1.2.1"
+clap = "3.0.14"

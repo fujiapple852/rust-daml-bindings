@@ -7,24 +7,24 @@
 //! | crate          | description                                 | status      |
 //! |----------------|---------------------------------------------|-------------|
 //! | [daml]         | Daml prelude & common entry point           | alpha       |
-//! | [daml_grpc]    | Daml Ledger GRPC API bindings               | beta        |
-//! | [daml_json]    | Daml Ledger JSON API bindings               | alpha       |
-//! | [daml_bridge]  | Daml JSON<>GRPC Ledger bridge               | alpha       |
-//! | [daml_codegen] | Rust codegen for Daml archives              | beta        |
-//! | [daml_derive]  | Custom attributes for Rust<>Daml conversion | beta        |
-//! | [daml_macro]   | Macros to create and extract Daml value     | beta        |
-//! | [daml_util]    | Utilities to aid working with Daml ledgers  | alpha       |
-//! | [daml_lf]      | Read Dar and Dalf files & bytes             | beta        |
+//! | [daml-grpc]    | Daml Ledger GRPC API bindings               | beta        |
+//! | [daml-json]    | Daml Ledger JSON API bindings               | alpha       |
+//! | [daml-bridge]  | Daml JSON<>GRPC Ledger bridge               | alpha       |
+//! | [daml-codegen] | Rust codegen for Daml archives              | beta        |
+//! | [daml-derive]  | Custom attributes for Rust<>Daml conversion | beta        |
+//! | [daml-macro]   | Macros to create and extract Daml value     | beta        |
+//! | [daml-util]    | Utilities to aid working with Daml ledgers  | alpha       |
+//! | [daml-lf]      | Read Dar and Dalf files & bytes             | beta        |
 //!
 //! [daml]: index.html
-//! [daml_grpc]: ../daml_grpc/index.html
-//! [daml_json]: ../daml_json/index.html
-//! [daml_bridge]: ../daml_bridge/index.html
-//! [daml_codegen]: ../daml_codegen/index.html
-//! [daml_derive]: ../daml_derive/index.html
-//! [daml_macro]: ../daml_macro/index.html
-//! [daml_util]: ../daml_util/index.html
-//! [daml_lf]: ../daml_lf/index.html
+//! [daml-grpc]: ../daml-grpc/index.html
+//! [daml-json]: ../daml-json/index.html
+//! [daml-bridge]: ../daml-bridge/index.html
+//! [daml-codegen]: ../daml-codegen/index.html
+//! [daml-derive]: ../daml-derive/index.html
+//! [daml-macro]: ../daml-macro/index.html
+//! [daml-util]: ../daml-util/index.html
+//! [daml-lf]: ../daml-lf/index.html
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(clippy::module_name_repetitions)]
 #![forbid(unsafe_code)]
@@ -39,7 +39,7 @@
 /// ```no_rust
 /// use daml::prelude::*;
 /// ```
-/// [custom attributes]: ../../daml_derive/index.html
+/// [custom attributes]: ../../daml-derive/index.html
 #[cfg(feature = "prelude")]
 pub mod prelude;
 

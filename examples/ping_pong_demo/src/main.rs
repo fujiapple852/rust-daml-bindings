@@ -40,7 +40,7 @@ const TOKEN_KEY_PATH: &str = "../../resources/testing_types_sandbox/.auth_certs/
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_span_events(FmtSpan::NONE)
-        .with_env_filter("daml_grpc::service::daml_command_service=trace")
+        .with_env_filter("daml-grpc::service::daml_command_service=trace")
         .json()
         .init();
     let ledger_client = create_connection("https://127.0.0.1:8080").await?;

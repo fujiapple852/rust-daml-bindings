@@ -1,0 +1,35 @@
+[package]
+name = "daml-bridge"
+version = "0.1.0"
+authors = ["FujiApple <fujiapple852@gmail.com>"]
+description = "Daml JSON<>GRPC bridge"
+repository = "https://github.com/fujiapple852/rust-daml-bindings"
+license = "Apache-2.0"
+keywords = ["daml", "api", "ledger"]
+categories = ["development-tools"]
+edition = "2021"
+rust-version = "1.59.0"
+
+[dependencies]
+daml-json = { path = "../daml-json" }
+daml-grpc = { path = "../daml-grpc" }
+daml-util = { path = "../daml-util", features = ["sandbox"] }
+daml-lf = { path = "../daml-lf" }
+tokio = { version = "1.17.0", features = ["macros", "rt-multi-thread"] }
+futures = "0.3.21"
+warp = { version = "0.3.2", default-features = false }
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.79"
+bytes = "1.1.0"
+thiserror = "1.0.30"
+anyhow = "1.0.55"
+tracing = "0.1.31"
+tracing-subscriber = { version = "0.3.9", features = ["env-filter", "json"] }
+clap = { version = "3.1.2", features = ["cargo"] }
+humantime = "2.1.0"
+
+[dev-dependencies]
+daml = { path = "../daml", features = ["json", "macros", "util", "sandbox", "grpc"] }
+anyhow = "1.0.55"
+lazy_static = "1.4.0"
+parking_lot = "0.12.0"

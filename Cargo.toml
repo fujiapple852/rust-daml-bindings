@@ -2,13 +2,13 @@
 resolver = "2"
 members = [
   "daml",
-  "daml_grpc",
-  "daml_json",
-  "daml_bridge",
-  "daml_macro",
-  "daml_codegen",
-  "daml_derive",
-  "daml_util",
-  "daml_lf"
+  "daml-grpc",
+  "daml-json",
+  "daml-bridge",
+  "daml-macro",
+  "daml-codegen",
+  "daml-derive",
+  "daml-util",
+  "daml-lf"
 ]
 exclude = ["examples"]
