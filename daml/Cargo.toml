@@ -52,3 +52,6 @@ daml-lf = { path = "../daml-lf", optional = true }
 daml-util = { path = "../daml-util", optional = true }
 daml-derive = { path = "../daml-derive", optional = true }
 daml-codegen = { path = "../daml-codegen", optional = true }
+
+[package.metadata.docs.rs]
+all-features = true

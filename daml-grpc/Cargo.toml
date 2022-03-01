@@ -41,3 +41,6 @@ tracing-subscriber = { version = "0.3.9", features = ["env-filter"] }
 [build-dependencies]
 tonic-build = "0.6.2"
 itertools = "0.10.3"
+
+[package.metadata.docs.rs]
+all-features = true
