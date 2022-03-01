@@ -141,7 +141,7 @@ impl DamlLfArchive {
     /// # Ok(())
     /// # }
     /// ```
-    /// [`IOError`]: crate::DamlLfError::IOError
+    /// [`IOError`]: crate::DamlLfError::IoError
     /// [`DamlLfParseError`]: crate::DamlLfError::DamlLfParseError
     /// [`UnknownVersion`]: crate::DamlLfError::UnknownVersion
     /// [`UnsupportedVersion`]: crate::DamlLfError::UnsupportedVersion

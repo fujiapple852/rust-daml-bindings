@@ -60,7 +60,7 @@ impl<'a> DamlCommandService<'a> {
     ///
     /// # Errors
     ///
-    /// Propagates communication failure errors as [`GRPCTransportError`] and Daml server failures as
+    /// Propagates communication failure errors as [`GrpcTransportError`] and Daml server failures as
     /// [`GRPCStatusError`] errors.
     ///
     /// # Examples
@@ -85,12 +85,12 @@ impl<'a> DamlCommandService<'a> {
     /// # })
     /// # }
     /// ```
-    /// [`DamlCommands`]: crate::data::commands::DamlCommands
+    /// [`DamlCommands`]: crate::data::DamlCommands
     /// [`DamlCommandSubmissionService`]: crate::service::DamlCommandSubmissionService
     /// [`DamlTransactionService`]: crate::service::DamlTransactionService
     /// [`submit_and_wait`]: DamlCommandService::submit_and_wait
-    /// [`GRPCTransportError`]: crate::data::error::DamlError::GRPCTransportError
-    /// [`GRPCStatusError`]: crate::data::error::DamlError::GRPCStatusError
+    /// [`GrpcTransportError`]: crate::data::DamlError::GrpcTransportError
+    /// [`GrpcStatusError`]: crate::data::DamlError::GrpcStatusError
     #[instrument(skip(self))]
     pub async fn submit_and_wait(&self, commands: impl Into<DamlCommands> + Debug) -> DamlResult<String> {
         let commands = commands.into();
