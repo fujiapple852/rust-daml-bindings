@@ -25,7 +25,7 @@ impl PackagesHandler {
 
     /// DOCME
     pub async fn get_package(&self, package_id: &str, auth_header: Option<&str>) -> JsonResult<Vec<u8>> {
-        Ok(self.execute_get(package_id, auth_header).await?)
+        self.execute_get(package_id, auth_header).await
     }
 
     /// DOCME
