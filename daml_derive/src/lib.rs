@@ -392,7 +392,12 @@
 //! [Daml Enum]: https://docs.daml.com/daml/reference/data-types.html#sum-types
 //! [Daml primitive type alias]: ../daml_derive/index.html#mapping-daml-data-types-to-rust
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
-#![allow(clippy::module_name_repetitions, clippy::default_trait_access, clippy::needless_pass_by_value)]
+#![allow(
+    clippy::module_name_repetitions,
+    clippy::default_trait_access,
+    clippy::needless_pass_by_value,
+    clippy::manual_assert
+)]
 #![allow(non_snake_case, unused_extern_crates)]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
