@@ -30,7 +30,6 @@ humantime = "2.1.0"
 
 [dev-dependencies]
 daml = { path = "../daml", features = ["json", "macros", "util", "sandbox", "grpc"] }
-tokio = { version = "1.17.0", features = ["macros", "rt-multi-thread", "time"] }
 anyhow = "1.0.55"
 lazy_static = "1.4.0"
 parking_lot = "0.12.0"

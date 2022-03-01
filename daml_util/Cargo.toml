@@ -26,4 +26,4 @@ itertools = "0.10.3"
 uuid = "0.8.2"
 
 [dev-dependencies]
-tokio = { version = "1", features = [ "macros", "rt-multi-thread" ] }
+tokio = { version = "1.17.0", features = [ "macros", "rt-multi-thread" ] }
