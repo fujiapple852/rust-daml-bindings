@@ -6,7 +6,7 @@
 This crate provides a library for generating Rust types from `daml` code.
 
 This crate should not be used directly, instead you depend on the [`daml`](https://crates.io/crates/daml) crate and 
-enable the `coegen` feature:
+enable the `codegen` feature:
 
 ```yaml
 daml = { version = "0.1.0", features = [ "codegen" ] }
