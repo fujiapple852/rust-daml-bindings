@@ -355,15 +355,6 @@
 //!
 //! Panics (compile-time only) if errors are detected during code generation.
 //!
-//! TODO Notes:
-//! - escaping rules
-//! - module scoping (abs vs rel paths)
-//! - all mandatory and optional attrs (verbose, filters)
-//! - mention support for variant, enum, etc
-//! - limitations / not handled (recursive types, function params, vars)
-//! - usage from build.rs
-//! - generics
-//!
 //! [`DamlTemplate`]: ../daml-derive/attr.DamlTemplate.html
 //! [`DamlChoices`]: ../daml-derive/attr.DamlChoices.html
 //! [`DamlInt64`]: ../daml/prelude/type.DamlInt64.html
