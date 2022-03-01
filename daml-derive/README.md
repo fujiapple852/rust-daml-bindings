@@ -5,8 +5,8 @@
 
 This crate provides procedural macros for generating Rust types from `daml`.
 
-This crate should not be used directly, instead you depend on the [`daml`](https://crates.io/crates/daml) crate and 
-enable the `derive` feature:
+This crate should not be used directly, instead you should depend on the [`daml`](https://crates.io/crates/daml) crate
+and enable the `derive` feature:
 
 ```yaml
 daml = { version = "0.1.0", features = [ "derive" ] }
