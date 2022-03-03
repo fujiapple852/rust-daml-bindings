@@ -9,7 +9,7 @@ contact:
 servers:
   - http://localhost:7575
 operations:
-  DA.PingPong:Pong:
+  Fuji.PingPong:Pong:
     create: create a Pong!
     createAndExercise:
       RespondPing: create a Pong and then respond with a Ping

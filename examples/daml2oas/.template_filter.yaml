@@ -1,10 +1,10 @@
-DA.Nested:NestedTemplate: all
-DA.PingPong:Ping:
+Fuji.Nested:NestedTemplate: all
+Fuji.PingPong:Ping:
   selected:
     - RespondPong
     - ResetPingCount
-DA.PingPong:Pong:
+Fuji.PingPong:Pong:
   selected:
     - RespondPing
-DA.Shape:CircleTemplate: all
-DA.DupUsage:DupUsage: all
+Fuji.Shape:CircleTemplate: all
+Fuji.DupUsage:DupUsage: all
