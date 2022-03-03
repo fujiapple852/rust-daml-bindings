@@ -1,4 +1,4 @@
-DA.Vehicle:Car:
+Fuji.Vehicle:Car:
   title: My Custom Title
   description: Represents a Car
   items:
@@ -7,17 +7,17 @@ DA.Vehicle:Car:
     owner: the owner of the car
     purchase_time: when the car was purchased
     reg_year: the registration year
-DA.PingPong:Ping:
+Fuji.PingPong:Ping:
   description: The demo Ping template
   items:
     count: the number of times ping has ponged
-DA.JsonTest:Status:
+Fuji.JsonTest:Status:
   title: Status XXX
   description: The status of the foo
   items:
     Enabled: The status is enabled
     Disabled: The status is disabled
-DA.Shape:Color:
+Fuji.Shape:Color:
   title: Color XXX
   description: A color
   items:
