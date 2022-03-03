@@ -14,7 +14,6 @@
 //! | [daml-macro](::daml_macro)     | Helper macros for working with Daml GRPC values                           |
 //! | [daml-util](::daml_util)       | Utilities for working with Daml ledgers                                   |
 //! | [daml-lf](::daml_lf)           | Library for working with Daml-LF archives                                 |
-//!
 
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(clippy::module_name_repetitions)]

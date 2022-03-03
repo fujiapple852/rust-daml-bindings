@@ -20,7 +20,7 @@ macro_rules! make_nat {
 
 macro_rules! make_nat_struct {
     ($name:ident, $n:literal) => {
-        make_nat_struct!{@gen $name, $n, concat!("A type representing the natural number ", stringify!($n))}
+        make_nat_struct! {@gen $name, $n, concat!("A type representing the natural number ", stringify!($n))}
     };
     (@gen $name:ident, $n:literal, $doc:expr) => {
         #[doc = $doc]
