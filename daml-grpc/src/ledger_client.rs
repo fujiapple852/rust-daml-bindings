@@ -47,7 +47,7 @@ pub struct DamlGrpcTlsConfig {
     ca_cert: Option<Vec<u8>>,
 }
 
-/// DOCME
+/// Construct a [`DamlGrpcClient`].
 pub struct DamlGrpcClientBuilder {
     config: DamlGrpcClientConfig,
 }
