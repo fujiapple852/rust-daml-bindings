@@ -16,10 +16,42 @@ use crate::element::{
     DamlTemplate, DamlTyCon, DamlTyConName, DamlType, DamlTypeVarWithKind, DamlVar, DamlVariant,
 };
 
+/// A Daml [element](`crate::element`) that can be visited by a [`DamlElementVisitor`].
+///
+/// See [`DamlElementVisitor`].
 pub trait DamlVisitableElement<'a> {
     fn accept(&'a self, visitor: &'a mut impl DamlElementVisitor);
 }
 
+/// A Daml element visitor.
+///
+/// Visit a tree of Daml [element](`crate::element`) types and apply an action.
+///
+/// # Examples
+///
+/// The following example opens a Daml [`DarFile`](`crate::DarFile`) and applies a visitor which records the names of
+/// all [`DamlEnum`] data items present in the tree.
+///
+/// ```no_run
+/// # use std::collections::HashSet;
+/// # use daml_lf::{DarFile, DamlLfResult};
+/// # use daml_lf::element::{DamlElementVisitor, DamlVisitableElement, DamlEnum};
+/// # fn main() -> DamlLfResult<()> {
+/// #[derive(Default)]
+/// pub struct GatherEnumsVisitor(HashSet<String>);
+///
+/// impl DamlElementVisitor for GatherEnumsVisitor {
+///     fn pre_visit_enum<'a>(&mut self, data_enum: &'a DamlEnum<'a>) {
+///         self.0.insert(data_enum.name().to_owned());
+///     }
+/// }
+///
+/// let mut visitor = GatherEnumsVisitor::default();
+/// let dar = DarFile::from_file("SomeDamlModel.dar")?;
+/// dar.apply(|archive| archive.accept(&mut visitor))?;
+/// # Ok(())
+/// # }
+/// ```
 #[allow(unused_variables)]
 pub trait DamlElementVisitor {
     fn sort_elements(&self) -> bool {
