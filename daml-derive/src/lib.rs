@@ -100,7 +100,7 @@
 //!
 //! ### Prelude
 //!
-//! All of the above Rust type aliases are defined in the [`prelude`](../daml/prelude/index.html) module of
+//! All of the above Rust type aliases are defined in the [`prelude`](https://docs.rs/daml/latest/daml/prelude/index.html) module of
 //! the [`daml`](../daml/index.html) crate and can included by using `daml::prelude::*`.
 //!
 //! ### Modules
@@ -148,7 +148,7 @@
 //!           return ()
 //! ```
 //!
-//! This can be represented in Rust by using the [`DamlTemplate`] and [`DamlChoices`] custom attributes:
+//! This can be represented in Rust by using the [`macro@DamlTemplate`] and [`macro@DamlChoices`] custom attributes:
 //!
 //! ```no_run
 //! use daml::prelude::*;
@@ -348,34 +348,32 @@
 //!     }
 //! }
 //! ```
-//! See the above for details generated custom attributes such as [`DamlTemplate`] and
-//! [`DamlChoices`].
+//! See the above for details generated custom attributes such as [`macro@DamlTemplate`] and
+//! [`macro@DamlChoices`].
 //!
 //! ### Panics
 //!
 //! Panics (compile-time only) if errors are detected during code generation.
 //!
-//! [`DamlTemplate`]: ../daml-derive/attr.DamlTemplate.html
-//! [`DamlChoices`]: ../daml-derive/attr.DamlChoices.html
-//! [`DamlInt64`]: ../daml/prelude/type.DamlInt64.html
-//! [`DamlNumeric`]: ../daml/prelude/type.DamlNumeric.html
-//! [`DamlText`]: ../daml/prelude/type.DamlText.html
-//! [`DamlBool`]: ../daml/prelude/type.DamlBool.html
-//! [`DamlParty`]: ../daml/prelude/type.DamlParty.html
-//! [`DamlDate`]: ../daml/prelude/type.DamlDate.html
-//! [`DamlTime`]: ../daml/prelude/type.DamlTime.html
-//! [`DamlUnit`]: ../daml/prelude/type.DamlUnit.html
-//! [`DamlContractId`]: ../daml/prelude/type.DamlContractId.html
-//! [`DamlList<T>`]: ../daml/prelude/type.DamlList.html
-//! [`DamlTextMap<T>`]: ../daml/prelude/type.DamlTextMap.html
-//! [`DamlOptional<T>`]: ../daml/prelude/type.DamlOptional.html
-//! [`DamlCreateCommand`]: ../daml-grpc/data/command/struct.DamlCreateCommand.html
-//! [`DamlExerciseCommand`]: ../daml-grpc/data/command/struct.DamlExerciseCommand.html
-//! [`DamlCommandService`]: ../daml-grpc/service/struct.DamlCommandService.html
-//! [`DamlCommandSubmissionService`]: ../daml-grpc/service/struct.DamlCommandSubmissionService.html
-//! [`DamlCreatedEvent`]: ../daml-grpc/data/event/struct.DamlCreatedEvent.html
-//! [`DamlError`]: ../daml-grpc/data/enum.DamlError.html
-//! [`DamlValue`]: ../daml-grpc/data/value/enum.DamlValue.html
+//! [`DamlInt64`]: https://docs.rs/daml/latest/daml/prelude/type.DamlInt64.html
+//! [`DamlNumeric`]: https://docs.rs/daml/latest/daml/prelude/type.DamlNumeric.html
+//! [`DamlText`]: https://docs.rs/daml/latest/daml/prelude/type.DamlText.html
+//! [`DamlBool`]: https://docs.rs/daml/latest/daml/prelude/type.DamlBool.html
+//! [`DamlParty`]: https://docs.rs/daml/latest/daml/prelude/type.DamlParty.html
+//! [`DamlDate`]: https://docs.rs/daml/latest/daml/prelude/type.DamlDate.html
+//! [`DamlTime`]: https://docs.rs/daml/latest/daml/prelude/type.DamlTime.html
+//! [`DamlUnit`]: https://docs.rs/daml/latest/daml/prelude/type.DamlUnit.html
+//! [`DamlContractId`]: https://docs.rs/daml/latest/daml/prelude/type.DamlContractId.html
+//! [`DamlList<T>`]: https://docs.rs/daml/latest/daml/prelude/type.DamlList.html
+//! [`DamlTextMap<T>`]: https://docs.rs/daml/latest/daml/prelude/type.DamlTextMap.html
+//! [`DamlOptional<T>`]: https://docs.rs/daml/latest/daml/prelude/type.DamlOptional.html
+//! [`DamlCreateCommand`]: https://docs.rs/daml-grpc/latest/daml_grpc/data/command/struct.DamlCreateCommand.html
+//! [`DamlExerciseCommand`]: https://docs.rs/daml-grpc/latest/daml_grpc/data/command/struct.DamlExerciseCommand.html
+//! [`DamlCommandService`]: https://docs.rs/daml-grpc/latest/daml_grpc/service/struct.DamlCommandService.html
+//! [`DamlCommandSubmissionService`]: https://docs.rs/daml-grpc/latest/daml_grpc/service/struct.DamlCommandSubmissionService.html
+//! [`DamlCreatedEvent`]: https://docs.rs/daml-grpc/latest/daml_grpc/data/event/struct.DamlCreatedEvent.html
+//! [`DamlError`]: https://docs.rs/daml-grpc/latest/daml_grpc/data/enum.DamlError.html
+//! [`DamlValue`]: https://docs.rs/daml-grpc/latest/daml_grpc/data/value/enum.DamlValue.html
 //! [Daml Template]: https://docs.daml.com/daml/reference/templates.html
 //! [Daml Template Choices]: https://docs.daml.com/daml/reference/choices.html
 //! [Daml Data (Record)]: https://docs.daml.com/daml/reference/data-types.html
