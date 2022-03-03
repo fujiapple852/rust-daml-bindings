@@ -1,6 +1,6 @@
 [package]
 name = "daml-util"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
 description = "Helper utilities for working with the Daml Ledgers"
 readme = "README.md"
@@ -15,8 +15,8 @@ rust-version = "1.59.0"
 sandbox = []
 
 [dependencies]
-daml-grpc = { version = "0.1.0", path = "../daml-grpc" }
-daml-lf = { version = "0.1.0", path = "../daml-lf" }
+daml-grpc = { version = "0.1.1", path = "../daml-grpc" }
+daml-lf = { version = "0.1.1", path = "../daml-lf" }
 futures = "0.3.21"
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"

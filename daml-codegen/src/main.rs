@@ -4,7 +4,7 @@ use clap::{Arg, Command};
 
 fn main() {
     let matches = Command::new("Daml codegen for Rust")
-        .version("0.1.0")
+        .version("0.1.1")
         .about("Generate Rust code for working with Daml types")
         .arg(Arg::new("dar").help("Sets the input Dar file to use").required(true).index(1))
         .arg(Arg::new("output").short('o').long("output-dir").takes_value(true).help("Sets the output path"))

@@ -10,7 +10,7 @@
 //!
 //! See [here](https://github.com/digital-asset/daml/tree/main/daml-lf) for full details of Daml-LF.
 //!
-//! [`daml_package_service`]: https://docs.rs/daml-grpc/0.1.0/daml_grpc/service/struct.DamlPackageService.html
+//! [`daml_package_service`]: https://docs.rs/daml-grpc/0.1.1/daml_grpc/service/struct.DamlPackageService.html
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
     clippy::module_name_repetitions,
@@ -23,7 +23,7 @@
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
-#![doc(html_root_url = "https://docs.rs/daml-lf/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/daml-lf/0.1.1")]
 
 mod archive;
 mod convert;

@@ -10,7 +10,7 @@ This crate should not be used directly, instead you should depend on the [`daml`
 and enable the `lf` or `lf-full` features:
 
 ```yaml
-daml = { version = "0.1.0", features = [ "lf" ] }
+daml = { version = "0.1.1", features = [ "lf" ] }
 ```
 
 ## License
