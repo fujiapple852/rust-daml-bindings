@@ -2,7 +2,7 @@ use crate::data::value::DamlValue;
 use crate::data::DamlResult;
 use crate::serialize::{DamlDeserializableType, DamlDeserializeFrom, DamlSerializableType, DamlSerializeFrom};
 
-///
+/// The value of a natural number type.
 pub trait Nat {
     fn nat() -> u8;
 }
@@ -20,6 +20,10 @@ macro_rules! make_nat {
 
 macro_rules! make_nat_struct {
     ($name:ident, $n:literal) => {
+        make_nat_struct!{@gen $name, $n, concat!("A type representing the natural number ", stringify!($n))}
+    };
+    (@gen $name:ident, $n:literal, $doc:expr) => {
+        #[doc = $doc]
         #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone)]
         pub struct $name {}
         impl Nat for $name {
