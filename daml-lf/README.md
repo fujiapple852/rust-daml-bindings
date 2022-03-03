@@ -1,5 +1,6 @@
 [![Documentation](https://docs.rs/daml-lf/badge.svg)](https://docs.rs/daml-lf)
 [![Crate](https://img.shields.io/crates/v/daml-lf.svg)](https://crates.io/crates/daml-lf)
+![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Daml LF
 

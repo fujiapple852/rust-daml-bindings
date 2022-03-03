@@ -1,5 +1,6 @@
 [![Documentation](https://docs.rs/daml-bridge/badge.svg)](https://docs.rs/daml-bridge)
 [![Crate](https://img.shields.io/crates/v/daml-bridge.svg)](https://crates.io/crates/daml-bridge)
+![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Daml Bridge
 

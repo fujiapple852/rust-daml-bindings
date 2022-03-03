@@ -1,5 +1,6 @@
 [![Documentation](https://docs.rs/daml-util/badge.svg)](https://docs.rs/daml-util)
 [![Crate](https://img.shields.io/crates/v/daml-util.svg)](https://crates.io/crates/daml-util)
+![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Daml Util
 
