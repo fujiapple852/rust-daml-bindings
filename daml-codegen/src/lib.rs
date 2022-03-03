@@ -16,6 +16,7 @@
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
+#![doc(html_root_url = "https://docs.rs/daml-codegen/0.1.0")]
 #![recursion_limit = "128"]
 
 mod error;
