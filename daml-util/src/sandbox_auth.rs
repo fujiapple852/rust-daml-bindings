@@ -212,6 +212,7 @@ pub enum DamlSandboxAuthError {
     UnsupportedAlgorithm,
 }
 
+/// A opaque Daml sandbox authentication token.
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub struct DamlSandboxAuthToken {
     #[serde(rename = "https://daml.com/ledger-api")]

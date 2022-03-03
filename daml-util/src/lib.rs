@@ -1,3 +1,7 @@
+//! Daml ledger utilities.
+//!
+//! This provides utilities which depends on both [`daml-grpc`](daml_grpc) and [`daml-lf`](daml_lf) crates.
+
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
     clippy::missing_errors_doc,
@@ -17,6 +21,7 @@
 #[cfg(feature = "sandbox")]
 mod sandbox_auth;
 
+/// Conveniences for working with a collection of [`DamlPackage`](daml_grpc::data::package::DamlPackage).
 pub mod package;
 
 #[cfg(feature = "sandbox")]
