@@ -4,28 +4,18 @@
 //!
 //! The following crates are provided for working with Daml in Rust:
 //!
-//! | crate          | description                                                               |
-//! |----------------|---------------------------------------------------------------------------|
-//! | [daml]         | Daml prelude & common entry point                                         |
-//! | [daml-grpc]    | Daml Ledger GRPC API bindings                                             |
-//! | [daml-json]    | Daml Ledger JSON API bindings                                             |
-//! | [daml-codegen] | Generate Rust GRPC API bindings from Daml archives                        |
-//! | [daml-derive]  | Attribute macros for generating Rust GRPC API bindings from Daml archives |
-//! | [daml-macro]   | Helper macros for working with Daml GRPC values                           |
-//! | [daml-util]    | Utilities for working with Daml ledgers                                   |
-//! | [daml-lf]      | Library for working with Daml-LF archives                                 |
-//! | [daml-bridge]  | Daml JSON <> GRPC Ledger bridge                                           |
+//! | crate                          | description                                                               |
+//! |--------------------------------|---------------------------------------------------------------------------|
+//! | [daml](self)                   | Daml prelude & common entry point                                         |
+//! | [daml-grpc](::daml_grpc)       | Daml Ledger GRPC API bindings                                             |
+//! | [daml-json](::daml_json)       | Daml Ledger JSON API bindings                                             |
+//! | [daml-codegen](::daml_codegen) | Generate Rust GRPC API bindings from Daml archives                        |
+//! | [daml-derive](::daml_derive)   | Attribute macros for generating Rust GRPC API bindings from Daml archives |
+//! | [daml-macro](::daml_macro)     | Helper macros for working with Daml GRPC values                           |
+//! | [daml-util](::daml_util)       | Utilities for working with Daml ledgers                                   |
+//! | [daml-lf](::daml_lf)           | Library for working with Daml-LF archives                                 |
 //!
-//! [daml]: index.html
-//! [daml-grpc]: https://docs.rs/daml-grpc
-//! [daml-json]: https://docs.rs/daml-json
-//! [daml-bridge]: https://docs.rs/daml-bridge
-//! [daml-codegen]: https://docs.rs/daml-codegen
-//! [daml-derive]: https://docs.rs/daml-derive
-//! [daml-macro]: https://docs.rs/daml-macro
-//! [daml-util]: https://docs.rs/daml-util
-//! [daml-lf]: https://docs.rs/daml-lf
-//! [daml-bridge]: https://docs.rs/daml-bridge
+
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(clippy::module_name_repetitions)]
 #![forbid(unsafe_code)]
@@ -35,13 +25,12 @@
 
 /// The Daml prelude.
 ///
-/// Include the Daml prelude to bring into scope all types required by the [custom attributes].  Include the prelude
-/// as follows:
+/// Include the Daml prelude to bring into scope all types required by the [custom attributes](::daml_derive).  Include
+/// the prelude as follows:
 ///
 /// ```no_rust
 /// use daml::prelude::*;
 /// ```
-/// [custom attributes]: ../../daml-derive/index.html
 #[cfg(feature = "prelude")]
 pub mod prelude;
 
