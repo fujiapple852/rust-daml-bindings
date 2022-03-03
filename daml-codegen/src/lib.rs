@@ -2,7 +2,7 @@
 //!
 //! Provides an implementation of custom attributes and procedural macros defined in the [`daml-derive`] crate.
 //!
-//! [`daml-derive`]: ../daml-derive/index.html
+//! [`daml-derive`]: https://docs.rs/daml-derive
 
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
