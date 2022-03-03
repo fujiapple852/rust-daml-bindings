@@ -1,7 +1,7 @@
 #![allow(clippy::used_underscore_binding)]
 use thiserror::Error;
 
-/// Represents `Daml-LF` specific errors.
+/// Represents `Daml-LF` errors.
 #[derive(Error, Debug)]
 pub enum DamlLfError {
     #[error("failed to parse Daml LF: {0}")]
@@ -44,6 +44,7 @@ impl From<zip::result::ZipError> for DamlLfError {
     }
 }
 
+/// Represents `Daml-LF` results.
 pub type DamlLfResult<T> = Result<T, DamlLfError>;
 
 /// Daml code generator errors.
@@ -99,5 +100,5 @@ pub enum DamlLfConvertError {
     InternalError(String),
 }
 
-/// Daml LF convert result.
+/// Represents `Daml-LF` convert results.
 pub type DamlLfConvertResult<T> = Result<T, DamlLfConvertError>;

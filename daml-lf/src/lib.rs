@@ -1,6 +1,6 @@
 //! API for working with `Daml-LF` packages.
 //!
-//! Compiled `Daml` packages are represented as `Daml-LF` ("Ledger Fragment") archives.  An archive is a protobuf
+//! Compiled `Daml` packages are represented as `Daml-LF` (aka "Ledger Fragment") archives.  An archive is a protobuf
 //! serialized bytes array which is typically stored in a `dalf` file.  Multiple `dalf` archives can be combined along
 //! with a manifest file into a `Dar` ("Daml Archive") file.
 //!
@@ -10,7 +10,7 @@
 //!
 //! See [here](https://github.com/digital-asset/daml/tree/main/daml-lf) for full details of Daml-LF.
 //!
-//! [`daml_package_service`]: ../daml-grpc/service/struct.DamlPackageService.html
+//! [`daml_package_service`]: https://docs.rs/daml-grpc/0.1.0/daml_grpc/service/struct.DamlPackageService.html
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
     clippy::module_name_repetitions,

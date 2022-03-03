@@ -13,6 +13,7 @@ use std::iter::once;
 
 const ROOT_MODULE_NAME: &str = "root";
 
+/// A Daml module.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlModule<'a> {
     path: Vec<Cow<'a, str>>,
@@ -180,7 +181,7 @@ impl<'a> DamlVisitableElement<'a> for DamlModule<'a> {
     }
 }
 
-/// Definition of a Daml Type Synonym.
+/// A Daml Type synonym definition.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlDefTypeSyn<'a> {
     params: Vec<DamlTypeVarWithKind<'a>>,
@@ -223,7 +224,7 @@ impl<'a> DamlVisitableElement<'a> for DamlDefTypeSyn<'a> {
     }
 }
 
-/// DOCME
+/// Daml Feature flags.
 #[derive(Debug, Serialize, Copy, Clone, Default, ToStatic)]
 pub struct DamlFeatureFlags {
     forbid_party_literals: bool,
