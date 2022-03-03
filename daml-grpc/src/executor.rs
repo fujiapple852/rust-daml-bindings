@@ -10,6 +10,7 @@ use crate::service::DamlCommandService;
 use crate::util::Required;
 use crate::{DamlCommandFactory, DamlGrpcClient};
 
+/// Construct a [`DamlSimpleExecutor`].
 pub struct DamlSimpleExecutorBuilder<'a> {
     ledger_client: &'a DamlGrpcClient,
     act_as: Option<Vec<String>>,
@@ -126,6 +127,7 @@ impl<'a> DamlSimpleExecutorBuilder<'a> {
     }
 }
 
+/// A generic failable executor.
 #[async_trait]
 pub trait Executor {
     fn execute<T, F: FnOnce(&Self) -> DamlResult<T>>(&self, f: F) -> DamlResult<T> {
@@ -133,6 +135,7 @@ pub trait Executor {
     }
 }
 
+/// An async failable Daml command executor.
 #[async_trait]
 pub trait CommandExecutor {
     async fn execute_for_transaction(&self, command: DamlCommand) -> DamlResult<DamlTransaction>;
@@ -141,6 +144,7 @@ pub trait CommandExecutor {
     async fn execute_exercise(&self, exercise_command: DamlExerciseCommand) -> DamlResult<DamlValue>;
 }
 
+/// A simple async Daml command executor.
 pub struct DamlSimpleExecutor<'a> {
     ledger_client: &'a DamlGrpcClient,
     command_factory: DamlCommandFactory,
