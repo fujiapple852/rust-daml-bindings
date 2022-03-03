@@ -1,14 +1,8 @@
-//! Helper macros for working with the [Daml Ledger API]
+//! Helper macros for working with the [Daml GRPC Ledger API](::daml_grpc)
 //!
-//! Provides a [`daml_value!`] macro to simplify the construction of [`DamlValue`] literals and a
-//! [`daml_path!`] macro to simplify the extraction of data from existing [`DamlRecord`]  &
-//! [`DamlValue`] literals.
-//!
-//! [`DamlValue`]: ../../doc/daml-grpc/data/value/enum.DamlValue.html
-//! [`DamlRecord`]: ../../doc/daml-grpc/data/value/struct.DamlRecord.html
-//! [Daml Ledger API]: ../../doc/daml-grpc/index.html
-//! [`daml_value!`]: macro.daml_value.html
-//! [`daml_path!`]: macro.daml_path.html
+//! Provides a [`daml_value!`] macro to simplify the construction of [`DamlValue`](daml_grpc::data::value::DamlValue)
+//! literals and a [`daml_path!`] macro to simplify the extraction of data from existing
+//! [`DamlRecord`](daml_grpc::data::value::DamlRecord) & [`DamlValue`](daml_grpc::data::value::DamlValue) literals.
 
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(clippy::module_name_repetitions, clippy::shadow_unrelated, clippy::unit_cmp)]
@@ -22,8 +16,11 @@ mod value;
 
 // Reexport crates as the macros use several types they define.
 // TODO should reference type aliases here rather than raw chrono / bigdecimal but requires some rework in the macros
+#[doc(hidden)]
 pub use bigdecimal;
+#[doc(hidden)]
 pub use chrono;
+#[doc(hidden)]
 pub use daml_grpc;
 
 #[cfg(test)]
