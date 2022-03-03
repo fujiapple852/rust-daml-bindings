@@ -1,5 +1,6 @@
 [![Documentation](https://docs.rs/daml-derive/badge.svg)](https://docs.rs/daml-derive)
 [![Crate](https://img.shields.io/crates/v/daml-derive.svg)](https://crates.io/crates/daml-derive)
+![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Daml Derive
 

@@ -1,5 +1,6 @@
 [![Documentation](https://docs.rs/daml-codegen/badge.svg)](https://docs.rs/daml-codegen)
 [![Crate](https://img.shields.io/crates/v/daml-codegen.svg)](https://crates.io/crates/daml-codegen)
+![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Daml Codegen
 

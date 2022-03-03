@@ -1,5 +1,6 @@
 [![Documentation](https://docs.rs/daml-json/badge.svg)](https://docs.rs/daml-json)
 [![Crate](https://img.shields.io/crates/v/daml-json.svg)](https://crates.io/crates/daml-json)
+![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Daml JSON
 

@@ -1,6 +1,7 @@
 ![ci](https://github.com/fujiapple852/rust-daml-bindings/actions/workflows/ci.yml/badge.svg)
 [![Documentation](https://docs.rs/daml/badge.svg)](https://docs.rs/daml)
 [![Crate](https://img.shields.io/crates/v/daml.svg)](https://crates.io/crates/daml)
+![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Rust Bindings for Daml
 
