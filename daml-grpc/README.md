@@ -10,7 +10,7 @@ This crate should not be used directly, instead you should depend on the [`daml`
 and enable the `grpc` feature:
 
 ```yaml
-daml = { version = "0.1.0", features = [ "grpc" ] }
+daml = { version = "0.1.1", features = [ "grpc" ] }
 ```
 
 ## License

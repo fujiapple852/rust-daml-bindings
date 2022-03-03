@@ -1,6 +1,6 @@
 [package]
 name = "daml-codegen"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
 description = "Daml GRPC Ledger API Code Generator"
 readme = "README.md"
@@ -12,7 +12,7 @@ edition = "2021"
 rust-version = "1.59.0"
 
 [dependencies]
-daml-lf = { version = "0.1.0", path = "../daml-lf" }
+daml-lf = { version = "0.1.1", path = "../daml-lf" }
 quote = "1.0.15"
 proc-macro2 = "1.0.36"
 itertools = "0.10.3"
