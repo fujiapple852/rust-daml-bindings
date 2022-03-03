@@ -1,6 +1,10 @@
 //! Daml ledger JSON [API](https://docs.daml.com/json-api/index.html).
 //!
+//! A simple Daml ledger JSON API client.
+//!
 //! # Examples
+//!
+//! The following example connects to a Daml ledger and creates a contract.
 //!
 //! ```no_run
 //! use serde_json::json;
@@ -8,9 +12,10 @@
 //! use daml_json::error::DamlJsonResult;
 //! #[tokio::main]
 //! async fn main() -> DamlJsonResult<()> {
+//!     let payload = json!({ "sender": "Alice", "receiver": "Bob", "count": "0" });
 //!     let client = DamlJsonClientBuilder::url("https://api.myledger.org").build()?;
-//!     let create_response = client.create("Fuji.PingPong:Ping", json!({ "sender": "Alice", "receiver": "Bob", "count": 0 })).await?;
-//!     assert_eq!(create_response.payload, json!({ "sender": "Alice", "receiver": "Bob", "count": "0" }));
+//!     let create_response = client.create("Fuji.PingPong:Ping", payload.clone()).await?;
+//!     assert_eq!(create_response.payload, payload);
 //!     Ok(())
 //! }
 //! ```
