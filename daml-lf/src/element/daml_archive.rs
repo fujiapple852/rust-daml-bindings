@@ -9,6 +9,7 @@ use serde::Serialize;
 use std::borrow::Cow;
 use std::collections::HashMap;
 
+/// A Daml Archive.
 #[derive(Debug, Serialize, Clone, Default, ToStatic)]
 pub struct DamlArchive<'a> {
     name: Cow<'a, str>,

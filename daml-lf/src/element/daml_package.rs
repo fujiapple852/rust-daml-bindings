@@ -6,6 +6,7 @@ use bounded_static::ToStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 
+/// A Daml package.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlPackage<'a> {
     name: Cow<'a, str>,

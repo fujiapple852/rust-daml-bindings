@@ -5,6 +5,7 @@ use bounded_static::ToStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 
+/// A Daml field.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlField<'a> {
     name: Cow<'a, str>,

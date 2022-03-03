@@ -4,6 +4,7 @@ use bounded_static::ToStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 
+/// A Daml value.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlDefValue<'a> {
     pub name: Cow<'a, str>,

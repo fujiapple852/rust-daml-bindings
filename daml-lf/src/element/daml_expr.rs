@@ -7,6 +7,7 @@ use std::borrow::Cow;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
+/// A Daml expression.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlExpr<'a> {
     Var(Cow<'a, str>),
@@ -80,7 +81,7 @@ impl<'a> DamlVisitableElement<'a> for DamlExpr<'a> {
     }
 }
 
-/// DOCME
+/// A Daml value name.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlValueName<'a> {
     Local(DamlLocalValueName<'a>),
@@ -154,7 +155,7 @@ impl<'a> DamlVisitableElement<'a> for DamlValueName<'a> {
     }
 }
 
-/// DOCME
+/// A Daml local value name.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlLocalValueName<'a> {
     pub name: Cow<'a, str>,
@@ -202,7 +203,7 @@ impl<'a> DamlVisitableElement<'a> for DamlLocalValueName<'a> {
     }
 }
 
-/// DOCME
+/// A Daml non-local value name.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlNonLocalValueName<'a> {
     name: Cow<'a, str>,
@@ -271,6 +272,7 @@ impl<'a> DamlVisitableElement<'a> for DamlNonLocalValueName<'a> {
     }
 }
 
+/// A Daml expression builtin function.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlBuiltinFunction {
     AddDecimal,
@@ -401,6 +403,7 @@ impl<'a> DamlVisitableElement<'a> for DamlBuiltinFunction {
     }
 }
 
+/// A Daml expression primitive constructor.
 #[derive(Debug, Serialize, Copy, Clone, ToStatic)]
 pub enum DamlPrimCon {
     Unit,
@@ -415,6 +418,7 @@ impl<'a> DamlVisitableElement<'a> for DamlPrimCon {
     }
 }
 
+/// A Daml expression primitive literal.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlPrimLit<'a> {
     /// Represents a standard signed 64-bit integer (integer between −2⁶³ to 2⁶³−1).
@@ -445,6 +449,7 @@ impl<'a> DamlVisitableElement<'a> for DamlPrimLit<'a> {
     }
 }
 
+/// A Daml expression round mode.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum RoundingMode {
     Up,
@@ -464,6 +469,7 @@ impl<'a> DamlVisitableElement<'a> for RoundingMode {
     }
 }
 
+/// A Daml expression record constructor.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlRecCon<'a> {
     tycon: DamlTyCon<'a>,
@@ -496,6 +502,7 @@ impl<'a> DamlVisitableElement<'a> for DamlRecCon<'a> {
     }
 }
 
+/// A Daml expression field with expression.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlFieldWithExpr<'a> {
     field: Cow<'a, str>,
@@ -527,6 +534,7 @@ impl<'a> DamlVisitableElement<'a> for DamlFieldWithExpr<'a> {
     }
 }
 
+/// A Daml expression record projection.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlRecProj<'a> {
     tycon: DamlTyCon<'a>,
@@ -565,6 +573,7 @@ impl<'a> DamlVisitableElement<'a> for DamlRecProj<'a> {
     }
 }
 
+/// A Daml expression record update.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlRecUpd<'a> {
     tycon: DamlTyCon<'a>,
@@ -615,6 +624,7 @@ impl<'a> DamlVisitableElement<'a> for DamlRecUpd<'a> {
     }
 }
 
+/// A Daml expression variant constructor.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlVariantCon<'a> {
     tycon: DamlTyCon<'a>,
@@ -653,6 +663,7 @@ impl<'a> DamlVisitableElement<'a> for DamlVariantCon<'a> {
     }
 }
 
+/// A Daml expression enum constructor.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlEnumCon<'a> {
     tycon: Box<DamlTyConName<'a>>,
@@ -684,6 +695,7 @@ impl<'a> DamlVisitableElement<'a> for DamlEnumCon<'a> {
     }
 }
 
+/// A Daml expression struct constructor.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlStructCon<'a> {
     fields: Vec<DamlFieldWithExpr<'a>>,
@@ -709,6 +721,7 @@ impl<'a> DamlVisitableElement<'a> for DamlStructCon<'a> {
     }
 }
 
+/// A Daml expression struct projection.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlStructProj<'a> {
     struct_expr: Box<DamlExpr<'a>>,
@@ -740,6 +753,7 @@ impl<'a> DamlVisitableElement<'a> for DamlStructProj<'a> {
     }
 }
 
+/// A Daml expression struct update.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlStructUpd<'a> {
     struct_expr: Box<DamlExpr<'a>>,
@@ -778,6 +792,7 @@ impl<'a> DamlVisitableElement<'a> for DamlStructUpd<'a> {
     }
 }
 
+/// A Daml expression function application.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlApp<'a> {
     fun: Box<DamlExpr<'a>>,
@@ -810,6 +825,7 @@ impl<'a> DamlVisitableElement<'a> for DamlApp<'a> {
     }
 }
 
+/// A Daml expression type application.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlTyApp<'a> {
     expr: Box<DamlExpr<'a>>,
@@ -842,6 +858,7 @@ impl<'a> DamlVisitableElement<'a> for DamlTyApp<'a> {
     }
 }
 
+/// A Daml expression variable abstraction.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlAbs<'a> {
     params: Vec<DamlVarWithType<'a>>,
@@ -874,6 +891,7 @@ impl<'a> DamlVisitableElement<'a> for DamlAbs<'a> {
     }
 }
 
+/// A Daml expression variable with type.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlVarWithType<'a> {
     ty: DamlType<'a>,
@@ -905,6 +923,7 @@ impl<'a> DamlVisitableElement<'a> for DamlVarWithType<'a> {
     }
 }
 
+/// A Daml expression type abstraction.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlTyAbs<'a> {
     params: Vec<DamlTypeVarWithKind<'a>>,
@@ -937,6 +956,7 @@ impl<'a> DamlVisitableElement<'a> for DamlTyAbs<'a> {
     }
 }
 
+/// A Daml expression block.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlBlock<'a> {
     bindings: Vec<DamlBinding<'a>>,
@@ -969,6 +989,7 @@ impl<'a> DamlVisitableElement<'a> for DamlBlock<'a> {
     }
 }
 
+/// A Daml expression binding.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlBinding<'a> {
     binder: DamlVarWithType<'a>,
@@ -1001,6 +1022,7 @@ impl<'a> DamlVisitableElement<'a> for DamlBinding<'a> {
     }
 }
 
+/// A Daml expression list constructor.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCons<'a> {
     ty: DamlType<'a>,
@@ -1040,6 +1062,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCons<'a> {
     }
 }
 
+/// A Daml expression case.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCase<'a> {
     scrut: Box<DamlExpr<'a>>,
@@ -1072,6 +1095,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCase<'a> {
     }
 }
 
+/// A Daml expression case alternative.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCaseAlt<'a> {
     body: DamlExpr<'a>,
@@ -1104,6 +1128,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCaseAlt<'a> {
     }
 }
 
+/// A Daml expression case sum type.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 #[allow(clippy::large_enum_variant)] // TODO look at why DamlCaseAltVariant is so large (280 bytes!)
 pub enum DamlCaseAltSum<'a> {
@@ -1132,6 +1157,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCaseAltSum<'a> {
     }
 }
 
+/// A Daml expression case variant.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCaseAltVariant<'a> {
     con: DamlTyConName<'a>,
@@ -1169,6 +1195,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCaseAltVariant<'a> {
     }
 }
 
+/// A Daml expression case list constructor.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCaseAltCons<'a> {
     var_head: Cow<'a, str>,
@@ -1199,6 +1226,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCaseAltCons<'a> {
     }
 }
 
+/// A Daml expression case optional which is present.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCaseAltOptionalSome<'a> {
     var_body: Cow<'a, str>,
@@ -1223,6 +1251,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCaseAltOptionalSome<'a> {
     }
 }
 
+/// A Daml expression case enum.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCaseAltEnum<'a> {
     con: DamlTyConName<'a>,
@@ -1254,6 +1283,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCaseAltEnum<'a> {
     }
 }
 
+/// A Daml expression optional which is present.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlOptionalSome<'a> {
     ty: DamlType<'a>,
@@ -1286,6 +1316,7 @@ impl<'a> DamlVisitableElement<'a> for DamlOptionalSome<'a> {
     }
 }
 
+/// A Daml expression to any conversion.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlToAny<'a> {
     ty: DamlType<'a>,
@@ -1318,6 +1349,7 @@ impl<'a> DamlVisitableElement<'a> for DamlToAny<'a> {
     }
 }
 
+/// A Daml expression from any conversion.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlFromAny<'a> {
     ty: DamlType<'a>,
@@ -1350,6 +1382,7 @@ impl<'a> DamlVisitableElement<'a> for DamlFromAny<'a> {
     }
 }
 
+/// A Daml expression update effect.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlUpdate<'a> {
     Pure(DamlPure<'a>),
@@ -1385,6 +1418,7 @@ impl<'a> DamlVisitableElement<'a> for DamlUpdate<'a> {
     }
 }
 
+/// A Daml expression update pure.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlPure<'a> {
     ty: DamlType<'a>,
@@ -1417,6 +1451,7 @@ impl<'a> DamlVisitableElement<'a> for DamlPure<'a> {
     }
 }
 
+/// A Daml expression update effect create action.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCreate<'a> {
     template: Box<DamlTyConName<'a>>,
@@ -1449,6 +1484,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCreate<'a> {
     }
 }
 
+/// A Daml expression update effect exercise action.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlExercise<'a> {
     template: Box<DamlTyConName<'a>>,
@@ -1499,6 +1535,7 @@ impl<'a> DamlVisitableElement<'a> for DamlExercise<'a> {
     }
 }
 
+/// A Daml expression update effect exercise-by-key action.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlExerciseByKey<'a> {
     template: Box<DamlTyConName<'a>>,
@@ -1549,6 +1586,7 @@ impl<'a> DamlVisitableElement<'a> for DamlExerciseByKey<'a> {
     }
 }
 
+/// A Daml expression update effect fetch action.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlFetch<'a> {
     template: Box<DamlTyConName<'a>>,
@@ -1581,6 +1619,7 @@ impl<'a> DamlVisitableElement<'a> for DamlFetch<'a> {
     }
 }
 
+/// A Daml expression update effect retrieve-by-key action.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlRetrieveByKey<'a> {
     template: Box<DamlTyConName<'a>>,
@@ -1613,6 +1652,7 @@ impl<'a> DamlVisitableElement<'a> for DamlRetrieveByKey<'a> {
     }
 }
 
+/// A Daml expression embedded update effect action.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlUpdateEmbedExpr<'a> {
     ty: DamlType<'a>,
@@ -1645,6 +1685,7 @@ impl<'a> DamlVisitableElement<'a> for DamlUpdateEmbedExpr<'a> {
     }
 }
 
+/// A Daml expression scenario effect.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlScenario<'a> {
     Pure(DamlPure<'a>),
@@ -1672,6 +1713,7 @@ impl<'a> DamlVisitableElement<'a> for DamlScenario<'a> {
     }
 }
 
+/// A Daml expression scenario commit action.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlCommit<'a> {
     party: Box<DamlExpr<'a>>,
@@ -1711,6 +1753,7 @@ impl<'a> DamlVisitableElement<'a> for DamlCommit<'a> {
     }
 }
 
+/// A Daml expression embedded scenario expression.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlScenarioEmbedExpr<'a> {
     ty: DamlType<'a>,
@@ -1743,6 +1786,7 @@ impl<'a> DamlVisitableElement<'a> for DamlScenarioEmbedExpr<'a> {
     }
 }
 
+/// A Daml expression to any exception conversion.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlToAnyException<'a> {
     ty: DamlType<'a>,
@@ -1775,6 +1819,7 @@ impl<'a> DamlVisitableElement<'a> for DamlToAnyException<'a> {
     }
 }
 
+/// A Daml expression from any exception conversion.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlFromAnyException<'a> {
     ty: DamlType<'a>,
@@ -1807,6 +1852,7 @@ impl<'a> DamlVisitableElement<'a> for DamlFromAnyException<'a> {
     }
 }
 
+/// A Daml expression throw exception.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlThrow<'a> {
     return_type: DamlType<'a>,
@@ -1846,6 +1892,7 @@ impl<'a> DamlVisitableElement<'a> for DamlThrow<'a> {
     }
 }
 
+/// A Daml expression update effect try/catch action.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlTryCatch<'a> {
     return_type: DamlType<'a>,

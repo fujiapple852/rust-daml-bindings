@@ -7,6 +7,7 @@ use bounded_static::ToStatic;
 use serde::Serialize;
 use std::borrow::Cow;
 
+/// A Daml Data item (template, record, variant or enum).
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlData<'a> {
     Template(Box<DamlTemplate<'a>>),
@@ -160,6 +161,7 @@ impl PartialEq<DamlEnum<'_>> for DamlData<'_> {
     }
 }
 
+/// A Daml template.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlTemplate<'a> {
     name: Cow<'a, str>,
@@ -330,6 +332,7 @@ impl PartialEq<DamlData<'_>> for DamlTemplate<'_> {
     }
 }
 
+/// A Daml template choice.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlChoice<'a> {
     name: Cow<'a, str>,
@@ -461,7 +464,8 @@ impl<'a> DamlVisitableElement<'a> for DamlChoice<'a> {
     }
 }
 
-// TODO should not be public
+/// A Daml template key definition.
+// TODO fields should not be public
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlDefKey<'a> {
     pub ty: DamlType<'a>,
@@ -513,6 +517,7 @@ impl<'a> DamlVisitableElement<'a> for DamlDefKey<'a> {
     }
 }
 
+/// A Daml record.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlRecord<'a> {
     name: Cow<'a, str>,
@@ -593,6 +598,7 @@ impl PartialEq<DamlData<'_>> for DamlRecord<'_> {
     }
 }
 
+/// A Daml variant.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlVariant<'a> {
     name: Cow<'a, str>,
@@ -673,6 +679,7 @@ impl PartialEq<DamlData<'_>> for DamlVariant<'_> {
     }
 }
 
+/// A Daml enum.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlEnum<'a> {
     name: Cow<'a, str>,

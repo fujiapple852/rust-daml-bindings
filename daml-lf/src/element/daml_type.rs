@@ -9,36 +9,64 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 
-/// Representation of a Daml type.
+/// A Daml type.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub enum DamlType<'a> {
+    /// Opaque contract identifier.
     ContractId(Option<Box<DamlType<'a>>>),
+    /// Signed 64 bit integer.
     Int64,
+    /// Fixed precision numeric.
     Numeric(Vec<DamlType<'a>>),
+    /// Unicode text data.
     Text,
+    /// A date & time.
     Timestamp,
+    /// A Daml Party.
     Party,
+    /// A Boolean type.
     Bool,
+    /// A Unit type.
     Unit,
+    /// A date.
     Date,
+    /// A list.
     List(Vec<DamlType<'a>>),
+    /// A map wih [DamlType::Text] keys.
     TextMap(Vec<DamlType<'a>>),
+    /// A map.
     GenMap(Vec<DamlType<'a>>),
+    /// An optional value.
     Optional(Vec<DamlType<'a>>),
+    /// A type constructor.
     TyCon(DamlTyCon<'a>),
+    /// A type constructor (heap allocated).
     BoxedTyCon(DamlTyCon<'a>),
+    /// A type variable.
     Var(DamlVar<'a>),
+    /// A natural number.
     Nat(u8),
+    /// A function.
     Arrow,
+    /// Any type.
     Any,
+    /// A type rep.
     TypeRep,
+    /// A big numeric.
     Bignumeric,
+    /// A rounding mode.
     RoundingMode,
+    /// An exception.
     AnyException,
+    /// An update effect.
     Update,
+    /// A scenario effect.
     Scenario,
+    /// Universal qualifiier.
     Forall(DamlForall<'a>),
+    /// A struct type.
     Struct(DamlStruct<'a>),
+    /// A type synonym.
     Syn(DamlSyn<'a>),
 }
 
@@ -168,6 +196,7 @@ impl<'a> DamlVisitableElement<'a> for DamlType<'a> {
 /// `DamlTypeSynName` is aliases from `DamlTypeConName` as they are currently identical.
 pub type DamlTypeSynName<'a> = DamlTyConName<'a>;
 
+/// A Daml type synonym.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlSyn<'a> {
     pub tysyn: Box<DamlTypeSynName<'a>>,
@@ -200,6 +229,7 @@ impl<'a> DamlVisitableElement<'a> for DamlSyn<'a> {
     }
 }
 
+/// A Daml struct.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlStruct<'a> {
     pub fields: Vec<DamlField<'a>>,
@@ -225,6 +255,7 @@ impl<'a> DamlVisitableElement<'a> for DamlStruct<'a> {
     }
 }
 
+/// Universal qualifier.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlForall<'a> {
     pub vars: Vec<DamlTypeVarWithKind<'a>>,
@@ -257,7 +288,7 @@ impl<'a> DamlVisitableElement<'a> for DamlForall<'a> {
     }
 }
 
-/// DOCME
+/// A Daml type constructor.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlTyCon<'a> {
     tycon: Box<DamlTyConName<'a>>,
@@ -322,7 +353,7 @@ impl<'a> DamlVisitableElement<'a> for DamlTyCon<'a> {
     }
 }
 
-/// DOCME
+/// A Daml type constructor.
 #[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq, ToStatic)]
 pub enum DamlTyConName<'a> {
     Local(DamlLocalTyCon<'a>),
@@ -425,7 +456,7 @@ impl PartialEq<DamlData<'_>> for DamlTyConName<'_> {
     }
 }
 
-/// DOCME
+/// A Daml local type constructor.
 #[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq, ToStatic)]
 pub struct DamlLocalTyCon<'a> {
     data_name: Cow<'a, str>,
@@ -473,7 +504,7 @@ impl<'a> DamlVisitableElement<'a> for DamlLocalTyCon<'a> {
     }
 }
 
-/// DOCME
+/// A Daml non-local type constructor.
 #[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq, ToStatic)]
 pub struct DamlNonLocalTyCon<'a> {
     data_name: Cow<'a, str>,
@@ -542,7 +573,7 @@ impl<'a> DamlVisitableElement<'a> for DamlNonLocalTyCon<'a> {
     }
 }
 
-/// DOCME
+/// A Daml absolute type constructor.
 #[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq, ToStatic)]
 pub struct DamlAbsoluteTyCon<'a> {
     data_name: Cow<'a, str>,
@@ -590,7 +621,7 @@ impl<'a> DamlVisitableElement<'a> for DamlAbsoluteTyCon<'a> {
     }
 }
 
-/// DOCME
+/// A Daml type variable.
 #[derive(Debug, Serialize, Clone, ToStatic)]
 pub struct DamlVar<'a> {
     var: Cow<'a, str>,
