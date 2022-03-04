@@ -1,12 +1,4 @@
-//! Rust Daml type code generator.
-//!
-//! This crate provides:
-//! - An code generator backend for the of custom attributes and procedural macros defined in the [`daml-derive`] crate
-//! - A [`daml_codegen`](generator::daml_codegen) function which is designed to be used from `build.rs` files
-//! - A standalone codegen cli
-//!
-//! [`daml-derive`]: https://docs.rs/daml-derive
-
+#![doc = include_str!("../README.md")]
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
     clippy::module_name_repetitions,
