@@ -1,6 +1,9 @@
 //! Rust Daml type code generator.
 //!
-//! Provides an implementation of custom attributes and procedural macros defined in the [`daml-derive`] crate.
+//! This crate provides:
+//! - An code generator backend for the of custom attributes and procedural macros defined in the [`daml-derive`] crate
+//! - A [`daml_codegen`](generator::daml_codegen) function which is designed to be used from `build.rs` files
+//! - A standalone codegen cli
 //!
 //! [`daml-derive`]: https://docs.rs/daml-derive
 
@@ -21,7 +24,8 @@
 
 mod error;
 
-/// Element renderers.
+// The renderer is exposed so that it may be used by `daml-derive` only, it is not part of the public interface.
+#[doc(hidden)]
 pub mod renderer;
 
 /// Code generators for producing Rust implementations of Daml types.

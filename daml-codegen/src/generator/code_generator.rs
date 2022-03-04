@@ -9,7 +9,30 @@ use crate::generator::ModuleOutputMode;
 
 /// Code generator which is designed to be called from `build.rs` files.
 ///
-/// TODO document this
+/// To use the [`daml_codegen`] function you must first import the `daml` crate and specify feature `codegen`:
+///
+/// ```toml
+/// [dependencies]
+/// daml = { version = "0.1.1", features = [ "codegen" ] }
+/// ```
+///
+/// In your `build.rs` main function invoke the [`daml_codegen`] function for a `dar` file and specify where the
+/// generated src code should be created:
+///
+/// ```rust
+/// use daml_codegen::generator::{daml_codegen, ModuleOutputMode, RenderMethod};
+/// fn main() {
+///     let method = RenderMethod::Full;
+///     let mode = ModuleOutputMode::Combined;
+///     daml_codegen("MyModel.dar", "src/autogen", &[], method, mode).unwrap();
+/// }
+/// ```
+///
+/// In the example above we used [`RenderMethod::Full`] to indicate that we want to render Rust types without
+/// intermediate annotations (such as [`DamlTemplate`]) and [`ModuleOutputMode::Combined`] to combine all Daml modules
+/// in a single Rust src file.
+///
+/// [`DamlTemplate`]: https://docs.rs/daml-derive/0.1.1/daml_derive/attr.DamlTemplate.html
 pub fn daml_codegen(
     dar_file: &str,
     output_path: &str,
