@@ -29,15 +29,16 @@ Applications should always depend on the `daml` crate directly and specify the a
 required functionality:
 
 ```toml
-daml = { version = "0.1.1", features = [ "full" ] }
+daml = { version = "0.1.1", features = ["full"] }
 ```
 
 See the [documentation](https://docs.rs/daml) for the full set of feature flags available.
 
 ## Example Applications
 
-Several example applications are available in the [`examples`](examples/) directory showcasing various features of the
-library.  Additionally, most crates provide comprehensive integration tests which demonstrate usage. 
+Several example applications are available in
+the [`examples`](https://github.com/fujiapple852/rust-daml-bindings/tree/master/examples) directory showcasing various
+features of the library. Additionally, most crates provide comprehensive integration tests which demonstrate usage.
 
 ## Minimum Supported Rust Version
 
