@@ -23,7 +23,7 @@ $ cd codegen-demo && cargo run
 A simple tool which demonstrates some features of the various `Daml` libraries.
 
 ```bash
-$ cd darn && cargo run
+$ cd daml-darn && cargo run
 ```
 
 ## OpenAPI / AsyncAPI
