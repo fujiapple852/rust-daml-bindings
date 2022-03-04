@@ -103,15 +103,15 @@
 /// # Ok(())
 /// # }
 /// ```
-/// [`DamlValue`]: ../../doc/daml-grpc/data/value/enum.DamlValue.html
-/// [`DamlValue::Record`]: ../../doc/daml-grpc/data/value/enum.DamlValue.html#variant.Record
-/// [`DamlValue::Party`]: ../../doc/daml-grpc/data/value/enum.DamlValue.html#variant.Party
-/// [`DamlValue::ContractId`]: ../../doc/daml-grpc/data/value/enum.DamlValue.html#variant.ContractId
-/// [`DamlValue::Text`]: ../../doc/daml-grpc/data/value/enum.DamlValue.html#variant.Text
-/// [`DamlValue::Map`]: ../../doc/daml-grpc/data/value/enum.DamlValue.html#variant.Map
-/// [`DamlValue::GenMap`]: ../../doc/daml-grpc/data/value/enum.DamlValue.html#variant.GenMap
-/// [`DamlValue::Enum`]: ../../doc/daml-grpc/data/value/enum.DamlValue.html#variant.Enum
-/// [`DamlRecord`]: ../../doc/daml-grpc/data/value/struct.DamlRecord.html
+/// [`DamlValue`]: https://docs.rs/daml-grpc/0.1.1/daml_grpc/data/value/enum.DamlValue.html
+/// [`DamlValue::Record`]: https://docs.rs/daml-grpc/0.1.1/daml_grpc/data/value/enum.DamlValue.html#variant.Record
+/// [`DamlValue::Party`]: https://docs.rs/daml-grpc/0.1.1/daml_grpc/data/value/enum.DamlValue.html#variant.Party
+/// [`DamlValue::ContractId`]: https://docs.rs/daml-grpc/0.1.1/daml_grpc/data/value/enum.DamlValue.html#variant.ContractId
+/// [`DamlValue::Text`]: https://docs.rs/daml-grpc/0.1.1/daml_grpc/data/value/enum.DamlValue.html#variant.Text
+/// [`DamlValue::Map`]: https://docs.rs/daml-grpc/0.1.1/daml_grpc/data/value/enum.DamlValue.html#variant.Map
+/// [`DamlValue::GenMap`]: https://docs.rs/daml-grpc/0.1.1/daml_grpc/data/value/enum.DamlValue.html#variant.GenMap
+/// [`DamlValue::Enum`]: https://docs.rs/daml-grpc/0.1.1/daml_grpc/data/value/enum.DamlValue.html#variant.Enum
+/// [`DamlRecord`]: https://docs.rs/daml-grpc/0.1.1/daml_grpc/data/value/struct.DamlRecord.html
 #[macro_export]
 macro_rules! daml_value {
 
