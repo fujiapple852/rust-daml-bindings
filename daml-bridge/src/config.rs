@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+/// Daml Bridge configuration.
 #[derive(Debug)]
 pub struct BridgeConfigData {
     ledger_uri: String,
