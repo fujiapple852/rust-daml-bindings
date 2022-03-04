@@ -9,7 +9,8 @@ This crate provides a library for working with `Daml-LF` packages.
 This crate should not be used directly, instead you should depend on the [`daml`](https://crates.io/crates/daml) crate
 and enable the `lf` or `lf-full` features:
 
-```yaml
+```toml
+[dependencies]
 daml = { version = "0.1.1", features = [ "lf" ] }
 ```
 

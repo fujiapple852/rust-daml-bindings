@@ -29,6 +29,7 @@ Applications should always depend on the `daml` crate directly and specify the a
 required functionality:
 
 ```toml
+[dependencies]
 daml = { version = "0.1.1", features = ["full"] }
 ```
 

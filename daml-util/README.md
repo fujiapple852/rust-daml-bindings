@@ -9,7 +9,8 @@ This crate provides helper utilities for working with the Daml Ledgers.
 This crate should not be used directly, instead you should depend on the [`daml`](https://crates.io/crates/daml) crate
 and enable the `utils` feature:
 
-```yaml
+```toml
+[dependencies]
 daml = { version = "0.1.1", features = [ "utils" ] }
 ```
 
