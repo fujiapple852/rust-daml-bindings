@@ -33,7 +33,7 @@
 //!
 //! [daml-bridge]: https://docs.rs/daml-bridge/0.1.1/daml_bridge
 //! [daml2oas]: https://docs.rs/daml2oas/0.1.1/daml2oas
-//! [daml-darn]: https://docs.rs/daml-darn/0.1.1/daml-darn
+//! [daml-daml-darn]: https://docs.rs/daml-darn/0.1.1/daml-darn
 
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(clippy::module_name_repetitions)]

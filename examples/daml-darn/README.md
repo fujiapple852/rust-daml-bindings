@@ -9,14 +9,14 @@ Tools for working with Daml Archives and ledgers.
 ## Install
 
 ```shell
-cargo install daml-darn
+cargo install daml-daml-darn
 ```
 
 ## Usage
 
 ```shell
 USAGE:
-    daml-darn [SUBCOMMAND]
+    daml-daml-darn [SUBCOMMAND]
 
 OPTIONS:
     -h, --help       Print help information
@@ -35,7 +35,7 @@ SUBCOMMANDS:
 Show dar package details
 
 USAGE:
-    daml-darn package <dar>
+    daml-daml-darn package <dar>
 
 ARGS:
     <dar>    Sets the input dar file to use
@@ -48,7 +48,7 @@ OPTIONS:
 
 ```shell
 USAGE:
-    daml-darn token [OPTIONS] --token-type <token-type> --key-file <filename> --ledger-id <ledger-id> <--expiry <timestamp>|--duration <seconds>>
+    daml-daml-darn token [OPTIONS] --token-type <token-type> --key-file <filename> --ledger-id <ledger-id> <--expiry <timestamp>|--duration <seconds>>
 
 OPTIONS:
     -e, --expiry <timestamp>
@@ -92,7 +92,7 @@ OPTIONS:
 
 ```shell
 USAGE:
-    daml-darn intern [OPTIONS] <--string|--dotted> <dar>
+    daml-daml-darn intern [OPTIONS] <--string|--dotted> <dar>
 
 ARGS:
     <dar>    Sets the input dar file to use
@@ -112,7 +112,7 @@ OPTIONS:
 ### List packages
 
 ```shell
-daml-darn package MyModel.dar
+daml-daml-darn package MyModel.dar
 ```
 
 Outputs (abridged):
@@ -130,7 +130,7 @@ Outputs (abridged):
 ### Generate Token
 
 ```shell
-daml-darn token --key-file es256.key --ledger-id my-ledger --token-type es256 --duration 5000000 --admin
+daml-daml-darn token --key-file es256.key --ledger-id my-ledger --token-type es256 --duration 5000000 --admin
 ```
 
 Outputs (abridged):
@@ -142,7 +142,7 @@ eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJod...
 ### Show interned data
 
 ```shell
-daml-darn intern -d MyModel.dar
+daml-daml-darn intern -d MyModel.dar
 ```
 
 Outputs (abridged):
