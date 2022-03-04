@@ -15,6 +15,7 @@ pub struct Bridge {
 }
 
 impl Bridge {
+    /// Create a new [`Bridge`].
     pub const fn new(config: BridgeConfig) -> Self {
         Self {
             config,

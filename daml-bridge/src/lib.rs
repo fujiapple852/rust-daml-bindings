@@ -1,7 +1,4 @@
-//! Daml JSON <> GRPC Bridge.
-//!
-//! Provides a library and executable for bridging the JSON and GRPC Daml ledger APIs.
-
+#![doc = include_str!("../README.md")]
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
     clippy::module_name_repetitions,
