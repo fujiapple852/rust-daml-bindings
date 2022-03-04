@@ -1,11 +1,11 @@
 use daml_codegen::generator::{daml_codegen_internal, ModuleOutputMode, RenderMethod};
 
-use clap::{Arg, Command};
+use clap::{crate_description, crate_name, crate_version, Arg, Command};
 
 fn main() {
-    let matches = Command::new("Daml codegen for Rust")
-        .version("0.1.1")
-        .about("Generate Rust code for working with Daml types")
+    let matches = Command::new(crate_name!())
+        .version(crate_version!())
+        .about(crate_description!())
         .arg(Arg::new("dar").help("Sets the input Dar file to use").required(true).index(1))
         .arg(Arg::new("output").short('o').long("output-dir").takes_value(true).help("Sets the output path"))
         .arg(

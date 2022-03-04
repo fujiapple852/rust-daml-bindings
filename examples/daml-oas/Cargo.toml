@@ -1,13 +1,13 @@
 [package]
 name = "daml-oas"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
 description = "Generate OpenAPI and AsyncAPI specification documents for the Daml JSON API from a Dar file"
 edition = "2021"
 rust-version = "1.59.0"
 
 [dependencies]
-daml = { version = "0.1.1", path = "../../daml", features = [ "lf-full", "json" ] }
+daml = { version = "0.2.0", path = "../../daml", features = [ "lf-full", "json" ] }
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
 serde_yaml = "0.8.23"

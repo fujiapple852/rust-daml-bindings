@@ -11,7 +11,7 @@ and enable the `utils` feature:
 
 ```toml
 [dependencies]
-daml = { version = "0.1.1", features = [ "utils" ] }
+daml = { version = "0.2.0", features = [ "utils" ] }
 ```
 
 ## License

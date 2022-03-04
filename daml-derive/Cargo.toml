@@ -1,6 +1,6 @@
 [package]
 name = "daml-derive"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
 description = "Daml Ledger Procedural Macro"
 repository = "https://github.com/fujiapple852/rust-daml-bindings"
@@ -14,8 +14,8 @@ rust-version = "1.59.0"
 proc-macro = true
 
 [dependencies]
-daml-codegen = { version = "0.1.1", path = "../daml-codegen" }
-daml-lf = { version = "0.1.1", path = "../daml-lf" }
+daml-codegen = { version = "0.2.0", path = "../daml-codegen" }
+daml-lf = { version = "0.2.0", path = "../daml-lf" }
 syn = { version = "1.0.86", features = ["full"] }
 quote = "1.0.15"
 proc-macro2 = "1.0.36"

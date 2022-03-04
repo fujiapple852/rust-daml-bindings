@@ -11,7 +11,7 @@ and enable the `grpc` feature:
 
 ```toml
 [dependencies]
-daml = { version = "0.1.1", features = [ "grpc" ] }
+daml = { version = "0.2.0", features = [ "grpc" ] }
 ```
 
 ## License

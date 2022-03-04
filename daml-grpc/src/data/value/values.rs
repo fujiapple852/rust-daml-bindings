@@ -28,7 +28,7 @@ use std::str::FromStr;
 ///
 /// The [`daml_value!`] macro can be used simplify the construction of complex [`DamlValue`] values.
 ///
-/// [`daml_value!`]: https://docs.rs/daml-macro/0.1.1/daml_macro/macro.daml_value.html
+/// [`daml_value!`]: https://docs.rs/daml-macro/0.2.0/daml_macro/macro.daml_value.html
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum DamlValue {
     /// A Daml [`Record`](https://docs.daml.com/app-dev/grpc/proto-docs.html#record) value.
