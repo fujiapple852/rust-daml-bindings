@@ -22,91 +22,134 @@ use std::cmp::Ordering;
 use std::str::FromStr;
 
 /// A generic representation of data on a Daml ledger.
+///
+/// See the documentation for the Daml GRPC [Value](https://docs.daml.com/app-dev/grpc/proto-docs.html#value) type for
+/// details.
+///
+/// The [`daml_value!`] macro can be used simplify the construction of complex [`DamlValue`] values.
+///
+/// [`daml_value!`]: https://docs.rs/daml-macro/0.1.1/daml_macro/macro.daml_value.html
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum DamlValue {
+    /// A Daml [`Record`](https://docs.daml.com/app-dev/grpc/proto-docs.html#record) value.
     Record(DamlRecord),
+    /// A Daml [`Variant`](https://docs.daml.com/app-dev/grpc/proto-docs.html#variant) value.
     Variant(DamlVariant),
+    /// A Daml [`Enum`](https://docs.daml.com/app-dev/grpc/proto-docs.html#enum) value.
     Enum(DamlEnum),
+    /// A Daml `ContractId`.
     ContractId(DamlContractId),
+    /// A Daml [`List`](https://docs.daml.com/app-dev/grpc/proto-docs.html#list) value.
     List(Vec<DamlValue>),
+    /// A Daml signed 64 bit integer value.
     Int64(DamlInt64),
+    /// A Daml fixed precision numeric value.
     Numeric(DamlNumeric),
+    /// A Daml text string value.
     Text(DamlText),
+    /// A Daml timestamp value.
     Timestamp(DamlTimestamp),
+    /// A Daml Party value.
     Party(DamlParty),
+    /// A Daml boolean value.
     Bool(DamlBool),
+    /// A Daml unit value.
     Unit,
+    /// A Daml date value.
     Date(DamlDate),
+    /// A Daml [optional value.
     Optional(Option<Box<DamlValue>>),
+    /// A Daml [`Map`](https://docs.daml.com/app-dev/grpc/proto-docs.html#map) value.
     Map(DamlTextMap<DamlValue>),
+    /// A Daml [`GenMap`](https://docs.daml.com/app-dev/grpc/proto-docs.html#genmap) value.
     GenMap(DamlGenMap<DamlValue, DamlValue>),
 }
 
 impl DamlValue {
+    /// Construct a new [`DamlValue::Record`] from an existing [`DamlRecord`].
     pub fn new_record(record: impl Into<DamlRecord>) -> Self {
         DamlValue::Record(record.into())
     }
 
+    /// Construct a new [`DamlValue::Variant`] from an existing [`DamlVariant`].
     pub fn new_variant(variant: impl Into<DamlVariant>) -> Self {
         DamlValue::Variant(variant.into())
     }
 
+    /// Construct a new [`DamlValue::Enum`] from an existing [`DamlEnum`].
     pub fn new_enum(enum_variant: impl Into<DamlEnum>) -> Self {
         DamlValue::Enum(enum_variant.into())
     }
 
+    /// Construct a new [`DamlValue::ContractId`] from an existing [`DamlContractId`].
     pub fn new_contract_id(contract_id: impl Into<DamlContractId>) -> Self {
         DamlValue::ContractId(contract_id.into())
     }
 
+    /// Construct a new [`DamlValue::List`] from an existing [`Vec<DamlValue>`].
     pub fn new_list(list: impl Into<Vec<Self>>) -> Self {
         DamlValue::List(list.into())
     }
 
+    /// Construct a new [`DamlValue::Int64`] from an existing [`DamlInt64`].
     pub fn new_int64(value: impl Into<DamlInt64>) -> Self {
         DamlValue::Int64(value.into())
     }
 
+    /// Construct a new [`DamlValue::Numeric`] from an existing [`DamlNumeric`].
     pub fn new_numeric(numeric: impl Into<DamlNumeric>) -> Self {
         DamlValue::Numeric(numeric.into())
     }
 
+    /// Construct a new [`DamlValue::Text`] from an existing [`DamlText`].
     pub fn new_text(text: impl Into<DamlText>) -> Self {
         DamlValue::Text(text.into())
     }
 
+    /// Construct a new [`DamlValue::Timestamp`] from an existing [`DamlTimestamp`].
     pub fn new_timestamp(timestamp: impl Into<DamlTimestamp>) -> Self {
         DamlValue::Timestamp(timestamp.into())
     }
 
+    /// Construct a new [`DamlValue::Party`] from an existing [`DamlParty`].
     pub fn new_party(party: impl Into<DamlParty>) -> Self {
         DamlValue::Party(party.into())
     }
 
+    /// Construct a new [`DamlValue::Bool`] from an existing [`DamlBool`].
     pub fn new_bool(value: DamlBool) -> Self {
         DamlValue::Bool(value)
     }
 
+    /// Construct a new [`DamlValue::Unit`].
     pub const fn new_unit() -> Self {
         DamlValue::Unit
     }
 
+    /// Construct a new [`DamlValue::Date`] from an existing [`DamlDate`].
     pub fn new_date(date: impl Into<DamlDate>) -> Self {
         DamlValue::Date(date.into())
     }
 
+    /// Construct a new [`DamlValue::Optional`] from an existing [`Option<DamlValue>`].
     pub fn new_optional(optional: Option<Self>) -> Self {
         DamlValue::Optional(optional.map(Box::new))
     }
 
+    /// Construct a new [`DamlValue::Map`] from an existing [`DamlTextMap<DamlValue>`].
     pub fn new_map(map: impl Into<DamlTextMap<Self>>) -> Self {
         DamlValue::Map(map.into())
     }
 
+    /// Construct a new [`DamlValue::GenMap`] from an existing [`DamlGenMap<DamlValue, DamlValue>`].
     pub fn new_genmap(map: impl Into<DamlGenMap<Self, Self>>) -> Self {
         DamlValue::GenMap(map.into())
     }
 
+    /// Try to extract an `()` value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Unit`] then `()` is returned, otherwise a [`DamlError::UnexpectedType`] is
+    /// returned.
     pub fn try_unit(&self) -> DamlResult<()> {
         match self {
             DamlValue::Unit => Ok(()),
@@ -114,6 +157,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an `&()` value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Unit`] then `&()` is returned, otherwise a [`DamlError::UnexpectedType`] is
+    /// returned.
     pub fn try_unit_ref(&self) -> DamlResult<&()> {
         match self {
             DamlValue::Unit => Ok(&()),
@@ -121,6 +168,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an [`DamlDate`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Date`] then [`DamlDate`] is returned, otherwise a [`DamlError::UnexpectedType`] is
+    /// returned.
     pub fn try_date(&self) -> DamlResult<DamlDate> {
         match *self {
             DamlValue::Date(d) => Ok(d),
@@ -128,6 +179,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlDate`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Date`] then &[`DamlDate`] is returned, otherwise a [`DamlError::UnexpectedType`] is
+    /// returned.
     pub fn try_date_ref(&self) -> DamlResult<&DamlDate> {
         match self {
             DamlValue::Date(d) => Ok(d),
@@ -135,6 +190,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an [`DamlInt64`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Int64`] then [`DamlInt64`] is returned, otherwise a [`DamlError::UnexpectedType`] is
+    /// returned.
     pub fn try_int64(&self) -> DamlResult<DamlInt64> {
         match self {
             DamlValue::Int64(i) => Ok(*i),
@@ -142,6 +201,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlInt64`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Int64`] then &[`DamlInt64`] is returned, otherwise a [`DamlError::UnexpectedType`]
+    /// is returned.
     pub fn try_int64_ref(&self) -> DamlResult<&DamlInt64> {
         match self {
             DamlValue::Int64(i) => Ok(i),
@@ -149,6 +212,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlNumeric`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Numeric`] then &[`DamlNumeric`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_numeric(&self) -> DamlResult<&DamlNumeric> {
         match self {
             DamlValue::Numeric(d) => Ok(d),
@@ -156,7 +223,10 @@ impl DamlValue {
         }
     }
 
-    // BigDecimal does not implement the Copy trait
+    /// Try to extract an [`DamlNumeric`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Numeric`] then a clone of the [`DamlNumeric`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_numeric_clone(&self) -> DamlResult<DamlNumeric> {
         match self {
             DamlValue::Numeric(d) => Ok(d.clone()),
@@ -164,6 +234,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an [`DamlBool`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Bool`] then [`DamlBool`] is returned, otherwise a [`DamlError::UnexpectedType`] is
+    /// returned.
     pub fn try_bool(&self) -> DamlResult<DamlBool> {
         match self {
             DamlValue::Bool(b) => Ok(*b),
@@ -171,6 +245,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlBool`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Bool`] then &[`DamlBool`] is returned, otherwise a [`DamlError::UnexpectedType`] is
+    /// returned.
     pub fn try_bool_ref(&self) -> DamlResult<&DamlBool> {
         match self {
             DamlValue::Bool(b) => Ok(b),
@@ -178,6 +256,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlText`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Text`] then &[`DamlText`] is returned, otherwise a [`DamlError::UnexpectedType`] is
+    /// returned.
     pub fn try_text(&self) -> DamlResult<&DamlText> {
         match self {
             DamlValue::Text(s) => Ok(s),
@@ -185,6 +267,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an [`DamlTimestamp`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Timestamp`] then [`DamlTimestamp`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_timestamp(&self) -> DamlResult<DamlTimestamp> {
         match *self {
             DamlValue::Timestamp(ts) => Ok(ts),
@@ -192,6 +278,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlTimestamp`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Timestamp`] then &[`DamlTimestamp`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_timestamp_ref(&self) -> DamlResult<&DamlTimestamp> {
         match self {
             DamlValue::Timestamp(ts) => Ok(ts),
@@ -199,6 +289,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlParty`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Party`] then &[`DamlParty`] is returned, otherwise a [`DamlError::UnexpectedType`]
+    /// is returned.
     pub fn try_party(&self) -> DamlResult<&DamlParty> {
         match self {
             DamlValue::Party(party) => Ok(party),
@@ -206,6 +300,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlContractId`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::ContractId`] then &[`DamlContractId`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_contract_id(&self) -> DamlResult<&DamlContractId> {
         match self {
             DamlValue::ContractId(contract_id) => Ok(contract_id),
@@ -213,6 +311,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlRecord`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Record`] then &[`DamlRecord`] is returned, otherwise a [`DamlError::UnexpectedType`]
+    /// is returned.
     pub fn try_record(&self) -> DamlResult<&DamlRecord> {
         match self {
             DamlValue::Record(r) => Ok(r),
@@ -220,6 +322,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`Vec<DamlValue>`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::List`] then &[`Vec<DamlValue>`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_list(&self) -> DamlResult<&Vec<Self>> {
         match self {
             DamlValue::List(l) => Ok(l),
@@ -227,6 +333,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlVariant`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Variant`] then &[`DamlVariant`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_variant(&self) -> DamlResult<&DamlVariant> {
         match self {
             DamlValue::Variant(v) => Ok(v),
@@ -234,6 +344,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlEnum`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Enum`] then &[`DamlEnum`] is returned, otherwise a [`DamlError::UnexpectedType`] is
+    /// returned.
     pub fn try_enum(&self) -> DamlResult<&DamlEnum> {
         match self {
             DamlValue::Enum(e) => Ok(e),
@@ -241,6 +355,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an [`Option<&Self>`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Optional`] then [`Option<&Self>`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_optional(&self) -> DamlResult<Option<&Self>> {
         match self {
             DamlValue::Optional(opt) => Ok(opt.as_deref()),
@@ -248,6 +366,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlTextMap<DamlValue>`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Map`] then &[`DamlTextMap<DamlValue>`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_map(&self) -> DamlResult<&DamlTextMap<Self>> {
         match self {
             DamlValue::Map(m) => Ok(m),
@@ -255,6 +377,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to extract an &[`DamlGenMap<DamlValue, DamlValue>`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::GenMap`] then &[`DamlGenMap<DamlValue, DamlValue>`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_genmap(&self) -> DamlResult<&DamlGenMap<Self, Self>> {
         match self {
             DamlValue::GenMap(m) => Ok(m),
@@ -262,6 +388,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to take an [`DamlRecord`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Record`] then [`DamlRecord`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_take_record(self) -> DamlResult<DamlRecord> {
         match self {
             DamlValue::Record(r) => Ok(r),
@@ -269,6 +399,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to take an [`DamlVariant`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Variant`] then [`DamlVariant`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_take_variant(self) -> DamlResult<DamlVariant> {
         match self {
             DamlValue::Variant(v) => Ok(v),
@@ -276,6 +410,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to take an [`DamlEnum`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Enum`] then [`DamlEnum`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_take_enum(self) -> DamlResult<DamlEnum> {
         match self {
             DamlValue::Enum(e) => Ok(e),
@@ -283,6 +421,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to take an [`Vec<DamlValue>`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::List`] then [`Vec<DamlValue>`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_take_list(self) -> DamlResult<Vec<Self>> {
         match self {
             DamlValue::List(l) => Ok(l),
@@ -290,6 +432,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to take an [`DamlTextMap<DamlValue>`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Map`] then [`DamlTextMap<DamlValue>`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_take_map(self) -> DamlResult<DamlTextMap<Self>> {
         match self {
             DamlValue::Map(m) => Ok(m),
@@ -297,6 +443,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to take an [`DamlGenMap<DamlValue, DamlValue>`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::GenMap`] then [`DamlGenMap<DamlValue, DamlValue>`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_take_genmap(self) -> DamlResult<DamlGenMap<Self, Self>> {
         match self {
             DamlValue::GenMap(m) => Ok(m),
@@ -304,6 +454,10 @@ impl DamlValue {
         }
     }
 
+    /// Try to take an [`Option<DamlValue>`] value from the [`DamlValue`].
+    ///
+    /// if `self` is a [`DamlValue::Optional`] then [`Option<DamlValue>`] is returned, otherwise a
+    /// [`DamlError::UnexpectedType`] is returned.
     pub fn try_take_optional(self) -> DamlResult<Option<Self>> {
         match self {
             DamlValue::Optional(o) => Ok(o.map(|b| *b)),
