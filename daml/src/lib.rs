@@ -24,7 +24,7 @@
 //! |--------------------------------|---------------------------------------------------------------------------|
 //! | [daml-codegen](::daml_codegen) | generate Rust GRPC API bindings from Daml archives                        |
 //! | [daml-bridge]                  | Daml JSON <> GRPC Ledger bridge                                           |
-//! | [daml2oas]                     | Generate OpenAPI and AsyncAPI specifications from Daml dar files          |
+//! | [daml-oas]                     | Generate OpenAPI and AsyncAPI specifications from Daml dar files          |
 //! | [daml-darn]                    | Daml Archive cli tool                                                     |
 //!
 //! # Examples
@@ -32,7 +32,7 @@
 //! Further examples are available in the [`examples`](https://github.com/fujiapple852/rust-daml-bindings/tree/master/examples) directory.
 //!
 //! [daml-bridge]: https://docs.rs/daml-bridge/0.1.1/daml_bridge
-//! [daml2oas]: https://docs.rs/daml2oas/0.1.1/daml2oas
+//! [daml-oas]: https://docs.rs/daml-oas/0.1.1/daml-oas
 //! [daml-daml-darn]: https://docs.rs/daml-darn/0.1.1/daml-darn
 
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]

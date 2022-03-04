@@ -1,5 +1,5 @@
 [package]
-name = "daml2oas"
+name = "daml-oas"
 version = "0.1.1"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
 description = "Generate OpenAPI and AsyncAPI specification documents for the Daml JSON API from a Dar file"

@@ -30,5 +30,5 @@ $ cd daml-darn && cargo run
 A tool which generate OpenAPI and AsyncAPI JSON/YAML schemas from Daml.
 
 ```bash
-$ cd daml2oas && cargo run
+$ cd daml-oas && cargo run
 ```
