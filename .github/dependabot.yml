@@ -21,7 +21,7 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 10
   - package-ecosystem: "cargo"
-    directory: "/examples/darn"
+    directory: "/examples/daml-darn"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
