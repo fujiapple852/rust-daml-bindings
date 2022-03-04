@@ -1,19 +1,39 @@
 //! [Daml](https://daml.com/) - The smart contract language for building distributed applications on a safe, privacy-aware runtime.
 //!
-//! # Crates
+//! # Library Crates
 //!
-//! The following crates are provided for working with Daml in Rust:
+//! The following library crates are provided for working with Daml in Rust:
 //!
 //! | crate                          | description                                                               |
 //! |--------------------------------|---------------------------------------------------------------------------|
 //! | [daml](self)                   | Daml prelude & common entry point                                         |
 //! | [daml-grpc](::daml_grpc)       | Daml Ledger GRPC API bindings                                             |
 //! | [daml-json](::daml_json)       | Daml Ledger JSON API bindings                                             |
-//! | [daml-codegen](::daml_codegen) | Generate Rust GRPC API bindings from Daml archives                        |
+//! | [daml-codegen](::daml_codegen) | Library for generate Rust GRPC API bindings from Daml archives            |
 //! | [daml-derive](::daml_derive)   | Attribute macros for generating Rust GRPC API bindings from Daml archives |
 //! | [daml-macro](::daml_macro)     | Helper macros for working with Daml GRPC values                           |
 //! | [daml-util](::daml_util)       | Utilities for working with Daml ledgers                                   |
 //! | [daml-lf](::daml_lf)           | Library for working with Daml-LF archives                                 |
+//! | [daml-bridge]                  | Library for Daml JSON <> GRPC Ledger bridging                             |
+//!
+//! # Tools
+//!
+//! The following tools are provided:
+//!
+//! | crate                          | description                                                               |
+//! |--------------------------------|---------------------------------------------------------------------------|
+//! | [daml-codegen](::daml_codegen) | generate Rust GRPC API bindings from Daml archives                        |
+//! | [daml-bridge]                  | Daml JSON <> GRPC Ledger bridge                                           |
+//! | [daml2oas]                     | Generate OpenAPI and AsyncAPI specifications from Daml dar files          |
+//! | [daml-darn]                    | Daml Archive cli tool                                                     |
+//!
+//! # Examples
+//!
+//! Further examples are available in the [`examples`](https://github.com/fujiapple852/rust-daml-bindings/tree/master/examples) directory.
+//!
+//! [daml-bridge]: https://docs.rs/daml-bridge/0.1.1/daml_bridge
+//! [daml2oas]: https://docs.rs/daml2oas/0.1.1/daml2oas
+//! [daml-darn]: https://docs.rs/daml-darn/0.1.1/daml-darn
 
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(clippy::module_name_repetitions)]
