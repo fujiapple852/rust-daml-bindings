@@ -1,3 +1,4 @@
+#![doc = include_str!("../README.md")]
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
     clippy::module_name_repetitions,
@@ -15,22 +16,28 @@ use anyhow::Result;
 use clap::{crate_description, crate_name, crate_version, ArgMatches, Command};
 use std::collections::HashMap;
 
+#[doc(hidden)]
 pub mod command_intern;
+#[doc(hidden)]
 pub mod command_package;
+#[doc(hidden)]
 pub mod command_token;
 
+#[doc(hidden)]
 pub trait DarnCommand {
     fn name(&self) -> &str;
     fn args<'a>(&self) -> Command<'a>;
     fn execute(&self, matches: &ArgMatches) -> Result<()>;
 }
 
+#[doc(hidden)]
 macro_rules! command {
     ($id:ident) => {
         Box::new($id {})
     };
 }
 
+#[doc(hidden)]
 #[tokio::main]
 async fn main() -> Result<()> {
     let commands: Vec<Box<dyn DarnCommand>> =
