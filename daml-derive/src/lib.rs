@@ -703,7 +703,7 @@ pub fn DamlEnum(_attr: proc_macro::TokenStream, input: proc_macro::TokenStream) 
 /// daml_codegen!(dar_file = r"Foo.dar");
 /// ```
 ///
-/// To generate [RenderMethod::Intermediate](`daml_codegen::generator::RenderMethod::Intermediate`) Rust types for a
+/// To generate [`RenderMethod::Intermediate`](daml_codegen::generator::RenderMethod::Intermediate) Rust types for a
 /// `Foo.dar` for Daml modules which match the regex `Fuji.*`:
 ///
 /// ```ignore

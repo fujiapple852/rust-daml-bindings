@@ -21,11 +21,9 @@ use crate::generator::ModuleOutputMode;
 ///
 /// ```no_run
 /// use daml_codegen::generator::{daml_codegen, ModuleOutputMode, RenderMethod};
-/// fn main() {
-///     let method = RenderMethod::Full;
-///     let mode = ModuleOutputMode::Combined;
-///     daml_codegen("MyModel.dar", "src/autogen", &[], method, mode).unwrap();
-/// }
+/// let method = RenderMethod::Full;
+/// let mode = ModuleOutputMode::Combined;
+/// daml_codegen("MyModel.dar", "src/autogen", &[], method, mode).unwrap();
 /// ```
 ///
 /// In the example above we used [`RenderMethod::Full`] to indicate that we want to render Rust types without
