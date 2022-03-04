@@ -7,6 +7,23 @@ use futures::StreamExt;
 use uuid::Uuid;
 
 /// Convenience methods for working with a collection of [`DamlPackage`].
+///
+/// In the following example a [`DamlPackages`] is created from all known [`DamlPackage`] on a Daml ledger and then
+/// converted into [`DarFile`] using the [`ArchiveAutoNamingStyle::Uuid`] naming style:
+///
+/// ```no_run
+/// # use daml_lf::DarFile;
+/// # use daml_grpc::DamlGrpcClientBuilder;
+/// # use std::thread;
+/// # use daml_util::package::{DamlPackages, ArchiveAutoNamingStyle};
+/// # fn main() {
+/// futures::executor::block_on(async {
+/// let ledger_client = DamlGrpcClientBuilder::uri("http://127.0.0.1").connect().await.unwrap();
+/// let packages = DamlPackages::from_ledger(&ledger_client).await.unwrap();
+/// let dar = packages.into_dar(ArchiveAutoNamingStyle::Uuid).unwrap();
+/// # })
+/// # }
+/// ```
 #[derive(Debug)]
 pub struct DamlPackages {
     packages: Vec<DamlPackage>,
@@ -100,8 +117,11 @@ impl DamlPackages {
 /// The automatic naming style to use when creating a `DamlLfArchive` from an unnamed `DamlPackage`.
 #[derive(Clone, Copy, Debug)]
 pub enum ArchiveAutoNamingStyle {
+    /// Name the `DamlLfArchive` with an empty String.
     Empty,
+    /// Name the `DamlLfArchive` with the archive hash.
     Hash,
+    /// Name the `DamlLfArchive` with a `uuid`.
     Uuid,
 }
 
