@@ -19,7 +19,7 @@ use crate::generator::ModuleOutputMode;
 /// In your `build.rs` main function invoke the [`daml_codegen`] function for a `dar` file and specify where the
 /// generated src code should be created:
 ///
-/// ```rust
+/// ```no_run
 /// use daml_codegen::generator::{daml_codegen, ModuleOutputMode, RenderMethod};
 /// fn main() {
 ///     let method = RenderMethod::Full;
