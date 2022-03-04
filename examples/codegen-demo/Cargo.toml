@@ -11,6 +11,8 @@ edition = "2021"
 build = "build.rs"
 rust-version = "1.59.0"
 
+publish = false
+
 [dependencies]
 daml = { path = "../../daml", features = [ "prelude", "grpc", "sandbox" ] }
 tokio = { version = "1.17.0", features = [ "macros", "rt-multi-thread" ] }

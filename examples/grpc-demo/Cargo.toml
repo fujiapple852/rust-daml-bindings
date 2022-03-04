@@ -10,6 +10,8 @@ categories = ["development-tools"]
 edition = "2021"
 rust-version = "1.59.0"
 
+publish = false
+
 [dependencies]
 daml = { path = "../../daml", features = [ "grpc", "sandbox", "util", "macros" ] }
 tokio = { version = "1.17.0", features = [ "macros", "rt-multi-thread" ] }
