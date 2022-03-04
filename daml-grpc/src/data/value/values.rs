@@ -40,7 +40,7 @@ pub enum DamlValue {
     /// A Daml `ContractId`.
     ContractId(DamlContractId),
     /// A Daml [`List`](https://docs.daml.com/app-dev/grpc/proto-docs.html#list) value.
-    List(Vec<DamlValue>),
+    List(DamlList<DamlValue>),
     /// A Daml signed 64 bit integer value.
     Int64(DamlInt64),
     /// A Daml fixed precision numeric value.
@@ -86,8 +86,8 @@ impl DamlValue {
         DamlValue::ContractId(contract_id.into())
     }
 
-    /// Construct a new [`DamlValue::List`] from an existing [`Vec<DamlValue>`].
-    pub fn new_list(list: impl Into<Vec<Self>>) -> Self {
+    /// Construct a new [`DamlValue::List`] from an existing [`DamlList<DamlValue>`].
+    pub fn new_list(list: impl Into<DamlList<Self>>) -> Self {
         DamlValue::List(list.into())
     }
 
@@ -322,11 +322,11 @@ impl DamlValue {
         }
     }
 
-    /// Try to extract an &[`Vec<DamlValue>`] value from the [`DamlValue`].
+    /// Try to extract an &[`DamlList<DamlValue>`] value from the [`DamlValue`].
     ///
-    /// if `self` is a [`DamlValue::List`] then &[`Vec<DamlValue>`] is returned, otherwise a
+    /// if `self` is a [`DamlValue::List`] then &[`DamlList<DamlValue>`] is returned, otherwise a
     /// [`DamlError::UnexpectedType`] is returned.
-    pub fn try_list(&self) -> DamlResult<&Vec<Self>> {
+    pub fn try_list(&self) -> DamlResult<&DamlList<Self>> {
         match self {
             DamlValue::List(l) => Ok(l),
             _ => Err(self.make_unexpected_type_error("List")),
@@ -421,11 +421,11 @@ impl DamlValue {
         }
     }
 
-    /// Try to take an [`Vec<DamlValue>`] value from the [`DamlValue`].
+    /// Try to take an [`DamlList<DamlValue>`] value from the [`DamlValue`].
     ///
-    /// if `self` is a [`DamlValue::List`] then [`Vec<DamlValue>`] is returned, otherwise a
+    /// if `self` is a [`DamlValue::List`] then [`DamlList<DamlValue>`] is returned, otherwise a
     /// [`DamlError::UnexpectedType`] is returned.
-    pub fn try_take_list(self) -> DamlResult<Vec<Self>> {
+    pub fn try_take_list(self) -> DamlResult<DamlList<Self>> {
         match self {
             DamlValue::List(l) => Ok(l),
             _ => Err(self.make_unexpected_type_error("List")),
@@ -702,7 +702,7 @@ where
     T: DamlSerializableType + DamlSerializeInto<DamlValue>,
 {
     fn serialize_from(list: DamlList<T>) -> DamlValue {
-        DamlValue::new_list(list.into_iter().map(T::serialize_into).collect::<Vec<_>>())
+        DamlValue::new_list(list.into_iter().map(T::serialize_into).collect::<DamlList<_>>())
     }
 }
 
@@ -888,7 +888,7 @@ impl TryFrom<Value> for DamlValue {
             Sum::Enum(e) => DamlValue::Enum(e.into()),
             Sum::ContractId(v) => DamlValue::ContractId(DamlContractId::new(v)),
             Sum::List(v) =>
-                DamlValue::List(v.elements.into_iter().map(TryInto::try_into).collect::<DamlResult<Vec<_>>>()?),
+                DamlValue::List(v.elements.into_iter().map(TryInto::try_into).collect::<DamlResult<DamlList<_>>>()?),
             Sum::Int64(v) => DamlValue::Int64(v),
             Sum::Numeric(v) => DamlValue::Numeric(DamlNumeric::from_str(&v)?),
             Sum::Text(v) => DamlValue::Text(v),
