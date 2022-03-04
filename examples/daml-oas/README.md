@@ -1,22 +1,22 @@
-[![Documentation](https://docs.rs/daml2oas/badge.svg)](https://docs.rs/daml2oas)
-[![Crate](https://img.shields.io/crates/v/daml2oas.svg)](https://crates.io/crates/daml2oas)
+[![Documentation](https://docs.rs/daml-oas/badge.svg)](https://docs.rs/daml-oas)
+[![Crate](https://img.shields.io/crates/v/daml-oas.svg)](https://crates.io/crates/daml-oas)
 ![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
-# daml2oas
+# daml-oas
 
 Generate OpenAPI and AsyncAPI specification documents for the Daml JSON API from a Dar file.
 
 ## Install
 
 ```shell
-cargo install daml2oas
+cargo install daml-oas
 ```
 
 ## Usage
 
 ```shell
 USAGE:
-    daml2oas [SUBCOMMAND]
+    daml-oas [SUBCOMMAND]
 
 OPTIONS:
     -h, --help       Print help information
@@ -32,7 +32,7 @@ SUBCOMMANDS:
 
 ```shell
 USAGE:
-    daml2oas oas [OPTIONS] <dar>
+    daml-oas oas [OPTIONS] <dar>
 
 ARGS:
     <dar>    Sets the input dar file to use
@@ -60,7 +60,7 @@ OPTIONS:
 
 ```shell
 USAGE:
-    daml2oas a2s [OPTIONS] <dar>
+    daml-oas a2s [OPTIONS] <dar>
 
 ARGS:
     <dar>    Sets the input dar file to use
@@ -88,7 +88,7 @@ OPTIONS:
 Generate an OpenAPI specification for `MyModel.dar` in `json` format:
 
 ```shell
-daml2oas oas MyModel.dar
+daml-oas oas MyModel.dar
 ```
 
 Generate an OpenAPI specification for `MyModel.dar` in `yaml` format with documentation augmented from
@@ -96,7 +96,7 @@ Generate an OpenAPI specification for `MyModel.dar` in `yaml` format with docume
 `.template_filter.yaml`:
 
 ```shell
-daml2oas oas MyModel.dar -f yaml -c .companion.yaml -d .datadict.yaml -f .template_filter.yaml
+daml-oas oas MyModel.dar -f yaml -c .companion.yaml -d .datadict.yaml -f .template_filter.yaml
 ```
 
 ### AsyncAPI
@@ -104,7 +104,7 @@ daml2oas oas MyModel.dar -f yaml -c .companion.yaml -d .datadict.yaml -f .templa
 Generate an AsyncAPI specification for `MyModel.dar` in `json` format:
 
 ```shell
-daml2oas oas MyModel.dar
+daml-oas oas MyModel.dar
 ```
 
 # Companion File
@@ -218,8 +218,8 @@ following `html` examples uses the [stoplight.io](https://stoplight.io/) library
 
 # Build Standalone Executable
 
-How to build and run `daml2oas` as a standalone (using `musl`) executable (run
-from `rust-daml-bindings/examples/daml2oas`).
+How to build and run `daml-oas` as a standalone (using `musl`) executable (run
+from `rust-daml-bindings/examples/daml-oas`).
 
 ## Build the `rust-musl` Docker image
 
@@ -231,7 +231,7 @@ make build-image
 
 ## Build the artifact
 
-To generate the `daml2oas` executable using `musl`:
+To generate the `daml-oas` executable using `musl`:
 
 ```shell
 make build
@@ -247,7 +247,7 @@ make run-oas dar=rust/resources/testing_types_sandbox/TestingTypes-latest.dar
 
 ## License
 
-`daml2oas` is distributed under the terms of the Apache License (Version 2.0).
+`daml-oas` is distributed under the terms of the Apache License (Version 2.0).
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in time by you, as defined
 in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

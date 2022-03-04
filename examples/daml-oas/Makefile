@@ -7,6 +7,6 @@ build-image:
 push:
 	docker push ${NAMESPACE}/${REPOSITORY}:${TAG}
 build:
-	docker run -it -v $(shell pwd)../../../:/rust --name daml2oas-build --rm fujiapple/rust-musl:latest
+	docker run -it -v $(shell pwd)../../../:/rust --name daml-oas-build --rm fujiapple/rust-musl:latest
 run-oas:
-	docker run -it --rm -v $(shell pwd)../../../:/rust centos /rust/examples/daml2oas/target/x86_64-unknown-linux-musl/release/daml2oas $(dar)
+	docker run -it --rm -v $(shell pwd)../../../:/rust centos /rust/examples/daml-oas/target/x86_64-unknown-linux-musl/release/daml-oas $(dar)
