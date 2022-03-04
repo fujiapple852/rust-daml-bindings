@@ -9,7 +9,8 @@ This crate provides helper macros for working with the Daml Ledger GRPC API.
 This crate should not be used directly, instead you should depend on the [`daml`](https://crates.io/crates/daml) crate
 and enable the `macros` feature:
 
-```yaml
+```toml
+[dependencies]
 daml = { version = "0.1.1", features = [ "macros" ] }
 ```
 
