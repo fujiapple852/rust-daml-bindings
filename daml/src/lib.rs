@@ -31,16 +31,16 @@
 //!
 //! Further examples are available in the [`examples`](https://github.com/fujiapple852/rust-daml-bindings/tree/master/examples) directory.
 //!
-//! [daml-bridge]: https://docs.rs/daml-bridge/0.1.1/daml_bridge
-//! [daml-oas]: https://docs.rs/daml-oas/0.1.1/daml-oas
-//! [daml-daml-darn]: https://docs.rs/daml-darn/0.1.1/daml-darn
+//! [daml-bridge]: https://docs.rs/daml-bridge/0.2.0/daml_bridge
+//! [daml-oas]: https://docs.rs/daml-oas/0.2.0/daml-oas
+//! [daml-daml-darn]: https://docs.rs/daml-darn/0.2.0/daml-darn
 
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(clippy::module_name_repetitions)]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
-#![doc(html_root_url = "https://docs.rs/daml/0.1.1")]
+#![doc(html_root_url = "https://docs.rs/daml/0.2.0")]
 
 /// The Daml prelude.
 ///

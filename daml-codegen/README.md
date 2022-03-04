@@ -9,8 +9,8 @@ A library and a tool for generating Rust types from `daml` code.
 This crate provides:
 
 - A code generator backend for the of custom attributes and procedural macros defined in
-  the [`daml-derive`](https://docs.rs/daml-derive/0.1.1/daml_derive/) crate
-- A [`daml_codegen`](https://docs.rs/daml-codegen/0.1.1/daml_codegen/generator/fn.daml_codegen.html) function which is
+  the [`daml-derive`](https://docs.rs/daml-derive/0.2.0/daml_derive/) crate
+- A [`daml_codegen`](https://docs.rs/daml-codegen/0.2.0/daml_codegen/generator/fn.daml_codegen.html) function which is
   designed to be used from `build.rs` files
 - A standalone codegen cli tool
 
@@ -21,7 +21,7 @@ the [`daml`](https://crates.io/crates/daml) crate and enable the `codegen` featu
 
 ```toml
 [dependencies]
-daml = { version = "0.1.1", features = ["codegen"] }
+daml = { version = "0.2.0", features = ["codegen"] }
 ```
 
 ## Install
