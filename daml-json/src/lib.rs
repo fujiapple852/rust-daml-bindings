@@ -1,24 +1,16 @@
 //! Daml ledger JSON [API](https://docs.daml.com/json-api/index.html).
 //!
-//! A simple Daml ledger JSON API client.
+//! A library for working with Daml JSON.
 //!
-//! # Examples
-//!
-//! The following example connects to a Daml ledger and creates a contract.
-//!
-//! ```no_run
-//! use serde_json::json;
-//! use daml_json::service::DamlJsonClientBuilder;
-//! use daml_json::error::DamlJsonResult;
-//! #[tokio::main]
-//! async fn main() -> DamlJsonResult<()> {
-//!     let payload = json!({ "sender": "Alice", "receiver": "Bob", "count": "0" });
-//!     let client = DamlJsonClientBuilder::url("https://api.myledger.org").build()?;
-//!     let create_response = client.create("Fuji.PingPong:Ping", payload.clone()).await?;
-//!     assert_eq!(create_response.payload, payload);
-//!     Ok(())
-//! }
-//! ```
+//! This includes:
+//! - A Daml JSON API [client](service::DamlJsonClient) and [builder](service::DamlJsonClientBuilder)
+//! - A [`DamlValue`](`daml_grpc::data::value::DamlValue`) <> JSON [`Value`](`serde_json::Value`)
+//!   [encoder](value_encode::JsonValueEncoder) and [decoder](value_decode::JsonValueDecoder)
+//! - A Daml JSON API [`request`](request) to GRPC API [`command`](daml_grpc::data::command)
+//!   [converter](request_converter::JsonToGrpcRequestConverter)
+//! - A Daml GRPC API [`event`](daml_grpc::data::event) to JSON API [`response`](request)
+//!   [converter](response_converter::GrpcToJsonResponseConverter)
+//! - A JSON Schema [encoder](schema_encoder::JsonSchemaEncoder)
 
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(

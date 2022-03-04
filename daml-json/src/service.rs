@@ -148,6 +148,26 @@ impl DamlJsonClientBuilder {
 /// Daml JSON API client.
 ///
 /// See [here](https://docs.daml.com/json-api) for full details of the Daml JSON API.
+///
+/// ## Examples
+///
+/// The following example connects to a Daml ledger via the JSON API and creates a contract:
+///
+/// ```no_run
+/// use serde_json::json;
+/// use daml_json::service::DamlJsonClientBuilder;
+/// use daml_json::error::DamlJsonResult;
+/// #[tokio::main]
+/// async fn main() -> DamlJsonResult<()> {
+///     let payload = json!({ "sender": "Alice", "receiver": "Bob", "count": "0" });
+///     let client = DamlJsonClientBuilder::url("https://api.myledger.org")
+///         .with_auth("...token...".into())
+///         .build()?;
+///     let create_response = client.create("Fuji.PingPong:Ping", payload.clone()).await?;
+///     assert_eq!(create_response.payload, payload);
+///     Ok(())
+/// }
+/// ```
 pub struct DamlJsonClient {
     client: Client,
     config: DamlJsonClientConfig,
