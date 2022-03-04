@@ -1,3 +1,4 @@
+#![doc = include_str!("../README.md")]
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(clippy::module_name_repetitions, clippy::must_use_candidate, clippy::missing_errors_doc)]
 #![forbid(unsafe_code)]
@@ -29,24 +30,41 @@ use log::LevelFilter;
 use serde::de::DeserializeOwned;
 use simple_logger::SimpleLogger;
 
+#[doc(hidden)]
 mod a2s;
+#[doc(hidden)]
 mod choice_event_extractor;
+#[doc(hidden)]
 mod common;
+#[doc(hidden)]
 mod companion;
+#[doc(hidden)]
 mod component_encoder;
+#[doc(hidden)]
 mod config;
+#[doc(hidden)]
 mod data_searcher;
+#[doc(hidden)]
 mod filter;
+#[doc(hidden)]
 mod format;
+#[doc(hidden)]
 mod json_api_schema;
+#[doc(hidden)]
 mod oas;
+#[doc(hidden)]
 mod schema;
+#[doc(hidden)]
 mod util;
 
+#[doc(hidden)]
 const DEFAULT_DATA_DICT_FILE: &str = ".datadict.yaml";
+#[doc(hidden)]
 const DEFAULT_TEMPLATE_FILTER_FILE: &str = ".template_filter.yaml";
+#[doc(hidden)]
 const DEFAULT_COMPANION_FILE: &str = ".companion.yaml";
 
+#[doc(hidden)]
 fn main() -> Result<()> {
     let oas = Command::new("oas")
         .about("Generate an OpenAPI document from the given Dar file")
@@ -97,14 +115,17 @@ fn main() -> Result<()> {
     Ok(())
 }
 
+#[doc(hidden)]
 fn make_dar_arg() -> Arg<'static> {
     Arg::new("dar").help("Sets the input dar file to use").required(true).index(1)
 }
 
+#[doc(hidden)]
 fn make_log_level_arg() -> Arg<'static> {
     Arg::new("v").required(false).short('v').multiple_occurrences(true).help("Sets the level of verbosity")
 }
 
+#[doc(hidden)]
 fn make_format_arg() -> Arg<'static> {
     Arg::new("format")
         .short('f')
@@ -116,10 +137,12 @@ fn make_format_arg() -> Arg<'static> {
         .help("the output format")
 }
 
+#[doc(hidden)]
 fn make_output_arg() -> Arg<'static> {
     Arg::new("output").short('o').long("output").takes_value(true).required(false).help("the output file path")
 }
 
+#[doc(hidden)]
 fn make_companion_file_arg() -> Arg<'static> {
     Arg::new("companion-file")
         .short('c')
@@ -129,6 +152,7 @@ fn make_companion_file_arg() -> Arg<'static> {
         .help("the companion yaml file with auxiliary data to inject into the generated OAS document")
 }
 
+#[doc(hidden)]
 fn make_datadict_file_arg() -> Arg<'static> {
     Arg::new("datadict-file")
         .short('d')
@@ -138,6 +162,7 @@ fn make_datadict_file_arg() -> Arg<'static> {
         .help("the data dictionary to use to augment the generated JSON schema")
 }
 
+#[doc(hidden)]
 fn make_template_filter_file_arg() -> Arg<'static> {
     Arg::new("template-filter-file")
         .short('t')
@@ -147,6 +172,7 @@ fn make_template_filter_file_arg() -> Arg<'static> {
         .help("the template filter to apply")
 }
 
+#[doc(hidden)]
 fn make_module_path_arg() -> Arg<'static> {
     Arg::new("module-path")
         .short('m')
@@ -156,6 +182,7 @@ fn make_module_path_arg() -> Arg<'static> {
         .help("module path prefix in the form Foo.Bar.Baz")
 }
 
+#[doc(hidden)]
 fn make_data_title_arg() -> Arg<'static> {
     Arg::new("data-title")
         .long("data-title")
@@ -166,6 +193,7 @@ fn make_data_title_arg() -> Arg<'static> {
         .help("include the `title` property describing the data item name (i.e. Foo.Bar:Baz)")
 }
 
+#[doc(hidden)]
 fn make_type_description_arg() -> Arg<'static> {
     Arg::new("type-description")
         .long("type-description")
@@ -176,6 +204,7 @@ fn make_type_description_arg() -> Arg<'static> {
         .help("include the `description` property describing the Daml type")
 }
 
+#[doc(hidden)]
 fn make_reference_prefix_arg() -> Arg<'static> {
     Arg::new("reference-prefix")
         .short('p')
@@ -186,6 +215,7 @@ fn make_reference_prefix_arg() -> Arg<'static> {
         .help("the prefix for absolute $ref schema references")
 }
 
+#[doc(hidden)]
 fn make_reference_mode_arg() -> Arg<'static> {
     Arg::new("reference-mode")
         .short('r')
@@ -197,6 +227,7 @@ fn make_reference_mode_arg() -> Arg<'static> {
         .help("encode references as as $ref schema links or inline")
 }
 
+#[doc(hidden)]
 fn make_include_package_id_arg() -> Arg<'static> {
     Arg::new("include-package-id")
         .long("include-package-id")
@@ -204,6 +235,7 @@ fn make_include_package_id_arg() -> Arg<'static> {
         .help("include the package id in fully qualified templates")
 }
 
+#[doc(hidden)]
 fn make_include_archive_choice_arg() -> Arg<'static> {
     Arg::new("include-archive-choice")
         .long("include-archive-choice")
@@ -211,6 +243,7 @@ fn make_include_archive_choice_arg() -> Arg<'static> {
         .help("include the Archive choice which is available on every template")
 }
 
+#[doc(hidden)]
 fn make_include_general_operations_arg() -> Arg<'static> {
     Arg::new("include-general-operations").long("include-general-operations").required(false).help(
         "include the general (non-template specific) /v1/create, /v1/exercise, /v1/create-and-exercise & /v1/fetch \
@@ -218,6 +251,7 @@ fn make_include_general_operations_arg() -> Arg<'static> {
     )
 }
 
+#[doc(hidden)]
 fn make_path_style_arg() -> Arg<'static> {
     Arg::new("path-style")
         .short('s')
@@ -229,6 +263,7 @@ fn make_path_style_arg() -> Arg<'static> {
         .help("encode paths with fragment (i.e. '#') or slash ('/')")
 }
 
+#[doc(hidden)]
 fn parse_config(matches: &ArgMatches) -> Config<'_> {
     let dar_file = matches.value_of("dar").unwrap().to_string();
     let level_filter = match matches.occurrences_of("v") {
@@ -303,6 +338,7 @@ fn parse_config(matches: &ArgMatches) -> Config<'_> {
 
 /// OAS
 
+#[doc(hidden)]
 fn execute_oas(config: &Config<'_>) -> Result<()> {
     SimpleLogger::new().with_level(config.level_filter).init().unwrap();
     log::info!("Generating OAS specification documents for {}", config.dar_file);
@@ -322,6 +358,7 @@ fn execute_oas(config: &Config<'_>) -> Result<()> {
     write_document(&rendered, config.output_file.as_deref())
 }
 
+#[doc(hidden)]
 fn generate_openapi(
     dar_file: &DarFile,
     config: &Config<'_>,
@@ -356,6 +393,7 @@ fn generate_openapi(
 
 /// A2S
 
+#[doc(hidden)]
 fn execute_a2s(config: &Config<'_>) -> Result<()> {
     SimpleLogger::new().with_level(config.level_filter).init().unwrap();
     log::info!("Generating A2S specification documents for {}", config.dar_file);
@@ -367,6 +405,7 @@ fn execute_a2s(config: &Config<'_>) -> Result<()> {
     write_document(&render(&a2s, config.format)?, config.output_file.as_deref())
 }
 
+#[doc(hidden)]
 fn generate_asyncapi(
     dar_file: &DarFile,
     config: &Config<'_>,
@@ -398,21 +437,25 @@ fn generate_asyncapi(
 
 /// Common
 
+#[doc(hidden)]
 fn get_companion_data(filter_file_name: &Option<String>) -> Result<CompanionData> {
     read_file(filter_file_name, DEFAULT_COMPANION_FILE)
         .map_err(|err| anyhow!("failed to parse companion file").context(err))
 }
 
+#[doc(hidden)]
 fn get_data_dict(data_dict_file_name: &Option<String>) -> Result<DataDict> {
     read_file(data_dict_file_name, DEFAULT_DATA_DICT_FILE)
         .map_err(|err| anyhow!("failed to parse datadict file").context(err))
 }
 
+#[doc(hidden)]
 fn get_template_filter(filter_file_name: &Option<String>) -> Result<TemplateFilter> {
     let filter: TemplateFilterInput = read_file(filter_file_name, DEFAULT_TEMPLATE_FILTER_FILE)?;
     TemplateFilter::try_from(filter).map_err(|err| anyhow!("failed to parse template filter file").context(err))
 }
 
+#[doc(hidden)]
 fn read_file<T: DeserializeOwned + Default, S: AsRef<str>>(file_name: &Option<String>, fallback: S) -> Result<T> {
     let path = file_name.as_ref();
     if let Some(name) = path {
@@ -435,6 +478,7 @@ fn read_file<T: DeserializeOwned + Default, S: AsRef<str>>(file_name: &Option<St
     }
 }
 
+#[doc(hidden)]
 fn render<S: Serialize>(doc: &S, format: OutputFormat) -> Result<String> {
     match format {
         OutputFormat::Json => Ok(serde_json::to_string_pretty(&doc)?),
@@ -446,6 +490,7 @@ fn render<S: Serialize>(doc: &S, format: OutputFormat) -> Result<String> {
     }
 }
 
+#[doc(hidden)]
 fn write_document(doc: &str, path: Option<&str>) -> Result<()> {
     if let Some(path) = path {
         let target = PathBuf::from(path);
