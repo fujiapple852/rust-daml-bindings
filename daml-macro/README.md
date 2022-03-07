@@ -1,5 +1,5 @@
-[![Documentation](https://docs.rs/daml-macro/badge.svg)](https://docs.rs/daml-macro)
-[![Crate](https://img.shields.io/crates/v/daml-macro.svg)](https://crates.io/crates/daml-macro)
+[![Documentation](https://docs.rs/daml-macro/badge.svg)](https://docs.rs/daml-macro/0.2.0)
+[![Crate](https://img.shields.io/crates/v/daml-macro.svg)](https://crates.io/crates/daml-macro/0.2.0)
 ![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Daml Macro

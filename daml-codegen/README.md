@@ -1,5 +1,5 @@
-[![Documentation](https://docs.rs/daml-codegen/badge.svg)](https://docs.rs/daml-codegen)
-[![Crate](https://img.shields.io/crates/v/daml-codegen.svg)](https://crates.io/crates/daml-codegen)
+[![Documentation](https://docs.rs/daml-codegen/badge.svg)](https://docs.rs/daml-codegen/0.2.0)
+[![Crate](https://img.shields.io/crates/v/daml-codegen.svg)](https://crates.io/crates/daml-codegen/0.2.0)
 ![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Daml Codegen
@@ -17,7 +17,7 @@ This crate provides:
 ## Library
 
 This crate should not be used directly when used as a library, instead you should depend on
-the [`daml`](https://crates.io/crates/daml) crate and enable the `codegen` feature:
+the [`daml`](https://crates.io/crates/daml/0.2.0) crate and enable the `codegen` feature:
 
 ```toml
 [dependencies]

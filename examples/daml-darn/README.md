@@ -1,5 +1,5 @@
-[![Documentation](https://docs.rs/daml-darn/badge.svg)](https://docs.rs/daml-darn)
-[![Crate](https://img.shields.io/crates/v/daml-darn.svg)](https://crates.io/crates/daml-darn)
+[![Documentation](https://docs.rs/daml-darn/badge.svg)](https://docs.rs/daml-darn/0.2.0)
+[![Crate](https://img.shields.io/crates/v/daml-darn.svg)](https://crates.io/crates/daml-darn/0.2.0)
 ![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Darn
