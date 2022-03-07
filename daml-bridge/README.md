@@ -63,7 +63,7 @@ To run the bridge against a Daml ledger listening on `https://127.0.0.1:6865` an
 
 ```shell
 TOKEN="..."
-daml-bridge --ledger-uri https://127.0.0.1:6865 --http-port 8080 --bridge-token $TOKEN --log-filter "daml_bridge=trace"
+daml-bridge --ledger-uri https://127.0.0.1:6865 --http-port 8080 --bridge-token $TOKEN
 ```
 
 ## Limitations

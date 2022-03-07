@@ -5,7 +5,7 @@
 # Daml Codegen
 
 A library and a tool for generating Rust types from `daml` code.
-``
+
 This crate provides:
 
 - A code generator backend for the of custom attributes and procedural macros defined in
@@ -21,7 +21,7 @@ the [`daml`](https://crates.io/crates/daml/0.2.0) crate and enable the `codegen`
 
 ```toml
 [dependencies]
-daml = { version = "0.2.0", features = ["codegen"] }
+daml = { version = "0.2.0", features = [ "codegen" ] }
 ```
 
 ## Install
@@ -54,7 +54,7 @@ OPTIONS:
 To generate Rust types from Daml dar `MyModel.dar` in single src file `/tmp/my_model_0_1_0.rs`:
 
 ```shell
-daml-codegen MyModel.dar --combine-modules -o /tmp/ MyModel.dar
+daml-codegen MyModel.dar --combine-modules -o /tmp/MyModel.dar
 ```
 
 ## License

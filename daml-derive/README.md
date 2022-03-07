@@ -11,7 +11,7 @@ crate and enable the `derive` feature:
 
 ```toml
 [dependencies]
-daml = { version = "0.2.0", features = ["derive"] }
+daml = { version = "0.2.0", features = [ "derive" ] }
 ```
 
 ## License

@@ -1,4 +1,3 @@
-#![doc = include_str!("../README.md")]
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
     clippy::module_name_repetitions,
@@ -13,6 +12,9 @@
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
 #![doc(html_root_url = "https://docs.rs/daml-codegen/0.2.0")]
 #![recursion_limit = "128"]
+// importing the crate README as the rust doc breaks the link to the LICENCE file.
+#![allow(rustdoc::broken_intra_doc_links)]
+#![doc = include_str!("../README.md")]
 
 mod error;
 

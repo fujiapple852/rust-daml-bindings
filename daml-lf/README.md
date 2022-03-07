@@ -11,7 +11,7 @@ crate and enable the `lf` or `lf-full` features:
 
 ```toml
 [dependencies]
-daml = { version = "0.2.0", features = ["lf"] }
+daml = { version = "0.2.0", features = [ "lf" ] }
 ```
 
 ## License
