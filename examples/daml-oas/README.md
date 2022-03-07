@@ -4,7 +4,7 @@
 
 # daml-oas
 
-Generate OpenAPI and AsyncAPI specification documents for the Daml JSON API from a Dar file.
+Generate OpenAPI 3.1 and AsyncAPI specification documents for the Daml JSON API from a Dar file.
 
 ## Install
 
@@ -13,6 +13,8 @@ cargo install daml-oas
 ```
 
 ## Usage
+
+Generate OpenAPI and AsyncAPI specification documents for the Daml JSON API from a Dar file:
 
 ```shell
 USAGE:
@@ -30,6 +32,8 @@ SUBCOMMANDS:
 
 ### OpenAPI Usage
 
+To generate an OpenAPI document from the given Dar file:
+
 ```shell
 USAGE:
     daml-oas oas [OPTIONS] <dar>
@@ -38,23 +42,61 @@ ARGS:
     <dar>    Sets the input dar file to use
 
 OPTIONS:
-    -c, --companion-file <companion-file>                the companion yaml file with auxiliary data to inject into the generated OAS document
-    -d, --datadict-file <datadict-file>                  the data dictionary to use to augment the generated JSON schema
-        --data-title <data-title>                        include the `title` property describing the data item name (i.e. Foo.Bar:Baz) [default: data] [possible values: none, data]
-    -f, --format <format>                                the output format [default: json] [possible values: json, yaml]
-    -h, --help                                           Print help information
-        --include-archive-choice                         include the Archive choice which is available on every template
-        --include-general-operations                     include the general (non-template specific) /v1/create, /v1/exercise, /v1/create-and-exercise & /v1/fetch endpoints
-        --include-package-id                             include the package id in fully qualified templates
-    -m, --module <module-path>                           module path prefix in the form Foo.Bar.Baz
-    -o, --output <output>                                the output file path
-    -p, --reference-prefix <reference-prefix>            the prefix for absolute $ref schema references [default: #/components/schemas/]
-    -r, --reference-mode <reference-mode>                encode references as as $ref schema links or inline [default: ref] [possible values: ref, inline]
-    -s, --path-style <path-style>                        encode paths with fragment (i.e. '#') or slash ('/') [default: fragment] [possible values: fragment, slash]
-    -t, --template-filter-file <template-filter-file>    the template filter to apply
-        --type-description <type-description>            include the `description` property describing the Daml type [default: all] [possible values: none, data, all]
-    -v                                                   Sets the level of verbosity
+    -c, --companion-file <companion-file>
+            the companion yaml file with auxiliary data to inject into the generated OAS document
+
+    -d, --datadict-file <datadict-file>
+            the data dictionary to use to augment the generated JSON schema
+
+        --data-title <data-title>
+            include the `title` property describing the data item name (i.e. Foo.Bar:Baz) [default:
+            data] [possible values: none, data]
+
+    -f, --format <format>
+            the output format [default: json] [possible values: json, yaml]
+
+    -h, --help
+            Print help information
+
+        --include-archive-choice
+            include the Archive choice which is available on every template
+
+        --include-general-operations
+            include the general (non-template specific) /v1/create, /v1/exercise, /v1/create-and-
+            exercise & /v1/fetch endpoints
+
+        --include-package-id
+            include the package id in fully qualified templates
+
+    -m, --module <module-path>
+            module path prefix in the form Foo.Bar.Baz
+
+    -o, --output <output>
+            the output file path
+
+    -p, --reference-prefix <reference-prefix>
+            the prefix for absolute $ref schema references [default: #/components/schemas/]
+
+    -r, --reference-mode <reference-mode>
+            encode references as as $ref schema links or inline [default: ref] [possible values:
+            ref, inline]
+
+    -s, --path-style <path-style>
+            encode paths with fragment (i.e. '#') or slash ('/') [default: fragment] [possible
+            values: fragment, slash]
+
+    -t, --template-filter-file <template-filter-file>
+            the template filter to apply
+
+        --type-description <type-description>
+            include the `description` property describing the Daml type [default: all] [possible
+            values: none, data, all]
+
+    -v
+            Sets the level of verbosity
 ```
+
+To generate an AsyncAPI document from the given Dar file:
 
 ### AsyncAPI Usage
 
@@ -66,19 +108,47 @@ ARGS:
     <dar>    Sets the input dar file to use
 
 OPTIONS:
-    -c, --companion-file <companion-file>                the companion yaml file with auxiliary data to inject into the generated OAS document
-    -d, --datadict-file <datadict-file>                  the data dictionary to use to augment the generated JSON schema
-        --data-title <data-title>                        include the `title` property describing the data item name (i.e. Foo.Bar:Baz) [default: data] [possible values: none, data]
-    -f, --format <format>                                the output format [default: json] [possible values: json, yaml]
-    -h, --help                                           Print help information
-        --include-package-id                             include the package id in fully qualified templates
-    -m, --module <module-path>                           module path prefix in the form Foo.Bar.Baz
-    -o, --output <output>                                the output file path
-    -p, --reference-prefix <reference-prefix>            the prefix for absolute $ref schema references [default: #/components/schemas/]
-    -r, --reference-mode <reference-mode>                encode references as as $ref schema links or inline [default: ref] [possible values: ref, inline]
-    -t, --template-filter-file <template-filter-file>    the template filter to apply
-        --type-description <type-description>            include the `description` property describing the Daml type [default: all] [possible values: none, data, all]
-    -v                                                   Sets the level of verbosity
+    -c, --companion-file <companion-file>
+            the companion yaml file with auxiliary data to inject into the generated OAS document
+
+    -d, --datadict-file <datadict-file>
+            the data dictionary to use to augment the generated JSON schema
+
+        --data-title <data-title>
+            include the `title` property describing the data item name (i.e. Foo.Bar:Baz) [default:
+            data] [possible values: none, data]
+
+    -f, --format <format>
+            the output format [default: json] [possible values: json, yaml]
+
+    -h, --help
+            Print help information
+
+        --include-package-id
+            include the package id in fully qualified templates
+
+    -m, --module <module-path>
+            module path prefix in the form Foo.Bar.Baz
+
+    -o, --output <output>
+            the output file path
+
+    -p, --reference-prefix <reference-prefix>
+            the prefix for absolute $ref schema references [default: #/components/schemas/]
+
+    -r, --reference-mode <reference-mode>
+            encode references as as $ref schema links or inline [default: ref] [possible values:
+            ref, inline]
+
+    -t, --template-filter-file <template-filter-file>
+            the template filter to apply
+
+        --type-description <type-description>
+            include the `description` property describing the Daml type [default: all] [possible
+            values: none, data, all]
+
+    -v
+            Sets the level of verbosity
 ```
 
 ## Examples
@@ -92,7 +162,7 @@ daml-oas oas MyModel.dar
 ```
 
 Generate an OpenAPI specification for `MyModel.dar` in `yaml` format with documentation augmented from
-`.companion.yaml`, a data dictionary from `.datadict.yaml` and filtered for the templates and choices specified by 
+`.companion.yaml`, a data dictionary from `.datadict.yaml` and filtered for the templates and choices specified by
 `.template_filter.yaml`:
 
 ```shell
@@ -112,7 +182,7 @@ daml-oas oas MyModel.dar
 The companion `yaml` file contains additional documentation about templates and choices as well as other metadata that
 will be used to augment the generated OpenAPI and AsyncAPI specifications.
 
-All fields are non-mandatory.
+All fields are non-mandatory and any subset of operations may be documented.
 
 ## Example
 
@@ -147,7 +217,8 @@ operations:
 The datadict `yaml` file contains additional documentation for Daml records that will be used to augment the generated
 OpenAPI and AsyncAPI specifications.
 
-All fields are non-mandatory.
+Any documentation provided in this file will be used in preference to any automatically produced documentation in the
+output. This datadict can contain documentation for any subset of templates and fields.
 
 ## Example
 
@@ -171,7 +242,11 @@ Fuji.PingPong:Ping:
 
 The template filter `yaml` file allows you to specify a subset of templates and choices to generate.
 
-All fields are non-mandatory.
+If a template filter file is provided (using the `--template-filter-file` option) then it will act as an inclusive list,
+any template or choice not specified will be omitted. To include all templates and choices in the output you must omit
+the `--template-filter-file` argument.
+
+For each template, you must specify either `all` choices or a list of `selected` choice names.
 
 ## Example
 
@@ -190,8 +265,8 @@ Fuji.DupUsage:DupUsage: all
 
 # Render
 
-The generated OpenAPI and AsyncAPI specifications can be rendered with any tool that supports the relevant standard. The
-following `html` examples uses the [stoplight.io](https://stoplight.io/) library to render an OpenAPI specification: 
+The generated OpenAPI and AsyncAPI specifications can be processed with any tool that supports the relevant standard.
+The following `html` examples uses the [stoplight.io](https://stoplight.io/) library to render an OpenAPI specification:
 
 ```html
 <!doctype html>
@@ -218,28 +293,20 @@ following `html` examples uses the [stoplight.io](https://stoplight.io/) library
 
 # Build Standalone Executable
 
-How to build and run `daml-oas` as a standalone (using `musl`) executable (run
-from `rust-daml-bindings/examples/daml-oas`).
-
-## Build the `rust-musl` Docker image
-
-To build the `rust-musl` Docker image:
+To build and run `daml-oas` as a standalone (using `musl`) executable, first build the `rust-musl` Docker image (run 
+from `rust-daml-bindings/examples/daml-oas`):
 
 ```shell
 make build-image
 ```
 
-## Build the artifact
-
-To generate the `daml-oas` executable using `musl`:
+Generate the `daml-oas` executable using `musl`:
 
 ```shell
 make build
 ```
 
-## Run the artifact
-
-To run the generated artifact on a vanilla `centos` Docker image:
+Run the generated artifact on a vanilla `centos` Docker image:
 
 ```shell
 make run-oas dar=rust/resources/testing_types_sandbox/TestingTypes-latest.dar
