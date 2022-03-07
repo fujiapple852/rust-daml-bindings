@@ -68,8 +68,13 @@ daml-bridge --ledger-uri https://127.0.0.1:6865 --http-port 8080 --bridge-token 
 
 ## Limitations
 
-The bridge supports the following:
+The bridge supports all operations of the Daml JSON API except:
 
+- [Queries](https://docs.daml.com/json-api/index.html#get-all-active-contracts)
+- [Streaming API](https://docs.daml.com/json-api/index.html#streaming-api)
+- [Healthcheck Endpoints](https://docs.daml.com/json-api/index.html#healthcheck-endpoints)
+
+It does not provide a database backing store or cache, all operations are related to the underlying GRPC API.
 
 ## License
 
