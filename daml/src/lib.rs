@@ -30,17 +30,17 @@
 //!
 //! The following feature may be enabled:
 //!
-//! - grpc - enable the `daml-grpc` library
-//! - json - enable the `daml-json` library
-//! - codegen - enable the `daml-codegen` library
-//! - derive - enable the `daml-derive` library
-//! - macros - enable the `daml-macros` library
-//! - util - enable the `daml-util` library
-//! - lf - enable the `daml-lf` library (excludes expressions)
-//! - lf-full - enable the `daml-lf` library (includes expressions)
-//! - prelude - enable the `daml` prelude
-//! - full - enables: grpc, json, macros, derive, codegen, lf-full, util, prelude
-//! - sandbox - enable sandbox testing features
+//! - `grpc` - enable the `daml-grpc` library
+//! - `json` - enable the `daml-json` library
+//! - `codegen` - enable the `daml-codegen` library
+//! - `derive` - enable the `daml-derive` library
+//! - `macros` - enable the `daml-macros` library
+//! - `util` - enable the `daml-util` library
+//! - `lf` - enable the `daml-lf` library (excludes expressions)
+//! - `lf-full` - enable the `daml-lf` library (includes expressions)
+//! - `prelude` - enable the `daml` prelude
+//! - `full` - enables: grpc, json, macros, derive, codegen, lf-full, util, prelude
+//! - `sandbox` - enable sandbox testing features
 //!
 //! # Tools
 //!

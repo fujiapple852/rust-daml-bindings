@@ -62,8 +62,8 @@ impl DamlPackages {
     ///
     /// Note that an arbitrary package is selected as the main and the remainder are the dependencies.  No attempt is
     /// made to ensure that the dependencies do in fact depend on the main.
-    /// TODO allow specifying the package id to use as the main package
-    /// TODO allow filtering packages such that only actual dependencies of main are included
+    // TODO allow specifying the package id to use as the main package
+    // TODO allow filtering packages such that only actual dependencies of main are included
     pub fn into_dar(self, auto_naming_style: ArchiveAutoNamingStyle) -> DamlResult<DarFile> {
         let all_archives = self.into_archives(auto_naming_style)?;
         Self::archives_to_dar(all_archives)

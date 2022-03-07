@@ -11,7 +11,7 @@ crate and enable the `json` feature:
 
 ```toml
 [dependencies]
-daml = { version = "0.2.0", features = ["json"] }
+daml = { version = "0.2.0", features = [ "json" ] }
 ```
 
 ## License
