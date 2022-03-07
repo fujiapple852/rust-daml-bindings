@@ -16,6 +16,32 @@
 //! | [daml-lf](::daml_lf)           | Library for working with Daml-LF archives                                 |
 //! | [daml-bridge]                  | Library for Daml JSON <> GRPC Ledger bridging                             |
 //!
+//! # Usage
+//!
+//! Applications should always depend on the `daml` crate directly and specify the appropriate features to enable the
+//! required functionality:
+//!
+//! ```toml
+//! [dependencies]
+//! daml = { version = "0.2.0", features = [ "full" ] }
+//! ```
+//!
+//! # Features
+//!
+//! The following feature may be enabled:
+//!
+//! - grpc - enable the `daml-grpc` library
+//! - json - enable the `daml-json` library
+//! - codegen - enable the `daml-codegen` library
+//! - derive - enable the `daml-derive` library
+//! - macros - enable the `daml-macros` library
+//! - util - enable the `daml-util` library
+//! - lf - enable the `daml-lf` library (excludes expressions)
+//! - lf-full - enable the `daml-lf` library (includes expressions)
+//! - prelude - enable the `daml` prelude
+//! - full - enables: grpc, json, macros, derive, codegen, lf-full, util, prelude
+//! - sandbox - enable sandbox testing features
+//!
 //! # Tools
 //!
 //! The following tools are provided:
