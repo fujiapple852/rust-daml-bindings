@@ -19,6 +19,8 @@ An example of using the code generator to create `Rust` code from a Daml model.
 $ cd codegen-demo && cargo run
 ```
 
+# Tools
+
 ## Darn
 A simple tool which demonstrates some features of the various `Daml` libraries.
 
@@ -26,8 +28,8 @@ A simple tool which demonstrates some features of the various `Daml` libraries.
 $ cd daml-darn && cargo run
 ```
 
-## OpenAPI / AsyncAPI
-A tool which generate OpenAPI and AsyncAPI JSON/YAML schemas from Daml.
+## Daml Json OpenAPI / AsyncAPI Specification Generator
+A tool which generate OpenAPI and AsyncAPI JSON/YAML schemas from Daml JSON APIs.
 
 ```bash
 $ cd daml-oas && cargo run
