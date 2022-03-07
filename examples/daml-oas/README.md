@@ -1,5 +1,5 @@
-[![Documentation](https://docs.rs/daml-oas/badge.svg)](https://docs.rs/daml-oas)
-[![Crate](https://img.shields.io/crates/v/daml-oas.svg)](https://crates.io/crates/daml-oas)
+[![Documentation](https://docs.rs/daml-oas/badge.svg)](https://docs.rs/daml-oas/0.2.0)
+[![Crate](https://img.shields.io/crates/v/daml-oas.svg)](https://crates.io/crates/daml-oas/0.2.0)
 ![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # daml-oas

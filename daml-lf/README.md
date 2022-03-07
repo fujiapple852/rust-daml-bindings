@@ -1,17 +1,17 @@
-[![Documentation](https://docs.rs/daml-lf/badge.svg)](https://docs.rs/daml-lf)
-[![Crate](https://img.shields.io/crates/v/daml-lf.svg)](https://crates.io/crates/daml-lf)
+[![Documentation](https://docs.rs/daml-lf/badge.svg)](https://docs.rs/daml-lf/0.2.0)
+[![Crate](https://img.shields.io/crates/v/daml-lf.svg)](https://crates.io/crates/daml-lf/0.2.0)
 ![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Daml LF
 
 This crate provides a library for working with `Daml-LF` packages.
 
-This crate should not be used directly, instead you should depend on the [`daml`](https://crates.io/crates/daml) crate
-and enable the `lf` or `lf-full` features:
+This crate should not be used directly, instead you should depend on the [`daml`](https://crates.io/crates/daml/0.2.0)
+crate and enable the `lf` or `lf-full` features:
 
 ```toml
 [dependencies]
-daml = { version = "0.2.0", features = [ "lf" ] }
+daml = { version = "0.2.0", features = ["lf"] }
 ```
 
 ## License
