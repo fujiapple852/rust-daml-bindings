@@ -103,7 +103,6 @@ fn main() -> Result<()> {
         .version(crate_version!())
         .about(crate_description!())
         .arg_required_else_help(true)
-        .term_width(0)
         .subcommand(oas)
         .subcommand(a2s)
         .get_matches();
