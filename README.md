@@ -1,6 +1,6 @@
 ![ci](https://github.com/fujiapple852/rust-daml-bindings/actions/workflows/ci.yml/badge.svg)
-[![Documentation](https://docs.rs/daml/badge.svg)](https://docs.rs/daml/0.2.0)
-[![Crate](https://img.shields.io/crates/v/daml.svg)](https://crates.io/crates/daml/0.2.0)
+[![Documentation](https://docs.rs/daml/badge.svg)](https://docs.rs/daml/0.2.1)
+[![Crate](https://img.shields.io/crates/v/daml.svg)](https://crates.io/crates/daml/0.2.1)
 ![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Rust Bindings for Daml
@@ -13,15 +13,15 @@ The project provides the following crates:
 
 | crate                                                       | description                                        |
 |-------------------------------------------------------------|----------------------------------------------------|
-| [daml](https://crates.io/crates/daml/0.2.0)                 | Daml prelude & common entry point                  |
-| [daml-grpc](https://crates.io/crates/daml-grpc/0.2.0)       | Daml Ledger GRPC API bindings                      |
-| [daml-json](https://crates.io/crates/daml-json/0.2.0)       | Daml Ledger JSON API bindings                      |
-| [daml-codegen](https://crates.io/crates/daml-codegen/0.2.0) | Generate Rust GRPC API bindings from Daml          |
-| [daml-derive](https://crates.io/crates/daml-derive/0.2.0)   | Macros for generating Rust GRPC bindings from Daml |
-| [daml-macro](https://crates.io/crates/daml-macro/0.2.0)     | Helper macros for working with Daml GRPC values    |
-| [daml-util](https://crates.io/crates/daml-util/0.2.0)       | Utilities for working with Daml ledgers            |
-| [daml-lf](https://crates.io/crates/daml-lf/0.2.0)           | Library for working with Daml-LF archives          |
-| [daml-bridge](https://crates.io/crates/daml-bridge/0.2.0)   | Daml JSON <> GRPC Ledger bridge                    |
+| [daml](https://crates.io/crates/daml/0.2.1)                 | Daml prelude & common entry point                  |
+| [daml-grpc](https://crates.io/crates/daml-grpc/0.2.1)       | Daml Ledger GRPC API bindings                      |
+| [daml-json](https://crates.io/crates/daml-json/0.2.1)       | Daml Ledger JSON API bindings                      |
+| [daml-codegen](https://crates.io/crates/daml-codegen/0.2.1) | Generate Rust GRPC API bindings from Daml          |
+| [daml-derive](https://crates.io/crates/daml-derive/0.2.1)   | Macros for generating Rust GRPC bindings from Daml |
+| [daml-macro](https://crates.io/crates/daml-macro/0.2.1)     | Helper macros for working with Daml GRPC values    |
+| [daml-util](https://crates.io/crates/daml-util/0.2.1)       | Utilities for working with Daml ledgers            |
+| [daml-lf](https://crates.io/crates/daml-lf/0.2.1)           | Library for working with Daml-LF archives          |
+| [daml-bridge](https://crates.io/crates/daml-bridge/0.2.1)   | Daml JSON <> GRPC Ledger bridge                    |
 
 ## Usage
 
@@ -30,10 +30,10 @@ required functionality:
 
 ```toml
 [dependencies]
-daml = { version = "0.2.0", features = [ "full" ] }
+daml = { version = "0.2.1", features = [ "full" ] }
 ```
 
-See the [documentation](https://docs.rs/daml/0.2.0) for the full set of feature flags available.
+See the [documentation](https://docs.rs/daml/0.2.1) for the full set of feature flags available.
 
 ## Example Applications
 

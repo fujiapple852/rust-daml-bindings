@@ -1,6 +1,6 @@
 [package]
 name = "daml-macro"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
 description = "Helper macros for working with the Daml Ledger API"
 readme = "README.md"
@@ -12,7 +12,7 @@ edition = "2021"
 rust-version = "1.59.0"
 
 [dependencies]
-daml-grpc = { version = "0.2.0", path = "../daml-grpc" }
+daml-grpc = { version = "0.2.1", path = "../daml-grpc" }
 chrono = "0.4.19"
 bigdecimal = "0.3.0"
 

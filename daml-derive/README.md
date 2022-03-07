@@ -1,17 +1,17 @@
-[![Documentation](https://docs.rs/daml-derive/badge.svg)](https://docs.rs/daml-derive/0.2.0)
-[![Crate](https://img.shields.io/crates/v/daml-derive.svg)](https://crates.io/crates/daml-derive/0.2.0)
+[![Documentation](https://docs.rs/daml-derive/badge.svg)](https://docs.rs/daml-derive/0.2.1)
+[![Crate](https://img.shields.io/crates/v/daml-derive.svg)](https://crates.io/crates/daml-derive/0.2.1)
 ![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Daml Derive
 
 This crate provides procedural macros for generating Rust types from `daml`.
 
-This crate should not be used directly, instead you should depend on the [`daml`](https://crates.io/crates/daml/0.2.0)
+This crate should not be used directly, instead you should depend on the [`daml`](https://crates.io/crates/daml/0.2.1)
 crate and enable the `derive` feature:
 
 ```toml
 [dependencies]
-daml = { version = "0.2.0", features = [ "derive" ] }
+daml = { version = "0.2.1", features = [ "derive" ] }
 ```
 
 ## License

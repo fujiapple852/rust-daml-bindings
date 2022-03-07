@@ -13,7 +13,7 @@ use crate::generator::ModuleOutputMode;
 ///
 /// ```toml
 /// [dependencies]
-/// daml = { version = "0.2.0", features = [ "codegen" ] }
+/// daml = { version = "0.2.1", features = [ "codegen" ] }
 /// ```
 ///
 /// In your `build.rs` main function invoke the [`daml_codegen`] function for a `dar` file and specify where the
@@ -30,7 +30,7 @@ use crate::generator::ModuleOutputMode;
 /// intermediate annotations (such as [`DamlTemplate`]) and [`ModuleOutputMode::Combined`] to combine all Daml modules
 /// in a single Rust src file.
 ///
-/// [`DamlTemplate`]: https://docs.rs/daml-derive/0.2.0/daml_derive/attr.DamlTemplate.html
+/// [`DamlTemplate`]: https://docs.rs/daml-derive/0.2.1/daml_derive/attr.DamlTemplate.html
 pub fn daml_codegen(
     dar_file: &str,
     output_path: &str,

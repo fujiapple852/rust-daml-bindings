@@ -103,15 +103,15 @@
 /// # Ok(())
 /// # }
 /// ```
-/// [`DamlValue`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/value/enum.DamlValue.html
-/// [`DamlValue::Record`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/value/enum.DamlValue.html#variant.Record
-/// [`DamlValue::Party`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/value/enum.DamlValue.html#variant.Party
-/// [`DamlValue::ContractId`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/value/enum.DamlValue.html#variant.ContractId
-/// [`DamlValue::Text`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/value/enum.DamlValue.html#variant.Text
-/// [`DamlValue::Map`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/value/enum.DamlValue.html#variant.Map
-/// [`DamlValue::GenMap`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/value/enum.DamlValue.html#variant.GenMap
-/// [`DamlValue::Enum`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/value/enum.DamlValue.html#variant.Enum
-/// [`DamlRecord`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/value/struct.DamlRecord.html
+/// [`DamlValue`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/value/enum.DamlValue.html
+/// [`DamlValue::Record`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/value/enum.DamlValue.html#variant.Record
+/// [`DamlValue::Party`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/value/enum.DamlValue.html#variant.Party
+/// [`DamlValue::ContractId`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/value/enum.DamlValue.html#variant.ContractId
+/// [`DamlValue::Text`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/value/enum.DamlValue.html#variant.Text
+/// [`DamlValue::Map`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/value/enum.DamlValue.html#variant.Map
+/// [`DamlValue::GenMap`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/value/enum.DamlValue.html#variant.GenMap
+/// [`DamlValue::Enum`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/value/enum.DamlValue.html#variant.Enum
+/// [`DamlRecord`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/value/struct.DamlRecord.html
 #[macro_export]
 macro_rules! daml_value {
 

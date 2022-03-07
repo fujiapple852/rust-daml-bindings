@@ -10,7 +10,7 @@
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
-#![doc(html_root_url = "https://docs.rs/daml-codegen/0.2.0")]
+#![doc(html_root_url = "https://docs.rs/daml-codegen/0.2.1")]
 #![recursion_limit = "128"]
 // importing the crate README as the rust doc breaks the link to the LICENCE file.
 #![allow(rustdoc::broken_intra_doc_links)]

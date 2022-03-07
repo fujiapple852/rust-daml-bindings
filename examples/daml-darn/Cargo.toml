@@ -1,6 +1,6 @@
 [package]
 name = "daml-darn"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
 description = "Tools for working with Daml Archives and ledgers"
 readme = "README.md"
@@ -12,7 +12,7 @@ edition = "2021"
 rust-version = "1.59.0"
 
 [dependencies]
-daml = { version = "0.2.0", path = "../../daml", features = [ "grpc", "sandbox", "lf-full", "util" ] }
+daml = { version = "0.2.1", path = "../../daml", features = [ "grpc", "sandbox", "lf-full", "util" ] }
 tokio = { version = "1.17.0", features = [ "macros", "rt-multi-thread" ] }
 clap = { version = "3.0.14", features = [ "cargo" ] }
 prettytable-rs = "0.8.0"

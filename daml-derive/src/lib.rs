@@ -100,7 +100,7 @@
 //!
 //! ### Prelude
 //!
-//! All of the above Rust type aliases are defined in the [`prelude`](https://docs.rs/daml/0.2.0/daml/prelude/index.html) module of
+//! All of the above Rust type aliases are defined in the [`prelude`](https://docs.rs/daml/0.2.1/daml/prelude/index.html) module of
 //! the [`daml`](../daml/index.html) crate and can included by using `daml::prelude::*`.
 //!
 //! ### Modules
@@ -286,25 +286,25 @@
 //!
 //! Panics (compile-time only) if errors are detected in the annotated `struct`, `enum` or `impl` blocks.
 //!
-//! [`DamlInt64`]: https://docs.rs/daml/0.2.0/daml/prelude/type.DamlInt64.html
-//! [`DamlNumeric`]: https://docs.rs/daml/0.2.0/daml/prelude/type.DamlNumeric.html
-//! [`DamlText`]: https://docs.rs/daml/0.2.0/daml/prelude/type.DamlText.html
-//! [`DamlBool`]: https://docs.rs/daml/0.2.0/daml/prelude/type.DamlBool.html
-//! [`DamlParty`]: https://docs.rs/daml/0.2.0/daml/prelude/type.DamlParty.html
-//! [`DamlDate`]: https://docs.rs/daml/0.2.0/daml/prelude/type.DamlDate.html
-//! [`DamlTime`]: https://docs.rs/daml/0.2.0/daml/prelude/type.DamlTime.html
-//! [`DamlUnit`]: https://docs.rs/daml/0.2.0/daml/prelude/type.DamlUnit.html
-//! [`DamlContractId`]: https://docs.rs/daml/0.2.0/daml/prelude/type.DamlContractId.html
-//! [`DamlList<T>`]: https://docs.rs/daml/0.2.0/daml/prelude/type.DamlList.html
-//! [`DamlTextMap<T>`]: https://docs.rs/daml/0.2.0/daml/prelude/type.DamlTextMap.html
-//! [`DamlOptional<T>`]: https://docs.rs/daml/0.2.0/daml/prelude/type.DamlOptional.html
-//! [`DamlCreateCommand`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/command/struct.DamlCreateCommand.html
-//! [`DamlExerciseCommand`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/command/struct.DamlExerciseCommand.html
-//! [`DamlCommandService`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/service/struct.DamlCommandService.html
-//! [`DamlCommandSubmissionService`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/service/struct.DamlCommandSubmissionService.html
-//! [`DamlCreatedEvent`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/event/struct.DamlCreatedEvent.html
-//! [`DamlError`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/enum.DamlError.html
-//! [`DamlValue`]: https://docs.rs/daml-grpc/0.2.0/daml_grpc/data/value/enum.DamlValue.html
+//! [`DamlInt64`]: https://docs.rs/daml/0.2.1/daml/prelude/type.DamlInt64.html
+//! [`DamlNumeric`]: https://docs.rs/daml/0.2.1/daml/prelude/type.DamlNumeric.html
+//! [`DamlText`]: https://docs.rs/daml/0.2.1/daml/prelude/type.DamlText.html
+//! [`DamlBool`]: https://docs.rs/daml/0.2.1/daml/prelude/type.DamlBool.html
+//! [`DamlParty`]: https://docs.rs/daml/0.2.1/daml/prelude/type.DamlParty.html
+//! [`DamlDate`]: https://docs.rs/daml/0.2.1/daml/prelude/type.DamlDate.html
+//! [`DamlTime`]: https://docs.rs/daml/0.2.1/daml/prelude/type.DamlTime.html
+//! [`DamlUnit`]: https://docs.rs/daml/0.2.1/daml/prelude/type.DamlUnit.html
+//! [`DamlContractId`]: https://docs.rs/daml/0.2.1/daml/prelude/type.DamlContractId.html
+//! [`DamlList<T>`]: https://docs.rs/daml/0.2.1/daml/prelude/type.DamlList.html
+//! [`DamlTextMap<T>`]: https://docs.rs/daml/0.2.1/daml/prelude/type.DamlTextMap.html
+//! [`DamlOptional<T>`]: https://docs.rs/daml/0.2.1/daml/prelude/type.DamlOptional.html
+//! [`DamlCreateCommand`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/command/struct.DamlCreateCommand.html
+//! [`DamlExerciseCommand`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/command/struct.DamlExerciseCommand.html
+//! [`DamlCommandService`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/service/struct.DamlCommandService.html
+//! [`DamlCommandSubmissionService`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/service/struct.DamlCommandSubmissionService.html
+//! [`DamlCreatedEvent`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/event/struct.DamlCreatedEvent.html
+//! [`DamlError`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/enum.DamlError.html
+//! [`DamlValue`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/value/enum.DamlValue.html
 //! [Daml Template]: https://docs.daml.com/daml/reference/templates.html
 //! [Daml Template Choices]: https://docs.daml.com/daml/reference/choices.html
 //! [Daml Data (Record)]: https://docs.daml.com/daml/reference/data-types.html
@@ -323,7 +323,7 @@
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
-#![doc(html_root_url = "https://docs.rs/daml-derive/0.2.0")]
+#![doc(html_root_url = "https://docs.rs/daml-derive/0.2.1")]
 
 mod convert;
 mod generator;
