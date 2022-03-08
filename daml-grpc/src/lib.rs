@@ -1,7 +1,43 @@
 //! Daml ledger GRPC [API](https://docs.daml.com/app-dev/grpc/index.html).
 //!
-//! The API is separated into a small number of services that cover various aspects of the ledger, e.g. reading
-//! transactions or submitting commands.
+//! This library provides a client for the Daml ledger GRPC API.
+//!
+//! # Example
+//!
+//! The following example demonstrates creating a [`DamlGrpcClient`] using the [`DamlGrpcClientBuilder`], then creating
+//! a [`DamlSimpleExecutor`] using the [`DamlSimpleExecutorBuilder`] and finally creating and submitting a
+//! [`DamlCreateCommand`](data::command::DamlCreateCommand) to the ledger:
+//!
+//! ```no_run
+//! # use futures::future::Future;
+//! # use daml_grpc::data::command::DamlCommand;
+//! # use daml_grpc::DamlGrpcClientBuilder;
+//! # use daml_grpc::DamlSimpleExecutorBuilder;
+//! # use daml_grpc::data::DamlResult;
+//! # use daml_grpc::CommandExecutor;
+//! # use daml_grpc::data::command::DamlCreateCommand;
+//! # use daml_grpc::data::DamlIdentifier;
+//! # use daml_grpc::data::value::DamlRecord;
+//! # use std::error::Error;
+//! # fn main() -> DamlResult<()> {
+//! # futures::executor::block_on(async {
+//! let client = DamlGrpcClientBuilder::uri("http://localhost:8082").connect().await?;
+//! let executor = DamlSimpleExecutorBuilder::new(&client).act_as("Alice").build()?;
+//! let template_id = DamlIdentifier::new("...", "Fuji.PingPong", "Ping");
+//! let record = DamlRecord::new(vec![], None::<DamlIdentifier>);
+//! let command = DamlCreateCommand::new(template_id, record);
+//! let create_event = executor.execute_create(command).await?;
+//! # Ok(())
+//! # })
+//! # }
+//! ```
+//!
+//! Note that Daml commands such as [`DamlCreateCommand`](data::command::DamlCreateCommand) can be automatically
+//! generated for existing Daml templates using the various functions and macros provided in the [`daml-codegen`](https://docs.rs/daml-codegen/0.2.1) crate.
+//!
+//! Note also that the [`daml_value`](https://docs.rs/daml-macro/0.2.1/daml_macro/macro.daml_value.html) macro is
+//! provided to simplify the construction of [`DamlRecord`](data::value::DamlRecord) and
+//! [`DamlValue`](data::value::DamlValue) types.
 
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
