@@ -34,7 +34,7 @@
 //!
 //! # Usage
 //!
-//! Applications should always depend on the `daml` crate directly and specify the appropriate features to enable the
+//! Applications should depend on the `daml` crate directly and specify the appropriate features to enable the
 //! required functionality:
 //!
 //! ```toml
@@ -48,24 +48,23 @@
 //!
 //! ## Working with GRPC
 //!
-//! To connect to a Daml ledger via GRPC you can use the [`DamlGrpcClient`](daml_grpc::DamlGrpcClient) which can be
-//! created using the [`DamlGrpcClientBuilder`](daml_grpc::DamlGrpcClientBuilder).  This client exposes all Daml GRPC
-//! [`service`](daml_grpc::service)s, such as the [`DamlCommandService`](daml_grpc::service::DamlCommandService).  All
-//! services make use of [`DamlValue`](daml_grpc::data::value::DamlValue) which is generic GRPC representation of Daml
-//! types.
+//! To connect to a Daml ledger via the GRPC API you can use the [`DamlGrpcClient`](daml_grpc::DamlGrpcClient) which
+//! can be created using the [`DamlGrpcClientBuilder`](daml_grpc::DamlGrpcClientBuilder).  This client exposes all Daml
+//! GRPC services such as the [`DamlCommandService`](daml_grpc::service::DamlCommandService).  All GRPC services use the
+//! [`DamlValue`](daml_grpc::data::value::DamlValue) type which is generic GRPC representation of Daml types.
 //!
 //! The [`DamlSimpleExecutor`](daml_grpc::DamlSimpleExecutor) which can be created using the
-//! [`DamlSimpleExecutorBuilder`](daml_grpc::DamlSimpleExecutorBuilder) and provides a higher level API for creating an
+//! [`DamlSimpleExecutorBuilder`](daml_grpc::DamlSimpleExecutorBuilder) provides a higher level API for creating and
 //! executing commands against the GRPC Daml ledger API.
 //!
-//! A [`DamlSandboxTokenBuilder`](daml_util::DamlSandboxTokenBuilder) is provided for constructing `JWT` tokens suitable
-//! for use with the Daml sandbox and other ledgers.
+//! A [`DamlSandboxTokenBuilder`](daml_util::DamlSandboxTokenBuilder) is provided for constructing `JWT` tokens that are
+//! suitable for use with the Daml sandbox and other ledgers.
 //!
 //! The [`daml_value!`](daml_macro::daml_value) macro can be used to simplify creating a
 //! [`DamlValue`](daml_grpc::data::value::DamlValue) and the [`daml_path!`](daml_macro::daml_path) macro can be used to
 //! extract data values from a [`DamlValue`](daml_grpc::data::value::DamlValue).
 //!
-//! A sample application which uses many of these is facilities available in the
+//! A sample application which uses many of these facilities is available in the
 //! [`grpc-demo` example](https://github.com/fujiapple852/rust-daml-bindings/tree/master/examples/grpc-demo).  See also
 //! the [`integration_tests`](https://github.com/fujiapple852/rust-daml-bindings/tree/master/daml-grpc/tests/grpc) in
 //! the [`daml-grpc`](::daml_grpc) crate for comprehensive usage examples.
@@ -74,13 +73,13 @@
 //!
 //! To connect to a Daml ledger via the JSON API you can use the [DamlJsonClient](daml_json::service::DamlJsonClient)
 //! which can be created using the [DamlJsonClientBuilder](daml_json::service::DamlJsonClientBuilder).  This client
-//! exposes the full Daml JSON API [`service`](daml_json::service) which make use of the generic JSON `Value` type.
+//! exposes the full Daml JSON API [`service`](daml_json::service) which all make use of the generic JSON `Value` type.
 //!
 //! Conversion between the generic GRPC [`DamlValue`](`daml_grpc::data::value::DamlValue`) and the generic JSON
 //! `Value` representations is provided by [JsonValueEncoder](daml_json::value_encode::JsonValueEncoder) and
 //! [JsonValueDecoder](daml_json::value_decode::JsonValueDecoder).
 //!
-//! It is also possible to convert A Daml JSON API [`request`](daml_json::request) to GRPC API
+//! It is also possible to convert A Daml JSON API [`request`](daml_json::request) to a GRPC API
 //! [`command`](daml_grpc::data::command) using
 //! [JsonToGrpcRequestConverter](daml_json::request_converter::JsonToGrpcRequestConverter) and A Daml GRPC API
 //! [`event`](daml_grpc::data::event) to a JSON API [`response`](daml_json::request) using
@@ -95,17 +94,24 @@
 //!
 //! ## Working with Daml LF
 //!
-//! The [`DarFile`](daml_lf::DarFile) and [`DamlLfArchive`](daml_lf::DamlLfArchive) types can be used to load and
-//! parse existing `.dar` and `.dalf` files and access the various [`element`](daml_lf::element) they contain.  The
+//! The [`DarFile`](daml_lf::DarFile), [`DamlLfArchive`](daml_lf::DamlLfArchive) and
+//! [`DamlLfArchivePayload`](daml_lf::DamlLfArchivePayload) types can be used to load and
+//! parse existing `.dar` & `.dalf` files and access the various [`element`](daml_lf::element) they contain.  The
 //! [`DamlElementVisitor`](daml_lf::element::DamlElementVisitor) provides a means to traverse these elements.
 //!
 //! The [`DamlPackages`](daml_util::package::DamlPackages) type provides the ability to extract Daml LF packages from an
-//! existing ledger as a collection of [`DamlLfArchive`](daml_lf::DamlLfArchive) or combined into a single
-//! [`DarFile`](daml_lf::DarFile) file.
+//! existing ledger as a collection of [`DamlLfArchivePayload`](daml_lf::DamlLfArchivePayload),
+//! [`DamlLfArchive`](daml_lf::DamlLfArchive) or combined into a single [`DarFile`](daml_lf::DarFile) file.
 //!
-//! A [`DarFile`](daml_lf::DarFile) can be [applied](::daml_lf::DarFile::apply) to a function and also converted
-//! [converted](daml_lf::DarFile::to_owned_archive) to be owned (bounded by `'static`) such that it is suitable to be
-//! passed to a thread to async executor.
+//! You can use [DarFile::apply](::daml_lf::DarFile::apply),
+//! [DamlLfArchive::apply](::daml_lf::DamlLfArchive::apply) &
+//! [DamlLfArchivePayload::apply](::daml_lf::DamlLfArchivePayload::apply) to apply a function to the
+//! [`DarFile`](daml_lf::DarFile), [`DamlLfArchive`](daml_lf::DamlLfArchive) and
+//! [`DamlLfArchivePayload`](daml_lf::DamlLfArchivePayload) types respectively.
+//!
+//! If required you may use
+//! [DarFile::to_owned_archive](daml_lf::DarFile::to_owned_archive) to convert a [`DarFile`](daml_lf::DarFile) be owned
+//! (bounded by `'static`) such that it is suitable to be passed to a thread to async executor.
 //!
 //! ## Code Generation
 //!
@@ -120,13 +126,15 @@
 //! the [`daml-derive`](::daml_derive) crate provides several examples.
 //!
 //! The [`daml_codegen`](macro@daml_derive::daml_codegen) procedural macro is provided to enable generating Rust modules
-//! and types for a complete `.dar` file.  A sample application which uses the [`daml_codegen`] macro in a `build.rs`
-//! file is available in the
-//! [`codegen-demo` example](https://github.com/fujiapple852/rust-daml-bindings/tree/master/examples/codegen-demo).
-//! See also the
+//! and types for a complete `.dar` file.  See the
 //! [`codegen`](https://github.com/fujiapple852/rust-daml-bindings/tree/master/daml-derive/tests/codegen/all_tests)
 //! tests in the [`daml-derive`](::daml_derive) crate for examples of using the
 //! [`daml_codegen`](macro@daml_derive::daml_codegen) macro.
+//!
+//! The [`daml_codegen`](daml_codegen::generator::daml_codegen) function provides a mechanism to perform code generation
+//! from `build.rs` without using a macro.  A sample application which uses the
+//! [`daml_codegen`](daml_codegen::generator::daml_codegen) function in a `build.rs` file is available in the
+//! [`codegen-demo` example](https://github.com/fujiapple852/rust-daml-bindings/tree/master/examples/codegen-demo).
 //!
 //! ## Tools
 //!
