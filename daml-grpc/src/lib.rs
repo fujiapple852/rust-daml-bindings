@@ -33,9 +33,9 @@
 //! ```
 //!
 //! Note that Daml commands such as [`DamlCreateCommand`](data::command::DamlCreateCommand) can be automatically
-//! generated for existing Daml templates using the various functions and macros provided in the [`daml-codegen`](https://docs.rs/daml-codegen/0.2.1) crate.
+//! generated for existing Daml templates using the various functions and macros provided in the [`daml-codegen`](https://docs.rs/daml-codegen/0.2.2) crate.
 //!
-//! Note also that the [`daml_value`](https://docs.rs/daml-macro/0.2.1/daml_macro/macro.daml_value.html) macro is
+//! Note also that the [`daml_value`](https://docs.rs/daml-macro/0.2.2/daml_macro/macro.daml_value.html) macro is
 //! provided to simplify the construction of [`DamlRecord`](data::value::DamlRecord) and
 //! [`DamlValue`](data::value::DamlValue) types.
 
@@ -53,7 +53,7 @@
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
-#![doc(html_root_url = "https://docs.rs/daml-grpc/0.2.1")]
+#![doc(html_root_url = "https://docs.rs/daml-grpc/0.2.2")]
 
 /// Daml API domain objects (i.e. values, commands, events).
 pub mod data;

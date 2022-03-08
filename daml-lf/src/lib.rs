@@ -73,9 +73,9 @@
 //! This library supports all Daml-LF [`LanguageVersion`] from [`LanguageVersion::V1_0`] up to
 //! [`LanguageVersion::V1_14`].
 //!
-//! [`daml-util`]: https://docs.rs/daml-util/0.2.1/daml_util/
-//! [`DamlPackages`]: https://docs.rs/daml-util/0.2.1/daml_util/package/struct.DamlPackages.html
-//! [`daml_package_service`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/service/struct.DamlPackageService.html
+//! [`daml-util`]: https://docs.rs/daml-util/0.2.2/daml_util/
+//! [`DamlPackages`]: https://docs.rs/daml-util/0.2.2/daml_util/package/struct.DamlPackages.html
+//! [`daml_package_service`]: https://docs.rs/daml-grpc/0.2.2/daml_grpc/service/struct.DamlPackageService.html
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, rust_2018_idioms)]
 #![allow(
     clippy::module_name_repetitions,
@@ -88,7 +88,7 @@
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
 #![doc(html_logo_url = "https://docs.daml.com/_static/images/DAML_Logo_Blue.svg")]
-#![doc(html_root_url = "https://docs.rs/daml-lf/0.2.1")]
+#![doc(html_root_url = "https://docs.rs/daml-lf/0.2.2")]
 
 mod archive;
 mod convert;

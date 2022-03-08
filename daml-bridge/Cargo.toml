@@ -1,6 +1,6 @@
 [package]
 name = "daml-bridge"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["FujiApple <fujiapple852@gmail.com>"]
 description = "Daml JSON<>GRPC bridge"
 readme = "README.md"
@@ -12,10 +12,10 @@ edition = "2021"
 rust-version = "1.59.0"
 
 [dependencies]
-daml-json = { version = "0.2.1", path = "../daml-json" }
-daml-grpc = { version = "0.2.1", path = "../daml-grpc" }
-daml-util = { version = "0.2.1", path = "../daml-util", features = ["sandbox"] }
-daml-lf = { version = "0.2.1", path = "../daml-lf" }
+daml-json = { version = "0.2.2", path = "../daml-json" }
+daml-grpc = { version = "0.2.2", path = "../daml-grpc" }
+daml-util = { version = "0.2.2", path = "../daml-util", features = ["sandbox"] }
+daml-lf = { version = "0.2.2", path = "../daml-lf" }
 tokio = { version = "1.17.0", features = ["macros", "rt-multi-thread"] }
 futures = "0.3.21"
 warp = { version = "0.3.2", default-features = false }
