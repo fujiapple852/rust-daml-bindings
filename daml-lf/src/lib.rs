@@ -47,8 +47,7 @@
 //! thread::spawn(move || {
 //!     dbg!(archive.name());
 //! })
-//! .join()
-//! .unwrap();
+//! # .join().unwrap();
 //! # Ok(())
 //! # }
 //! ```
