@@ -81,7 +81,7 @@
 //! ```
 //!
 //! Both [`macro@DamlData`] and [`macro@DamlVariant`] types may therefore be defined recursively.  However modelling
-//! such structures in Rust requires that any recurisvely defined items be held via an indirection, typically
+//! such structures in Rust requires that any recursively defined items be held via an indirection, typically
 //! via a heap allocation smart pointer such as `Box<T>`, to ensure a non-infinite size for the `struct` or `enum`
 //! (see [here](https://doc.rust-lang.org/error-index.html#E0072) for details).
 //!
@@ -106,8 +106,8 @@
 //! ### Modules
 //!
 //! Rust `struct` and `enum` types annotated with the custom attributes provided by this crate are
-//! _not_ required to be nested in Rust `modules` that mirror the Daml `module` heirarchy.  All of the standard Rust
-//! name resolution and visiblity rules apply and therefore it is recommedned to mirror the Daml heirarchy where
+//! _not_ required to be nested in Rust `modules` that mirror the Daml `module` hierarchy.  All of the standard Rust
+//! name resolution and visibility rules apply and therefore it is recommend to mirror the Daml hierarchy where
 //! possible to avoid namespace collisions.
 //!
 //! For example, the `MyData` data type defined in the `Fuji.MyModule.MySubModule` Daml module would likely be declared
@@ -180,7 +180,7 @@
 //! let ping = Ping::new("Alice", "Bob", 0);
 //! ```
 //!
-//! To create an instance of the `Ping` template on a Daml ledger a [`DamlCreateCommand`] specfic to our `ping` data
+//! To create an instance of the `Ping` template on a Daml ledger a [`DamlCreateCommand`] specific to our `ping` data
 //! needs to be constructed.  This can be done as follows:
 //!
 //! ```no_run
@@ -428,7 +428,7 @@ pub fn DamlTemplate(attr: proc_macro::TokenStream, input: proc_macro::TokenStrea
 /// - The name of the Daml method (i.e. `my_choice`) must match the Daml template choice name in `snake_case`
 /// - Any method body provided is ignored
 /// - No distinction is made between consuming & non-consuming choices
-/// - All paramters must be either a [Daml primitive type alias] or a user defined [`macro@DamlData`]
+/// - All parameters must be either a [Daml primitive type alias] or a user defined [`macro@DamlData`]
 ///
 /// # Examples
 ///
