@@ -9,7 +9,7 @@ Unofficial Rust bindings and tools for [Daml](https://daml.com).
 
 ## Crates
 
-The project provides the following crates:
+The project provides the following library crates:
 
 | crate                                                       | description                                        |
 |-------------------------------------------------------------|----------------------------------------------------|
@@ -21,7 +21,18 @@ The project provides the following crates:
 | [daml-macro](https://crates.io/crates/daml-macro/0.2.1)     | Helper macros for working with Daml GRPC values    |
 | [daml-util](https://crates.io/crates/daml-util/0.2.1)       | Utilities for working with Daml ledgers            |
 | [daml-lf](https://crates.io/crates/daml-lf/0.2.1)           | Library for working with Daml-LF archives          |
-| [daml-bridge](https://crates.io/crates/daml-bridge/0.2.1)   | Daml JSON <> GRPC Ledger bridge                    |
+| [daml-bridge](https://crates.io/crates/daml-bridge/0.2.1)   | Daml JSON <> GRPC Ledger bridging                  |
+
+## Tools
+
+The project provides the following standalone tools:
+
+| crate                                                       | description                                |
+|-------------------------------------------------------------|--------------------------------------------|
+| [daml-codegen](https://crates.io/crates/daml-codegen/0.2.1) | Rust GRPC API bindings code generator tool |
+| [daml-bridge](https://crates.io/crates/daml-bridge/0.2.1)   | Daml JSON <> GRPC Ledger bridging tool     |
+| [daml-oas](https://crates.io/crates/daml-oas/0.2.1)         | OpenAPI and AsyncAPI generation tool       |
+| [daml-darn](https://crates.io/crates/daml-darn/0.2.1)       | Daml Archive cli tool                      |
 
 ## Usage
 
