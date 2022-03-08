@@ -65,7 +65,7 @@ pub struct DamlJsonCreateResponse {
 /// To avoid having to first convert to a generic JSON `Value` to decide check which structure has been provided we
 /// use the `serde` [untagged enum](https://serde.rs/enum-representations.html#untagged) feature and add an
 /// [`DamlJsonInvalidExerciseRequest`] variant which has both `contractId` and `key` fields.  This allow the downstream
-/// hander to rejected the request with a suitable error message.
+/// handier to rejected the request with a suitable error message.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum DamlJsonExerciseRequestType {

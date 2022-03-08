@@ -89,7 +89,7 @@ impl DamlLfArchivePayload {
         convert::apply_payload(self, f)
     }
 
-    /// Returns true if the `package` within this `DamlLfArchivePayload` contains `module`, flase otherwise.
+    /// Returns true if the `package` within this `DamlLfArchivePayload` contains `module`, false otherwise.
     ///
     /// The supplied `module` name is assumed to be in `DottedName` format, i.e. `TopModule.SubModule.Module`.
     ///

@@ -62,7 +62,7 @@ pub enum DamlType<'a> {
     Update,
     /// A scenario effect.
     Scenario,
-    /// Universal qualifiier.
+    /// Universal qualifier.
     Forall(DamlForall<'a>),
     /// A struct type.
     Struct(DamlStruct<'a>),
