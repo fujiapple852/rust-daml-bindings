@@ -30,7 +30,7 @@ required functionality:
 
 ```toml
 [dependencies]
-daml = { version = "0.2.2", features = ["full"] }
+daml = { version = "0.2.2", features = [ "full" ] }
 ```
 
 See the [documentation](https://docs.rs/daml/0.2.2) for the full set of feature flags available.
