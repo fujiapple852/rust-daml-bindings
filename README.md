@@ -51,7 +51,8 @@ This library has been tested against Daml-LF version `1.14` and Daml Connect SDK
 
 ## Changelog
 
-Please see the [CHANGELOG](CHANGELOG.md) for a release history.
+Please see the [CHANGELOG](https://github.com/fujiapple852/rust-daml-bindings/blob/master/CHANGELOG.md) for a release
+history.
 
 ## License
 
