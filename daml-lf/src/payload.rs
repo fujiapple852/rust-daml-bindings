@@ -60,8 +60,8 @@ impl DamlLfArchivePayload {
     /// ../daml-grpc/service/daml_package_service/struct.DamlPackageService.html#method.get_package
     /// [`get_package_sync`]:
     /// ../daml-grpc/service/daml_package_service/struct.DamlPackageService.html#method.get_package_sync
-    /// [`payload()`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/package/struct.DamlPackage.html#method.payload
-    /// [`DamlPackage`]: https://docs.rs/daml-grpc/0.2.1/daml_grpc/data/package/struct.DamlPackage.html
+    /// [`payload()`]: https://docs.rs/daml-grpc/0.2.2/daml_grpc/data/package/struct.DamlPackage.html#method.payload
+    /// [`DamlPackage`]: https://docs.rs/daml-grpc/0.2.2/daml_grpc/data/package/struct.DamlPackage.html
     /// [`UnsupportedVersion`]: DamlLfError::UnsupportedVersion
     /// [`DamlLfParseError`]: DamlLfError::DamlLfParseError
     /// [`UnknownVersion`]: DamlLfError::UnknownVersion

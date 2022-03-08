@@ -1,17 +1,17 @@
-[![Documentation](https://docs.rs/daml-util/badge.svg)](https://docs.rs/daml-util/0.2.1)
-[![Crate](https://img.shields.io/crates/v/daml-util.svg)](https://crates.io/crates/daml-util/0.2.1)
+[![Documentation](https://docs.rs/daml-util/badge.svg)](https://docs.rs/daml-util/0.2.2)
+[![Crate](https://img.shields.io/crates/v/daml-util.svg)](https://crates.io/crates/daml-util/0.2.2)
 ![maintenance-status](https://img.shields.io/badge/maintenance-experimental-blue.svg)
 
 # Daml Util
 
 This crate provides helper utilities for working with the Daml Ledgers.
 
-This crate should not be used directly, instead you should depend on the [`daml`](https://crates.io/crates/daml/0.2.1)
+This crate should not be used directly, instead you should depend on the [`daml`](https://crates.io/crates/daml/0.2.2)
 crate and enable the `utils` feature:
 
 ```toml
 [dependencies]
-daml = { version = "0.2.1", features = [ "utils" ] }
+daml = { version = "0.2.2", features = [ "utils" ] }
 ```
 
 ## License
