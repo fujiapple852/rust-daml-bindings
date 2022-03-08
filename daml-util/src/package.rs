@@ -17,7 +17,7 @@ use uuid::Uuid;
 /// # use std::thread;
 /// # use daml_util::package::{DamlPackages, ArchiveAutoNamingStyle};
 /// # fn main() {
-/// futures::executor::block_on(async {
+/// # futures::executor::block_on(async {
 /// let ledger_client = DamlGrpcClientBuilder::uri("http://127.0.0.1").connect().await.unwrap();
 /// let packages = DamlPackages::from_ledger(&ledger_client).await.unwrap();
 /// let dar = packages.into_dar(ArchiveAutoNamingStyle::Uuid).unwrap();
