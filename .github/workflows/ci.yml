@@ -204,6 +204,31 @@ jobs:
           command: clippy
           args: --workspace --all-features --tests -- -Dwarnings
 
+  minimal-versions:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [nightly]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+
+      - name: update -Z minimal-versions
+        uses: actions-rs/cargo@v1
+        with:
+          command: update
+          args: -Z minimal-versions
+
+      - name: check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --workspace --all-features
+
   cargo-deny:
     runs-on: ubuntu-latest
     steps:
