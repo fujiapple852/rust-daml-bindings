@@ -40,7 +40,7 @@ anyhow = "1.0.55"
 tracing-subscriber = { version = "0.3.9", features = ["env-filter"] }
 
 [build-dependencies]
-tonic-build = "0.6.2"
+tonic-build = "0.7.1"
 itertools = "0.10.3"
 
 [package.metadata.docs.rs]
