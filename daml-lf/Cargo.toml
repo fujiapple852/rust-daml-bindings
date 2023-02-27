@@ -19,7 +19,7 @@ full = []
 [dependencies]
 bytes = "1.1.0"
 prost = { version = "0.9.0", features = [ "no-recursion-limit" ] }
-prost-derive = "0.9.0"
+prost-derive = "0.11.8"
 zip = { version = "0.6.2", default-features = false, features = [ "deflate" ] }
 yaml-rust = "0.4.5"
 itertools = "0.10.3"
