@@ -31,7 +31,7 @@ bounded-static = { version = "0.3.0", features = [ "derive" ] }
 trim-margin = "0.1.0"
 
 [build-dependencies]
-prost-build = "0.9.0"
+prost-build = "0.11.8"
 itertools = "0.10.3"
 
 [package.metadata.docs.rs]
