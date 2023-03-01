@@ -16,7 +16,7 @@ daml = { version = "0.2.2", path = "../../daml", features = [ "lf-full", "json" 
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
 serde_yaml = "0.8.23"
-clap = { version = "3.0.14", features = [ "cargo" ] }
+clap = { version = "4.1.8", features = [ "cargo" ] }
 anyhow = "1.0.55"
 thiserror = "1.0.30"
 itertools = "0.10.3"
