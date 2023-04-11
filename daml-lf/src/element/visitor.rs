@@ -105,8 +105,8 @@ pub trait DamlElementVisitor {
     fn post_visit_non_local_tycon<'a>(&mut self, non_local_tycon: &'a DamlNonLocalTyCon<'a>) {}
     fn pre_visit_absolute_tycon<'a>(&mut self, absolute_tycon: &'a DamlAbsoluteTyCon<'a>) {}
     fn post_visit_absolute_tycon<'a>(&mut self, absolute_tycon: &'a DamlAbsoluteTyCon<'a>) {}
-    fn pre_visit_def_key<'a>(&mut self, def_key: &DamlDefKey<'a>) {}
-    fn post_visit_def_key<'a>(&mut self, def_key: &DamlDefKey<'a>) {}
+    fn pre_visit_def_key(&mut self, def_key: &DamlDefKey<'_>) {}
+    fn post_visit_def_key(&mut self, def_key: &DamlDefKey<'_>) {}
 
     #[cfg(feature = "full")]
     fn pre_visit_def_value<'a>(&mut self, def_value: &'a DamlDefValue<'a>) {}

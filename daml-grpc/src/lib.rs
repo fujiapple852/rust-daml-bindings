@@ -49,7 +49,8 @@
     clippy::used_underscore_binding,
     clippy::future_not_send,
     clippy::return_self_not_must_use,
-    clippy::option_if_let_else
+    clippy::option_if_let_else,
+    clippy::significant_drop_in_scrutinee
 )]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]

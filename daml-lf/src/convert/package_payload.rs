@@ -37,7 +37,7 @@ pub struct DamlPackagePayload<'a> {
     pub modules: HashMap<String, DamlModulePayload<'a>>,
 }
 
-impl<'a> PackageInternedResolver for DamlPackagePayload<'_> {
+impl PackageInternedResolver for DamlPackagePayload<'_> {
     fn package_id(&self) -> &str {
         self.package_id
     }
