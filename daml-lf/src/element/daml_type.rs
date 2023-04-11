@@ -422,8 +422,9 @@ impl<'a> DamlTyConName<'a> {
 impl Display for DamlTyConName<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            DamlTyConName::Local(local) =>
-                write!(f, "{}:{}:{}", local.package_name, &local.module_path.join("."), local.data_name),
+            DamlTyConName::Local(local) => {
+                write!(f, "{}:{}:{}", local.package_name, &local.module_path.join("."), local.data_name)
+            },
             DamlTyConName::NonLocal(non_local) => write!(
                 f,
                 "{}:{}:{}",
@@ -431,8 +432,9 @@ impl Display for DamlTyConName<'_> {
                 &non_local.target_module_path.join("."),
                 non_local.data_name
             ),
-            DamlTyConName::Absolute(abs) =>
-                write!(f, "{}:{}:{}", abs.package_name, &abs.module_path.join("."), abs.data_name),
+            DamlTyConName::Absolute(abs) => {
+                write!(f, "{}:{}:{}", abs.package_name, &abs.module_path.join("."), abs.data_name)
+            },
         }
     }
 }

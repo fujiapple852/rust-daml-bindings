@@ -158,9 +158,8 @@ impl DarManifest {
 
         let manifest_version = match doc[MANIFEST_VERSION_KEY].as_f64() {
             Some(s) if format!("{:.*}", 1, s) == VERSION_1_VALUE => Ok(DarManifestVersion::V1),
-            Some(s) => Err(DamlLfError::new_dar_parse_error(format!(
-                "unexpected value for {MANIFEST_VERSION_KEY}, found {s}"
-            ))),
+            Some(s) =>
+                Err(DamlLfError::new_dar_parse_error(format!("unexpected value for {MANIFEST_VERSION_KEY}, found {s}"))),
             None => Ok(DarManifestVersion::Unknown),
         }?;
 
@@ -191,9 +190,8 @@ impl DarManifest {
 
         let encryption = match doc[ENCRYPTION_KEY].as_str() {
             Some(s) if s.to_lowercase() == NON_ENCRYPTED_VALUE => Ok(DarEncryptionType::NotEncrypted),
-            Some(s) => Err(DamlLfError::new_dar_parse_error(format!(
-                "unexpected value for {NON_ENCRYPTED_VALUE}, found {s}"
-            ))),
+            Some(s) =>
+                Err(DamlLfError::new_dar_parse_error(format!("unexpected value for {NON_ENCRYPTED_VALUE}, found {s}"))),
             None => Err(DamlLfError::new_dar_parse_error(format!("key {NON_ENCRYPTED_VALUE} not found"))),
         }?;
 
@@ -396,8 +394,9 @@ mod test {
             .expect("invalid test string");
         let manifest = DarManifest::parse(&manifest_str[..]);
         match manifest.expect_err("expected failure") {
-            DamlLfError::DarParseError(s) =>
-                assert_eq!("unexpected value for daml-lf, found anything-different-from-daml-lf", s),
+            DamlLfError::DarParseError(s) => {
+                assert_eq!("unexpected value for daml-lf, found anything-different-from-daml-lf", s)
+            },
             _ => panic!("expected failure"),
         }
     }

@@ -1,7 +1,6 @@
 use std::str::FromStr;
 use std::sync::Arc;
 
-
 use clap::{crate_description, crate_name, crate_version, Arg, Command};
 use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;

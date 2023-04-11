@@ -511,7 +511,8 @@ impl DamlValue {
     /// # use daml_grpc::data::DamlIdentifier;
     /// # use daml_grpc::primitive_types::{DamlParty, DamlText};
     /// # fn main() -> DamlResult<()> {
-    /// let fields: Vec<DamlRecordField> = vec![DamlRecordField::new(Some("party"), DamlValue::new_party("Alice"))];
+    /// let fields: Vec<DamlRecordField> =
+    ///     vec![DamlRecordField::new(Some("party"), DamlValue::new_party("Alice"))];
     /// let record: DamlRecord = DamlRecord::new(fields, None::<DamlIdentifier>);
     /// let record_value: DamlValue = DamlValue::new_record(record);
     /// let text_value: DamlValue = DamlValue::new_text("test");

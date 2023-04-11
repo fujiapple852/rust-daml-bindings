@@ -227,19 +227,21 @@ async fn exercise_handler(
     grpc_client: GrpcClient,
 ) -> Result<impl warp::Reply, Infallible> {
     Ok(match exercise_request {
-        DamlJsonExerciseRequestType::Exercise(req) =>
+        DamlJsonExerciseRequestType::Exercise(req) => {
             match ExerciseHandler::new(config, archive, grpc_client).exercise(req, jwt_token.as_deref()).await {
                 Ok(response) => ok_response(&response),
                 Err(error) => err_response(&error),
-            },
-        DamlJsonExerciseRequestType::ExerciseByKey(req) =>
+            }
+        },
+        DamlJsonExerciseRequestType::ExerciseByKey(req) => {
             match ExerciseByKeyHandler::new(config, archive, grpc_client)
                 .exercise_by_key(req, jwt_token.as_deref())
                 .await
             {
                 Ok(response) => ok_response(&response),
                 Err(error) => err_response(&error),
-            },
+            }
+        },
         DamlJsonExerciseRequestType::Invalid(_) => err_response(&DamlJsonErrorResponse::single(
             400,
             "key and contractId fields are mutually exclusive".to_owned(),

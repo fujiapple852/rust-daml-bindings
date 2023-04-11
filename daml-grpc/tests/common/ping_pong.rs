@@ -52,8 +52,8 @@ fn init_tracing() {
         tracing_subscriber::fmt()
             .with_span_events(FmtSpan::NONE)
             .with_env_filter(
-                "daml_grpc::service=debug,daml_grpc::service::daml_package_service=off,daml_grpc::service::\
-                 daml_ledger_identity_service=off,daml_grpc::service::daml_reset_service=off",
+                "daml_grpc::service=debug,daml_grpc::service::daml_package_service=off,\
+                 daml_grpc::service::daml_ledger_identity_service=off,daml_grpc::service::daml_reset_service=off",
             )
             .init();
     });

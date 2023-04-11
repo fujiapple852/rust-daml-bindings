@@ -131,8 +131,9 @@ impl DamlValueName<'_> {
 impl Display for DamlValueName<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            DamlValueName::Local(local) =>
-                write!(f, "{}:{}:{}", local.package_name, &local.module_path.join("."), local.name),
+            DamlValueName::Local(local) => {
+                write!(f, "{}:{}:{}", local.package_name, &local.module_path.join("."), local.name)
+            },
             DamlValueName::NonLocal(non_local) => write!(
                 f,
                 "{}:{}:{}",

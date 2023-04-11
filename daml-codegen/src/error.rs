@@ -17,8 +17,9 @@ impl std::error::Error for DamlCodeGenError {}
 impl Display for DamlCodeGenError {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            DamlCodeGenError::InvalidModuleMatcherRegex(e) =>
-                write!(fmt, "InvalidModuleMatcherRegex {}", (e as &regex::Error)),
+            DamlCodeGenError::InvalidModuleMatcherRegex(e) => {
+                write!(fmt, "InvalidModuleMatcherRegex {}", (e as &regex::Error))
+            },
             DamlCodeGenError::DamlLfError(e) => write!(fmt, "Daml LF error {}", (e as &DamlLfError)),
             DamlCodeGenError::IoError(e) => write!(fmt, "IOError: {}", (e as &std::io::Error)),
         }
