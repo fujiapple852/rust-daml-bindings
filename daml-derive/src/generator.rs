@@ -24,15 +24,15 @@ pub fn generate_tokens(args: AttributeArgs) -> proc_macro::TokenStream {
     let render_method = match &params.mode {
         Some(name) if name.to_ascii_lowercase() == "intermediate" => RenderMethod::Intermediate,
         Some(name) if name.to_ascii_lowercase() == "full" => RenderMethod::Full,
-        Some(name) => panic!("unknown mode: {}, expected Intermediate or Full", name),
+        Some(name) => panic!("unknown mode: {name}, expected Intermediate or Full"),
         _ => RenderMethod::Full,
     };
     let applied =
         archive.apply(|archive| ModuleMatcher::new(&filters).map(|mm| quote_archive(archive, &mm, &render_method)));
     match applied {
         Ok(Ok(tokens)) => proc_macro::TokenStream::from(tokens),
-        Ok(Err(e)) => panic!("failed to generate Daml code: {0}", e),
-        Err(e) => panic!("Daml-LF error in Daml code generator: {0}", e),
+        Ok(Err(e)) => panic!("failed to generate Daml code: {e}"),
+        Err(e) => panic!("Daml-LF error in Daml code generator: {e}"),
     }
 }
 

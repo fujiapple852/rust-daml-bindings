@@ -930,7 +930,7 @@ impl From<DamlValue> for Value {
                 })),
                 DamlValue::Int64(v) => Some(Sum::Int64(v)),
                 // TODO: review the soundness of the numeric formatting here and consider using the `rust-decimal` crate
-                DamlValue::Numeric(v) => Some(Sum::Numeric(format!("{:.37}", v))),
+                DamlValue::Numeric(v) => Some(Sum::Numeric(format!("{v:.37}"))),
                 DamlValue::Text(v) => Some(Sum::Text(v)), // value.set_text(v),
                 DamlValue::Timestamp(v) => Some(Sum::Timestamp(v.timestamp())),
                 DamlValue::Party(v) => Some(Sum::Party(v.party)),

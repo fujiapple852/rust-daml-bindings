@@ -71,8 +71,8 @@ pub enum InternableString<'a> {
 impl<'a> fmt::Display for InternableString<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         match *self {
-            InternableString::LiteralString(s) => write!(f, "InternableString::Literal({})", s),
-            InternableString::InternedString(i) => write!(f, "InternableString::Interned({})", i),
+            InternableString::LiteralString(s) => write!(f, "InternableString::Literal({s})"),
+            InternableString::InternedString(i) => write!(f, "InternableString::Interned({i})"),
         }
     }
 }
@@ -199,7 +199,7 @@ impl<'a> fmt::Display for InternableDottedName<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         match *self {
             InternableDottedName::LiteralDottedName(dn) => write!(f, "InternableDottedName::Literal({})", dn.join(".")),
-            InternableDottedName::InternedDottedName(i) => write!(f, "InternableDottedName::Interned({})", i),
+            InternableDottedName::InternedDottedName(i) => write!(f, "InternableDottedName::Interned({i})"),
         }
     }
 }

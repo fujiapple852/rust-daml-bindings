@@ -51,13 +51,13 @@ impl JsonValueEncoder {
             DamlValue::Bool(b) => Ok(json!(b)),
             DamlValue::Int64(i) =>
                 if self.encode_int64_as_string {
-                    Ok(json!(format!("{}", i)))
+                    Ok(json!(format!("{i}")))
                 } else {
                     Ok(json!(i))
                 },
             DamlValue::Numeric(n) =>
                 if self.encode_decimal_as_string {
-                    Ok(json!(format!("{}", n)))
+                    Ok(json!(format!("{n}")))
                 } else {
                     Ok(json!(n.to_f64().req()?))
                 },

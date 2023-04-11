@@ -35,7 +35,7 @@ pub fn date_from_days(days: i32) -> DamlResult<Date<Utc>> {
     Ok(DateTime::<Utc>::from(
         UNIX_EPOCH
             + chrono::Duration::days(i64::from(days)).to_std().map_err(|e| {
-                DamlError::new_failed_conversion(format!("datetime from days {} out of range: {}", days, e))
+                DamlError::new_failed_conversion(format!("datetime from days {days} out of range: {e}"))
             })?,
     )
     .date())
@@ -45,7 +45,7 @@ pub fn datetime_from_micros(micros: i64) -> DamlResult<DateTime<Utc>> {
     Ok(DateTime::<Utc>::from(
         UNIX_EPOCH
             + chrono::Duration::microseconds(micros).to_std().map_err(|e| {
-                DamlError::new_failed_conversion(format!("datetime from micros {} out of range: {}", micros, e))
+                DamlError::new_failed_conversion(format!("datetime from micros {micros} out of range: {e}"))
             })?,
     ))
 }

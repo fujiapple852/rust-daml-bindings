@@ -35,7 +35,7 @@ fn generate_package_source(
     let root_modules: Vec<_> =
         package.root_module().child_modules().filter(|&m| is_interesting_module(m, module_matcher)).collect();
     let module_decl = root_modules.iter().map(|m| make_pub_mod_declaration(m.local_name())).join("\n");
-    let package_body = format!("{}\n{}", DISABLE_WARNINGS, module_decl);
+    let package_body = format!("{DISABLE_WARNINGS}\n{module_decl}");
     let mut package_file = create_file(&PathBuf::from(output_path), &make_package_filename(package.name()))?;
     package_file.write_all(package_body.as_bytes())?;
     let package_dir_path = PathBuf::from(output_path).join(&to_rust_identifier(package.name()));
@@ -55,7 +55,7 @@ fn generate_module_source(
     let sub_modules: Vec<_> = module.child_modules().filter(|&m| is_interesting_module(m, module_matcher)).collect();
     let sub_module_decl: String = sub_modules.iter().map(|&m| make_pub_mod_declaration(m.local_name())).join("\n");
     let module_types_text = quote_module_data_types(ctx, module, render_method);
-    let module_body = format!("{}\n{}{}", USE_DAML_PRELUDE, sub_module_decl, module_types_text);
+    let module_body = format!("{USE_DAML_PRELUDE}\n{sub_module_decl}{module_types_text}");
     let module_path: Vec<_> = module.path().collect();
     let module_dir_path = module_path[..module_path.len() - 1].iter().map(to_rust_identifier).join("/");
     let package_module_dir_path = PathBuf::from(package_dir_path).join(module_dir_path);
@@ -80,7 +80,7 @@ fn quote_module_data_types(ctx: &RenderContext<'_>, module: &DamlModule<'_>, ren
 }
 
 fn create_file(base_dir: &Path, filename: &str) -> io::Result<File> {
-    fs::create_dir_all(&base_dir)?;
+    fs::create_dir_all(base_dir)?;
     File::create(base_dir.join(filename))
 }
 

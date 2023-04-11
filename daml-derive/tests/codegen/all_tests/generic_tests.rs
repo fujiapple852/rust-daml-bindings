@@ -19,7 +19,7 @@ daml_codegen!(
 #[test]
 fn test_generic_local_roundtrip() -> TestResult {
     use testing_types::fuji::generic_types::{ConcreteDataRecord, GenericDataRecord};
-    let conc = ConcreteDataRecord::new(GenericDataRecord::new(Some(vec![0]), vec!["".to_string()], 1));
+    let conc = ConcreteDataRecord::new(GenericDataRecord::new(Some(vec![0]), vec![String::new()], 1));
     let value = DamlValue::serialize_from(conc.clone());
     let conc_again: ConcreteDataRecord = value.deserialize_into()?;
     assert_eq!(conc, conc_again);
@@ -29,7 +29,7 @@ fn test_generic_local_roundtrip() -> TestResult {
 #[test]
 fn test_partial_generic_local_roundtrip() -> TestResult {
     use testing_types::fuji::generic_types::{GenericDataRecord, PartialConcreteDataRecord};
-    let conc = PartialConcreteDataRecord::<DamlText>::new(GenericDataRecord::new(Some(vec![0]), "".to_string(), 1));
+    let conc = PartialConcreteDataRecord::<DamlText>::new(GenericDataRecord::new(Some(vec![0]), String::new(), 1));
     let value = DamlValue::serialize_from(conc.clone());
     let conc_again: PartialConcreteDataRecord<DamlText> = value.deserialize_into()?;
     assert_eq!(conc, conc_again);

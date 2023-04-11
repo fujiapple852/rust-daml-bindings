@@ -359,7 +359,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     /// ```
     fn encode_contract_id(&self, template_path: &Option<String>) -> DamlJsonSchemaCodecResult<Value> {
         let description = match template_path.as_deref() {
-            Some(tid) => self.description_if_all(&format!("ContractId ({})", tid)).map(ToString::to_string),
+            Some(tid) => self.description_if_all(&format!("ContractId ({tid})")).map(ToString::to_string),
             None => self.description_if_all("ContractId").map(ToString::to_string),
         };
         Ok(serde_json::to_value(DamlJsonSchemaContractId {
@@ -695,7 +695,7 @@ impl<'a> JsonSchemaEncoder<'a> {
         Ok(serde_json::to_value(DamlJsonSchemaRecord {
             schema: self.schema_if_data_or_all(),
             title: title.or_else(|| self.title_if_data(&data_item_path)),
-            description: description.or(self.description_if_data_or_all(&format!("Record ({})", name))),
+            description: description.or(self.description_if_data_or_all(&format!("Record ({name})"))),
             one_of: [
                 self.do_encode_record_object(name, &data_item_path, fields, type_params, type_args)?,
                 self.do_encode_record_list(name, fields, type_params, type_args)?,
@@ -977,7 +977,7 @@ impl<'a> JsonSchemaEncoder<'a> {
             .collect::<DamlJsonSchemaCodecResult<Vec<_>>>()?;
         Ok(serde_json::to_value(DamlJsonSchemaRecordAsObject {
             ty: "object",
-            description: self.description_if_all(&format!("Record ({})", name)),
+            description: self.description_if_all(&format!("Record ({name})")),
             properties: fields_map.is_empty().not().then(|| fields_map),
             additional_properties: false,
             required,
@@ -999,7 +999,7 @@ impl<'a> JsonSchemaEncoder<'a> {
         let item_count = fields_list.len();
         Ok(serde_json::to_value(DamlJsonSchemaRecordAsArray {
             ty: "array",
-            description: self.description_if_all(&format!("Record ({}, fields = [{}])", name, field_names)),
+            description: self.description_if_all(&format!("Record ({name}, fields = [{field_names}])")),
             items: (item_count > 0).then(|| fields_list),
             min_items: item_count,
             max_items: item_count,
@@ -1055,7 +1055,7 @@ impl<'a> JsonSchemaEncoder<'a> {
         Ok(serde_json::to_value(DamlJsonSchemaEnumEntry {
             ty: "string",
             title: Some(entry),
-            description: description.or(self.description_if_all(&format!("Enum ({}, tag={})", name, entry))),
+            description: description.or(self.description_if_all(&format!("Enum ({name}, tag={entry})"))),
             data_enum: vec![entry],
         })?)
     }
@@ -1069,7 +1069,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     fn encode_inline_recursive(name: &str) -> Value {
         json!(
             {
-                "description": format!("Any ({})", name),
+                "description": format!("Any ({name})"),
                 "comment": "inline recursive data types cannot be represented"
             }
         )
@@ -1080,7 +1080,7 @@ impl<'a> JsonSchemaEncoder<'a> {
     fn encode_reference_recursive_with_type_params(name: &str) -> Value {
         json!(
             {
-                "description": format!("Any ({})", name),
+                "description": format!("Any ({name})"),
                 "comment": "recursive data types with type parameters cannot be represented"
             }
         )
@@ -1169,7 +1169,7 @@ impl<'a> JsonSchemaEncoder<'a> {
         match cid {
             DamlType::TyCon(tycon) | DamlType::BoxedTyCon(tycon) =>
                 Self::format_data_item(tycon.tycon().module_path(), tycon.tycon().data_name()),
-            _ => "".to_string(),
+            _ => String::new(),
         }
     }
 
@@ -1600,7 +1600,7 @@ mod tests {
         let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "HigherKindTest"], "HigherKindedData");
         match JsonSchemaEncoder::new(arc).encode_type(&ty) {
             Err(DamlJsonSchemaCodecError::NotSerializableDamlType(s)) if s == "HigherKindedData" => Ok(()),
-            Err(e) => panic!("expected different error: {}", e),
+            Err(e) => panic!("expected different error: {e}"),
             _ => panic!("expected error"),
         }
     }
@@ -1611,7 +1611,7 @@ mod tests {
         let ty = DamlType::make_tycon(arc.main_package_id(), &["Fuji", "JsonTest"], "Oa");
         match JsonSchemaEncoder::new(arc).encode_type(&ty) {
             Err(DamlJsonSchemaCodecError::TypeVarNotFoundInParams(s)) if s == "a" => Ok(()),
-            Err(e) => panic!("expected different error: {}", e),
+            Err(e) => panic!("expected different error: {e}"),
             _ => panic!("expected error"),
         }
     }

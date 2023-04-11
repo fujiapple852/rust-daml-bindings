@@ -437,7 +437,7 @@ impl DamlJsonClient {
 
     #[instrument(skip(self))]
     async fn download_package_request(&self, package_id: &str) -> DamlJsonResult<Vec<u8>> {
-        Ok(self.get_bytes(Self::url(&self.config.url, &format!("{}/{}", PACKAGES_REST, package_id))?).await?.to_vec())
+        Ok(self.get_bytes(Self::url(&self.config.url, &format!("{PACKAGES_REST}/{package_id}"))?).await?.to_vec())
     }
 
     #[instrument(skip(self))]

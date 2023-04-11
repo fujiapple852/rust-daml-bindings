@@ -41,7 +41,7 @@ impl Display for LanguageVersion {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         match *self {
             LanguageVersion::Lv0 => write!(f, "v0"),
-            LanguageVersion::Lv1(minor) => write!(f, "v1.{}", minor),
+            LanguageVersion::Lv1(minor) => write!(f, "v1.{minor}"),
         }
     }
 }
