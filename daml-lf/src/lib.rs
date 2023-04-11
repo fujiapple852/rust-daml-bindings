@@ -83,7 +83,8 @@
     clippy::cast_sign_loss,
     clippy::must_use_candidate,
     clippy::missing_const_for_fn,
-    clippy::missing_errors_doc
+    clippy::missing_errors_doc,
+    clippy::option_if_let_else
 )]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
