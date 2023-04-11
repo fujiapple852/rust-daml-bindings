@@ -18,8 +18,8 @@ full = []
 
 [dependencies]
 bytes = "1.1.0"
-prost = { version = "0.9.0", features = [ "no-recursion-limit" ] }
-prost-derive = "0.9.0"
+prost = { version = "0.11.8", features = [ "no-recursion-limit" ] }
+prost-derive = "0.11.8"
 zip = { version = "0.6.2", default-features = false, features = [ "deflate" ] }
 yaml-rust = "0.4.5"
 itertools = "0.10.3"
@@ -31,7 +31,7 @@ bounded-static = { version = "0.4.0", features = [ "derive" ] }
 trim-margin = "0.1.0"
 
 [build-dependencies]
-prost-build = "0.9.0"
+prost-build = "0.11.8"
 itertools = "0.10.3"
 
 [package.metadata.docs.rs]
