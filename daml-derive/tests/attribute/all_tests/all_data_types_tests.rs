@@ -1,6 +1,6 @@
 use crate::attribute::test_types::all_data_types::{AllDataTypes, AllListDataTypes, MyData, ScalarsAndLists};
 use crate::common::test_utils::TestResult;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use daml::grpc_api::data::value::DamlValue;
 use daml::grpc_api::primitive_types::{DamlContractId, DamlParty};
 use daml::grpc_api::serialize::{DamlDeserializeInto, DamlSerializeInto};
@@ -16,7 +16,7 @@ fn test_all_data_types() -> TestResult {
         "Alice",
         false,
         (),
-        "1970-01-01T00:00:00Z".parse::<DateTime<Utc>>().unwrap().date(),
+        "1970-01-01".parse::<NaiveDate>().unwrap(),
     );
     let value: DamlValue = all.clone().serialize_into();
     let all_again: AllDataTypes = value.deserialize_into()?;
@@ -45,10 +45,7 @@ fn test_all_list_data_types() -> TestResult {
         vec![DamlParty::new("Alice"), DamlParty::new("Bob")],
         vec![true, false, true, false],
         vec![(), (), ()],
-        vec![
-            "1970-01-01T00:00:00Z".parse::<DateTime<Utc>>().unwrap().date(),
-            "1970-01-02T00:00:00Z".parse::<DateTime<Utc>>().unwrap().date(),
-        ],
+        vec!["1970-01-01".parse::<NaiveDate>().unwrap(), "1970-01-02".parse::<NaiveDate>().unwrap()],
     );
     let value: DamlValue = all.clone().serialize_into();
     let all_again: AllListDataTypes = value.deserialize_into()?;

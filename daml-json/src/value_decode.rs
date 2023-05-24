@@ -1,6 +1,6 @@
 use crate::error::{DamlJsonCodecError, DamlJsonCodecResult};
 use crate::util::{AsSingleSliceExt, Required};
-use chrono::{offset, Date, DateTime, NaiveDate};
+use chrono::{DateTime, NaiveDate};
 use daml_grpc::data::value::{DamlEnum, DamlRecord, DamlRecordField, DamlValue, DamlVariant};
 use daml_grpc::data::DamlIdentifier;
 use daml_grpc::primitive_types::{DamlGenMap, DamlInt64, DamlNumeric, DamlTextMap};
@@ -152,7 +152,7 @@ impl<'a> JsonValueDecoder<'a> {
     }
 
     fn decode_date(json: &Value) -> DamlJsonCodecResult<DamlValue> {
-        Ok(DamlValue::new_date(Date::from_utc(NaiveDate::parse_from_str(json.try_string()?, "%Y-%m-%d")?, offset::Utc)))
+        Ok(DamlValue::new_date(NaiveDate::parse_from_str(json.try_string()?, "%Y-%m-%d")?))
     }
 
     fn decode_timestamp(json: &Value) -> DamlJsonCodecResult<DamlValue> {

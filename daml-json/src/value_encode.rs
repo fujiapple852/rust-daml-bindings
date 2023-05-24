@@ -62,7 +62,7 @@ impl JsonValueEncoder {
                     Ok(json!(n.to_f64().req()?))
                 },
             DamlValue::Timestamp(timestamp) => Ok(json!(timestamp.to_rfc3339_opts(SecondsFormat::Millis, true))),
-            DamlValue::Date(date) => Ok(json!(date.naive_utc().to_string())),
+            DamlValue::Date(date) => Ok(json!(date.to_string())),
             DamlValue::Text(text) => Ok(json!(text)),
             DamlValue::Party(party) => Ok(json!(party.party)),
             DamlValue::ContractId(id) => Ok(json!(id.contract_id)),
