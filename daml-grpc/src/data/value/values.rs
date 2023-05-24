@@ -897,7 +897,7 @@ impl TryFrom<Value> for DamlValue {
             Sum::Party(v) => DamlValue::Party(DamlParty::new(v)),
             Sum::Bool(v) => DamlValue::Bool(v),
             Sum::Unit(_) => DamlValue::Unit,
-            Sum::Date(v) => DamlValue::Date(util::date_from_days(v)?),
+            Sum::Date(v) => DamlValue::Date(util::date_from_days(v)),
             Sum::Optional(v) =>
                 DamlValue::Optional(v.value.map(|v| DamlValue::try_from(*v)).transpose()?.map(Box::new)),
             Sum::Map(v) => DamlValue::Map(

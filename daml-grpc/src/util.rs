@@ -32,8 +32,8 @@ pub fn to_grpc_duration(duration: &Duration) -> DamlResult<prost_types::Duration
     })
 }
 
-pub fn date_from_days(days: i32) -> DamlResult<NaiveDate> {
-    Ok(NaiveDate::MIN + chrono::Duration::days(i64::from(days)))
+pub fn date_from_days(days: i32) -> NaiveDate {
+    NaiveDate::MIN + chrono::Duration::days(i64::from(days))
 }
 
 pub fn datetime_from_micros(micros: i64) -> DamlResult<DateTime<Utc>> {
