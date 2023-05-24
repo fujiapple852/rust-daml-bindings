@@ -90,7 +90,7 @@ impl<'a> TryFrom<&DamlExprWrapper<'a>> for DamlExpr<'a> {
     }
 }
 
-impl<'a> From<&DamlBuiltinFunctionPayload> for DamlBuiltinFunction {
+impl From<&DamlBuiltinFunctionPayload> for DamlBuiltinFunction {
     #[allow(clippy::too_many_lines)]
     fn from(builtin: &DamlBuiltinFunctionPayload) -> Self {
         match builtin {
@@ -217,7 +217,7 @@ impl<'a> From<&DamlBuiltinFunctionPayload> for DamlBuiltinFunction {
     }
 }
 
-impl<'a> TryFrom<&DamlPrimConPayload> for DamlPrimCon {
+impl TryFrom<&DamlPrimConPayload> for DamlPrimCon {
     type Error = DamlLfConvertError;
 
     fn try_from(prim_con: &DamlPrimConPayload) -> DamlLfConvertResult<Self> {
@@ -246,7 +246,7 @@ impl<'a> TryFrom<&DamlPrimLitWrapper<'a>> for DamlPrimLit<'a> {
     }
 }
 
-impl<'a> From<&RoundingModePayload> for RoundingMode {
+impl From<&RoundingModePayload> for RoundingMode {
     fn from(rounding_mode: &RoundingModePayload) -> Self {
         match rounding_mode {
             RoundingModePayload::Up => RoundingMode::Up,

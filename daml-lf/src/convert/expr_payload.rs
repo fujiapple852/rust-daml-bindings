@@ -945,7 +945,7 @@ pub enum RoundingModePayload {
     Unnecessary,
 }
 
-impl<'a> TryFrom<&i32> for RoundingModePayload {
+impl TryFrom<&i32> for RoundingModePayload {
     type Error = DamlLfConvertError;
 
     fn try_from(rounding_mode: &i32) -> DamlLfConvertResult<Self> {
@@ -1086,7 +1086,7 @@ pub enum DamlBuiltinFunctionPayload {
     Greater,
 }
 
-impl<'a> TryFrom<&i32> for DamlBuiltinFunctionPayload {
+impl TryFrom<&i32> for DamlBuiltinFunctionPayload {
     type Error = DamlLfConvertError;
 
     #[allow(clippy::too_many_lines)]
@@ -1224,7 +1224,7 @@ pub enum DamlPrimConPayload {
     True,
 }
 
-impl<'a> TryFrom<&i32> for DamlPrimConPayload {
+impl TryFrom<&i32> for DamlPrimConPayload {
     type Error = DamlLfConvertError;
 
     fn try_from(prim_con: &i32) -> DamlLfConvertResult<Self> {
