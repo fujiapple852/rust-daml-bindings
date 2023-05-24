@@ -46,7 +46,7 @@ impl Bridge {
 /// Refresh the [`Archive`] from the ledger server.
 async fn refresh(archive: Archive, grpc_client: GrpcClient, interval: Duration) {
     let mut timer = tokio::time::interval(interval);
-    let _ = timer.tick().await;
+    _ = timer.tick().await;
     loop {
         let now = timer.tick().await;
         info!("refreshing Dar (Time now = {:?})", now);
