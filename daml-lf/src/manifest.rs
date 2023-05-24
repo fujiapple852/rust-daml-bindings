@@ -395,7 +395,7 @@ mod test {
         let manifest = DarManifest::parse(&manifest_str[..]);
         match manifest.expect_err("expected failure") {
             DamlLfError::DarParseError(s) => {
-                assert_eq!("unexpected value for daml-lf, found anything-different-from-daml-lf", s)
+                assert_eq!("unexpected value for daml-lf, found anything-different-from-daml-lf", s);
             },
             _ => panic!("expected failure"),
         }
