@@ -5,7 +5,8 @@
     clippy::missing_errors_doc,
     clippy::must_use_candidate,
     clippy::needless_pass_by_value,
-    clippy::significant_drop_in_scrutinee
+    clippy::significant_drop_in_scrutinee,
+    clippy::significant_drop_tightening
 )]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]
