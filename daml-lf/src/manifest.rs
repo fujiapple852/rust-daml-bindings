@@ -158,10 +158,8 @@ impl DarManifest {
 
         let manifest_version = match doc[MANIFEST_VERSION_KEY].as_f64() {
             Some(s) if format!("{:.*}", 1, s) == VERSION_1_VALUE => Ok(DarManifestVersion::V1),
-            Some(s) => Err(DamlLfError::new_dar_parse_error(format!(
-                "unexpected value for {}, found {}",
-                MANIFEST_VERSION_KEY, s
-            ))),
+            Some(s) =>
+                Err(DamlLfError::new_dar_parse_error(format!("unexpected value for {MANIFEST_VERSION_KEY}, found {s}"))),
             None => Ok(DarManifestVersion::Unknown),
         }?;
 
@@ -170,7 +168,7 @@ impl DarManifest {
         let dalf_main = doc[DALF_MAIN_KEY]
             .as_str()
             .map(strip_string)
-            .ok_or_else(|| DamlLfError::new_dar_parse_error(format!("key {} not found", DALF_MAIN_KEY)))?;
+            .ok_or_else(|| DamlLfError::new_dar_parse_error(format!("key {DALF_MAIN_KEY} not found")))?;
 
         let dalf_dependencies = match doc[DALFS_KEY].as_str() {
             Some(s) => Ok(s
@@ -180,23 +178,21 @@ impl DarManifest {
                     (stripped_dalf != dalf_main).then(|| stripped_dalf)
                 })
                 .collect()),
-            None => Err(DamlLfError::new_dar_parse_error(format!("key {} not found", DALFS_KEY))),
+            None => Err(DamlLfError::new_dar_parse_error(format!("key {DALFS_KEY} not found"))),
         }?;
 
         let format = match doc[FORMAT_KEY].as_str() {
             Some(s) if s.to_lowercase() == DAML_LF_VALUE => Ok(DarManifestFormat::DamlLf),
             Some(s) =>
-                Err(DamlLfError::new_dar_parse_error(format!("unexpected value for {}, found {}", DAML_LF_VALUE, s))),
-            None => Err(DamlLfError::new_dar_parse_error(format!("key {} not found", DAML_LF_VALUE))),
+                Err(DamlLfError::new_dar_parse_error(format!("unexpected value for {DAML_LF_VALUE}, found {s}"))),
+            None => Err(DamlLfError::new_dar_parse_error(format!("key {DAML_LF_VALUE} not found"))),
         }?;
 
         let encryption = match doc[ENCRYPTION_KEY].as_str() {
             Some(s) if s.to_lowercase() == NON_ENCRYPTED_VALUE => Ok(DarEncryptionType::NotEncrypted),
-            Some(s) => Err(DamlLfError::new_dar_parse_error(format!(
-                "unexpected value for {}, found {}",
-                NON_ENCRYPTED_VALUE, s
-            ))),
-            None => Err(DamlLfError::new_dar_parse_error(format!("key {} not found", NON_ENCRYPTED_VALUE))),
+            Some(s) =>
+                Err(DamlLfError::new_dar_parse_error(format!("unexpected value for {NON_ENCRYPTED_VALUE}, found {s}"))),
+            None => Err(DamlLfError::new_dar_parse_error(format!("key {NON_ENCRYPTED_VALUE} not found"))),
         }?;
 
         Ok(Self::new(manifest_version, created_by, dalf_main, dalf_dependencies, format, encryption))
@@ -260,11 +256,11 @@ fn split_manifest_string(s: impl AsRef<str>) -> String {
     let split_lines: Vec<String> =
         s.as_ref().as_bytes().chunks(71).map(String::from_utf8_lossy).map(String::from).collect();
     match split_lines.as_slice() {
-        [] => "".to_owned(),
+        [] => String::new(),
         [head] => head.clone(),
         [head, tail @ ..] => {
-            let new_tail: String = tail.iter().map(|s| format!(" {}", s)).join("\n");
-            format!("{}\n{}", head, new_tail)
+            let new_tail: String = tail.iter().map(|s| format!(" {s}")).join("\n");
+            format!("{head}\n{new_tail}")
         },
     }
 }
@@ -398,8 +394,9 @@ mod test {
             .expect("invalid test string");
         let manifest = DarManifest::parse(&manifest_str[..]);
         match manifest.expect_err("expected failure") {
-            DamlLfError::DarParseError(s) =>
-                assert_eq!("unexpected value for daml-lf, found anything-different-from-daml-lf", s),
+            DamlLfError::DarParseError(s) => {
+                assert_eq!("unexpected value for daml-lf, found anything-different-from-daml-lf", s);
+            },
             _ => panic!("expected failure"),
         }
     }

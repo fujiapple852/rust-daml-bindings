@@ -335,7 +335,7 @@ fn init_tracing() {
 }
 
 fn new_client() -> anyhow::Result<DamlJsonClient> {
-    Ok(DamlJsonClientBuilder::url(format!("http://{}:{}", BRIDGE_HOST, BRIDGE_PORT))
+    Ok(DamlJsonClientBuilder::url(format!("http://{BRIDGE_HOST}:{BRIDGE_PORT}"))
         .connect_timeout(Duration::from_millis(TIMEOUT_MS))
         .timeout(Duration::from_millis(TIMEOUT_MS))
         .with_auth(create_user_token(ALICE_PARTY)?)

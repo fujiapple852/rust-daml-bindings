@@ -7,38 +7,37 @@ fn main() {
         .version(crate_version!())
         .about(crate_description!())
         .arg(Arg::new("dar").help("Sets the input Dar file to use").required(true).index(1))
-        .arg(Arg::new("output").short('o').long("output-dir").takes_value(true).help("Sets the output path"))
+        .arg(Arg::new("output").short('o').long("output-dir").num_args(1).help("Sets the output path"))
         .arg(
             Arg::new("verbose")
                 .short('v')
                 .long("verbose")
-                .multiple_occurrences(true)
+                .action(clap::ArgAction::Append)
                 .help("Sets the level of verbosity"),
         )
         .arg(
             Arg::new("filter")
                 .short('f')
                 .long("module-filter")
-                .takes_value(true)
-                .multiple_values(true)
+                .num_args(1..)
                 .help("Sets the regex module filter to apply"),
         )
         .arg(Arg::new("intermediate").short('i').long("render-intermediate").help("Generate intermediate types"))
         .arg(Arg::new("combine").short('c').long("combine-modules").help("Combine modules as a single file"))
         .get_matches();
-    let dar_file = matches.value_of("dar").unwrap();
-    let output_path = matches.value_of("output").unwrap_or(".");
-    let filters: Vec<_> = if matches.is_present("filter") {
-        matches.values_of("filter").unwrap().collect()
+    let dar_file = matches.get_one("dar").cloned().unwrap();
+    let output_path = matches.get_one("output").cloned().unwrap_or(".");
+    let filters: Vec<_> = if matches.contains_id("filter") {
+        matches.get_many("filter").unwrap().copied().collect()
     } else {
         vec![]
     };
-    let render_method = if matches.is_present("intermediate") {
+    let render_method = if matches.contains_id("intermediate") {
         RenderMethod::Intermediate
     } else {
         RenderMethod::Full
     };
-    let module_output_mode = if matches.is_present("combine") {
+    let module_output_mode = if matches.contains_id("combine") {
         ModuleOutputMode::Combined
     } else {
         ModuleOutputMode::Separate

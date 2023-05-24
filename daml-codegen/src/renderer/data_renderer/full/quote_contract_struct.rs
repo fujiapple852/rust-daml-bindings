@@ -5,12 +5,12 @@ use quote::quote;
 
 /// Generate the `FooContract` struct name.
 pub fn quote_contract_struct_name(struct_name: &str) -> TokenStream {
-    quote_escaped_ident(format!("{}Contract", struct_name))
+    quote_escaped_ident(format!("{struct_name}Contract"))
 }
 
 /// Generate the `FooContractId` struct name.
 pub fn quote_contract_id_struct_name(struct_name: &str) -> TokenStream {
-    quote_escaped_ident(format!("{}ContractId", struct_name))
+    quote_escaped_ident(format!("{struct_name}ContractId"))
 }
 
 /// Generate the `FooContract` struct and methods.

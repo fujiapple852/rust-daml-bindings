@@ -105,8 +105,8 @@ pub trait DamlElementVisitor {
     fn post_visit_non_local_tycon<'a>(&mut self, non_local_tycon: &'a DamlNonLocalTyCon<'a>) {}
     fn pre_visit_absolute_tycon<'a>(&mut self, absolute_tycon: &'a DamlAbsoluteTyCon<'a>) {}
     fn post_visit_absolute_tycon<'a>(&mut self, absolute_tycon: &'a DamlAbsoluteTyCon<'a>) {}
-    fn pre_visit_def_key<'a>(&mut self, def_key: &DamlDefKey<'a>) {}
-    fn post_visit_def_key<'a>(&mut self, def_key: &DamlDefKey<'a>) {}
+    fn pre_visit_def_key(&mut self, def_key: &DamlDefKey<'_>) {}
+    fn post_visit_def_key(&mut self, def_key: &DamlDefKey<'_>) {}
 
     #[cfg(feature = "full")]
     fn pre_visit_def_value<'a>(&mut self, def_value: &'a DamlDefValue<'a>) {}
@@ -137,180 +137,180 @@ pub trait DamlElementVisitor {
     #[cfg(feature = "full")]
     fn post_visit_prim_con(&mut self, prim_con: DamlPrimCon) {}
     #[cfg(feature = "full")]
-    fn pre_visit_prim_lit<'a>(&mut self, prim_lit: &DamlPrimLit<'a>) {}
+    fn pre_visit_prim_lit(&mut self, prim_lit: &DamlPrimLit<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_prim_lit<'a>(&mut self, prim_lit: &DamlPrimLit<'a>) {}
+    fn post_visit_prim_lit(&mut self, prim_lit: &DamlPrimLit<'_>) {}
     #[cfg(feature = "full")]
     fn pre_visit_rounding_mode(&mut self, rounding_mode: &RoundingMode) {}
     #[cfg(feature = "full")]
     fn post_visit_rounding_mode(&mut self, rounding_mode: &RoundingMode) {}
     #[cfg(feature = "full")]
-    fn pre_visit_rec_con<'a>(&mut self, rec_con: &DamlRecCon<'a>) {}
+    fn pre_visit_rec_con(&mut self, rec_con: &DamlRecCon<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_rec_con<'a>(&mut self, rec_con: &DamlRecCon<'a>) {}
+    fn post_visit_rec_con(&mut self, rec_con: &DamlRecCon<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_field_with_expr<'a>(&mut self, field_with_expr: &DamlFieldWithExpr<'a>) {}
+    fn pre_visit_field_with_expr(&mut self, field_with_expr: &DamlFieldWithExpr<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_field_with_expr<'a>(&mut self, field_with_expr: &DamlFieldWithExpr<'a>) {}
+    fn post_visit_field_with_expr(&mut self, field_with_expr: &DamlFieldWithExpr<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_rec_proj<'a>(&mut self, rec_proj: &DamlRecProj<'a>) {}
+    fn pre_visit_rec_proj(&mut self, rec_proj: &DamlRecProj<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_rec_proj<'a>(&mut self, rec_proj: &DamlRecProj<'a>) {}
+    fn post_visit_rec_proj(&mut self, rec_proj: &DamlRecProj<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_rec_upd<'a>(&mut self, rec_upd: &DamlRecUpd<'a>) {}
+    fn pre_visit_rec_upd(&mut self, rec_upd: &DamlRecUpd<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_rec_upd<'a>(&mut self, rec_upd: &DamlRecUpd<'a>) {}
+    fn post_visit_rec_upd(&mut self, rec_upd: &DamlRecUpd<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_variant_con<'a>(&mut self, variant_con: &DamlVariantCon<'a>) {}
+    fn pre_visit_variant_con(&mut self, variant_con: &DamlVariantCon<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_variant_con<'a>(&mut self, variant_con: &DamlVariantCon<'a>) {}
+    fn post_visit_variant_con(&mut self, variant_con: &DamlVariantCon<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_enum_con<'a>(&mut self, enum_con: &DamlEnumCon<'a>) {}
+    fn pre_visit_enum_con(&mut self, enum_con: &DamlEnumCon<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_enum_con<'a>(&mut self, enum_con: &DamlEnumCon<'a>) {}
+    fn post_visit_enum_con(&mut self, enum_con: &DamlEnumCon<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_struct_con<'a>(&mut self, struct_con: &DamlStructCon<'a>) {}
+    fn pre_visit_struct_con(&mut self, struct_con: &DamlStructCon<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_struct_con<'a>(&mut self, struct_con: &DamlStructCon<'a>) {}
+    fn post_visit_struct_con(&mut self, struct_con: &DamlStructCon<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_struct_proj<'a>(&mut self, struct_proj: &DamlStructProj<'a>) {}
+    fn pre_visit_struct_proj(&mut self, struct_proj: &DamlStructProj<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_struct_proj<'a>(&mut self, struct_proj: &DamlStructProj<'a>) {}
+    fn post_visit_struct_proj(&mut self, struct_proj: &DamlStructProj<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_struct_upd<'a>(&mut self, struct_upd: &DamlStructUpd<'a>) {}
+    fn pre_visit_struct_upd(&mut self, struct_upd: &DamlStructUpd<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_struct_upd<'a>(&mut self, struct_upd: &DamlStructUpd<'a>) {}
+    fn post_visit_struct_upd(&mut self, struct_upd: &DamlStructUpd<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_app<'a>(&mut self, app: &DamlApp<'a>) {}
+    fn pre_visit_app(&mut self, app: &DamlApp<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_app<'a>(&mut self, app: &DamlApp<'a>) {}
+    fn post_visit_app(&mut self, app: &DamlApp<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_ty_app<'a>(&mut self, ty_app: &DamlTyApp<'a>) {}
+    fn pre_visit_ty_app(&mut self, ty_app: &DamlTyApp<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_ty_app<'a>(&mut self, ty_app: &DamlTyApp<'a>) {}
+    fn post_visit_ty_app(&mut self, ty_app: &DamlTyApp<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_abs<'a>(&mut self, abs: &DamlAbs<'a>) {}
+    fn pre_visit_abs(&mut self, abs: &DamlAbs<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_abs<'a>(&mut self, abs: &DamlAbs<'a>) {}
+    fn post_visit_abs(&mut self, abs: &DamlAbs<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_var_with_type<'a>(&mut self, var_with_type: &DamlVarWithType<'a>) {}
+    fn pre_visit_var_with_type(&mut self, var_with_type: &DamlVarWithType<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_var_with_type<'a>(&mut self, var_with_type: &DamlVarWithType<'a>) {}
+    fn post_visit_var_with_type(&mut self, var_with_type: &DamlVarWithType<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_ty_abs<'a>(&mut self, ty_abs: &DamlTyAbs<'a>) {}
+    fn pre_visit_ty_abs(&mut self, ty_abs: &DamlTyAbs<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_ty_abs<'a>(&mut self, ty_abs: &DamlTyAbs<'a>) {}
+    fn post_visit_ty_abs(&mut self, ty_abs: &DamlTyAbs<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_case<'a>(&mut self, case: &DamlCase<'a>) {}
+    fn pre_visit_case(&mut self, case: &DamlCase<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_case<'a>(&mut self, case: &DamlCase<'a>) {}
+    fn post_visit_case(&mut self, case: &DamlCase<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_block<'a>(&mut self, block: &DamlBlock<'a>) {}
+    fn pre_visit_block(&mut self, block: &DamlBlock<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_block<'a>(&mut self, block: &DamlBlock<'a>) {}
+    fn post_visit_block(&mut self, block: &DamlBlock<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_binding<'a>(&mut self, binding: &DamlBinding<'a>) {}
+    fn pre_visit_binding(&mut self, binding: &DamlBinding<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_binding<'a>(&mut self, binding: &DamlBinding<'a>) {}
+    fn post_visit_binding(&mut self, binding: &DamlBinding<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_cons<'a>(&mut self, cons: &DamlCons<'a>) {}
+    fn pre_visit_cons(&mut self, cons: &DamlCons<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_cons<'a>(&mut self, cons: &DamlCons<'a>) {}
+    fn post_visit_cons(&mut self, cons: &DamlCons<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_optional_some<'a>(&mut self, optional_some: &DamlOptionalSome<'a>) {}
+    fn pre_visit_optional_some(&mut self, optional_some: &DamlOptionalSome<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_optional_some<'a>(&mut self, optional_some: &DamlOptionalSome<'a>) {}
+    fn post_visit_optional_some(&mut self, optional_some: &DamlOptionalSome<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_to_any<'a>(&mut self, to_any: &DamlToAny<'a>) {}
+    fn pre_visit_to_any(&mut self, to_any: &DamlToAny<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_to_any<'a>(&mut self, to_any: &DamlToAny<'a>) {}
+    fn post_visit_to_any(&mut self, to_any: &DamlToAny<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_from_any<'a>(&mut self, from_any: &DamlFromAny<'a>) {}
+    fn pre_visit_from_any(&mut self, from_any: &DamlFromAny<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_from_any<'a>(&mut self, from_any: &DamlFromAny<'a>) {}
+    fn post_visit_from_any(&mut self, from_any: &DamlFromAny<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_update<'a>(&mut self, update: &DamlUpdate<'a>) {}
+    fn pre_visit_update(&mut self, update: &DamlUpdate<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_update<'a>(&mut self, update: &DamlUpdate<'a>) {}
+    fn post_visit_update(&mut self, update: &DamlUpdate<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_pure<'a>(&mut self, pure: &DamlPure<'a>) {}
+    fn pre_visit_pure(&mut self, pure: &DamlPure<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_pure<'a>(&mut self, pure: &DamlPure<'a>) {}
+    fn post_visit_pure(&mut self, pure: &DamlPure<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_create<'a>(&mut self, create: &DamlCreate<'a>) {}
+    fn pre_visit_create(&mut self, create: &DamlCreate<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_create<'a>(&mut self, create: &DamlCreate<'a>) {}
+    fn post_visit_create(&mut self, create: &DamlCreate<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_exercise<'a>(&mut self, exercise: &DamlExercise<'a>) {}
+    fn pre_visit_exercise(&mut self, exercise: &DamlExercise<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_exercise<'a>(&mut self, exercise: &DamlExercise<'a>) {}
+    fn post_visit_exercise(&mut self, exercise: &DamlExercise<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_exercise_by_key<'a>(&mut self, exercise_by_key: &DamlExerciseByKey<'a>) {}
+    fn pre_visit_exercise_by_key(&mut self, exercise_by_key: &DamlExerciseByKey<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_exercise_by_key<'a>(&mut self, exercise_by_key: &DamlExerciseByKey<'a>) {}
+    fn post_visit_exercise_by_key(&mut self, exercise_by_key: &DamlExerciseByKey<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_fetch<'a>(&mut self, fetch: &DamlFetch<'a>) {}
+    fn pre_visit_fetch(&mut self, fetch: &DamlFetch<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_fetch<'a>(&mut self, fetch: &DamlFetch<'a>) {}
+    fn post_visit_fetch(&mut self, fetch: &DamlFetch<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_try_catch<'a>(&mut self, try_catch: &DamlTryCatch<'a>) {}
+    fn pre_visit_try_catch(&mut self, try_catch: &DamlTryCatch<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_try_catch<'a>(&mut self, try_catch: &DamlTryCatch<'a>) {}
+    fn post_visit_try_catch(&mut self, try_catch: &DamlTryCatch<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_retrieve_by_key<'a>(&mut self, retrieve_by_key: &DamlRetrieveByKey<'a>) {}
+    fn pre_visit_retrieve_by_key(&mut self, retrieve_by_key: &DamlRetrieveByKey<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_retrieve_by_key<'a>(&mut self, retrieve_by_key: &DamlRetrieveByKey<'a>) {}
+    fn post_visit_retrieve_by_key(&mut self, retrieve_by_key: &DamlRetrieveByKey<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_update_embed_expr<'a>(&mut self, update_embed_expr: &DamlUpdateEmbedExpr<'a>) {}
+    fn pre_visit_update_embed_expr(&mut self, update_embed_expr: &DamlUpdateEmbedExpr<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_update_embed_expr<'a>(&mut self, update_embed_expr: &DamlUpdateEmbedExpr<'a>) {}
+    fn post_visit_update_embed_expr(&mut self, update_embed_expr: &DamlUpdateEmbedExpr<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_scenario<'a>(&mut self, scenario: &DamlScenario<'a>) {}
+    fn pre_visit_scenario(&mut self, scenario: &DamlScenario<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_scenario<'a>(&mut self, scenario: &DamlScenario<'a>) {}
+    fn post_visit_scenario(&mut self, scenario: &DamlScenario<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_commit<'a>(&mut self, commit: &DamlCommit<'a>) {}
+    fn pre_visit_commit(&mut self, commit: &DamlCommit<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_commit<'a>(&mut self, commit: &DamlCommit<'a>) {}
+    fn post_visit_commit(&mut self, commit: &DamlCommit<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_scenario_embed_expr<'a>(&mut self, scenario_embed_expr: &DamlScenarioEmbedExpr<'a>) {}
+    fn pre_visit_scenario_embed_expr(&mut self, scenario_embed_expr: &DamlScenarioEmbedExpr<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_scenario_embed_expr<'a>(&mut self, scenario_embed_expr: &DamlScenarioEmbedExpr<'a>) {}
+    fn post_visit_scenario_embed_expr(&mut self, scenario_embed_expr: &DamlScenarioEmbedExpr<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_case_alt<'a>(&mut self, case_alt: &DamlCaseAlt<'a>) {}
+    fn pre_visit_case_alt(&mut self, case_alt: &DamlCaseAlt<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_case_alt<'a>(&mut self, case_alt: &DamlCaseAlt<'a>) {}
+    fn post_visit_case_alt(&mut self, case_alt: &DamlCaseAlt<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_case_alt_sum<'a>(&mut self, case_alt_sum: &DamlCaseAltSum<'a>) {}
+    fn pre_visit_case_alt_sum(&mut self, case_alt_sum: &DamlCaseAltSum<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_case_alt_sum<'a>(&mut self, case_alt_sum: &DamlCaseAltSum<'a>) {}
+    fn post_visit_case_alt_sum(&mut self, case_alt_sum: &DamlCaseAltSum<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_case_alt_variant<'a>(&mut self, case_alt_variant: &DamlCaseAltVariant<'a>) {}
+    fn pre_visit_case_alt_variant(&mut self, case_alt_variant: &DamlCaseAltVariant<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_case_alt_variant<'a>(&mut self, case_alt_variant: &DamlCaseAltVariant<'a>) {}
+    fn post_visit_case_alt_variant(&mut self, case_alt_variant: &DamlCaseAltVariant<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_case_alt_cons<'a>(&mut self, case_alt_cons: &DamlCaseAltCons<'a>) {}
+    fn pre_visit_case_alt_cons(&mut self, case_alt_cons: &DamlCaseAltCons<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_case_alt_cons<'a>(&mut self, case_alt_cons: &DamlCaseAltCons<'a>) {}
+    fn post_visit_case_alt_cons(&mut self, case_alt_cons: &DamlCaseAltCons<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_case_alt_opt_some<'a>(&mut self, case_alt_opt_some: &DamlCaseAltOptionalSome<'a>) {}
+    fn pre_visit_case_alt_opt_some(&mut self, case_alt_opt_some: &DamlCaseAltOptionalSome<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_case_alt_opt_some<'a>(&mut self, case_alt_opt_some: &DamlCaseAltOptionalSome<'a>) {}
+    fn post_visit_case_alt_opt_some(&mut self, case_alt_opt_some: &DamlCaseAltOptionalSome<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_case_alt_enum<'a>(&mut self, case_alt_enum: &DamlCaseAltEnum<'a>) {}
+    fn pre_visit_case_alt_enum(&mut self, case_alt_enum: &DamlCaseAltEnum<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_case_alt_enum<'a>(&mut self, case_alt_enum: &DamlCaseAltEnum<'a>) {}
+    fn post_visit_case_alt_enum(&mut self, case_alt_enum: &DamlCaseAltEnum<'_>) {}
 
     #[cfg(feature = "full")]
-    fn pre_visit_to_any_exception<'a>(&mut self, to_any_exception: &DamlToAnyException<'a>) {}
+    fn pre_visit_to_any_exception(&mut self, to_any_exception: &DamlToAnyException<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_to_any_exception<'a>(&mut self, to_any_exception: &DamlToAnyException<'a>) {}
+    fn post_visit_to_any_exception(&mut self, to_any_exception: &DamlToAnyException<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_from_any_exception<'a>(&mut self, from_any_exception: &DamlFromAnyException<'a>) {}
+    fn pre_visit_from_any_exception(&mut self, from_any_exception: &DamlFromAnyException<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_from_any_exception<'a>(&mut self, from_any_exception: &DamlFromAnyException<'a>) {}
+    fn post_visit_from_any_exception(&mut self, from_any_exception: &DamlFromAnyException<'_>) {}
     #[cfg(feature = "full")]
-    fn pre_visit_throw<'a>(&mut self, throw: &DamlThrow<'a>) {}
+    fn pre_visit_throw(&mut self, throw: &DamlThrow<'_>) {}
     #[cfg(feature = "full")]
-    fn post_visit_throw<'a>(&mut self, throw: &DamlThrow<'a>) {}
+    fn post_visit_throw(&mut self, throw: &DamlThrow<'_>) {}
 }

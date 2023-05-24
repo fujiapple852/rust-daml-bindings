@@ -22,7 +22,8 @@
     clippy::missing_const_for_fn,
     clippy::match_wildcard_for_single_variants,
     clippy::similar_names,
-    clippy::return_self_not_must_use
+    clippy::return_self_not_must_use,
+    clippy::option_if_let_else
 )]
 #![forbid(unsafe_code)]
 #![doc(html_favicon_url = "https://docs.daml.com/_static/images/favicon/favicon-32x32.png")]

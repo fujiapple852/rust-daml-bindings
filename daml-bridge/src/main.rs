@@ -17,7 +17,7 @@ async fn main() -> anyhow::Result<()> {
             Arg::new("ledger-uri")
                 .long("ledger-uri")
                 .short('s')
-                .takes_value(true)
+                .num_args(1)
                 .required(true)
                 .value_name("uri")
                 .help("The ledger server GRPC uri (i.e. https://127.0.0.1:7575)"),
@@ -25,7 +25,7 @@ async fn main() -> anyhow::Result<()> {
         .arg(
             Arg::new("ledger-connect-timeout")
                 .long("ledger-connect-timeout")
-                .takes_value(true)
+                .num_args(1)
                 .required(false)
                 .default_value("5s")
                 .value_name("duration")
@@ -34,7 +34,7 @@ async fn main() -> anyhow::Result<()> {
         .arg(
             Arg::new("ledger-timeout")
                 .long("ledger-timeout")
-                .takes_value(true)
+                .num_args(1)
                 .required(false)
                 .default_value("5s")
                 .value_name("duration")
@@ -43,7 +43,7 @@ async fn main() -> anyhow::Result<()> {
         .arg(
             Arg::new("http-host")
                 .long("http-host")
-                .takes_value(true)
+                .num_args(1)
                 .required(false)
                 .default_value("127.0.0.1")
                 .value_name("host")
@@ -52,7 +52,7 @@ async fn main() -> anyhow::Result<()> {
         .arg(
             Arg::new("http-port")
                 .long("http-port")
-                .takes_value(true)
+                .num_args(1)
                 .required(true)
                 .value_name("port")
                 .help("The port the http server should listen on"),
@@ -60,7 +60,7 @@ async fn main() -> anyhow::Result<()> {
         .arg(
             Arg::new("package-reload-interval")
                 .long("package-reload-interval")
-                .takes_value(true)
+                .num_args(1)
                 .default_value("5s")
                 .required(false)
                 .value_name("interval")
@@ -69,7 +69,7 @@ async fn main() -> anyhow::Result<()> {
         .arg(
             Arg::new("bridge-token")
                 .long("bridge-token")
-                .takes_value(true)
+                .num_args(1)
                 .required(true)
                 .value_name("token")
                 .help("The JWT token the bridge will use for package refresh from the ledger server"),
@@ -97,20 +97,20 @@ async fn main() -> anyhow::Result<()> {
 
     tracing_subscriber::fmt()
         .with_span_events(FmtSpan::NONE)
-        .with_env_filter(matches.value_of("log-filter").unwrap().to_string())
+        .with_env_filter(matches.get_one::<&str>("log-filter").unwrap().to_string())
         .json()
         .init();
 
     let config = Arc::new(BridgeConfigData::new(
-        matches.value_of("ledger-uri").unwrap().to_string(),
-        humantime::parse_duration(matches.value_of("ledger-connect-timeout").unwrap())?,
-        humantime::parse_duration(matches.value_of("ledger-timeout").unwrap())?,
-        matches.value_of("bridge-token").unwrap().to_string(),
-        matches.value_of("http-host").unwrap().to_string(),
-        u16::from_str(matches.value_of("http-port").unwrap())?,
-        humantime::parse_duration(matches.value_of("package-reload-interval").unwrap())?,
-        matches.is_present("encode-int64-as-string"),
-        matches.is_present("encode-decimal-as-string"),
+        matches.get_one::<&str>("ledger-uri").unwrap().to_string(),
+        humantime::parse_duration(matches.get_one::<&str>("ledger-connect-timeout").unwrap())?,
+        humantime::parse_duration(matches.get_one::<&str>("ledger-timeout").unwrap())?,
+        matches.get_one::<&str>("bridge-token").unwrap().to_string(),
+        matches.get_one::<&str>("http-host").unwrap().to_string(),
+        u16::from_str(matches.get_one::<&str>("http-port").unwrap())?,
+        humantime::parse_duration(matches.get_one::<&str>("package-reload-interval").unwrap())?,
+        matches.contains_id("encode-int64-as-string"),
+        matches.contains_id("encode-decimal-as-string"),
     ));
 
     let bridge = Bridge::new(config);

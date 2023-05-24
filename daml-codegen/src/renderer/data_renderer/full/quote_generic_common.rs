@@ -40,7 +40,7 @@ fn quote_where_clause(params: &[DamlTypeVarWithKind<'_>], bound_tokens: TokenStr
 
 fn quote_type_var(type_var: &DamlTypeVarWithKind<'_>) -> TokenStream {
     let var_tokens = quote_var(type_var.var());
-    if let DamlKind::Nat = type_var.kind() {
+    if matches!(type_var.kind(), DamlKind::Nat) {
         quote!(#var_tokens: Nat)
     } else {
         quote!(#var_tokens)
@@ -49,7 +49,7 @@ fn quote_type_var(type_var: &DamlTypeVarWithKind<'_>) -> TokenStream {
 
 fn quote_type_var_with_bound(type_var: &DamlTypeVarWithKind<'_>, bound: &TokenStream) -> TokenStream {
     let var_tokens = quote_var(type_var.var());
-    if let DamlKind::Nat = type_var.kind() {
+    if matches!(type_var.kind(), DamlKind::Nat) {
         quote!(#var_tokens: #bound + Nat)
     } else {
         quote!(#var_tokens: #bound)

@@ -3,7 +3,7 @@ use crate::common::test_utils::{
     new_static_sandbox, update_create_command_package_id_for_testing, update_exercise_command_package_id_for_testing,
     TestResult, SANDBOX_LOCK,
 };
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use daml::grpc_api::data::command::DamlCommand;
 use daml::grpc_api::data::event::DamlEvent;
 use daml::grpc_api::{CommandExecutor, DamlSimpleExecutorBuilder};
@@ -19,7 +19,7 @@ async fn test_using_enum() -> TestResult {
         "Bob",
         "Ford",
         SimpleColor::Green,
-        "1970-01-01T00:00:00Z".parse::<DateTime<Utc>>().unwrap().date(),
+        "1970-01-01".parse::<NaiveDate>().unwrap(),
         "1970-01-01T00:00:00Z".parse::<DateTime<Utc>>().unwrap(),
     );
     let create_car_command = car.create_command();

@@ -33,7 +33,7 @@ fn quote_choice_method(ctx: &RenderContext<'_>, struct_name: &str, choice: &Daml
     let choice_name = &choice.name();
     let struct_name_tokens = quote_escaped_ident(struct_name);
     let method_name_command_tokens = quote_command_method_name(&choice.name().to_snake_case());
-    let _method_name_tokens = quote_escaped_ident(&choice.name().to_snake_case());
+    let _method_name_tokens = quote_escaped_ident(choice.name().to_snake_case());
     let choice_argument_tokens = quote_method_arguments(&choice.fields().iter().collect::<Vec<_>>());
     let supported_fields: Vec<_> =
         choice.fields().iter().filter(|&field| IsRenderable::new(ctx).check_type(field.ty())).collect();
@@ -87,5 +87,5 @@ fn quote_declare_choice_field(field_name: &str, field_type: &DamlType<'_>) -> To
 }
 
 fn quote_command_method_name(name: &str) -> TokenStream {
-    quote_escaped_ident(format!("{}_command", name))
+    quote_escaped_ident(format!("{name}_command"))
 }

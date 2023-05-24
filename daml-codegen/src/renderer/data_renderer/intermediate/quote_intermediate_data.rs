@@ -39,7 +39,7 @@ fn quote_choice(ctx: &RenderContext<'_>, choice: &DamlChoice<'_>) -> TokenStream
 }
 
 pub fn quote_daml_record(ctx: &RenderContext<'_>, record: &DamlRecord<'_>) -> TokenStream {
-    let name_tokens = quote_escaped_ident(&record.name());
+    let name_tokens = quote_escaped_ident(record.name());
     let supported_fields: Vec<_> =
         record.fields().iter().filter(|&field| IsRenderable::new(ctx).check_type(field.ty())).collect();
     let all_fields_tokens = quote_fields(supported_fields.as_slice());
@@ -68,7 +68,7 @@ pub fn quote_daml_variant(ctx: &RenderContext<'_>, variant: &DamlVariant<'_>) ->
 
 fn quote_variant_field(field: &DamlField<'_>) -> TokenStream {
     let name_tokens = quote_escaped_ident(field.name());
-    if let DamlType::Unit = field.ty() {
+    if matches!(field.ty(), DamlType::Unit) {
         quote!(
             #name_tokens
         )

@@ -43,7 +43,7 @@ fn make_api(
     config: BridgeConfig,
     archive: Archive,
     grpc_client: GrpcClient,
-) -> impl Filter<Extract = impl warp::Reply, Error = Infallible> + Clone {
+) -> impl Filter<Extract = (impl warp::Reply,), Error = Infallible> + Clone {
     make_create_filter(config.clone(), archive.clone(), grpc_client.clone())
         .or(make_exercise_filter(config.clone(), archive.clone(), grpc_client.clone()))
         .or(make_create_and_exercise_filter(config.clone(), archive, grpc_client.clone()))
@@ -61,7 +61,7 @@ fn make_create_filter(
     config: BridgeConfig,
     archive: Archive,
     grpc_client: GrpcClient,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
     warp::path!("v1" / "create")
         .and(warp::post())
         .and(warp::body::json())
@@ -77,7 +77,7 @@ fn make_exercise_filter(
     config: BridgeConfig,
     archive: Archive,
     grpc_client: GrpcClient,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
     warp::path!("v1" / "exercise")
         .and(warp::post())
         .and(warp::body::json())
@@ -93,7 +93,7 @@ fn make_create_and_exercise_filter(
     config: BridgeConfig,
     archive: Archive,
     grpc_client: GrpcClient,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
     warp::path!("v1" / "create-and-exercise")
         .and(warp::post())
         .and(warp::body::json())
@@ -108,7 +108,7 @@ fn make_create_and_exercise_filter(
 fn make_fetch_parties_filter(
     config: BridgeConfig,
     grpc_client: GrpcClient,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
     warp::path!("v1" / "parties")
         .and(warp::post())
         .and(warp::body::json())
@@ -122,7 +122,7 @@ fn make_fetch_parties_filter(
 fn make_fetch_all_parties_filter(
     config: BridgeConfig,
     grpc_client: GrpcClient,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
     warp::path!("v1" / "parties")
         .and(warp::get())
         .and(warp::header::optional("Authorization"))
@@ -135,7 +135,7 @@ fn make_fetch_all_parties_filter(
 fn make_parties_allocate_filter(
     config: BridgeConfig,
     grpc_client: GrpcClient,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
     warp::path!("v1" / "parties" / "allocate")
         .and(warp::post())
         .and(warp::body::json())
@@ -149,7 +149,7 @@ fn make_parties_allocate_filter(
 fn make_list_all_packages_filter(
     config: BridgeConfig,
     grpc_client: GrpcClient,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
     warp::path!("v1" / "packages")
         .and(warp::get())
         .and(warp::header::optional("Authorization"))
@@ -162,7 +162,7 @@ fn make_list_all_packages_filter(
 fn make_get_package_filter(
     config: BridgeConfig,
     grpc_client: GrpcClient,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
     warp::path!("v1" / "packages" / String)
         .and(warp::get())
         .and(warp::header::optional("Authorization"))
@@ -176,7 +176,7 @@ fn make_get_package_filter(
 fn make_upload_dar_filter(
     config: BridgeConfig,
     grpc_client: GrpcClient,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
     warp::path!("v1" / "packages")
         .and(warp::post())
         .and(warp::body::bytes())
@@ -188,7 +188,7 @@ fn make_upload_dar_filter(
 }
 
 /// Catch all filter to provide a well formed not found error response
-fn make_unknown_filter() -> impl Filter<Extract = impl warp::Reply, Error = Infallible> + Clone {
+fn make_unknown_filter() -> impl Filter<Extract = (impl warp::Reply,), Error = Infallible> + Clone {
     warp::any().and(warp::path::full().map(unknown_handler))
 }
 
@@ -227,19 +227,21 @@ async fn exercise_handler(
     grpc_client: GrpcClient,
 ) -> Result<impl warp::Reply, Infallible> {
     Ok(match exercise_request {
-        DamlJsonExerciseRequestType::Exercise(req) =>
+        DamlJsonExerciseRequestType::Exercise(req) => {
             match ExerciseHandler::new(config, archive, grpc_client).exercise(req, jwt_token.as_deref()).await {
                 Ok(response) => ok_response(&response),
                 Err(error) => err_response(&error),
-            },
-        DamlJsonExerciseRequestType::ExerciseByKey(req) =>
+            }
+        },
+        DamlJsonExerciseRequestType::ExerciseByKey(req) => {
             match ExerciseByKeyHandler::new(config, archive, grpc_client)
                 .exercise_by_key(req, jwt_token.as_deref())
                 .await
             {
                 Ok(response) => ok_response(&response),
                 Err(error) => err_response(&error),
-            },
+            }
+        },
         DamlJsonExerciseRequestType::Invalid(_) => err_response(&DamlJsonErrorResponse::single(
             400,
             "key and contractId fields are mutually exclusive".to_owned(),

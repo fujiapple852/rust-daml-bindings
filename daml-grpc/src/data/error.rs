@@ -40,16 +40,18 @@ impl fmt::Display for DamlError {
             DamlError::GrpcStatusError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
             DamlError::GrpcPermissionError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
             DamlError::StdError(e) => write!(fmt, "{}", (e as &dyn error::Error)),
-            DamlError::UnexpectedType(expected, actual) =>
-                write!(fmt, "unexpected type, expected {} but found {}", expected, actual),
-            DamlError::UnknownField(name) => write!(fmt, "unknown field {}", name),
-            DamlError::ListIndexOutOfRange(index) => write!(fmt, "list index {} out of range", index),
+            DamlError::UnexpectedType(expected, actual) => {
+                write!(fmt, "unexpected type, expected {expected} but found {actual}")
+            },
+            DamlError::UnknownField(name) => write!(fmt, "unknown field {name}"),
+            DamlError::ListIndexOutOfRange(index) => write!(fmt, "list index {index} out of range"),
             DamlError::MissingRequiredField => write!(fmt, "expected optional value is None"),
-            DamlError::UnexpectedVariant(expected, actual) =>
-                write!(fmt, "unexpected variant constructor, expected {} but found {}", expected, actual),
-            DamlError::Other(e) => write!(fmt, "{}", e),
-            DamlError::FailedConversion(e) => write!(fmt, "failed conversion: {}", e),
-            DamlError::TimeoutError(e) => write!(fmt, "timeout error: {}", e),
+            DamlError::UnexpectedVariant(expected, actual) => {
+                write!(fmt, "unexpected variant constructor, expected {expected} but found {actual}")
+            },
+            DamlError::Other(e) => write!(fmt, "{e}"),
+            DamlError::FailedConversion(e) => write!(fmt, "failed conversion: {e}"),
+            DamlError::TimeoutError(e) => write!(fmt, "timeout error: {e}"),
             DamlError::InsufficientParties => write!(fmt, "insufficient parties"),
         }
     }

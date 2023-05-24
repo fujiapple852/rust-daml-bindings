@@ -7,7 +7,7 @@ use daml_lf::DarFile;
 pub fn daml_archive(path: &str) -> &'static DamlArchive<'static> {
     static INSTANCE: OnceCell<DamlArchive<'_>> = OnceCell::new();
     INSTANCE.get_or_init(|| {
-        let dar = DarFile::from_file(path).unwrap_or_else(|_| panic!("dar file not found: {}", path));
+        let dar = DarFile::from_file(path).unwrap_or_else(|_| panic!("dar file not found: {path}"));
         dar.to_owned_archive().expect("failed to convert dar to owned archive")
     })
 }

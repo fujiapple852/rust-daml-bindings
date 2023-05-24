@@ -359,7 +359,7 @@ impl<'a> TryFrom<&'a TypeConName> for DamlTyConNamePayload<'a> {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum DamlPackageRefPayload<'a> {
     This,
     PackageId(&'a str),

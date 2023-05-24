@@ -1,7 +1,7 @@
 use crate::data::DamlError;
 use crate::nat::{Nat, Nat10};
 use bigdecimal::BigDecimal;
-use chrono::{Date, DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use itertools::Itertools;
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, HashMap};
@@ -34,7 +34,7 @@ pub type DamlBool = bool;
 pub type DamlUnit = ();
 
 /// Type alias for a Daml `Date`.
-pub type DamlDate = Date<Utc>;
+pub type DamlDate = NaiveDate;
 
 /// Type alias for a Daml `List a`.
 pub type DamlList<T> = Vec<T>;
@@ -277,7 +277,7 @@ impl<T: Nat> From<f64> for DamlFixedNumeric<T> {
     fn from(f: f64) -> Self {
         Self::new(match BigDecimal::try_from(f) {
             Ok(bd) => bd,
-            Err(err) => panic!("invalid f64: {}", err),
+            Err(err) => panic!("invalid f64: {err}"),
         })
     }
 }

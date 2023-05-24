@@ -511,7 +511,8 @@ impl DamlValue {
     /// # use daml_grpc::data::DamlIdentifier;
     /// # use daml_grpc::primitive_types::{DamlParty, DamlText};
     /// # fn main() -> DamlResult<()> {
-    /// let fields: Vec<DamlRecordField> = vec![DamlRecordField::new(Some("party"), DamlValue::new_party("Alice"))];
+    /// let fields: Vec<DamlRecordField> =
+    ///     vec![DamlRecordField::new(Some("party"), DamlValue::new_party("Alice"))];
     /// let record: DamlRecord = DamlRecord::new(fields, None::<DamlIdentifier>);
     /// let record_value: DamlValue = DamlValue::new_record(record);
     /// let text_value: DamlValue = DamlValue::new_text("test");
@@ -896,7 +897,7 @@ impl TryFrom<Value> for DamlValue {
             Sum::Party(v) => DamlValue::Party(DamlParty::new(v)),
             Sum::Bool(v) => DamlValue::Bool(v),
             Sum::Unit(_) => DamlValue::Unit,
-            Sum::Date(v) => DamlValue::Date(util::date_from_days(v)?),
+            Sum::Date(v) => DamlValue::Date(util::date_from_days(v)),
             Sum::Optional(v) =>
                 DamlValue::Optional(v.value.map(|v| DamlValue::try_from(*v)).transpose()?.map(Box::new)),
             Sum::Map(v) => DamlValue::Map(
@@ -930,7 +931,7 @@ impl From<DamlValue> for Value {
                 })),
                 DamlValue::Int64(v) => Some(Sum::Int64(v)),
                 // TODO: review the soundness of the numeric formatting here and consider using the `rust-decimal` crate
-                DamlValue::Numeric(v) => Some(Sum::Numeric(format!("{:.37}", v))),
+                DamlValue::Numeric(v) => Some(Sum::Numeric(format!("{v:.37}"))),
                 DamlValue::Text(v) => Some(Sum::Text(v)), // value.set_text(v),
                 DamlValue::Timestamp(v) => Some(Sum::Timestamp(v.timestamp())),
                 DamlValue::Party(v) => Some(Sum::Party(v.party)),

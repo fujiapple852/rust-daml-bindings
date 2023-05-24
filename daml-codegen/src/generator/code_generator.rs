@@ -38,7 +38,7 @@ pub fn daml_codegen(
     quote_method: RenderMethod,
     module_output_mode: ModuleOutputMode,
 ) -> DamlCodeGenResult<()> {
-    println!("cargo:rerun-if-changed={}", dar_file);
+    println!("cargo:rerun-if-changed={dar_file}");
     daml_codegen_internal(dar_file, output_path, module_filter_regex, quote_method, module_output_mode)
 }
 

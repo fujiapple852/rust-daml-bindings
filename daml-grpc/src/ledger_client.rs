@@ -418,7 +418,7 @@ impl DamlGrpcClient {
     }
 
     #[cfg(test)]
-    pub(crate) async fn dummy_for_testing() -> Self {
+    pub(crate) fn dummy_for_testing() -> Self {
         DamlGrpcClient {
             config: DamlGrpcClientConfig::default(),
             channel: Channel::builder(Uri::from_static("http://dummy.for.testing")).connect_lazy(),

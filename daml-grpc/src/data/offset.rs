@@ -52,12 +52,12 @@ impl TryFrom<LedgerOffset> for DamlLedgerOffset {
         match offset.value.req()? {
             Value::Absolute(abs) => match u64::from_str(&abs) {
                 Ok(v) => Ok(DamlLedgerOffset::Absolute(v)),
-                Err(e) => Err(DamlError::new_failed_conversion(format!("invalid ledger offset: {}", e))),
+                Err(e) => Err(DamlError::new_failed_conversion(format!("invalid ledger offset: {e}"))),
             },
             Value::Boundary(i) => match LedgerBoundary::from_i32(i) {
                 Some(LedgerBoundary::LedgerBegin) => Ok(DamlLedgerOffset::Boundary(DamlLedgerOffsetBoundary::Begin)),
                 Some(LedgerBoundary::LedgerEnd) => Ok(DamlLedgerOffset::Boundary(DamlLedgerOffsetBoundary::End)),
-                None => Err(DamlError::new_failed_conversion(format!("unknown ledger boundary offset: {}", i))),
+                None => Err(DamlError::new_failed_conversion(format!("unknown ledger boundary offset: {i}"))),
             },
         }
     }

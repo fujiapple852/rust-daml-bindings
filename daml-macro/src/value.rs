@@ -227,7 +227,7 @@ macro_rules! daml_value {
     };
     (@priv d $date:expr) => {
         // TODO date parsing should be flexible and performed in DamlValue, not here!
-        $crate::daml_grpc::data::value::DamlValue::new_date($crate::chrono::Date::<$crate::chrono::Utc>::from_utc($crate::chrono::NaiveDate::parse_from_str($date, "%Y-%m-%d").unwrap(), $crate::chrono::Utc))
+        $crate::daml_grpc::data::value::DamlValue::new_date($crate::chrono::NaiveDate::parse_from_str($date, "%Y-%m-%d").unwrap())
     };
 }
 

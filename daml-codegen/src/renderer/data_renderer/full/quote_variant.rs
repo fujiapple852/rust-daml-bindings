@@ -51,7 +51,7 @@ fn quote_variant_body(variants: &[&DamlField<'_>]) -> TokenStream {
         .iter()
         .map(|&field| {
             let variant_name = quote_escaped_ident(field.name());
-            if let DamlType::Unit = field.ty() {
+            if matches!(field.ty(), DamlType::Unit) {
                 quote!(#variant_name)
             } else {
                 let data = quote_type(field.ty());
@@ -117,7 +117,7 @@ fn quote_from_trait_match_arm(variant_name: &str, variant: &DamlField<'_>) -> To
     let variant_name_tokens = quote_escaped_ident(variant_name);
     let name = quote_escaped_ident(variant.name());
     let variant_string = variant.name();
-    if let DamlType::Unit = variant.ty() {
+    if matches!(variant.ty(), DamlType::Unit) {
         quote!(
             #variant_name_tokens::#name => DamlValue::new_variant(DamlVariant::new(#variant_string, Box::new(DamlValue::new_unit()), None))
         )
@@ -140,7 +140,7 @@ fn quote_try_from_trait_match_arm(variant_name: &str, variant: &DamlField<'_>) -
     let variant_constructor_name_tokens = quote_escaped_ident(variant.name());
     let variant_constructor_string = variant.name();
     let variant_type_tokens = quote_type(variant.ty());
-    if let DamlType::Unit = variant.ty() {
+    if matches!(variant.ty(), DamlType::Unit) {
         quote!(
             #variant_constructor_string => Ok(#variant_name_tokens::#variant_constructor_name_tokens)
         )

@@ -51,18 +51,18 @@ impl JsonValueEncoder {
             DamlValue::Bool(b) => Ok(json!(b)),
             DamlValue::Int64(i) =>
                 if self.encode_int64_as_string {
-                    Ok(json!(format!("{}", i)))
+                    Ok(json!(format!("{i}")))
                 } else {
                     Ok(json!(i))
                 },
             DamlValue::Numeric(n) =>
                 if self.encode_decimal_as_string {
-                    Ok(json!(format!("{}", n)))
+                    Ok(json!(format!("{n}")))
                 } else {
                     Ok(json!(n.to_f64().req()?))
                 },
             DamlValue::Timestamp(timestamp) => Ok(json!(timestamp.to_rfc3339_opts(SecondsFormat::Millis, true))),
-            DamlValue::Date(date) => Ok(json!(date.naive_utc().to_string())),
+            DamlValue::Date(date) => Ok(json!(date.to_string())),
             DamlValue::Text(text) => Ok(json!(text)),
             DamlValue::Party(party) => Ok(json!(party.party)),
             DamlValue::ContractId(id) => Ok(json!(id.contract_id)),

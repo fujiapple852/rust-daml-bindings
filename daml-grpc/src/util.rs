@@ -2,13 +2,14 @@ use crate::data::{DamlError, DamlResult};
 use chrono::DateTime;
 use chrono::NaiveDateTime;
 use chrono::Utc;
-use chrono::{Date, Timelike};
+use chrono::{NaiveDate, Timelike};
 use std::convert::TryFrom;
 use std::time::{Duration, UNIX_EPOCH};
 
 #[allow(clippy::cast_sign_loss)]
 pub fn from_grpc_timestamp(timestamp: &prost_types::Timestamp) -> DateTime<Utc> {
-    let naive_datetime = NaiveDateTime::from_timestamp(timestamp.seconds, timestamp.nanos as u32);
+    let naive_datetime = NaiveDateTime::from_timestamp_opt(timestamp.seconds, timestamp.nanos as u32)
+        .expect("invalid or out-of-range datetime");
     DateTime::from_utc(naive_datetime, Utc)
 }
 
@@ -31,29 +32,23 @@ pub fn to_grpc_duration(duration: &Duration) -> DamlResult<prost_types::Duration
     })
 }
 
-pub fn date_from_days(days: i32) -> DamlResult<Date<Utc>> {
-    Ok(DateTime::<Utc>::from(
-        UNIX_EPOCH
-            + chrono::Duration::days(i64::from(days)).to_std().map_err(|e| {
-                DamlError::new_failed_conversion(format!("datetime from days {} out of range: {}", days, e))
-            })?,
-    )
-    .date())
+pub fn date_from_days(days: i32) -> NaiveDate {
+    NaiveDate::MIN + chrono::Duration::days(i64::from(days))
 }
 
 pub fn datetime_from_micros(micros: i64) -> DamlResult<DateTime<Utc>> {
     Ok(DateTime::<Utc>::from(
         UNIX_EPOCH
             + chrono::Duration::microseconds(micros).to_std().map_err(|e| {
-                DamlError::new_failed_conversion(format!("datetime from micros {} out of range: {}", micros, e))
+                DamlError::new_failed_conversion(format!("datetime from micros {micros} out of range: {e}"))
             })?,
     ))
 }
 
 // TODO the lossy cast to i32 here...
 #[allow(clippy::cast_possible_truncation)]
-pub fn days_from_date(date: Date<Utc>) -> i32 {
-    let duration: chrono::Duration = date.signed_duration_since(DateTime::<Utc>::from(UNIX_EPOCH).date());
+pub fn days_from_date(date: NaiveDate) -> i32 {
+    let duration: chrono::Duration = date.signed_duration_since(NaiveDate::MIN);
     duration.num_days() as i32
 }
 

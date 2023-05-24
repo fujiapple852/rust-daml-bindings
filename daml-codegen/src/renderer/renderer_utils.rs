@@ -38,7 +38,7 @@ pub fn normalize_generic_param(param: &str) -> &str {
 }
 
 fn escape_identifier(value: impl AsRef<str>) -> String {
-    let mut sanitized_ident = value.as_ref().replace('-', "_").replace('$', "_").replace('.', "_");
+    let mut sanitized_ident = value.as_ref().replace(['-', '$', '.'], "_");
     escape_keyword(&mut sanitized_ident);
     sanitized_ident
 }

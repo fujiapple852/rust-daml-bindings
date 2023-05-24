@@ -51,7 +51,7 @@ impl DamlPackages {
     /// Return the hash of the [`DamlPackage`] which contains a given module or en error if no such package exists.
     ///
     /// The supplied `module_name` name is assumed to be in `DottedName` format, i.e. `TopModule.SubModule.Module`.
-    pub async fn find_module(self, module_name: &str) -> DamlResult<String> {
+    pub fn find_module(self, module_name: &str) -> DamlResult<String> {
         self.into_payloads()?
             .iter()
             .find(|(_, payload)| payload.contains_module(module_name))
@@ -129,7 +129,7 @@ pub enum ArchiveAutoNamingStyle {
 ///
 /// The supplied `module_name` name is assumed to be in `DottedName` format, i.e. `TopModule.SubModule.Module`.
 pub async fn find_module_package_id(ledger_client: &DamlGrpcClient, module_name: &str) -> DamlResult<String> {
-    DamlPackages::from_ledger(ledger_client).await?.find_module(module_name).await
+    DamlPackages::from_ledger(ledger_client).await?.find_module(module_name)
 }
 
 trait TrySwapRemove<T>: Sized {

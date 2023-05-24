@@ -66,7 +66,8 @@ use thiserror::Error;
 ///     .read_as(vec!["Alice".to_owned(), "Bob".to_owned()])
 ///     .new_ec256_token("... EC256 key in bytes ...")?;
 ///
-/// let ledger_client = DamlGrpcClientBuilder::uri("http://localhost:8080").with_auth(token).connect().await?;
+/// let ledger_client =
+///     DamlGrpcClientBuilder::uri("http://localhost:8080").with_auth(token).connect().await?;
 /// # Ok(())
 /// # }
 /// ```
