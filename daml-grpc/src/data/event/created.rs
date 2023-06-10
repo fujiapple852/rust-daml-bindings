@@ -21,6 +21,7 @@ pub struct DamlCreatedEvent {
 
 /// Records that a contract has been created, and choices may now be exercised on it.
 impl DamlCreatedEvent {
+    /// create a [`DamlCreatedEvent`]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         event_id: impl Into<String>,
