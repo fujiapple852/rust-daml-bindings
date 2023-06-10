@@ -10,7 +10,10 @@ use std::time::Duration;
 use tokio::sync::{Mutex, MutexGuard};
 use tracing_subscriber::fmt::format::FmtSpan;
 use uuid::Uuid;
+
+// TODO
 pub type TestResult = ::std::result::Result<(), Box<dyn Error>>;
+pub type TestResult2 = anyhow::Result<()>;
 
 pub const PINGPONG_MODULE_NAME: &str = "Fuji.PingPong";
 pub const PING_ENTITY_NAME: &str = "Ping";

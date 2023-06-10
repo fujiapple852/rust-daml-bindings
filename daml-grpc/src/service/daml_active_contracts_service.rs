@@ -12,7 +12,7 @@ use crate::data::DamlError;
 use crate::data::DamlResult;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::active_contracts_service_client::ActiveContractsServiceClient;
 use crate::grpc_protobuf::com::daml::ledger::api::v1::{GetActiveContractsRequest, TransactionFilter};
-use crate::service::common::make_request;
+use crate::service::common::{make_request, trace_item};
 use crate::service::DamlVerbosity;
 
 /// Returns a stream of the active contracts on a Daml ledger.
@@ -71,7 +71,7 @@ impl<'a> DamlActiveContractsService<'a> {
         trace!(payload = ?payload, token = ?self.auth_token);
         let active_contract_stream =
             self.client().get_active_contracts(make_request(payload, self.auth_token)?).await?.into_inner();
-        Ok(active_contract_stream.inspect(|response| trace!(?response)).map(|response| match response {
+        Ok(active_contract_stream.inspect(trace_item).map(|response| match response {
             Ok(c) => DamlActiveContracts::try_from(c),
             Err(e) => Err(DamlError::from(e)),
         }))
